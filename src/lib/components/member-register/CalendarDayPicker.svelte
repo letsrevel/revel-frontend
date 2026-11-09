@@ -14,8 +14,8 @@
 		label: string;
 		/** `YYYY-MM-DD` or '' for no day. Never converted through a timezone. */
 		value: string;
-		/** IANA name of the organization's timezone, or null when it is not known. */
-		timezone: string | null;
+		/** IANA name of the organization's timezone. */
+		timezone: string;
 		onChange: (value: string) => void;
 		class?: string;
 	}
@@ -23,13 +23,7 @@
 	const { id, label, value, timezone, onChange, class: className = '' }: Props = $props();
 
 	const day = $derived(isCalendarDay(value) ? formatCalendarDay(value) : '');
-	const readback = $derived(
-		day
-			? timezone
-				? m['memberRegister.dayReadback']({ day, timezone })
-				: m['memberRegister.dayReadbackOrgTz']({ day })
-			: ''
-	);
+	const readback = $derived(day ? m['memberRegister.dayReadback']({ day, timezone }) : '');
 	// Commit on `change`, not `input`: a native date input emits `input` for every
 	// half-typed segment. Only a complete, plausible day applies; an explicit clear
 	// (empty value WITHOUT a half-typed segment) clears the filter.
@@ -58,10 +52,8 @@
 	<p id={hintId} class="mt-1 text-xs text-muted-foreground" data-testid="calendar-day-readback">
 		{#if readback}
 			{readback}
-		{:else if timezone}
-			{m['memberRegister.dayHint']({ timezone })}
 		{:else}
-			{m['memberRegister.dayHintOrgTz']()}
+			{m['memberRegister.dayHint']({ timezone })}
 		{/if}
 	</p>
 </div>

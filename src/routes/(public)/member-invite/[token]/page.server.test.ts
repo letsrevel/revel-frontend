@@ -110,24 +110,45 @@ describe('member-invite claim action (#1171)', () => {
 		expect(res.claim).toMatchObject({ outcome: 'success', organizationName: null });
 	});
 
-	it('passes the 409 detail through verbatim (no text branching)', async () => {
-		respond(claim, 409, { detail: 'Server sentence' });
+	it.each(['already_member', 'not_started'] as const)(
+		'passes the 409 machine code %s through, with the detail as fallback text',
+		async (code) => {
+			respond(claim, 409, { detail: 'Server sentence', code });
+			expect((await actions.default(event(true))).claim).toEqual({
+				outcome: 'conflict',
+				code,
+				detail: 'Server sentence'
+			});
+		}
+	);
+
+	it('treats an unknown 409 code as no code (falls back to the detail)', async () => {
+		respond(claim, 409, { detail: 'Server sentence', code: 'brand_new' });
 		expect((await actions.default(event(true))).claim).toEqual({
 			outcome: 'conflict',
+			code: null,
 			detail: 'Server sentence'
 		});
 	});
 
-	it('uses a null detail when a 409 has no readable body', async () => {
+	it('uses a null code and detail when a 409 has no readable body', async () => {
 		respond(claim, 409, undefined);
 		expect((await actions.default(event(true))).claim).toEqual({
 			outcome: 'conflict',
+			code: null,
 			detail: null
 		});
 	});
 
+	it('keeps the plain 403 detail as secondary text', async () => {
+		respond(claim, 403, { detail: 'Blocked.' });
+		expect((await actions.default(event(true))).claim).toEqual({
+			outcome: 'forbidden',
+			detail: 'Blocked.'
+		});
+	});
+
 	it.each([
-		[403, 'forbidden'],
 		[404, 'not_found'],
 		[429, 'throttled'],
 		[401, 'unauthenticated'],

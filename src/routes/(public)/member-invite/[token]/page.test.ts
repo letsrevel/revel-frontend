@@ -110,24 +110,53 @@ describe('member-invite page (#1171)', () => {
 		expect(screen.queryByRole('button', { name: 'Link to my account' })).not.toBeInTheDocument();
 	});
 
-	it('409 shows the backend detail verbatim, or a generic fallback', () => {
-		renderPage({ signedIn: true, claim: { outcome: 'conflict', detail: 'Server sentence.' } });
+	it('409 already_member shows dedicated copy, not the backend detail', () => {
+		renderPage({
+			signedIn: true,
+			claim: { outcome: 'conflict', code: 'already_member', detail: 'Server sentence.' }
+		});
+		const result = screen.getByTestId('member-invite-result');
+		expect(result).toHaveTextContent('You already have a membership in this organization.');
+		expect(result).not.toHaveTextContent('Server sentence.');
+	});
+
+	it('409 not_started shows dedicated copy', () => {
+		renderPage({
+			signedIn: true,
+			claim: { outcome: 'conflict', code: 'not_started', detail: 'Server sentence.' }
+		});
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(
+			"This membership hasn't started yet. Try the link again once it has."
+		);
+	});
+
+	it('409 with an unknown code falls back to the backend detail', () => {
+		renderPage({
+			signedIn: true,
+			claim: { outcome: 'conflict', code: null, detail: 'Server sentence.' }
+		});
 		expect(screen.getByTestId('member-invite-result')).toHaveTextContent('Server sentence.');
 	});
 
-	it('409 without a detail falls back to generic copy', () => {
-		renderPage({ signedIn: true, claim: { outcome: 'conflict', detail: null } });
+	it('409 without a code or detail falls back to generic copy', () => {
+		renderPage({ signedIn: true, claim: { outcome: 'conflict', code: null, detail: null } });
 		expect(screen.getByTestId('member-invite-result')).toHaveTextContent("couldn't be linked");
 	});
 
-	it('403 outcome focuses the heading', async () => {
-		renderPage({ signedIn: true, claim: { outcome: 'forbidden' } });
+	it('403 outcome focuses the heading and shows the detail as secondary text', async () => {
+		renderPage({ signedIn: true, claim: { outcome: 'forbidden', detail: 'Blocked.' } });
 		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(
 			"You can't join this organization"
 		);
+		expect(screen.getByTestId('member-invite-result-note')).toHaveTextContent('Blocked.');
 		await vi.waitFor(() =>
 			expect(screen.getByRole('heading', { name: /can't join/i })).toHaveFocus()
 		);
+	});
+
+	it('403 without a detail shows no secondary text', () => {
+		renderPage({ signedIn: true, claim: { outcome: 'forbidden', detail: null } });
+		expect(screen.queryByTestId('member-invite-result-note')).toBeNull();
 	});
 
 	it('claim 404 shows invitation not found', () => {

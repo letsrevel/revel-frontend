@@ -4,7 +4,6 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { MoreVertical, Pencil, CalendarX, Trash2, Mail } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
-	import { canInvite } from '$lib/member-register/invite';
 
 	interface Props {
 		record: MembershipRecordSchema;
@@ -14,16 +13,19 @@
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
-		/** Reactive clock so a row becomes invitable once valid_from passes. */
-		now?: Date;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, now }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
-	// `now` ticks on the register page, so a row that crosses valid_from while the
-	// page is open becomes invitable; the backend re-checks anyway.
-	const inviteable = $derived(canInvite(record, now ?? new Date()));
+	// The backend's `can_invite` (same helper as the invite endpoint's 400) is the
+	// single source of truth. It is computed at fetch time, so an entry whose
+	// valid_from passes while the page is open flips on the next refetch.
+	// A linked entry already carries a badge, so its blocked reason is not repeated.
+	const blockedReason = $derived(
+		!record.can_invite && record.invite_status !== 'linked' ? record.invite_blocked_reason : null
+	);
+	const reasonId = $derived(`invite-blocked-${record.id}`);
 </script>
 
 <!--
@@ -49,12 +51,23 @@
 			<Pencil aria-hidden="true" />
 			{m['memberRegister.actionEdit']()}
 		</DropdownMenu.Item>
-		{#if inviteable}
+		{#if record.can_invite}
 			<DropdownMenu.Item onclick={() => onInvite(record)}>
 				<Mail aria-hidden="true" />
 				{record.invite_status === 'invited'
 					? m['memberRegister.actionResendInvite']()
 					: m['memberRegister.actionInvite']()}
+			</DropdownMenu.Item>
+		{:else if blockedReason}
+			<!-- Visible reason, wired up as the description so AT reads why it is disabled. -->
+			<DropdownMenu.Item disabled aria-describedby={reasonId} class="items-start">
+				<Mail aria-hidden="true" class="mt-0.5" />
+				<span class="flex flex-col">
+					<span>{m['memberRegister.actionInvite']()}</span>
+					<span id={reasonId} class="text-xs font-normal text-muted-foreground"
+						>{blockedReason}</span
+					>
+				</span>
 			</DropdownMenu.Item>
 		{/if}
 		{#if canEnd}

@@ -22,7 +22,6 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import RegisterFilters from '$lib/components/member-register/RegisterFilters.svelte';
-	import { useNow } from '$lib/member-register/now.svelte';
 	import RegisterTable from '$lib/components/member-register/RegisterTable.svelte';
 	import RegisterCards from '$lib/components/member-register/RegisterCards.svelte';
 	import RecordFormDialog from '$lib/components/member-register/RecordFormDialog.svelte';
@@ -93,7 +92,6 @@
 	const registerEmpty = $derived(
 		listQuery.isSuccess && !listQuery.isPlaceholderData && isRegisterEmpty(total, filters)
 	);
-	const clock = useNow();
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -242,7 +240,6 @@
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
-				now={clock.current}
 			/>
 			<RegisterCards
 				{records}
@@ -251,7 +248,6 @@
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
-				now={clock.current}
 			/>
 
 			<nav

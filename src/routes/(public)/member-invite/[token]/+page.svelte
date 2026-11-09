@@ -68,7 +68,9 @@
 		claim?.outcome === 'success' ? (claim.organizationName ?? claim.organizationSlug) : ''
 	);
 
-	const resultCopy = $derived.by((): { title: string; body: string } | null => {
+	type ResultCopy = { title: string; body: string; note?: string | null };
+
+	const resultCopy = $derived.by((): ResultCopy | null => {
 		if (!claim) return null;
 		switch (claim.outcome) {
 			case 'success':
@@ -81,16 +83,22 @@
 					title: m['memberInvite.sessionExpiredTitle'](),
 					body: m['memberInvite.sessionExpiredBody']()
 				};
-			case 'conflict':
-				return {
-					title: m['memberInvite.conflictTitle'](),
-					// The backend's own (server-translated) sentence tells the two 409s apart.
-					body: claim.detail || m['memberInvite.conflictBody']()
-				};
+			case 'conflict': {
+				// Branch on the machine `code`; `detail` is only the fallback for an
+				// unknown or missing code (never matched on).
+				const body =
+					claim.code === 'already_member'
+						? m['memberInvite.conflictAlreadyMember']()
+						: claim.code === 'not_started'
+							? m['memberInvite.conflictNotStarted']()
+							: claim.detail || m['memberInvite.conflictBody']();
+				return { title: m['memberInvite.conflictTitle'](), body };
+			}
 			case 'forbidden':
 				return {
 					title: m['memberInvite.forbiddenTitle'](),
-					body: m['memberInvite.forbiddenBody']()
+					body: m['memberInvite.forbiddenBody'](),
+					note: claim.detail
 				};
 			case 'not_found':
 				return {
@@ -108,7 +116,7 @@
 	});
 </script>
 
-{#snippet resultBlock(c: ClaimResult, copy: { title: string; body: string })}
+{#snippet resultBlock(c: ClaimResult, copy: ResultCopy)}
 	<!--
 		Focus moves to the heading, so there is deliberately no role=status/alert
 		here: a live region plus a focus move would announce the result twice.
@@ -124,6 +132,11 @@
 				{copy.title}
 			</h2>
 			<p class="text-sm text-muted-foreground sm:text-base">{copy.body}</p>
+			{#if copy.note}
+				<p class="text-sm text-muted-foreground" data-testid="member-invite-result-note">
+					{copy.note}
+				</p>
+			{/if}
 		</div>
 	</div>
 {/snippet}

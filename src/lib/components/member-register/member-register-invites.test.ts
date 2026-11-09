@@ -20,7 +20,6 @@ import RegisterRowActions from './RegisterRowActions.svelte';
 import InviteRecordDialog from './InviteRecordDialog.svelte';
 import InviteAllDialog from './InviteAllDialog.svelte';
 import DeleteRecordDialog from './DeleteRecordDialog.svelte';
-import NowProbe from '$lib/test-utils/NowProbe.svelte';
 
 function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
 	return {
@@ -36,6 +35,8 @@ function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSc
 		created_at: '2026-01-10T09:30:00Z',
 		has_account: false,
 		invite_status: 'not_invited',
+		can_invite: true,
+		invite_blocked_reason: null,
 		has_duplicate_claim: false,
 		...extra
 	};
@@ -66,7 +67,7 @@ afterEach(() => {
 	document.body.style.pointerEvents = '';
 });
 
-function renderRow(rec: MembershipRecordSchema, now?: Date) {
+function renderRow(rec: MembershipRecordSchema) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient(),
@@ -77,8 +78,7 @@ function renderRow(rec: MembershipRecordSchema, now?: Date) {
 				onEdit: noop,
 				onEnd: noop,
 				onDelete: noop,
-				onInvite: noop,
-				now
+				onInvite: noop
 			}
 		}
 	});
@@ -112,46 +112,46 @@ describe('row action label', () => {
 		expect(items).not.toContain('Invite');
 	});
 	it('offers neither for a linked entry', async () => {
-		const items = await menuItems(record({ has_account: true, invite_status: 'linked' }));
+		const items = await menuItems(
+			record({ has_account: true, invite_status: 'linked', can_invite: false })
+		);
 		expect(items).not.toContain('Invite');
 		expect(items).not.toContain('Resend invite');
 	});
 });
 
-describe('row action clock', () => {
-	it('offers Invite once the passed-in now reaches valid_from', async () => {
-		const future = record({ valid_from: '2099-01-01T00:00:00Z' });
-		const { unmount } = renderRow(future, new Date('2098-12-31T00:00:00Z'));
-		// Open the menu first: with it closed, a negative assertion passes vacuously.
-		await openMenu();
-		expect(
-			screen.queryAllByRole('menuitem', { hidden: true }).map((e) => e.textContent?.trim())
-		).not.toContain('Invite');
-		unmount();
-		renderRow(future, new Date('2099-01-01T00:00:00Z'));
-		await openMenu();
-		expect(
-			screen.queryAllByRole('menuitem', { hidden: true }).map((e) => e.textContent?.trim())
-		).toContain('Invite');
+describe('row action can_invite', () => {
+	it('follows the backend flag, not client-side date or kind rules', async () => {
+		// A future-dated day member the old client rule hid: the flag alone decides.
+		const items = await menuItems(
+			record({ kind: 'temporary', valid_from: '2099-01-01T00:00:00Z', can_invite: true })
+		);
+		expect(items).toContain('Invite');
 	});
-});
-
-describe('useNow', () => {
-	// Restore in afterEach so a failed assertion can't leave fake timers active
-	// for the dialog tests that follow.
-	afterEach(() => {
-		vi.useRealTimers();
+	it('shows a disabled Invite with the backend reason when blocked', async () => {
+		const reason = 'This register entry starts in the future.';
+		const items = await menuItems(record({ can_invite: false, invite_blocked_reason: reason }));
+		expect(items.some((t) => t.includes('Invite') && t.includes(reason))).toBe(true);
+		const item = screen
+			.queryAllByRole('menuitem', { hidden: true })
+			.find((el) => el.textContent?.includes(reason));
+		expect(item).toHaveAttribute('aria-disabled', 'true');
+		expect(item).toHaveAttribute('aria-describedby');
 	});
-
-	it('ticks while mounted and stops after unmount', async () => {
-		vi.useFakeTimers();
-		vi.setSystemTime(new Date('2026-06-01T12:00:00Z'));
-		const { unmount } = render(NowProbe);
-		const first = screen.getByTestId('now').textContent;
-		await vi.advanceTimersByTimeAsync(2000);
-		expect(screen.getByTestId('now').textContent).not.toBe(first);
-		unmount();
-		expect(vi.getTimerCount()).toBe(0);
+	it('omits Invite when blocked without a reason', async () => {
+		const items = await menuItems(record({ can_invite: false, invite_blocked_reason: null }));
+		expect(items.join('|')).not.toContain('Invite');
+	});
+	it('does not repeat the reason for a linked entry (its badge says it)', async () => {
+		const items = await menuItems(
+			record({
+				has_account: true,
+				invite_status: 'linked',
+				can_invite: false,
+				invite_blocked_reason: 'Already linked.'
+			})
+		);
+		expect(items.join('|')).not.toContain('Invite');
 	});
 });
 

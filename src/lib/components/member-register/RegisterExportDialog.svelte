@@ -18,7 +18,7 @@
 		open: boolean;
 		slug: string;
 		accessToken: string | null;
-		timezone: string | null;
+		timezone: string;
 		/** Pre-selects the list's "members on date" day. */
 		initialDay: string | null;
 		onClose: () => void;
@@ -37,9 +37,7 @@
 	const summary = $derived.by(() => {
 		if (!isCalendarDay(day)) return m['memberRegister.exportAll']();
 		const formatted = formatCalendarDay(day);
-		return timezone
-			? m['memberRegister.exportMembersOn']({ day: formatted, timezone })
-			: m['memberRegister.exportMembersOnOrgTz']({ day: formatted });
+		return m['memberRegister.exportMembersOn']({ day: formatted, timezone });
 	});
 
 	function handleOpenChange(next: boolean) {
