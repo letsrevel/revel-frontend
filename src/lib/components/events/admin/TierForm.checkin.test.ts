@@ -1,6 +1,6 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, onTestFinished, vi } from 'vitest';
 import { QueryClient, QueryObserver } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import TierForm from './TierForm.svelte';
@@ -99,26 +99,40 @@ describe('TierForm per-tier check-in window (#945)', () => {
 		});
 	});
 
-	it('closes only after the tier list has refetched, so a reopen never seeds a stale tier', async () => {
+	it('seeds a reopen from the saved response and closes without waiting on the refetch', async () => {
 		const user = userEvent.setup();
 		const onClose = vi.fn();
+		const listKey = ['event-admin', 'evt-1', 'ticket-tiers'];
+		const saved = {
+			...baseTier,
+			check_in_opens_offset: '-P0DT01H00M00S'
+		} as TicketTierDetailSchema;
+		vi.mocked(eventadminticketsUpdateTicketTier).mockResolvedValue({
+			data: saved,
+			error: undefined,
+			response: { ok: true, status: 200 } as Response
+		} as unknown as UpdateResult);
 		const client = renderForm({}, onClose);
-		let finishRefetch!: () => void;
-		const refetch = new Promise<void>((resolve) => (finishRefetch = resolve));
-		// An active observer makes invalidateQueries() refetch (and so wait) for real.
+		// The list as TicketingStep caches it: the stale tier, no check-in window.
+		client.setQueryData(listKey, { data: { results: [baseTier] } });
+		// A refetch that never settles proves close does not wait on it.
 		const observer = new QueryObserver(client, {
-			queryKey: ['event-admin', 'evt-1', 'ticket-tiers'],
-			queryFn: () => refetch.then(() => [])
+			queryKey: listKey,
+			queryFn: () => new Promise<never>(() => undefined)
 		});
 		const unsubscribe = observer.subscribe(vi.fn());
+		onTestFinished(unsubscribe);
 
 		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
-		await waitFor(() => expect(eventadminticketsUpdateTicketTier).toHaveBeenCalled());
-		expect(onClose).not.toHaveBeenCalled();
-
-		finishRefetch();
 		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
-		unsubscribe();
+
+		const cached = client.getQueryData<{ data: { results: TicketTierDetailSchema[] } }>(listKey);
+		const fromCache = cached?.data.results.find((t) => t.id === 'tier-1');
+		expect(fromCache?.check_in_opens_offset).toBe('-P0DT01H00M00S');
+
+		cleanup();
+		renderForm(fromCache ?? {});
+		expect(screen.getByLabelText('Check-in opens')).toHaveValue('2026-10-10T19:00');
 	});
 
 	it('converts a picked time into an offset from the event start', async () => {
