@@ -40,6 +40,8 @@ function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSc
 		created_at: '2026-01-10T09:30:00Z',
 		has_account: false,
 		invite_status: 'not_invited',
+		can_invite: true,
+		invite_blocked_reason: null,
 		has_duplicate_claim: false,
 		...extra
 	};
@@ -357,15 +359,32 @@ describe('review fixes (components)', () => {
 		await waitFor(() => expect(onClose).toHaveBeenCalled());
 	});
 
+	it('day picker uses the generic organization-timezone label when the zone is unknown', () => {
+		const props = { id: 'd', label: 'Day', timezone: null, onChange: vi.fn() };
+		const { unmount } = render(CalendarDayPicker, { props: { ...props, value: '' } });
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			"read in the organization's timezone"
+		);
+		unmount();
+		render(CalendarDayPicker, { props: { ...props, value: '2026-03-12' } });
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			/Members on .* \(organization's timezone\)/
+		);
+		expect(screen.getByTestId('calendar-day-readback').textContent).not.toContain('Vienna');
+	});
+
 	it('day picker ignores half-typed values and applies complete ones and explicit clears', () => {
 		const onChange = vi.fn();
 		renderIn(CalendarDayPicker, {
 			id: 'd',
 			label: 'Day',
 			value: '2026-03-12',
-			timezone: null,
+			timezone: 'Europe/Rome',
 			onChange
 		});
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			/Members on .* \(Europe\/Rome\)/
+		);
 		const input = screen.getByLabelText('Day') as HTMLInputElement;
 		input.value = '0002-03-12';
 		input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -386,7 +405,7 @@ describe('review fixes (components)', () => {
 		vi.useFakeTimers({ shouldAdvanceTime: true });
 		try {
 			const onChange = vi.fn();
-			const base = { tiers: [], timezone: null, onChange };
+			const base = { tiers: [], timezone: 'Europe/Rome', onChange };
 			const { rerender } = render(RegisterFilters, {
 				props: { ...base, filters: { ...DEFAULT_FILTERS } }
 			});

@@ -14,11 +14,9 @@
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
 		onUnlink: (record: MembershipRecordSchema) => void;
-		/** Reactive clock for time-dependent row rules. */
-		now?: Date;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, now }: Props = $props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink }: Props = $props();
 
 	const TH =
 		'px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground';
@@ -65,7 +63,6 @@
 							{onDelete}
 							{onInvite}
 							{onUnlink}
-							{now}
 						/>
 					</td>
 				</tr>

@@ -66,7 +66,7 @@
 			tip: null,
 			needs: canManageMembers ? null : m['verein.guide.needs.manageMembers'](),
 			link: m['verein.guide.step4.link'](),
-			href: resolve('/(auth)/org/[slug]/admin/members', { slug })
+			href: resolve('/(auth)/org/[slug]/admin/members/register', { slug })
 		}
 	]);
 </script>

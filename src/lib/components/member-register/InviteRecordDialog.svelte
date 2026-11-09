@@ -29,7 +29,7 @@
 </script>
 
 <!-- staleOn400: this endpoint answers 400 (never 409) for linked / merged / email-less /
-     revoked / future-dated rows, so any 400 refreshes the list. -->
+     revoked / future-dated / temporary / ended rows, so any 400 refreshes the list. -->
 <ConfirmRecordDialog
 	{open}
 	{record}

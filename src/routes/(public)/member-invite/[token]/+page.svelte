@@ -18,6 +18,7 @@
 		Hourglass,
 		TriangleAlert
 	} from '@lucide/svelte';
+	import { CLAIM_CONFLICT_COPY } from '$lib/member-register/claim-conflict';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -68,7 +69,24 @@
 		claim?.outcome === 'success' ? (claim.organizationName ?? claim.organizationSlug) : ''
 	);
 
-	const resultCopy = $derived.by((): { title: string; body: string } | null => {
+	type ResultCopy = { title: string; body: string; note?: string };
+
+	// Compare two sentences ignoring case, whitespace and trailing punctuation: an
+	// equality check (never branching on content) so a backend detail that only
+	// repeats the localized body is not shown twice.
+	const sameSentence = (a: string, b: string): boolean =>
+		a
+			.trim()
+			.toLowerCase()
+			.replace(/[\s.!]+$/u, '')
+			.replace(/\s+/gu, ' ') ===
+		b
+			.trim()
+			.toLowerCase()
+			.replace(/[\s.!]+$/u, '')
+			.replace(/\s+/gu, ' ');
+
+	const resultCopy = $derived.by((): ResultCopy | null => {
 		if (!claim) return null;
 		switch (claim.outcome) {
 			case 'success':
@@ -81,17 +99,23 @@
 					title: m['memberInvite.sessionExpiredTitle'](),
 					body: m['memberInvite.sessionExpiredBody']()
 				};
-			case 'conflict':
-				return {
-					title: m['memberInvite.conflictTitle'](),
-					// The backend's own (server-translated) sentence tells the two 409s apart.
-					body: claim.detail || m['memberInvite.conflictBody']()
-				};
-			case 'forbidden':
-				return {
-					title: m['memberInvite.forbiddenTitle'](),
-					body: m['memberInvite.forbiddenBody']()
-				};
+			case 'conflict': {
+				// Branch on the machine `code`; `detail` is only the fallback for an
+				// unknown or missing code (never matched on).
+				const body =
+					(claim.code ? CLAIM_CONFLICT_COPY[claim.code]() : null) ||
+					claim.detail ||
+					m['memberInvite.conflictBody']();
+				return { title: m['memberInvite.conflictTitle'](), body };
+			}
+			case 'forbidden': {
+				const body = m['memberInvite.forbiddenBody']();
+				// Show the backend reason as secondary text only when it says something the
+				// localized body doesn't (its usual 403 detail is the same sentence).
+				const detail = claim.detail?.trim();
+				const note = detail && !sameSentence(detail, body) ? detail : undefined;
+				return { title: m['memberInvite.forbiddenTitle'](), body, note };
+			}
 			case 'not_found':
 				return {
 					title: m['memberInvite.notFoundTitle'](),
@@ -108,7 +132,7 @@
 	});
 </script>
 
-{#snippet resultBlock(c: ClaimResult, copy: { title: string; body: string })}
+{#snippet resultBlock(c: ClaimResult, copy: ResultCopy)}
 	<!--
 		Focus moves to the heading, so there is deliberately no role=status/alert
 		here: a live region plus a focus move would announce the result twice.
@@ -124,6 +148,11 @@
 				{copy.title}
 			</h2>
 			<p class="text-sm text-muted-foreground sm:text-base">{copy.body}</p>
+			{#if copy.note}
+				<p class="text-sm text-muted-foreground" data-testid="member-invite-result-note">
+					{copy.note}
+				</p>
+			{/if}
 		</div>
 	</div>
 {/snippet}

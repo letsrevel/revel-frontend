@@ -40,6 +40,8 @@ function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSc
 		created_at: '2026-01-10T09:30:00Z',
 		has_account: false,
 		invite_status: 'not_invited',
+		can_invite: true,
+		invite_blocked_reason: null,
 		has_duplicate_claim: false,
 		...extra
 	};
@@ -121,13 +123,16 @@ describe('active_on calendar day', () => {
 });
 
 describe('org timezone', () => {
-	it('falls back to the platform default without a city', () => {
-		expect(resolveOrgTimezone({ city: null })).toBe('Europe/Vienna');
-		expect(resolveOrgTimezone(undefined)).toBe('Europe/Vienna');
+	it('reads the backend-resolved organization timezone', () => {
+		expect(resolveOrgTimezone({ timezone: 'Europe/Rome' })).toBe('Europe/Rome');
+		expect(resolveOrgTimezone({ timezone: 'America/New_York' })).toBe('America/New_York');
 	});
-	it('uses the city timezone when exposed, null when a city hides it', () => {
-		expect(resolveOrgTimezone({ city: { timezone: 'Europe/Rome' } })).toBe('Europe/Rome');
-		expect(resolveOrgTimezone({ city: {} })).toBeNull();
+	it('returns null (generic label) when the timezone is missing or blank', () => {
+		expect(resolveOrgTimezone({})).toBeNull();
+		expect(resolveOrgTimezone({ timezone: '  ' })).toBeNull();
+		expect(resolveOrgTimezone({ timezone: null })).toBeNull();
+		expect(resolveOrgTimezone(null)).toBeNull();
+		expect(resolveOrgTimezone(undefined)).toBeNull();
 	});
 });
 

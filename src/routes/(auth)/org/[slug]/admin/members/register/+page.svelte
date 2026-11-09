@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
-	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
+	import { createQuery, keepPreviousData, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		BookUser,
 		Download,
@@ -28,7 +28,6 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import RegisterFilters from '$lib/components/member-register/RegisterFilters.svelte';
-	import { useNow } from '$lib/member-register/now.svelte';
 	import RegisterTable from '$lib/components/member-register/RegisterTable.svelte';
 	import RegisterCards from '$lib/components/member-register/RegisterCards.svelte';
 	import RecordFormDialog from '$lib/components/member-register/RecordFormDialog.svelte';
@@ -57,6 +56,7 @@
 		parseFilters,
 		type RegisterFilters as Filters
 	} from '$lib/member-register/filters';
+	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 
 	const { data }: { data: PageData } = $props();
@@ -128,6 +128,20 @@
 	);
 
 	const records = $derived(listQuery.data?.results ?? []);
+
+	// `can_invite` is computed by the backend when the list is fetched. A row whose
+	// start date passes while the page stays open would keep its stale "not yet"
+	// state, so schedule ONE refetch for the nearest upcoming start. Recomputed
+	// whenever the rows change; cleared on re-run and on unmount.
+	const queryClient = useQueryClient();
+	$effect(() => {
+		const delay = nextInviteRefetchDelay(records);
+		if (delay === null) return;
+		const handle = setTimeout(() => {
+			void queryClient.invalidateQueries({ queryKey: memberRegisterKeys.list(slug, filters) });
+		}, delay);
+		return () => clearTimeout(handle);
+	});
 	const total = $derived(listQuery.data?.count ?? 0);
 	const pageCount = $derived(Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE)));
 	const rangeFrom = $derived(total === 0 ? 0 : (filters.page - 1) * REGISTER_PAGE_SIZE + 1);
@@ -137,7 +151,6 @@
 	const registerEmpty = $derived(
 		listQuery.isSuccess && !listQuery.isPlaceholderData && isRegisterEmpty(total, filters)
 	);
-	const clock = useNow();
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -319,7 +332,6 @@
 						onDelete={(r) => (deleting = r)}
 						onInvite={(r) => (inviting = r)}
 						onUnlink={(r) => (unlinking = r)}
-						now={clock.current}
 					/>
 					<RegisterCards
 						{records}
@@ -329,7 +341,6 @@
 						onDelete={(r) => (deleting = r)}
 						onInvite={(r) => (inviting = r)}
 						onUnlink={(r) => (unlinking = r)}
-						now={clock.current}
 					/>
 
 					<nav

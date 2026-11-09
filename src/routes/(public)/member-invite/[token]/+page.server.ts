@@ -3,6 +3,7 @@ import {
 	memberregisterinvitesClaimInvite,
 	memberregisterinvitesPreviewInvite
 } from '$lib/api/generated/sdk.gen';
+import { isClaimConflictCode, type ClaimConflictCode } from '$lib/member-register/claim-conflict';
 import { log } from '$lib/server/logger';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -17,6 +18,14 @@ import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
  * anywhere else, POSTs on page load. The POST lives in a form action so it
  * works without JavaScript and carries the visitor's real IP to the backend.
  */
+
+export type { ClaimConflictCode };
+
+/** Narrow an unknown 409 body to a known code; anything else is `null`. */
+function conflictCode(error: unknown): ClaimConflictCode | null {
+	const code = (error as { code?: unknown } | null | undefined)?.code;
+	return isClaimConflictCode(code) ? code : null;
+}
 
 export type InvitePreview =
 	| { status: 'ok'; organizationName: string; organizationSlug: string; fullName: string }
@@ -33,13 +42,15 @@ export type ClaimResult =
 			recordId: string;
 	  }
 	/**
-	 * 409. The backend has two 409s (duplicate membership, membership not
-	 * started) and, unlike the 403/404, sends no machine code to tell them
-	 * apart, so `detail` (translated server-side per the Accept-Language the
-	 * shared API client interceptor sets) is shown verbatim. NEVER branch on its text.
+	 * 409. The backend sends a machine `code` (`MemberRegisterInviteClaimErrorSchema`)
+	 * to tell its two 409s apart; the page maps it to localized copy. `detail`
+	 * (server-translated) is only the fallback for a missing or unknown code.
+	 * NEVER branch on its text.
 	 */
-	| { outcome: 'conflict'; detail: string | null }
-	| { outcome: 'forbidden' | 'not_found' | 'throttled' | 'error' | 'unauthenticated' };
+	| { outcome: 'conflict'; code: ClaimConflictCode | null; detail: string | null }
+	/** 403 is a plain ErrorDetail: `detail` is secondary text only. */
+	| { outcome: 'forbidden'; detail: string | null }
+	| { outcome: 'not_found' | 'throttled' | 'error' | 'unauthenticated' };
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	const signedIn = !!locals.user?.accessToken;
@@ -113,9 +124,17 @@ export const actions = {
 				};
 			}
 			if (status === 409) {
-				return { claim: { outcome: 'conflict', detail: extractApiErrorDetail(res.error) } };
+				return {
+					claim: {
+						outcome: 'conflict',
+						code: conflictCode(res.error),
+						detail: extractApiErrorDetail(res.error)
+					}
+				};
 			}
-			if (status === 403) return { claim: { outcome: 'forbidden' } };
+			if (status === 403) {
+				return { claim: { outcome: 'forbidden', detail: extractApiErrorDetail(res.error) } };
+			}
 			if (status === 404) return { claim: { outcome: 'not_found' } };
 			if (status === 429) return { claim: { outcome: 'throttled' } };
 			if (status === 401) return { claim: { outcome: 'unauthenticated' } };

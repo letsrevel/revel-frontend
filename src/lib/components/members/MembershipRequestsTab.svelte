@@ -1,22 +1,54 @@
 <script lang="ts" module>
+	import * as m from '$lib/paraglide/messages.js';
+	import type { MembershipApprovalRefusalCode } from '$lib/api/generated/types.gen';
+
 	/**
-	 * Carries the HTTP status past the mutation boundary: TanStack only hands
-	 * `onError` the thrown error, and a plain `Error` would lose the 400 that
-	 * distinguishes the force-able refusal from every other approve failure.
+	 * Localized copy per coded refusal. A `Record` over the generated union, so a
+	 * code the backend adds fails the type check here instead of silently falling
+	 * back. The backend `detail` is only the fallback for uncoded 400s.
+	 */
+	const REFUSAL_COPY: Record<MembershipApprovalRefusalCode, () => string> = {
+		subscription_active: () => m['membershipRequestsTab.refusalSubscriptionActive'](),
+		membership_paused: () => m['membershipRequestsTab.refusalMembershipPaused'](),
+		link_paid_application: () => m['membershipRequestsTab.refusalLinkPaidApplication'](),
+		link_future_dated: () => m['membershipRequestsTab.refusalLinkFutureDated'](),
+		link_unavailable: () => m['membershipRequestsTab.refusalLinkUnavailable'](),
+		applicant_has_entry: () => m['membershipRequestsTab.refusalApplicantHasEntry']()
+	};
+
+	/**
+	 * Carries the backend's `forceable` flag past the mutation boundary: TanStack
+	 * only hands `onError` the thrown error. Only a 400 body with
+	 * `forceable === true` may offer "approve anyway"; every other failure
+	 * (uncoded 400, non-forceable coded refusal, 403, ...) is not forceable.
 	 */
 	class ApproveRequestError extends Error {
-		status: number | undefined;
+		forceable: boolean;
 
-		constructor(message: string, status: number | undefined) {
+		constructor(message: string, forceable: boolean) {
 			super(message);
 			this.name = 'ApproveRequestError';
-			this.status = status;
+			this.forceable = forceable;
 		}
+	}
+
+	function isRefusalCode(code: unknown): code is MembershipApprovalRefusalCode {
+		return typeof code === 'string' && Object.hasOwn(REFUSAL_COPY, code);
+	}
+
+	/** Builds the error for a failed approve from the (typed or unknown) body. */
+	function approveErrorFrom(body: unknown, fallback: string, detail: string | null) {
+		const refusal =
+			typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
+		const forceable = refusal.forceable === true;
+		// A forceable refusal keeps the backend's own sentence: it names the member
+		// and goes into the confirm dialog. Non-forceable ones use localized copy.
+		const copy = !forceable && isRefusalCode(refusal.code) ? REFUSAL_COPY[refusal.code]() : null;
+		return new ApproveRequestError(copy ?? detail ?? fallback, forceable);
 	}
 </script>
 
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminmembershiprequestsListMembershipRequests,
@@ -98,8 +130,8 @@
 	// Register entry carried along when the tier picker was opened by "Approve and link".
 	let linkRecordToApprove = $state<string | null>(null);
 
-	// Set when the backend refuses a free approval with a 400 (active subscription
-	// or paused membership); holds everything the forced retry needs.
+	// Set when the backend refuses a free approval with a `forceable` 400 (active
+	// subscription or paused membership); holds everything the forced retry needs.
 	let forceConfirm = $state<{
 		request: OrganizationMembershipRequestRetrieve;
 		tierId: string | null;
@@ -140,7 +172,7 @@
 	const approveRequestMutation = createMutation(() => ({
 		mutationFn: async ({ request, tierId, force, linkRecordId }: ApproveVariables) => {
 			if (!request.id) {
-				throw new ApproveRequestError(m['membershipRequestsTab.approveFailedGeneric'](), undefined);
+				throw new ApproveRequestError(m['membershipRequestsTab.approveFailedGeneric'](), false);
 			}
 
 			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
@@ -154,9 +186,10 @@
 			});
 
 			if (response.error) {
-				throw new ApproveRequestError(
-					backendMessage(response.error) || m['membershipRequestsTab.approveFailedGeneric'](),
-					response.response?.status
+				throw approveErrorFrom(
+					response.error,
+					m['membershipRequestsTab.approveFailedGeneric'](),
+					backendMessage(response.error)
 				);
 			}
 
@@ -181,18 +214,12 @@
 			if (variables.linkRecordId) void invalidateDuplicates(queryClient, organization.slug);
 		},
 		onError: (error: Error, variables: ApproveVariables) => {
-			// A 400 on a first attempt is the guard against overwriting a paid tier
-			// (`_assert_free_grant_allowed`: active subscription, paused membership) —
-			// offer the override instead of dead-ending in a toast. The backend marks
-			// that refusal with the status alone (a plain `{detail}` body, no code
-			// field), so the status is the only signal; localized text is never
-			// matched. The link path shares the 400 with refusals `force` cannot
-			// bypass (entry linked/merged/closed, applicant already has an open
-			// entry, future-dated, paid application): those fail again on the forced
-			// retry and land in the toast below, exactly like a plain approve does for
-			// "only pending applications". 403 (banned / blacklisted / app token) is
-			// never forceable. A 400 on the forced retry also falls through.
-			if (!variables.force && error instanceof ApproveRequestError && error.status === 400) {
+			// Offer the override only when the backend says it can bypass the refusal
+			// (`forceable`: active subscription, paused membership). Uncoded 400s and
+			// the non-forceable coded ones (link_*, applicant_has_entry) fail again on
+			// a forced retry, so they go to the inline error / toast below instead.
+			// Localized text is never matched. A refused forced retry also falls through.
+			if (!variables.force && error instanceof ApproveRequestError && error.forceable) {
 				// Close the tier picker first: the confirm dialog carries the tier
 				// itself, and stacking the two dialogs would trap focus in the wrong one.
 				approveMembershipModalOpen = false;
