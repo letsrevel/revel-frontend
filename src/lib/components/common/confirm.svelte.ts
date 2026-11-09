@@ -11,6 +11,27 @@ export interface ConfirmRequest {
 	destructive?: boolean;
 }
 
+/** Props `createConfirm` produces for `<ConfirmDialog {...confirm.dialogProps} />`. */
+export interface ConfirmDialogBindings {
+	isOpen: boolean;
+	title: string;
+	message: string;
+	confirmText: string | undefined;
+	variant: 'danger' | 'warning';
+	confirmDisabled: boolean;
+	onConfirm: () => void;
+	onCancel: () => void;
+}
+
+/** The controller returned by `createConfirm`. */
+export interface Confirm {
+	ask(request: ConfirmRequest): Promise<boolean>;
+	/** Whether a question is currently awaiting an answer. */
+	readonly isOpen: boolean;
+	/** Spread onto `<ConfirmDialog {...confirm.dialogProps} />`. */
+	readonly dialogProps: ConfirmDialogBindings;
+}
+
 /**
  * Promise-based in-app replacement for `window.confirm()`.
  *
@@ -34,7 +55,7 @@ export interface ConfirmRequest {
  * Must be called during component initialisation (it registers the unmount
  * cleanup via `onDestroy`).
  */
-export function createConfirm() {
+export function createConfirm(): Confirm {
 	// Last request, retained while the dialog animates out so its text does not
 	// blank mid-fade.
 	let request = $state<ConfirmRequest>({ message: '' });
@@ -67,13 +88,13 @@ export function createConfirm() {
 			return open;
 		},
 		/** Spread onto `<ConfirmDialog {...confirm.dialogProps} />`. */
-		get dialogProps() {
+		get dialogProps(): ConfirmDialogBindings {
 			return {
 				isOpen: open,
 				title: request.title ?? m['confirmDialog.title'](),
 				message: request.message,
 				confirmText: request.confirmLabel,
-				variant: request.destructive ? ('danger' as const) : ('warning' as const),
+				variant: request.destructive ? 'danger' : 'warning',
 				// Disabled the instant the promise settles, i.e. for the whole exit
 				// animation, so a second click can never re-fire.
 				confirmDisabled: !open,
@@ -83,5 +104,3 @@ export function createConfirm() {
 		}
 	};
 }
-
-export type Confirm = ReturnType<typeof createConfirm>;
