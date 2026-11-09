@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -36,15 +37,30 @@
 		permissions: OrganizationPermissionsSchema | null;
 		tiers: MembershipTierSchema[];
 		staffUserIds: Set<string>;
+		/** Pre-fills the search (the People tab's "Manage access" bridge). */
+		initialSearch?: string;
+		/**
+		 * With the bridge's search, narrows the list to this exact user when the
+		 * search returned them (an email or name search can match several people).
+		 */
+		focusUserId?: string | null;
 	}
 
-	const { organization, isOwner, permissions, tiers, staffUserIds }: Props = $props();
+	const {
+		organization,
+		isOwner,
+		permissions,
+		tiers,
+		staffUserIds,
+		initialSearch = '',
+		focusUserId = null
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Search and filter state
-	let memberSearch = $state('');
+	let memberSearch = $state(untrack(() => initialSearch));
 	let memberStatusFilter = $state<MembershipStatus | 'all'>('all');
 	let memberTierFilter = $state<string | 'all'>('all');
 
@@ -244,7 +260,11 @@
 	}));
 
 	// Derived data
-	const members = $derived(membersQuery.data?.results || []);
+	const allMembers = $derived(membersQuery.data?.results || []);
+	const members = $derived.by(() => {
+		const exact = focusUserId ? allMembers.filter((x) => x.user.id === focusUserId) : [];
+		return exact.length > 0 && memberSearch === initialSearch ? exact : allMembers;
+	});
 
 	// Handlers
 	function handleManageMember(member: OrganizationMemberSchema) {

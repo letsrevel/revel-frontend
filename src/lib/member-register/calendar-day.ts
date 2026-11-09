@@ -52,3 +52,29 @@ export function isPickableDay(value: string | null | undefined): value is string
 	const year = Number(value.slice(0, 4));
 	return year >= PICKABLE_YEAR_MIN && year <= PICKABLE_YEAR_MAX;
 }
+
+/**
+ * Today's calendar day (`YYYY-MM-DD`) in an IANA timezone: what "today" is on
+ * the organization's wall clock, whatever the viewer's own zone. Falls back to
+ * the browser's zone for a missing or unknown name. Machine format, never shown.
+ */
+export function calendarDayInZone(
+	timezone: string | null | undefined,
+	now: Date = new Date()
+): string {
+	const format = (zone: string | undefined): string => {
+		const parts = new Intl.DateTimeFormat('en-US', {
+			timeZone: zone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		}).formatToParts(now);
+		const get = (type: string): string => parts.find((part) => part.type === type)?.value ?? '';
+		return `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`;
+	};
+	try {
+		return format(timezone || undefined);
+	} catch {
+		return format(undefined);
+	}
+}

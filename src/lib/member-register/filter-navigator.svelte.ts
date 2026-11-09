@@ -8,6 +8,8 @@ export interface FilterNavigatorOptions {
 	navigate: (search: string, opts: { replace: boolean }) => Promise<void>;
 	/** Called when a navigation rejects; pending state has already been dropped. */
 	onError?: (error: unknown) => void;
+	/** Filters -> query string. Defaults to the register page's `filtersToSearch`. */
+	serialize?: (filters: RegisterFilters) => string;
 }
 
 export interface PatchOptions {
@@ -31,6 +33,7 @@ export interface PatchOptions {
  * navigation `pending` is dropped (the URL is the truth again) and `onError` fires.
  */
 export function createFilterNavigator(options: FilterNavigatorOptions) {
+	const serialize = options.serialize ?? filtersToSearch;
 	let pending = $state<RegisterFilters | null>(null);
 	let inFlight = false;
 	let pushRequested = false;
@@ -39,11 +42,11 @@ export function createFilterNavigator(options: FilterNavigatorOptions) {
 		inFlight = true;
 		try {
 			while (pending) {
-				const search = filtersToSearch(pending);
+				const search = serialize(pending);
 				const push = pushRequested;
 				pushRequested = false;
 				await options.navigate(search, { replace: !push });
-				if (pending && filtersToSearch(pending) === search) {
+				if (pending && serialize(pending) === search) {
 					// Settled on what was just sent: drop a push request that coalesced into it,
 					// or the next unrelated change would push history (e.g. Next then Prev).
 					pending = null;
@@ -67,7 +70,7 @@ export function createFilterNavigator(options: FilterNavigatorOptions) {
 			current: options.current()
 		}));
 		const next: RegisterFilters = { ...base, ...change };
-		if (!inFlight && filtersToSearch(next) === filtersToSearch(current)) return;
+		if (!inFlight && serialize(next) === serialize(current)) return;
 		pending = next;
 		if (opts?.push) pushRequested = true;
 		if (!inFlight) void drain();

@@ -71,7 +71,7 @@ test.describe('J13 unban @p3', () => {
 
 				// Membership lands on CANCELLED — explicitly not reactivated (a member's
 				// status is single-valued, so Cancelled on the card rules out Active).
-				await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
+				await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
 				await waitForClientAuth(ownerPage);
 				const memberCard = ownerPage
 					.locator('article, li, div')

@@ -68,14 +68,14 @@ test.describe('J8 org tokens @p1', () => {
 		});
 
 		// The owner sees the claimer as a member.
-		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
+		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
 		const memberCard = ownerPage
 			.locator('article, li, div')
 			.filter({ hasText: claimerName })
 			.filter({ hasText: /Active/ })
 			.first();
 		await expect(async () => {
-			await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
+			await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
 			await expect(memberCard).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 45_000 });
 

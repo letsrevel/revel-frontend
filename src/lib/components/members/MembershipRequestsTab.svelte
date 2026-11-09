@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import * as m from '$lib/paraglide/messages.js';
+	import { pendingApplicationsQueryOptions } from '$lib/queries/membership-requests';
 	import type { MembershipApprovalRefusalCode } from '$lib/api/generated/types.gen';
 
 	/**
@@ -140,33 +141,41 @@
 	} | null>(null);
 
 	// Fetch membership requests
-	const requestsQuery = createQuery(() => ({
-		queryKey: [
-			'organization',
-			organization.slug,
-			'membership-requests',
-			requestStatusFilter,
-			requestsPage
-		],
-		queryFn: async () => {
-			const response = await organizationadminmembershiprequestsListMembershipRequests({
-				path: { slug: organization.slug },
-				query: {
-					status: requestStatusFilter !== 'all' ? requestStatusFilter : undefined,
-					page: requestsPage,
-					page_size: 50
-				},
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
+	// The default view (pending, page 1) IS `pendingApplicationsQueryOptions`, the
+	// very options the People tab's "Needs attention" count uses, so the two share
+	// one cache entry by construction rather than by matching key literals.
+	const requestsQuery = createQuery(() => {
+		if (requestStatusFilter === 'pending' && requestsPage === 1) {
+			return pendingApplicationsQueryOptions(organization.slug, accessToken);
+		}
+		return {
+			queryKey: [
+				'organization',
+				organization.slug,
+				'membership-requests',
+				requestStatusFilter,
+				requestsPage
+			],
+			queryFn: async () => {
+				const response = await organizationadminmembershiprequestsListMembershipRequests({
+					path: { slug: organization.slug },
+					query: {
+						status: requestStatusFilter !== 'all' ? requestStatusFilter : undefined,
+						page: requestsPage,
+						page_size: 50
+					},
+					headers: { Authorization: `Bearer ${accessToken}` }
+				});
 
-			if (response.error) {
-				throw new Error('Failed to fetch membership requests');
-			}
+				if (response.error) {
+					throw new Error('Failed to fetch membership requests');
+				}
 
-			return response.data;
-		},
-		enabled: !!accessToken
-	}));
+				return response.data;
+			},
+			enabled: !!accessToken
+		};
+	});
 
 	// Approve request mutation
 	const approveRequestMutation = createMutation(() => ({

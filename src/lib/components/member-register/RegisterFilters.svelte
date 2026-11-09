@@ -7,13 +7,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Search, X } from '@lucide/svelte';
 	import CalendarDayPicker from './CalendarDayPicker.svelte';
-	import {
-		DEFAULT_FILTERS,
-		hasActiveFilters,
-		type AccountFilter,
-		type OpenFilter,
-		type RegisterFilters
-	} from '$lib/member-register/filters';
+	import type { RegisterFilters } from '$lib/member-register/filters';
+	import { hasExtraFilters } from '$lib/member-register/people-view';
 	import { SELECT_CLASS } from '$lib/member-register/ui';
 
 	interface Props {
@@ -67,7 +62,8 @@
 		clearTimeout(timer);
 		lastEmitted = '';
 		searchInput = '';
-		onChange({ ...DEFAULT_FILTERS });
+		// The group chip is not ours to reset: only search, tier and day.
+		onChange({ search: '', tierId: null, activeOn: null, page: 1 });
 	}
 </script>
 
@@ -77,8 +73,8 @@
 	class="space-y-4 rounded-lg border border-border bg-card p-4"
 	onsubmit={(e) => e.preventDefault()}
 >
-	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-		<div class="sm:col-span-2">
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div>
 			<Label for="register-search">{m['memberRegister.searchLabel']()}</Label>
 			<div class="relative mt-2">
 				<Search
@@ -94,23 +90,6 @@
 					oninput={handleSearchInput}
 				/>
 			</div>
-		</div>
-
-		<div>
-			<Label for="register-kind">{m['memberRegister.kindLabel']()}</Label>
-			<select
-				id="register-kind"
-				class="{SELECT_CLASS} mt-2"
-				value={filters.kind ?? ''}
-				onchange={(e) => {
-					const v = e.currentTarget.value;
-					update({ kind: v === 'standard' || v === 'temporary' ? v : null });
-				}}
-			>
-				<option value="">{m['memberRegister.kindAll']()}</option>
-				<option value="standard">{m['memberRegister.kindStandard']()}</option>
-				<option value="temporary">{m['memberRegister.kindTemporary']()}</option>
-			</select>
 		</div>
 
 		<div>
@@ -134,45 +113,17 @@
 			</select>
 		</div>
 
-		<div>
-			<Label for="register-open">{m['memberRegister.statusLabel']()}</Label>
-			<select
-				id="register-open"
-				class="{SELECT_CLASS} mt-2"
-				value={filters.open}
-				onchange={(e) => update({ open: e.currentTarget.value as OpenFilter })}
-			>
-				<option value="all">{m['memberRegister.statusAll']()}</option>
-				<option value="open">{m['memberRegister.statusOpen']()}</option>
-				<option value="closed">{m['memberRegister.statusClosed']()}</option>
-			</select>
-		</div>
-
-		<div>
-			<Label for="register-account">{m['memberRegister.accountLabel']()}</Label>
-			<select
-				id="register-account"
-				class="{SELECT_CLASS} mt-2"
-				value={filters.account}
-				onchange={(e) => update({ account: e.currentTarget.value as AccountFilter })}
-			>
-				<option value="all">{m['memberRegister.accountAll']()}</option>
-				<option value="with">{m['memberRegister.accountWith']()}</option>
-				<option value="without">{m['memberRegister.accountWithout']()}</option>
-			</select>
-		</div>
-
 		<CalendarDayPicker
 			id="register-active-on"
 			class="sm:col-span-2"
-			label={m['memberRegister.dayLabel']()}
+			label={m['memberPeople.asOfLabel']()}
 			value={filters.activeOn ?? ''}
 			{timezone}
 			onChange={(day) => onChange({ activeOn: day || null, page: 1 })}
 		/>
 	</div>
 
-	{#if hasActiveFilters(filters)}
+	{#if hasExtraFilters(filters)}
 		<Button type="button" variant="ghost" size="sm" onclick={clearAll}>
 			<X aria-hidden="true" />
 			{m['memberRegister.clearFilters']()}

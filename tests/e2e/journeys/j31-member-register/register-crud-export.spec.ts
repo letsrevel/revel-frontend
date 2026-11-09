@@ -36,13 +36,16 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
 		try {
-			await gotoHydrated(page, registerPath(org.slug));
+			// The DEFAULT view ("Current" chip): a brand-new org must still read as an
+			// empty register, not as "no entries match these filters".
+			await gotoHydrated(page, `/org/${org.slug}/admin/members`);
 			await waitForClientAuth(page);
-			await expect(page.getByRole('heading', { name: 'Member register', level: 1 })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Members & Staff', level: 1 })).toBeVisible();
 			await expect(page.getByText('No register entries yet')).toBeVisible({ timeout: 15_000 });
 
 			// Create an account-less entry.
-			await page.getByRole('button', { name: 'Add entry' }).first().click();
+			await page.getByRole('button', { name: 'Add person' }).click();
+			await page.getByRole('menuitem', { name: 'Add to register' }).click();
 			const form = page.getByRole('dialog', { name: 'Add register entry' });
 			await form.getByLabel('Full name').fill(originalName);
 			await form.getByLabel('Email (optional)').fill(uniqueEmail('Walkin'));
@@ -53,7 +56,7 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 
 			const created = registerEntry(page, originalName);
 			await expect(created).toBeVisible({ timeout: 15_000 });
-			await expect(created.getByTestId('register-badge-no-account')).toBeVisible();
+			await expect(created.getByTestId('register-status-no-account')).toBeVisible();
 
 			// Edit the name.
 			await chooseEntryAction(page, originalName, 'Edit');
@@ -72,7 +75,12 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 			await end.getByLabel('Removed').check();
 			await end.getByRole('button', { name: 'End membership', exact: true }).click();
 			await expect(end).toBeHidden({ timeout: 15_000 });
-			await expect(registerEntry(page, editedName).getByText('Ended: removed')).toBeVisible({
+			// An ended entry leaves "Current": switch to "Everyone" to keep checking it.
+			await page.getByTestId('people-chip-everyone').click();
+			await expect(page).toHaveURL(/[?&]view=everyone/);
+			await expect(
+				registerEntry(page, editedName).getByTestId('register-status-ended')
+			).toBeVisible({
 				timeout: 15_000
 			});
 
@@ -96,7 +104,7 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 			await expect(registerEntry(page, laterName)).toBeVisible({ timeout: 15_000 });
 			await expect(registerEntry(page, coveredName)).toBeVisible();
 
-			await page.getByLabel('Members on date').fill(localDay(-100));
+			await page.getByLabel('As of').fill(localDay(-100));
 			await expect(page).toHaveURL(/[?&]on=\d{4}-\d{2}-\d{2}/);
 			await expect(registerEntry(page, coveredName)).toBeVisible({ timeout: 15_000 });
 			await expect(registerEntry(page, laterName)).toHaveCount(0, { timeout: 15_000 });

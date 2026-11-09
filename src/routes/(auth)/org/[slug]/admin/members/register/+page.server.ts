@@ -1,18 +1,10 @@
-import { error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { canPerformAction } from '$lib/utils/permissions';
+import { registerRedirectTarget } from '$lib/member-register/redirects';
 
-export const load: PageServerLoad = async ({ parent }) => {
-	const { organization, isOwner, permissions } = await parent();
-
-	// Mirrors the backend guard on every register route: `manage_members`
-	// (owners always hold it). Deleting additionally requires being the owner.
-	const canManageMembers =
-		isOwner || canPerformAction(permissions, organization.id, 'manage_members');
-
-	if (!canManageMembers) {
-		throw error(403, 'You do not have permission to manage the member register');
-	}
-
-	return { organization, isOwner };
+// The standalone member register is retired: it is now the People tab of the
+// Members area. Permanent redirect keeps old bookmarks and shared filter links
+// working; the filter query is carried over (see `registerRedirectTarget`).
+export const load: PageServerLoad = async ({ params, url }) => {
+	throw redirect(301, registerRedirectTarget(params.slug, url.searchParams));
 };

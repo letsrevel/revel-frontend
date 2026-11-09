@@ -3,7 +3,7 @@
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
-	import RegisterBadges from './RegisterBadges.svelte';
+	import RegisterStatusBadge from './RegisterStatusBadge.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
 	interface Props {
@@ -14,9 +14,12 @@
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
 		onUnlink: (record: MembershipRecordSchema) => void;
+		/** Bridge to the per-member access list; hidden when omitted. */
+		onManageAccess?: (record: MembershipRecordSchema) => void;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink }: Props = $props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onManageAccess }: Props =
+		$props();
 </script>
 
 <!-- Mobile cards (below md); the table takes over from md up. -->
@@ -30,7 +33,16 @@
 						<p class="break-all text-sm text-muted-foreground">{record.email}</p>
 					{/if}
 				</div>
-				<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} {onInvite} {onUnlink} />
+				<RegisterRowActions
+					{record}
+					{isOwner}
+					{onEdit}
+					{onEnd}
+					{onDelete}
+					{onInvite}
+					{onUnlink}
+					{onManageAccess}
+				/>
 			</div>
 			<dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
 				<div>
@@ -56,7 +68,7 @@
 					<dd>{sourceLabel(record.source)}</dd>
 				</div>
 			</dl>
-			<div class="mt-3"><RegisterBadges {record} /></div>
+			<div class="mt-3"><RegisterStatusBadge {record} /></div>
 		</li>
 	{/each}
 </ul>

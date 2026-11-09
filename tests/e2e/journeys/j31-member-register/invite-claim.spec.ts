@@ -91,8 +91,8 @@ test.describe('J31 member invite claim with a different email @p1', () => {
 			await waitForClientAuth(ownerPage);
 			const entry = registerEntry(ownerPage, inviteeName);
 			await expect(entry).toBeVisible({ timeout: 15_000 });
-			await expect(entry.getByTestId('register-badge-linked')).toBeVisible();
-			await expect(entry.getByTestId('register-badge-no-account')).toHaveCount(0);
+			await expect(entry.getByTestId('register-status-active')).toBeVisible();
+			await expect(entry.getByTestId('register-status-no-account')).toHaveCount(0);
 		} finally {
 			await ownerContext.close();
 		}

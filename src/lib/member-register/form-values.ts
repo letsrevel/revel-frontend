@@ -118,6 +118,21 @@ export function validateRecordForm(
 	return errors;
 }
 
+/**
+ * Whether an entry added with these values can be invited right away: the
+ * backend refuses an invite without an address, before the start, after the end
+ * or for a non-standard entry. (The create form only offers standard tiers, so
+ * the kind is always standard here.) Mirrors `can_invite` for an unsaved entry.
+ */
+export function isInvitableAtCreation(values: RecordFormValues, now: Date = new Date()): boolean {
+	const email = values.email.trim();
+	if (!email || !EMAIL_RE.test(email)) return false;
+	const from = toInstant(values.validFrom);
+	if (!from || new Date(from) > now) return false;
+	const until = toInstant(values.validUntil);
+	return !until || new Date(until) > now;
+}
+
 /** Body of `POST /member-register`. `valid_until` is omitted rather than sent as null. */
 export function buildCreateBody(values: RecordFormValues): MembershipRecordCreateSchema {
 	const body: MembershipRecordCreateSchema = {

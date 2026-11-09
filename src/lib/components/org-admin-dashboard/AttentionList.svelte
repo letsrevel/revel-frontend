@@ -31,7 +31,7 @@
 				count: pendingRequestCount,
 				text: m['orgAdmin.dashboard.attention.membershipRequests']({ count: pendingRequestCount }),
 				linkLabel: m['orgAdmin.dashboard.attention.review'](),
-				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=requests`
+				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=applications`
 			});
 		}
 		if (isOwner && billingNeedsAttention) {

@@ -12,16 +12,19 @@
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import { orgQuestionnairesQueryOptions } from '$lib/queries/org-questionnaires';
+	import { ACCESS_TAB, isMembersTab } from '$lib/member-register/redirects';
+	import { resolveAccessSearch } from '$lib/member-register/manage-access';
+	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Users,
 		UserCog,
+		ArrowLeft,
 		UserPlus,
 		Shield,
 		Link,
-		Plus,
 		CreditCard,
 		Receipt,
 		Info,
@@ -29,7 +32,8 @@
 		ScanLine
 	} from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import MembersTab from '$lib/components/members/MembersTab.svelte';
+	import AccessBridge from '$lib/components/members/AccessBridge.svelte';
+	import PeopleTab from '$lib/components/members/PeopleTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
 	import TiersTab from '$lib/components/members/TiersTab.svelte';
@@ -49,15 +53,13 @@
 	const canManageSubscriptions = $derived(!!data.canManageSubscriptions);
 	const canVerifyMembers = $derived(!!data.canVerifyMembers);
 
-	// Active tab state
-	const MEMBER_TABS = ['members', 'staff', 'requests', 'tiers', 'tokens'] as const;
-	// Tabs whose queries are guarded by `manage_subscriptions` on the backend —
-	// including the org-wide payment ledger, whose controller uses that same
-	// permission (NOT the owner-only `manage_organization` behind Financials).
+	// Tabs gated on `manage_members`, and the two gated on `manage_subscriptions`
+	// (including the org-wide payment ledger, whose controller uses that same
+	// permission, NOT the owner-only `manage_organization` behind Financials).
+	// The old names (members / requests / tokens) are redirected by the server load.
 	const SUBSCRIPTION_TABS = ['subscriptions', 'payments'] as const;
 
-	// Initial-only read (no effect syncing): deep links from the retired
-	// standalone requests page land on ?tab=requests. Permission-validated so a
+	// Initial-only read (no effect syncing). Permission-validated so a
 	// subscriptions-only staffer can't be dropped on a tab that fires 403 queries.
 	function initialTab(): string {
 		const requested = $page.url.searchParams.get('tab');
@@ -71,18 +73,47 @@
 		if (
 			requested &&
 			data.canManageMembers &&
-			(MEMBER_TABS as readonly string[]).includes(requested)
+			(isMembersTab(requested) || requested === ACCESS_TAB) &&
+			!(SUBSCRIPTION_TABS as readonly string[]).includes(requested)
 		) {
 			return requested;
 		}
-		return data.canManageMembers ? 'members' : 'subscriptions';
+		return data.canManageMembers ? 'people' : 'subscriptions';
 	}
 	let activeTab = $state(initialTab());
 
-	// Create token modal state (shared between header button and tokens tab)
+	// Create token modal state (shared between the People "Add person" menu and the invite links tab)
 	let isCreateTokenModalOpen = $state(false);
 
-	// Fetch members (for tab badge counts and cross-tab data)
+	// Bridge until the person sheet (per-member actions) lands: a People row's
+	// "Manage access" opens the existing member list for that person. Hidden tab,
+	// no trigger. Keyed on the record's USER: the member is looked up by user id
+	// (see `resolveAccessSearch`), and every opening bumps `accessOpenCount`, which
+	// re-keys MembersTab so reopening the same person resets its search and filters.
+	let accessSearch = $state('');
+	let accessUserId = $state<string | null>(null);
+	let accessOpenCount = $state(0);
+	let accessRequest = 0;
+	async function manageAccess(record: MembershipRecordSchema) {
+		const request = ++accessRequest;
+		const search = await resolveAccessSearch(record, async (term) => {
+			const response = await organizationadminmembersListMembers({
+				path: { slug: organization.slug },
+				query: { search: term, page_size: 100 },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw new Error('Failed to fetch members');
+			return response.data?.results ?? [];
+		});
+		// A newer click superseded this one while the lookup ran.
+		if (request !== accessRequest) return;
+		accessSearch = search;
+		accessUserId = record.user_id ?? null;
+		accessOpenCount += 1;
+		activeTab = ACCESS_TAB;
+	}
+
+	// Fetch members: feeds the per-tier member counts on the Tiers tab
 	const membersQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'members', '', 'all', 'all'],
 		queryFn: async () => {
@@ -194,18 +225,6 @@
 				{m['orgAdmin.members.verifyCard']()}
 			</Button>
 		{/if}
-		{#if canManageMembers}
-			<Button
-				onclick={() => {
-					isCreateTokenModalOpen = true;
-					activeTab = 'tokens';
-				}}
-				class="w-full sm:w-auto"
-			>
-				<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-				{m['orgAdmin.members.inviteMembers']()}
-			</Button>
-		{/if}
 	{/snippet}
 	<PageHeader
 		title={m['orgAdmin.members.pageTitle']()}
@@ -247,32 +266,18 @@
 		>
 			<TabsList class="grid h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-7 sm:gap-1">
 				{#if canManageMembers}
-					<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<Users class="h-4 w-4 shrink-0" />
-						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
-						<span class="sm:hidden">{m['orgAdmin.members.tabs.membersShort']()}</span>
-						{#if members.length > 0}
-							<span class="hidden text-xs text-muted-foreground lg:inline">({members.length})</span>
-						{/if}
+					<TabsTrigger value="people" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Users class="h-4 w-4 shrink-0" aria-hidden="true" />
+						{m['memberPeople.tab.people']()}
 					</TabsTrigger>
 
-					<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<UserCog class="h-4 w-4 shrink-0" />
-						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
-						<span class="sm:hidden">{m['orgAdmin.members.tabs.staffShort']()}</span>
-						{#if staff.length > 0}
-							<span class="hidden text-xs text-muted-foreground lg:inline">({staff.length})</span>
-						{/if}
-					</TabsTrigger>
-
-					<TabsTrigger value="requests" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<UserPlus class="h-4 w-4 shrink-0" />
-						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.requests']()}</span>
-						<span class="sm:hidden">{m['orgAdmin.members.tabs.requestsShort']()}</span>
+					<TabsTrigger value="applications" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<UserPlus class="h-4 w-4 shrink-0" aria-hidden="true" />
+						{m['memberPeople.tab.applications']()}
 					</TabsTrigger>
 
 					<TabsTrigger value="tiers" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<Shield class="h-4 w-4 shrink-0" />
+						<Shield class="h-4 w-4 shrink-0" aria-hidden="true" />
 						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tiers']()}</span>
 						<span class="sm:hidden">{m['orgAdmin.members.tabs.tiersShort']()}</span>
 						{#if tiers.length > 0}
@@ -281,24 +286,36 @@
 					</TabsTrigger>
 				{/if}
 
+				<!-- Subscriptions stays its own tab right after Tiers: it is gated on a
+				     different permission (`manage_subscriptions`), so folding it into the
+				     Tiers tab would hide it from billing-only staff. -->
 				{#if canManageSubscriptions}
 					<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<CreditCard class="h-4 w-4 shrink-0" />
+						<CreditCard class="h-4 w-4 shrink-0" aria-hidden="true" />
 						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
 						<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptionsShort']()}</span>
 					</TabsTrigger>
 
 					<TabsTrigger value="payments" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<Receipt class="h-4 w-4 shrink-0" />
+						<Receipt class="h-4 w-4 shrink-0" aria-hidden="true" />
 						<span class="hidden sm:inline">{m['orgAdmin.members.payments.tabLabel']()}</span>
 						<span class="sm:hidden">{m['orgAdmin.members.payments.tabLabelShort']()}</span>
 					</TabsTrigger>
 				{/if}
 
 				{#if canManageMembers}
-					<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-						<Link class="h-4 w-4 shrink-0" />
-						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tokens']()}</span>
+					<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<UserCog class="h-4 w-4 shrink-0" aria-hidden="true" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.staffShort']()}</span>
+						{#if staff.length > 0}
+							<span class="hidden text-xs text-muted-foreground lg:inline">({staff.length})</span>
+						{/if}
+					</TabsTrigger>
+
+					<TabsTrigger value="invite-links" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Link class="h-4 w-4 shrink-0" aria-hidden="true" />
+						<span class="hidden sm:inline">{m['memberPeople.tab.inviteLinks']()}</span>
 						<span class="sm:hidden">{m['orgAdmin.members.tabs.tokensShort']()}</span>
 					</TabsTrigger>
 				{/if}
@@ -306,28 +323,24 @@
 		</div>
 
 		{#if canManageMembers}
-			<!-- Members Tab -->
-			<TabsContent value="members" class="space-y-4">
-				<MembersTab
+			<TabsContent value="people" class="space-y-4">
+				<PeopleTab
 					{organization}
+					active={activeTab === 'people'}
 					isOwner={!!data.isOwner}
-					permissions={data.permissions}
-					tiers={pickerTiers}
-					{staffUserIds}
+					onOpenApplications={() => (activeTab = 'applications')}
+					onCreateInviteLink={() => {
+						isCreateTokenModalOpen = true;
+						activeTab = 'invite-links';
+					}}
+					onManageAccess={manageAccess}
 				/>
 			</TabsContent>
 
-			<!-- Staff Tab -->
-			<TabsContent value="staff" class="space-y-4">
-				<StaffTab {organization} isOwner={!!data.isOwner} />
-			</TabsContent>
-
-			<!-- Requests Tab -->
-			<TabsContent value="requests" class="space-y-4">
+			<TabsContent value="applications" class="space-y-4">
 				<MembershipRequestsTab {organization} tiers={pickerTiers} />
 			</TabsContent>
 
-			<!-- Tiers Tab -->
 			<TabsContent value="tiers" class="space-y-4">
 				<TiersTab
 					{organization}
@@ -342,7 +355,6 @@
 			</TabsContent>
 		{/if}
 
-		<!-- Subscriptions Tab -->
 		{#if canManageSubscriptions}
 			<TabsContent value="subscriptions" class="space-y-4">
 				<SubscriptionsTab {organization} />
@@ -355,14 +367,37 @@
 		{/if}
 
 		{#if canManageMembers}
-			<!-- Tokens Tab -->
-			<TabsContent value="tokens" class="space-y-4">
+			<TabsContent value="staff" class="space-y-4">
+				<StaffTab {organization} isOwner={!!data.isOwner} />
+			</TabsContent>
+
+			<TabsContent value="invite-links" class="space-y-4">
 				<OrganizationTokensTab
 					{organization}
 					isOwner={!!data.isOwner}
 					tiers={pickerTiers}
 					isCreateModalOpen={isCreateTokenModalOpen}
 					onCreateModalOpenChange={(open) => (isCreateTokenModalOpen = open)}
+				/>
+			</TabsContent>
+
+			<!-- Temporary bridge (no tab trigger): per-member actions (status, tier,
+			     staff, remove, blacklist, note) until the person sheet replaces it. -->
+			<TabsContent value={ACCESS_TAB} class="space-y-4">
+				<Button variant="ghost" size="sm" onclick={() => (activeTab = 'people')}>
+					<ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
+					{m['memberPeople.backToPeople']()}
+				</Button>
+				<AccessBridge
+					{organization}
+					isOwner={!!data.isOwner}
+					permissions={data.permissions}
+					tiers={pickerTiers}
+					{staffUserIds}
+					active={activeTab === ACCESS_TAB}
+					openCount={accessOpenCount}
+					search={accessSearch}
+					userId={accessUserId}
 				/>
 			</TabsContent>
 		{/if}

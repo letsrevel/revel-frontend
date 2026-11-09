@@ -3,7 +3,7 @@
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
-	import RegisterBadges from './RegisterBadges.svelte';
+	import RegisterStatusBadge from './RegisterStatusBadge.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
 	interface Props {
@@ -14,9 +14,12 @@
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
 		onUnlink: (record: MembershipRecordSchema) => void;
+		/** Bridge to the per-member access list; hidden when omitted. */
+		onManageAccess?: (record: MembershipRecordSchema) => void;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink }: Props = $props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onManageAccess }: Props =
+		$props();
 
 	const TH =
 		'px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground';
@@ -53,7 +56,7 @@
 						{record.valid_until ? formatDate(record.valid_until) : m['memberRegister.openEnded']()}
 					</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{sourceLabel(record.source)}</td>
-					<td class="px-4 py-3"><RegisterBadges {record} /></td>
+					<td class="px-4 py-3"><RegisterStatusBadge {record} /></td>
 					<td class="px-4 py-3 text-right">
 						<RegisterRowActions
 							{record}
@@ -63,6 +66,7 @@
 							{onDelete}
 							{onInvite}
 							{onUnlink}
+							{onManageAccess}
 						/>
 					</td>
 				</tr>
