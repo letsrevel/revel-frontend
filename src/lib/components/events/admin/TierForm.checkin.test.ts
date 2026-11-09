@@ -1,7 +1,7 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { QueryClient } from '@tanstack/svelte-query';
+import { describe, it, expect, beforeEach, onTestFinished, vi } from 'vitest';
+import { QueryClient, QueryObserver } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import TierForm from './TierForm.svelte';
 import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -37,7 +37,7 @@ const eventContext: TierCheckInEventContext = {
 	checkInEnd: null
 };
 
-function renderForm(tier: Partial<TicketTierDetailSchema> = {}) {
+function renderForm(tier: Partial<TicketTierDetailSchema> = {}, onClose = vi.fn()) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
@@ -51,10 +51,11 @@ function renderForm(tier: Partial<TicketTierDetailSchema> = {}) {
 				organizationSlug: 'acme',
 				organizationStripeConnected: false,
 				eventContext,
-				onClose: vi.fn()
+				onClose
 			}
 		}
 	});
+	return client;
 }
 
 function sentBody() {
@@ -96,6 +97,42 @@ describe('TierForm per-tier check-in window (#945)', () => {
 			check_in_opens_offset: '-P0DT01H00M00S',
 			check_in_closes_offset: null
 		});
+	});
+
+	it('seeds a reopen from the saved response and closes without waiting on the refetch', async () => {
+		const user = userEvent.setup();
+		const onClose = vi.fn();
+		const listKey = ['event-admin', 'evt-1', 'ticket-tiers'];
+		const saved = {
+			...baseTier,
+			check_in_opens_offset: '-P0DT01H00M00S'
+		} as TicketTierDetailSchema;
+		vi.mocked(eventadminticketsUpdateTicketTier).mockResolvedValue({
+			data: saved,
+			error: undefined,
+			response: { ok: true, status: 200 } as Response
+		} as unknown as UpdateResult);
+		const client = renderForm({}, onClose);
+		// The list as TicketingStep caches it: the stale tier, no check-in window.
+		client.setQueryData(listKey, { data: { results: [baseTier] } });
+		// A refetch that never settles proves close does not wait on it.
+		const observer = new QueryObserver(client, {
+			queryKey: listKey,
+			queryFn: () => new Promise<never>(() => undefined)
+		});
+		const unsubscribe = observer.subscribe(vi.fn());
+		onTestFinished(unsubscribe);
+
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+
+		const cached = client.getQueryData<{ data: { results: TicketTierDetailSchema[] } }>(listKey);
+		const fromCache = cached?.data.results.find((t) => t.id === 'tier-1');
+		expect(fromCache?.check_in_opens_offset).toBe('-P0DT01H00M00S');
+
+		cleanup();
+		renderForm(fromCache ?? {});
+		expect(screen.getByLabelText('Check-in opens')).toHaveValue('2026-10-10T19:00');
 	});
 
 	it('converts a picked time into an offset from the event start', async () => {

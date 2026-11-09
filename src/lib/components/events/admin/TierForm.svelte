@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { commitTier, type TierChange } from './tier-cache';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminticketsCreateTicketTier,
@@ -321,15 +322,14 @@
 
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
-	// The generated client resolves with `{ error }` on HTTP errors, so each mutationFn
-	// must throw the error body itself (else a 400/422 lands in onSuccess and closes the
-	// dialog). `markSilent` keeps the global toast from duplicating the error panel; the
-	// body is thrown unwrapped so extractFieldErrors still sees the pydantic detail array.
+	// mutationFns throw the error body (client resolves `{ error }`) so a 400/422 can't close the
+	// dialog; `markSilent` stops a duplicate toast; unwrapped for extractFieldErrors.
 	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
 	let saveStatus = $state<number | undefined>(undefined);
 
-	function afterSave(): void {
-		queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
+	// Seed the list cache from the response, close at once (see tier-cache.ts).
+	function afterSave(change: TierChange): void {
+		commitTier(queryClient, eventId, change);
 		onClose();
 	}
 
@@ -343,7 +343,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: afterSave
+		onSuccess: (saved) => afterSave({ saved })
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
@@ -357,7 +357,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: afterSave
+		onSuccess: (saved) => afterSave({ saved })
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
@@ -369,7 +369,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: afterSave
+		onSuccess: () => afterSave({ deletedId: tier?.id })
 	}));
 
 	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
