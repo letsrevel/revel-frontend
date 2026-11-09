@@ -17,13 +17,16 @@ import {
 	inviteRegisterEntry,
 	patchRegisterEntry
 } from '../../support/member-register';
+import type { RegisterRecord } from '../../support/member-register';
 
 // FE #1171: the claim endpoint's two 409s carry a machine `code` and the page
 // maps each to its own localized sentence (never matching on server text).
 //   already_member: the claimer already holds an open membership of the org.
 //   not_started:    the entry's valid_from is still in the future.
 
-async function invitedEntry(org: Awaited<ReturnType<typeof createOrganization>>) {
+async function invitedEntry(
+	org: Awaited<ReturnType<typeof createOrganization>>
+): Promise<{ record: RegisterRecord; claimPath: string }> {
 	const invitedEmail = uniqueEmail('Invited');
 	const record = await createRegisterEntry(org.owner, org.slug, {
 		fullName: uniqueName('Invitee'),

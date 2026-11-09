@@ -123,6 +123,8 @@ test.describe('J31 private staff note @p1', () => {
 			for (const path of ['/dashboard/tickets', event.path]) {
 				for (const suffix of ['', '/__data.json']) {
 					const res = await own.request.get(`${origin}${path.replace(/\/$/, '')}${suffix}`);
+					// An error or login page would trivially lack the note: only a real page counts.
+					expect(res.ok(), `${res.status()} for ${res.url()}`).toBe(true);
 					reads.push(inspect(res));
 				}
 			}
