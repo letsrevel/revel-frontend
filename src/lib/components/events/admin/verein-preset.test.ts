@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { forgetVereinRun, recallVereinRun, rememberVereinRun } from './verein-preset-state';
 import {
 	eventadminticketsCreateTicketTier,
 	eventadminticketsListTicketTiers,
@@ -282,6 +283,29 @@ describe('runVereinPlan', () => {
 		} as never);
 		const server = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
 		expect(server.steps[0].ambiguous).toBe(true);
+	});
+
+	it('flags a resolved error with no response (lost connection) as ambiguous', async () => {
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
+			data: undefined,
+			error: new TypeError('Failed to fetch'),
+			response: undefined
+		} as never);
+		const result = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
+		expect(result.steps[0]).toMatchObject({ status: 'failed', ambiguous: true });
+	});
+
+	it('keeps run memory for an ambiguous first-step failure', async () => {
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
+			data: undefined,
+			error: new TypeError('Failed to fetch'),
+			response: undefined
+		} as never);
+		const plan = buildVereinPlan(baseInput);
+		const result = await runVereinPlan(plan, { accessToken: 'tok' });
+		rememberVereinRun('evt-1', { results: result.steps, plan: plan.steps });
+		expect(recallVereinRun('evt-1')).not.toBeNull();
+		forgetVereinRun('evt-1');
 	});
 });
 

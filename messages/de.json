@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "Lieber eine Abkürzung?",
 	"verein.guide.shortcut.body": "Auf dem Tab „Ticketing“ einer Veranstaltung legt der Button „Verein: Veranstaltung mit Tagesmitgliedschaft einrichten“ die oben beschriebenen Stufen und den Fragebogen in einem Rutsch an. Vorher zeigt er dir genau, was er anlegen wird.",
 	"verein.guide.stepLabel": "Schritt {number}",
+	"verein.guide.needs.manageMembers": "Dafür ist die Berechtigung „Mitglieder verwalten“ nötig. Wende dich an die Inhaber*innen.",
+	"verein.guide.needs.createQuestionnaire": "Dafür ist die Berechtigung „Fragebögen erstellen“ nötig. Wende dich an die Inhaber*innen.",
 	"verein.guide.tiersLink": "Wie veranstalte ich als Verein Events nur für Mitglieder?"
 }

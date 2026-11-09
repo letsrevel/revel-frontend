@@ -358,7 +358,7 @@ class StepHttpError extends Error {
  * no response) or a 5xx may have committed server-side, so it needs reconciling.
  */
 function isAmbiguousFailure(err: unknown): boolean {
-	if (err instanceof StepHttpError) return err.status !== undefined && err.status >= 500;
+	if (err instanceof StepHttpError) return err.status === undefined || err.status >= 500;
 	return true;
 }
 

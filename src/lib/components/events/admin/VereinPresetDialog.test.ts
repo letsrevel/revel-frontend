@@ -101,7 +101,8 @@ describe('VereinPresetDialog', () => {
 		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue(ok({ id: 'q-1' }) as never);
 		vi.mocked(questionnaireAssignEvent).mockResolvedValue({
 			data: undefined,
-			error: { detail: 'Event not found' }
+			error: { detail: 'Event not found' },
+			response: { status: 422 }
 		} as never);
 
 		renderDialog();
@@ -128,7 +129,11 @@ describe('VereinPresetDialog', () => {
 		);
 		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue(ok({ id: 'q-1' }) as never);
 		vi.mocked(questionnaireAssignEvent)
-			.mockResolvedValueOnce({ data: undefined, error: { detail: 'Boom' } } as never)
+			.mockResolvedValueOnce({
+				data: undefined,
+				error: { detail: 'Boom' },
+				response: { status: 422 }
+			} as never)
 			.mockResolvedValueOnce(ok({}) as never);
 		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 't' }) as never);
 
@@ -146,7 +151,8 @@ describe('VereinPresetDialog', () => {
 	it('says plainly when the very first step fails and nothing exists', async () => {
 		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
 			data: undefined,
-			error: { detail: 'Forbidden' }
+			error: { detail: 'Forbidden' },
+			response: { status: 422 }
 		} as never);
 		renderDialog();
 		await userEvent.click(screen.getByTestId('verein-preset-confirm'));
@@ -241,7 +247,11 @@ describe('VereinPresetDialog', () => {
 		);
 		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue(ok({ id: 'q-1' }) as never);
 		vi.mocked(questionnaireAssignEvent)
-			.mockResolvedValueOnce({ data: undefined, error: { detail: 'Boom' } } as never)
+			.mockResolvedValueOnce({
+				data: undefined,
+				error: { detail: 'Boom' },
+				response: { status: 422 }
+			} as never)
 			.mockResolvedValueOnce(ok({}) as never);
 		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 't' }) as never);
 
@@ -268,7 +278,8 @@ describe('VereinPresetDialog', () => {
 		);
 		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue({
 			data: undefined,
-			error: { detail: 'Boom' }
+			error: { detail: 'Boom' },
+			response: { status: 422 }
 		} as never);
 		const view = renderDialog();
 		await userEvent.click(screen.getByTestId('verein-preset-confirm'));

@@ -11162,7 +11162,7 @@
 	"verein.guide.step2.tip": "¿Quieres mantener a tus miembros fuera de la entrada pública? Pon su público en «solo quienes no son miembros».",
 	"verein.guide.step2.link": "Abrir eventos",
 	"verein.guide.step3.title": "Pide aceptar los estatutos",
-	"verein.guide.step3.body": "Crea un cuestionario de admisión con una pregunta obligatoria como «Acepto los estatutos». Desactiva «Requerir evaluación» para que no haga falta revisar nada, activa «Eximir a los miembros de la organización de este cuestionario» para que los miembros se lo salten y activa «Requerir cumplimentación por evento» para que las personas invitadas lo respondan de nuevo en cada evento. Después asígnalo al evento.",
+	"verein.guide.step3.body": "Crea un cuestionario de admisión con una pregunta obligatoria como «Acepto los estatutos». Desactiva «Requerir evaluación» para que no haga falta revisar nada, activa «Eximir de este cuestionario a quienes ya son miembros de la organización» para que los miembros se lo salten y activa «Exigir completarlo en cada evento» para que las personas invitadas lo respondan de nuevo en cada evento. Después asígnalo al evento.",
 	"verein.guide.step3.link": "Nuevo cuestionario",
 	"verein.guide.step4.title": "Guarda una constancia",
 	"verein.guide.step4.body": "Las membresías de un día y las membresías normales acaban en tu registro de miembros. Desde ahí puedes exportar quién era miembro en una fecha concreta, como constancia de quién participó en un evento como miembro o con membresía de un día.",
@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "¿Prefieres un atajo?",
 	"verein.guide.shortcut.body": "En la pestaña Entradas de un evento, el botón «Configurar un evento de asociación con membresía de un día» crea de una vez los niveles y el cuestionario descritos arriba. Antes te muestra exactamente lo que va a crear.",
 	"verein.guide.stepLabel": "Paso {number}",
+	"verein.guide.needs.manageMembers": "Requiere el permiso «Gestionar miembros». Pídeselo a la persona propietaria.",
+	"verein.guide.needs.createQuestionnaire": "Requiere el permiso «Crear cuestionarios». Pídeselo a la persona propietaria.",
 	"verein.guide.tiersLink": "¿Cómo organizo eventos solo para socios como asociación?"
 }

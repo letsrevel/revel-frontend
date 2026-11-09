@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "Preferes um atalho?",
 	"verein.guide.shortcut.body": "No separador Bilhética de um evento, o botão «Configurar um evento de associação com associação de um dia» cria de uma vez os níveis e o questionário descritos acima. Antes mostra-te exatamente o que vai criar.",
 	"verein.guide.stepLabel": "Passo {number}",
+	"verein.guide.needs.manageMembers": "Requer a permissão «Gerir membros». Pede a quem é titular da organização.",
+	"verein.guide.needs.createQuestionnaire": "Requer a permissão «Criar questionários». Pede a quem é titular da organização.",
 	"verein.guide.tiersLink": "Como organizo eventos só para sócios como associação?"
 }

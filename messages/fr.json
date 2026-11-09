@@ -11088,7 +11088,7 @@
 	"verein.preset.preview.heading": "Ce qui va être créé",
 	"verein.preset.preview.dayTier": "Niveau d'adhésion d'un jour « {name} », valable pour cet événement uniquement et sans avantage de membre.",
 	"verein.preset.preview.dayTierReuse": "Niveau d'adhésion d'un jour existant « {name} » (rien de nouveau n'est créé pour lui).",
-	"verein.preset.preview.questionnaire": "Questionnaire d'admission « {name} » avec une question obligatoire. Sans examen, les membres le passent, et il est reposé pour chaque événement.",
+	"verein.preset.preview.questionnaire": "Questionnaire d'admission « {name} » avec une question obligatoire. Sans examen, les membres n'ont pas à y répondre, et il est reposé pour chaque événement.",
 	"verein.preset.preview.assign": "Le questionnaire est associé à cet événement.",
 	"verein.preset.preview.publicTier": "Billet « {name} » à {price}, ouvert à tout le monde, un par personne. L'achat donne l'adhésion d'un jour « {dayTier} ».",
 	"verein.preset.preview.publicTierNonMembers": "Billet « {name} » à {price}, réservé aux non-membres, un par personne. L'achat donne l'adhésion d'un jour « {dayTier} ».",
@@ -11162,7 +11162,7 @@
 	"verein.guide.step2.tip": "Vous voulez garder vos membres à l'écart du billet public ? Réglez son public sur « uniquement les non-membres ».",
 	"verein.guide.step2.link": "Ouvrir les événements",
 	"verein.guide.step3.title": "Demandez l'acceptation des statuts",
-	"verein.guide.step3.body": "Créez un questionnaire d'admission avec une question obligatoire comme « J'accepte les statuts ». Désactivez « Exiger une évaluation » pour que rien ne soit examiné, activez « Exempter les membres de l'organisation de ce questionnaire » pour que les membres le passent, et activez « Exiger une complétion par événement » pour que les invités y répondent à nouveau à chaque événement. Associez-le ensuite à l'événement.",
+	"verein.guide.step3.body": "Créez un questionnaire d'admission avec une question obligatoire comme « J'accepte les statuts ». Désactivez « Exiger une évaluation » pour que rien ne soit examiné, activez « Exempter les membres de l'organisation de ce questionnaire » pour que les membres n'aient pas à y répondre, et activez « Exiger une complétion par événement » pour que les invités y répondent à nouveau à chaque événement. Associez-le ensuite à l'événement.",
 	"verein.guide.step3.link": "Nouveau questionnaire",
 	"verein.guide.step4.title": "Gardez une trace",
 	"verein.guide.step4.body": "Les adhésions d'un jour et les adhésions ordinaires se retrouvent toutes dans votre registre des membres. Vous pouvez y exporter qui était membre à une date donnée, comme trace de qui a participé à un événement en tant que membre ou avec une adhésion d'un jour.",
@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "Envie d'un raccourci ?",
 	"verein.guide.shortcut.body": "Dans l'onglet Billetterie d'un événement, le bouton « Configurer un événement d'association avec adhésion d'un jour » crée en une fois les niveaux et le questionnaire décrits ci-dessus. Il vous montre exactement ce qu'il va créer avant de faire quoi que ce soit.",
 	"verein.guide.stepLabel": "Étape {number}",
+	"verein.guide.needs.manageMembers": "Nécessite l'autorisation « Gérer les membres ». Demandez à la personne propriétaire.",
+	"verein.guide.needs.createQuestionnaire": "Nécessite l'autorisation « Créer des questionnaires ». Demandez à la personne propriétaire.",
 	"verein.guide.tiersLink": "Comment organiser des événements réservés aux membres en tant qu'association ?"
 }

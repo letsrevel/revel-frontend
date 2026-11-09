@@ -107,10 +107,16 @@
 	// Fetch ticket tiers for this event
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'ticket-tiers'],
-		queryFn: () =>
-			eventadminticketsListTicketTiers({
+		queryFn: async () => {
+			const res = await eventadminticketsListTicketTiers({
 				path: { event_id: eventId }
-			})
+			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false);
+			// throw the body so an error response puts the query in the error state.
+			// The resolved value keeps the SDK result shape the consumers read `.data` from.
+			if (res.error) throw res.error;
+			return res;
+		}
 	}));
 
 	// ONE all-kinds fetch (the exact `all` key, so TiersTab invalidation refreshes it),

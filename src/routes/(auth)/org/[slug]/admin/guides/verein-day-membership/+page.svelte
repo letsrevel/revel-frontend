@@ -4,6 +4,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import { canPerformAction } from '$lib/utils/permissions';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -13,6 +14,17 @@
 	const { data }: Props = $props();
 
 	const slug = $derived(data.organization.slug);
+
+	// Staff can open this guide with any admin access, but two of its links lead to
+	// screens that need a specific permission (the Members page 403s without
+	// manage_members; creating a questionnaire needs create_questionnaire). Owners
+	// pass canPerformAction. Steps the viewer cannot act on show a note, not a dead link.
+	const canManageMembers = $derived(
+		canPerformAction(data.permissions, data.organization.id, 'manage_members')
+	);
+	const canCreateQuestionnaire = $derived(
+		canPerformAction(data.permissions, data.organization.id, 'create_questionnaire')
+	);
 
 	const linkClass =
 		'inline-flex min-h-[44px] items-center font-medium underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm';
@@ -25,6 +37,7 @@
 			title: m['verein.guide.step1.title'](),
 			body: m['verein.guide.step1.body'](),
 			tip: null,
+			needs: canManageMembers ? null : m['verein.guide.needs.manageMembers'](),
 			link: m['verein.guide.step1.link'](),
 			href: `${resolve('/(auth)/org/[slug]/admin/members', { slug })}?tab=tiers`
 		},
@@ -33,6 +46,7 @@
 			title: m['verein.guide.step2.title'](),
 			body: m['verein.guide.step2.body'](),
 			tip: m['verein.guide.step2.tip'](),
+			needs: null,
 			link: m['verein.guide.step2.link'](),
 			href: resolve('/(auth)/org/[slug]/admin/events', { slug })
 		},
@@ -41,6 +55,7 @@
 			title: m['verein.guide.step3.title'](),
 			body: m['verein.guide.step3.body'](),
 			tip: null,
+			needs: canCreateQuestionnaire ? null : m['verein.guide.needs.createQuestionnaire'](),
 			link: m['verein.guide.step3.link'](),
 			href: resolve('/(auth)/org/[slug]/admin/questionnaires/new', { slug })
 		},
@@ -49,6 +64,7 @@
 			title: m['verein.guide.step4.title'](),
 			body: m['verein.guide.step4.body'](),
 			tip: null,
+			needs: canManageMembers ? null : m['verein.guide.needs.manageMembers'](),
 			link: m['verein.guide.step4.link'](),
 			href: resolve('/(auth)/org/[slug]/admin/members', { slug })
 		}
@@ -94,9 +110,18 @@
 				{#if step.tip}
 					<p class="mt-2 text-sm leading-relaxed text-muted-foreground">{step.tip}</p>
 				{/if}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- href is built from resolve() in the steps array above -->
-				<a class={linkClass} href={step.href}>{step.link}</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{#if step.needs}
+					<p
+						class="mt-2 text-sm font-medium text-muted-foreground"
+						data-testid="verein-guide-needs-{step.n}"
+					>
+						{step.needs}
+					</p>
+				{:else}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is built from resolve() in the steps array above -->
+					<a class={linkClass} href={step.href}>{step.link}</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/if}
 			</li>
 		{/each}
 	</ol>

@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "Preferisci una scorciatoia?",
 	"verein.guide.shortcut.body": "Nella scheda Biglietteria di un evento, il pulsante «Imposta un evento di associazione con iscrizione giornaliera» crea in un colpo solo i livelli e il questionario descritti sopra. Prima ti mostra esattamente cosa creerà.",
 	"verein.guide.stepLabel": "Passo {number}",
+	"verein.guide.needs.manageMembers": "Serve il permesso «Gestisci membri». Chiedilo a chi possiede l'organizzazione.",
+	"verein.guide.needs.createQuestionnaire": "Serve il permesso «Crea questionari». Chiedilo a chi possiede l'organizzazione.",
 	"verein.guide.tiersLink": "Come organizzo eventi riservati ai soci come associazione?"
 }

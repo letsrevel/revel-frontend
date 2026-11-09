@@ -11170,5 +11170,7 @@
 	"verein.guide.shortcut.title": "Prefer a shortcut?",
 	"verein.guide.shortcut.body": "On the Ticketing tab of an event, the button \"Set up a Verein day-membership event\" creates the tiers and the questionnaire described above in one go. It shows you exactly what it will make before it does anything.",
 	"verein.guide.stepLabel": "Step {number}",
+	"verein.guide.needs.manageMembers": "Needs the \"Manage members\" permission. Ask an owner.",
+	"verein.guide.needs.createQuestionnaire": "Needs the \"Create questionnaires\" permission. Ask an owner.",
 	"verein.guide.tiersLink": "How do I run members-only events as a Verein?"
 }
