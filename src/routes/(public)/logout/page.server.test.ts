@@ -1,8 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('$lib/server/logger', () => ({
 	log: { debug: vi.fn(), warning: vi.fn(), error: vi.fn() }
 }));
+
+const tokenLogoutMock = vi.hoisted(() => vi.fn());
+vi.mock('$lib/api/generated', () => ({ tokenLogout: tokenLogoutMock }));
 
 import { load, actions } from './+page.server';
 
@@ -45,11 +48,17 @@ async function runLoad(opts: Opts) {
 function postArgs(returnUrl?: string) {
 	const body = new FormData();
 	if (returnUrl !== undefined) body.set('returnUrl', returnUrl);
-	const cookies = { set: vi.fn(), get: vi.fn(), delete: vi.fn() };
+	const cookies = {
+		set: vi.fn(),
+		get: vi.fn((name: string) => (name === 'refresh_token' ? 'RT-secret' : undefined)),
+		delete: vi.fn()
+	};
+	const fetch = vi.fn();
 	return {
 		args: {
 			request: new Request('http://localhost:5173/logout', { method: 'POST', body }),
-			cookies
+			cookies,
+			fetch
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
 		cookies
 	};
@@ -128,6 +137,11 @@ describe('GET /logout', () => {
 });
 
 describe('POST /logout', () => {
+	beforeEach(() => {
+		tokenLogoutMock.mockReset();
+		tokenLogoutMock.mockResolvedValue({ error: undefined, response: { status: 204 } });
+	});
+
 	it('clears all three cookies and goes home with no returnUrl', async () => {
 		const { location, cookies } = await runPost();
 		expect(location).toBe('/?logged_out=true');
@@ -167,5 +181,55 @@ describe('POST /logout', () => {
 			location: '/?logged_out=true'
 		});
 		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
+
+	it('revokes the refresh cookie on the backend before clearing the cookies', async () => {
+		const { args, cookies } = postArgs();
+		const order: string[] = [];
+		tokenLogoutMock.mockImplementation(async () => {
+			order.push('revoke');
+			return { error: undefined, response: { status: 204 } };
+		});
+		cookies.delete.mockImplementation(() => order.push('delete'));
+		await expect(actions.default(args)).rejects.toMatchObject({ status: 303 });
+		expect(tokenLogoutMock).toHaveBeenCalledTimes(1);
+		expect(tokenLogoutMock).toHaveBeenCalledWith(
+			expect.objectContaining({ body: { refresh: 'RT-secret' } })
+		);
+		expect(order[0]).toBe('revoke');
+		expect(order.filter((o) => o === 'delete')).toHaveLength(3);
+	});
+
+	it('does not call the backend when there is no refresh cookie', async () => {
+		const { args, cookies } = postArgs();
+		cookies.get.mockReturnValue(undefined);
+		await expect(actions.default(args)).rejects.toMatchObject({ status: 303 });
+		expect(tokenLogoutMock).not.toHaveBeenCalled();
+		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
+
+	it.each([404, 401, 500])('still clears cookies when the backend answers %i', async (status) => {
+		tokenLogoutMock.mockResolvedValue({ error: { detail: 'x' }, response: { status } });
+		const { location, cookies } = await runPost();
+		expect(location).toBe('/?logged_out=true');
+		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
+
+	it('still clears cookies when the backend call throws', async () => {
+		tokenLogoutMock.mockRejectedValue(new TypeError('fetch failed'));
+		const { location, cookies } = await runPost();
+		expect(location).toBe('/?logged_out=true');
+		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
+
+	it('never puts the refresh token in anything the client can see', async () => {
+		const { args } = postArgs('/dashboard');
+		let thrown: unknown;
+		try {
+			await actions.default(args);
+		} catch (err) {
+			thrown = err;
+		}
+		expect(JSON.stringify(thrown)).not.toContain('RT-secret');
 	});
 });

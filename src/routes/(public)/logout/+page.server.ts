@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { tokenLogout } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
 import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
 
@@ -15,6 +16,14 @@ import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
  * a confirmation page whose native form POSTs back here. The POST must stay a
  * native (non-`use:enhance`) submission: the 303 then produces a full document
  * load, the only thing that drops the in-memory auth store.
+ *
+ * Before the cookies go, the refresh token is revoked server-side
+ * (`POST /api/auth/logout`, #1199): it kills the whole login lineage (every
+ * token rotated from this sign-in), so a copied or leaked refresh token is dead
+ * the moment the user logs out. The token is read from the httpOnly cookie
+ * HERE and never reaches client JS. The call is best effort: any failure
+ * (network, 404 from a backend that predates the endpoint, 401 for an already
+ * invalid token) is logged and ignored, and the cookies are cleared regardless.
  *
  * Client-side state (authStore, query cache) is cleared by the client before
  * it submits the POST (see `postLogout` in $lib/utils/logout.ts); the action only handles cookie cleanup.
@@ -36,7 +45,7 @@ export const load: PageServerLoad = async ({ cookies, url, locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ cookies, request }) => {
+	default: async ({ cookies, request, fetch }) => {
 		// Parse the body first: a malformed/aborted body must never prevent the
 		// cookies from being cleared.
 		let returnUrl: string;
@@ -45,6 +54,21 @@ export const actions: Actions = {
 			returnUrl = safeReturnUrl(typeof raw === 'string' ? raw : null, '');
 		} catch {
 			returnUrl = '';
+		}
+
+		const refreshToken = cookies.get('refresh_token');
+		if (refreshToken) {
+			try {
+				const { error: logoutError, response } = await tokenLogout({
+					body: { refresh: refreshToken },
+					fetch
+				});
+				if (logoutError) {
+					log.warning('logout_revoke_failed', { upstream_status: response?.status });
+				}
+			} catch (err) {
+				log.warning('logout_revoke_failed', { error: err });
+			}
 		}
 
 		log.debug('logout_clearing_cookies');
