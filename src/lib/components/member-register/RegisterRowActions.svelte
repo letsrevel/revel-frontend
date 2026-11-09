@@ -2,8 +2,10 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { MoreVertical, Pencil, CalendarX, Trash2 } from '@lucide/svelte';
+	import { MoreVertical, Pencil, CalendarX, Trash2, Mail, Unlink } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
+	import { canInvite } from '$lib/member-register/invite';
+	import { canUnlink } from '$lib/member-register/reconcile';
 
 	interface Props {
 		record: MembershipRecordSchema;
@@ -12,17 +14,22 @@
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
+		onInvite: (record: MembershipRecordSchema) => void;
+		onUnlink: (record: MembershipRecordSchema) => void;
+		/** Reactive clock so a row becomes invitable once valid_from passes. */
+		now?: Date;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, now }: Props = $props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
+	// `now` ticks on the register page, so a row that crosses valid_from while the
+	// page is open becomes invitable; the backend re-checks anyway.
+	const inviteable = $derived(canInvite(record, now ?? new Date()));
+	const unlinkable = $derived(canUnlink(record));
 </script>
 
-<!--
-	Row actions menu. Later register features (invite, merge, unlink) slot in as
-	further items here without touching the table or the cards.
--->
+<!-- Row actions menu. Merge lives in the Possible duplicates view, where the pairs are. -->
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
@@ -42,6 +49,20 @@
 			<Pencil aria-hidden="true" />
 			{m['memberRegister.actionEdit']()}
 		</DropdownMenu.Item>
+		{#if inviteable}
+			<DropdownMenu.Item onclick={() => onInvite(record)}>
+				<Mail aria-hidden="true" />
+				{record.invite_status === 'invited'
+					? m['memberRegister.actionResendInvite']()
+					: m['memberRegister.actionInvite']()}
+			</DropdownMenu.Item>
+		{/if}
+		{#if unlinkable}
+			<DropdownMenu.Item onclick={() => onUnlink(record)}>
+				<Unlink aria-hidden="true" />
+				{m['memberRegister.actionUnlink']()}
+			</DropdownMenu.Item>
+		{/if}
 		{#if canEnd}
 			<DropdownMenu.Item onclick={() => onEnd(record)}>
 				<CalendarX aria-hidden="true" />

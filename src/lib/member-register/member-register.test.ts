@@ -2,11 +2,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 import { formatCalendarDay, isCalendarDay, isPickableDay } from './calendar-day';
 import { getEditability } from './editability';
+import { isOpenStandard } from './open-standard';
+import { memberRegisterKeys } from './api';
 import {
 	DEFAULT_FILTERS,
 	filtersToQuery,
 	filtersToSearch,
 	hasActiveFilters,
+	isRegisterEmpty,
 	pageToRedirect,
 	parseFilters
 } from './filters';
@@ -389,5 +392,31 @@ describe('review fixes', () => {
 		expect(pageToRedirect(0, 0, 3)).toBeNull();
 		expect(pageToRedirect(5, 25, 2)).toBeNull();
 		expect(pageToRedirect(0, 25, 1)).toBeNull();
+	});
+});
+
+describe('isRegisterEmpty', () => {
+	it('is empty only for a zero count under the default filters', () => {
+		expect(isRegisterEmpty(0, DEFAULT_FILTERS)).toBe(true);
+		expect(isRegisterEmpty(3, DEFAULT_FILTERS)).toBe(false);
+		expect(isRegisterEmpty(0, { ...DEFAULT_FILTERS, search: 'ada' })).toBe(false);
+		expect(isRegisterEmpty(0, { ...DEFAULT_FILTERS, open: 'closed' })).toBe(false);
+	});
+});
+
+describe('possible-duplicates query key', () => {
+	it('sits outside the register invalidation prefix so ordinary writes skip the scan', () => {
+		const all = memberRegisterKeys.all('org');
+		const dup = memberRegisterKeys.duplicates('org');
+		expect(dup.slice(0, all.length)).not.toEqual(all);
+		expect(memberRegisterKeys.list('org', DEFAULT_FILTERS).slice(0, all.length)).toEqual(all);
+	});
+});
+
+describe('isOpenStandard', () => {
+	it('is true only for an end-less standard entry', () => {
+		expect(isOpenStandard({ kind: 'standard', valid_until: null })).toBe(true);
+		expect(isOpenStandard({ kind: 'standard', valid_until: '2026-01-01T00:00:00Z' })).toBe(false);
+		expect(isOpenStandard({ kind: 'temporary', valid_until: null })).toBe(false);
 	});
 });
