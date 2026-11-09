@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { QueryClient } from '@tanstack/svelte-query';
+import { QueryClient, QueryObserver } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import TierForm from './TierForm.svelte';
 import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -37,7 +37,7 @@ const eventContext: TierCheckInEventContext = {
 	checkInEnd: null
 };
 
-function renderForm(tier: Partial<TicketTierDetailSchema> = {}) {
+function renderForm(tier: Partial<TicketTierDetailSchema> = {}, onClose = vi.fn()) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
@@ -51,10 +51,11 @@ function renderForm(tier: Partial<TicketTierDetailSchema> = {}) {
 				organizationSlug: 'acme',
 				organizationStripeConnected: false,
 				eventContext,
-				onClose: vi.fn()
+				onClose
 			}
 		}
 	});
+	return client;
 }
 
 function sentBody() {
@@ -96,6 +97,28 @@ describe('TierForm per-tier check-in window (#945)', () => {
 			check_in_opens_offset: '-P0DT01H00M00S',
 			check_in_closes_offset: null
 		});
+	});
+
+	it('closes only after the tier list has refetched, so a reopen never seeds a stale tier', async () => {
+		const user = userEvent.setup();
+		const onClose = vi.fn();
+		const client = renderForm({}, onClose);
+		let finishRefetch!: () => void;
+		const refetch = new Promise<void>((resolve) => (finishRefetch = resolve));
+		// An active observer makes invalidateQueries() refetch (and so wait) for real.
+		const observer = new QueryObserver(client, {
+			queryKey: ['event-admin', 'evt-1', 'ticket-tiers'],
+			queryFn: () => refetch.then(() => [])
+		});
+		const unsubscribe = observer.subscribe(vi.fn());
+
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(eventadminticketsUpdateTicketTier).toHaveBeenCalled());
+		expect(onClose).not.toHaveBeenCalled();
+
+		finishRefetch();
+		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+		unsubscribe();
 	});
 
 	it('converts a picked time into an offset from the event start', async () => {

@@ -328,8 +328,8 @@
 	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
 	let saveStatus = $state<number | undefined>(undefined);
 
-	function afterSave(): void {
-		queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
+	async function afterSave(): Promise<void> {
+		await queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 		onClose();
 	}
 
