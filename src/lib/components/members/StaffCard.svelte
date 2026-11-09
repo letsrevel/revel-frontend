@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationStaffSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
@@ -42,10 +43,15 @@
 		Object.values(staff.permissions?.default || {}).filter(Boolean).length
 	);
 
+	let showRemoveConfirm = $state(false);
+
 	function handleRemove() {
-		if (confirm(`Are you sure you want to remove ${displayName} from staff?`)) {
-			onRemove(staff);
-		}
+		showRemoveConfirm = true;
+	}
+
+	function confirmRemove() {
+		showRemoveConfirm = false;
+		onRemove(staff);
 	}
 
 	function handleEditPermissions() {
@@ -134,3 +140,13 @@
 		</div>
 	</div>
 </div>
+
+<ConfirmDialog
+	isOpen={showRemoveConfirm}
+	title={m['staffCard.removeTitle']()}
+	message={m['staffCard.removeConfirm']({ name: displayName })}
+	confirmText={m['confirmDialog.remove']()}
+	variant="danger"
+	onConfirm={confirmRemove}
+	onCancel={() => (showRemoveConfirm = false)}
+/>

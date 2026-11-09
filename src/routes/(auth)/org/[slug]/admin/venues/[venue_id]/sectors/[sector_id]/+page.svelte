@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -442,6 +443,21 @@
 	//    The cost is up to two extra round trips on a save that does all three;
 	//    an admin save is not latency-critical, and a partial write here is
 	//    destructive.
+	// Promise-based in-app confirm for the async save flow below.
+	let pendingConfirm = $state<{ message: string; settle: (ok: boolean) => void } | null>(null);
+
+	function askConfirm(message: string): Promise<boolean> {
+		return new Promise((settle) => {
+			pendingConfirm = { message, settle };
+		});
+	}
+
+	function settleConfirm(ok: boolean) {
+		const current = pendingConfirm;
+		pendingConfirm = null;
+		current?.settle(ok);
+	}
+
 	async function handlePersist(plan: SeatSavePlan, metadata: SectorMetadataUpdate) {
 		// Confirmation step (#674): a repricing on an event that is ON SALE
 		// rewrites the economics of a live on-sale for every event at the venue
@@ -470,7 +486,7 @@
 					...strandedLines,
 					m['orgAdmin.seats.repriceConfirm.question']()
 				].join('\n');
-				if (!confirm(message)) return;
+				if (!(await askConfirm(message))) return;
 			}
 		}
 
@@ -629,3 +645,12 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={pendingConfirm !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingConfirm?.message ?? ''}
+	variant="warning"
+	onConfirm={() => settleConfirm(true)}
+	onCancel={() => settleConfirm(false)}
+/>

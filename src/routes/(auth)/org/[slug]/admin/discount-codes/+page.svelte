@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -143,13 +144,18 @@
 		return (code.times_used ?? 0) === 0;
 	}
 
+	let pendingConfirm = $state<{ message: string; run: () => void } | null>(null);
+
 	function handleDelete(code: DiscountCodeSchema) {
 		const message = willHardDelete(code)
 			? m['discountCodesAdmin.delete.confirmHardDelete']({ code: code.code })
 			: m['discountCodesAdmin.delete.confirmDeactivate']({ code: code.code });
-		if (confirm(message)) {
-			if (code.id) deleteMutation.mutate(code.id);
-		}
+		pendingConfirm = {
+			message,
+			run: () => {
+				if (code.id) deleteMutation.mutate(code.id);
+			}
+		};
 	}
 
 	function handleToggleActive(code: DiscountCodeSchema) {
@@ -595,3 +601,16 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={pendingConfirm !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingConfirm?.message ?? ''}
+	variant="danger"
+	onConfirm={() => {
+		const run = pendingConfirm?.run;
+		pendingConfirm = null;
+		run?.();
+	}}
+	onCancel={() => (pendingConfirm = null)}
+/>

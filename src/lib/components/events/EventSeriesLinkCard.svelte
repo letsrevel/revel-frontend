@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onImageError } from '$lib/utils/image-error';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { cn } from '$lib/utils';
@@ -72,7 +73,7 @@
 					alt=""
 					class="h-12 w-12 shrink-0 rounded-md object-cover"
 					loading="lazy"
-					onerror={() => (failedLogoUrls = [...failedLogoUrls, logoUrl])}
+					{@attach onImageError(() => (failedLogoUrls = [...failedLogoUrls, logoUrl]))}
 				/>
 			{/if}
 			<span>{series.name}</span>

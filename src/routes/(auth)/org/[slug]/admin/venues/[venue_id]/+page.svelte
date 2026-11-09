@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -101,10 +102,15 @@
 		showModal = true;
 	}
 
+	let pendingConfirm = $state<{ message: string; run: () => void } | null>(null);
+
 	function handleDelete(sectorId: string) {
-		if (confirm(m['orgAdmin.sectors.delete.confirm']())) {
-			deleteMutation.mutate(sectorId);
-		}
+		pendingConfirm = {
+			message: m['orgAdmin.sectors.delete.confirm'](),
+			run: () => {
+				deleteMutation.mutate(sectorId);
+			}
+		};
 	}
 
 	function handleManageSeats(sector: VenueSectorWithSeatsSchema) {
@@ -267,3 +273,17 @@
 		onSuccess={handleModalSuccess}
 	/>
 {/if}
+
+<ConfirmDialog
+	isOpen={pendingConfirm !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingConfirm?.message ?? ''}
+	confirmText={m['confirmDialog.delete']()}
+	variant="danger"
+	onConfirm={() => {
+		const run = pendingConfirm?.run;
+		pendingConfirm = null;
+		run?.();
+	}}
+	onCancel={() => (pendingConfirm = null)}
+/>

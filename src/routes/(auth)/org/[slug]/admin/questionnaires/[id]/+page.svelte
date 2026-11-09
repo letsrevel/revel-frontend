@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
@@ -156,16 +157,14 @@
 		return questionnaire.id;
 	}
 
-	async function changeStatus(newStatus: QuestionnaireStatus) {
-		const confirmMessages: Record<QuestionnaireStatus, string> = {
-			draft: m['questionnaireEditPage.status.publishConfirmDraft'](),
-			ready: m['questionnaireEditPage.status.publishConfirmReady'](),
-			published: m['questionnaireEditPage.status.publishConfirmPublished']()
-		};
-		const confirmed = confirm(confirmMessages[newStatus]);
+	let pendingStatus = $state<QuestionnaireStatus | null>(null);
 
-		if (!confirmed) return;
+	function changeStatus(newStatus: QuestionnaireStatus) {
+		pendingStatus = newStatus;
+	}
 
+	async function applyStatus(newStatus: QuestionnaireStatus) {
+		pendingStatus = null;
 		isChangingStatus = true;
 
 		try {
@@ -473,3 +472,18 @@
 		/>
 	{/if}
 {/if}
+
+<ConfirmDialog
+	isOpen={pendingStatus !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingStatus
+		? {
+				draft: m['questionnaireEditPage.status.publishConfirmDraft'](),
+				ready: m['questionnaireEditPage.status.publishConfirmReady'](),
+				published: m['questionnaireEditPage.status.publishConfirmPublished']()
+			}[pendingStatus]
+		: ''}
+	variant="warning"
+	onConfirm={() => pendingStatus && applyStatus(pendingStatus)}
+	onCancel={() => (pendingStatus = null)}
+/>

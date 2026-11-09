@@ -3,7 +3,7 @@ import { test, expect } from '../../support/fixtures';
 import { createOrganization, createOrgQuestionnaire, uniqueName } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { pickSelectOption } from '../../support/ui';
+import { pickSelectOption, confirmInApp } from '../../support/ui';
 
 // Both membership pickers are NATIVE <select>s (unlike the questionnaire type
 // picker, which is a bits-ui listbox). Their <option>s are attached but never
@@ -105,9 +105,9 @@ test.describe('J11 membership questionnaire type @p2', () => {
 		}).toPass({ timeout: 60_000 });
 		await expect(page.getByText(qName).first()).toBeVisible();
 
-		// ---- Publish (status changes fire a native confirm()).
-		page.once('dialog', (dialog) => void dialog.accept());
+		// ---- Publish (status changes ask the in-app confirm dialog).
 		await page.getByRole('button', { name: 'Publish' }).click();
+		await confirmInApp(page);
 		await expect(page.getByRole('button', { name: 'Unpublish' })).toBeVisible();
 
 		// ---- Picker 1: the org-wide default. Selecting and SAVING it is the part

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import type {
 		PotluckItemRetrieveSchema,
@@ -441,10 +442,16 @@
 		}
 	}
 
+	let itemToDelete = $state<string | null>(null);
+
 	function handleDelete(itemId: string) {
-		if (confirm(m['potluck.confirmDelete']())) {
-			deleteItemMutation.mutate(itemId);
-		}
+		itemToDelete = itemId;
+	}
+
+	function confirmDelete() {
+		const itemId = itemToDelete;
+		itemToDelete = null;
+		if (itemId) deleteItemMutation.mutate(itemId);
 	}
 </script>
 
@@ -609,4 +616,14 @@
 	errorMessage={modalErrorMessage}
 	onSubmit={handleModalSubmit}
 	onCancel={handleModalCancel}
+/>
+
+<ConfirmDialog
+	isOpen={itemToDelete !== null}
+	title={m['confirmDialog.title']()}
+	message={m['potluck.confirmDelete']()}
+	confirmText={m['confirmDialog.delete']()}
+	variant="danger"
+	onConfirm={confirmDelete}
+	onCancel={() => (itemToDelete = null)}
 />

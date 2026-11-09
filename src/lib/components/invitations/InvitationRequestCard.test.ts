@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -47,7 +47,6 @@ function renderCard() {
 describe('InvitationRequestCard cancel error handling', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('confirm', () => true);
 	});
 	afterEach(() => {
 		vi.unstubAllGlobals();
@@ -63,6 +62,9 @@ describe('InvitationRequestCard cancel error handling', () => {
 		renderCard();
 
 		await user.click(screen.getByRole('button', { name: 'Cancel Request' }));
+		await user.click(
+			await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Confirm' })
+		);
 
 		await waitFor(() => expect(toast.error).toHaveBeenCalled());
 		expect(toast.success).not.toHaveBeenCalled();

@@ -1014,7 +1014,10 @@
 	"confirmDialog": {
 		"confirm": "Conferma",
 		"cancel": "Annulla",
-		"closeDialog": "Chiudi finestra"
+		"closeDialog": "Chiudi finestra",
+		"title": "Sei sicuro?",
+		"delete": "Elimina",
+		"remove": "Rimuovi"
 	},
 	"bookmark": {
 		"add": "Salva questo evento",
@@ -6309,6 +6312,8 @@
 		"loading": "Caricamento..."
 	},
 	"staffCard": {
+		"removeTitle": "Rimuovi membro dello staff",
+		"removeConfirm": "Vuoi davvero rimuovere {name} dallo staff?",
 		"staff": "Staff",
 		"staffSince": "Staff dal:",
 		"createEvents": "Crea Eventi",

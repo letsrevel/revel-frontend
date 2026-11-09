@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -107,16 +108,24 @@
 		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));
 	}
 
+	let pendingConfirm = $state<{ message: string; danger?: boolean; run: () => void } | null>(null);
+
 	function publishEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.publish']())) {
-			updateStatusMutation.mutate({ eventId, status: 'open' });
-		}
+		pendingConfirm = {
+			message: m['orgAdmin.events.confirmations.publish'](),
+			run: () => {
+				updateStatusMutation.mutate({ eventId, status: 'open' });
+			}
+		};
 	}
 
 	function closeEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.close']())) {
-			updateStatusMutation.mutate({ eventId, status: 'closed' });
-		}
+		pendingConfirm = {
+			message: m['orgAdmin.events.confirmations.close'](),
+			run: () => {
+				updateStatusMutation.mutate({ eventId, status: 'closed' });
+			}
+		};
 	}
 
 	function cancelEvent(eventId: string): void {
@@ -132,15 +141,22 @@
 		const message = isCancelled
 			? m['orgAdmin.events.confirmations.deleteCancelled']()
 			: m['orgAdmin.events.confirmations.delete']();
-		if (confirm(message)) {
-			deleteEventMutation.mutate(eventId);
-		}
+		pendingConfirm = {
+			message: message,
+			danger: true,
+			run: () => {
+				deleteEventMutation.mutate(eventId);
+			}
+		};
 	}
 
 	function reopenEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
-			updateStatusMutation.mutate({ eventId, status: 'open' });
-		}
+		pendingConfirm = {
+			message: m['orgAdmin.events.confirmations.reopen'](),
+			run: () => {
+				updateStatusMutation.mutate({ eventId, status: 'open' });
+			}
+		};
 	}
 
 	// Helper to check if event is past (ended)
@@ -504,3 +520,17 @@
 {#if cancelEventId}
 	<CancelEventDialog bind:open={showCancelEventDialog} eventId={cancelEventId} />
 {/if}
+
+<ConfirmDialog
+	isOpen={pendingConfirm !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingConfirm?.message ?? ''}
+	confirmText={pendingConfirm?.danger ? m['confirmDialog.delete']() : m['confirmDialog.confirm']()}
+	variant={pendingConfirm?.danger ? 'danger' : 'warning'}
+	onConfirm={() => {
+		const run = pendingConfirm?.run;
+		pendingConfirm = null;
+		run?.();
+	}}
+	onCancel={() => (pendingConfirm = null)}
+/>

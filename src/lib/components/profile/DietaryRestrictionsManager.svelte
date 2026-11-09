@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		dietaryListDietaryRestrictions,
@@ -278,10 +279,15 @@
 		selectedFoodItemId = null; // Clear selection when typing
 	}
 
+	let pendingConfirm = $state<{ message: string; run: () => void } | null>(null);
+
 	function handleDeleteRestriction(id: string) {
-		if (confirm(m['dietary.restrictions_deleteConfirm']())) {
-			deleteRestrictionMutation.mutate(id);
-		}
+		pendingConfirm = {
+			message: m['dietary.restrictions_deleteConfirm'](),
+			run: () => {
+				deleteRestrictionMutation.mutate(id);
+			}
+		};
 	}
 
 	function handleToggleVisibility(restriction: DietaryRestrictionSchema) {
@@ -569,3 +575,17 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={pendingConfirm !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingConfirm?.message ?? ''}
+	confirmText={m['confirmDialog.delete']()}
+	variant="danger"
+	onConfirm={() => {
+		const run = pendingConfirm?.run;
+		pendingConfirm = null;
+		run?.();
+	}}
+	onCancel={() => (pendingConfirm = null)}
+/>

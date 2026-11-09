@@ -1,13 +1,14 @@
 import { test, expect } from '../../support/fixtures';
 import { createTicketedEvent } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J10.3 (USER_JOURNEYS.md) — ticket-tier management on the edit page's
 // Ticketing tab: create a tier (payment method + visibility), edit an
 // existing one, reorder via the arrow buttons, delete.
 //
 // Isolation: own event arranged with ONE free tier via API; everything else
-// happens through the UI. Tier deletion uses a native confirm() dialog.
+// happens through the UI. Tier deletion asks the in-app confirm dialog.
 
 test.describe('J10 tier management @p1', () => {
 	test('create, edit, reorder, and delete tiers', async ({ asOwner }) => {
@@ -15,7 +16,6 @@ test.describe('J10 tier management @p1', () => {
 		const event = await createTicketedEvent(); // arrives with "Free Entry"
 
 		const page = asOwner;
-		page.on('dialog', (dialog) => void dialog.accept());
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit?tab=ticketing`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Ticket Tiers' })).toBeVisible({
@@ -52,6 +52,7 @@ test.describe('J10 tier management @p1', () => {
 		await page.getByRole('button', { name: 'Edit Door Sales' }).click();
 		await expect(tierForm).toBeVisible();
 		await tierForm.getByRole('button', { name: 'Delete Tier' }).click();
+		await confirmInApp(page);
 		await expect(tierForm).not.toBeVisible({ timeout: 15_000 });
 		await expect(page.getByText('Door Sales')).not.toBeVisible({ timeout: 15_000 });
 	});

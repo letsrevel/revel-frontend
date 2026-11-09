@@ -10,6 +10,7 @@ import {
 import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J8 (USER_JOURNEYS.md) — venue management, all through the UI: create a
 // venue, add a sector, bulk-create its seats in the grid editor, and prove
@@ -144,9 +145,6 @@ test.describe('J19.2 price categories @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
-		// The section's delete flow uses native confirm(); Playwright dismisses
-		// dialogs by default, so accept them for the whole page.
-		page.on('dialog', (dialog) => void dialog.accept());
 
 		await gotoHydrated(page, `/org/${org.slug}/admin/venues/${venue.id}`);
 		await waitForClientAuth(page);
@@ -209,6 +207,7 @@ test.describe('J19.2 price categories @p2', () => {
 		// the backend refuses with a 400 whose detail lands in the error toast.
 		const velvetRow = section.getByRole('listitem').filter({ hasText: 'Velvet' });
 		await velvetRow.getByRole('button', { name: 'Delete price category Velvet' }).click();
+		await confirmInApp(page);
 		await expect(page.getByText(/used by one or more ticket tiers/)).toBeVisible({
 			timeout: 15_000
 		});
@@ -216,6 +215,7 @@ test.describe('J19.2 price categories @p2', () => {
 
 		// DELETE — the unreferenced category goes away cleanly.
 		await amberRow.getByRole('button', { name: 'Delete price category Amber Premium' }).click();
+		await confirmInApp(page);
 		await expect(page.getByText('Price category deleted')).toBeVisible({ timeout: 15_000 });
 		await expect(amberRow).not.toBeVisible();
 
@@ -390,12 +390,8 @@ test.describe('J19.3 seat painting @p2', () => {
 		await palette.getByRole('button', { name: 'Silver' }).click();
 		await page.getByRole('button', { name: 'Seat A1, Gold', exact: true }).click();
 
-		let confirmMessage = '';
-		page.once('dialog', (dialog) => {
-			confirmMessage = dialog.message();
-			void dialog.accept();
-		});
 		await page.getByRole('button', { name: 'Save Changes' }).click();
+		const confirmMessage = await confirmInApp(page);
 
 		// Accepted: the paint applies and the precise repricing toast follows.
 		await expect(page.getByText('Seat pricing updated')).toBeVisible({ timeout: 15_000 });
@@ -486,12 +482,8 @@ test.describe('J19.3 seat painting @p2', () => {
 		await palette.getByRole('button', { name: 'Unpainted' }).click();
 		await page.getByRole('button', { name: 'Seat A1, Gold', exact: true }).click();
 
-		let confirmMessage = '';
-		page.once('dialog', (dialog) => {
-			confirmMessage = dialog.message();
-			void dialog.accept();
-		});
 		await page.getByRole('button', { name: 'Save Changes' }).click();
+		const confirmMessage = await confirmInApp(page);
 
 		// The confirm gates on the price move (open event) and ALSO names the
 		// zone the paint strands; accepting applies the paint and both toasts

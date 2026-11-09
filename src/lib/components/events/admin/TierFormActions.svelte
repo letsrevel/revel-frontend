@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { grantConflicts } from './tier-grants';
@@ -6,6 +7,8 @@
 	interface Props {
 		/** Editing an existing tier (shows Delete, "Save changes"). */
 		isEditing: boolean;
+		/** Name of the tier being edited, shown in the delete confirmation. */
+		tierName?: string;
 		isPending: boolean;
 		isDeleting: boolean;
 		/** Submit is held for a reason the form already explains (validation, gates). */
@@ -20,6 +23,7 @@
 
 	const {
 		isEditing,
+		tierName = '',
 		isPending,
 		isDeleting,
 		submitDisabled,
@@ -28,6 +32,8 @@
 		onDelete,
 		onClose
 	}: Props = $props();
+
+	let showDeleteConfirm = $state(false);
 
 	const uid = $props.id();
 	const conflictId = `${uid}-grant-conflict`;
@@ -54,7 +60,12 @@
 <div class="flex justify-between gap-2 border-t border-border pt-4">
 	<div>
 		{#if isEditing}
-			<Button type="button" variant="destructive" onclick={onDelete} disabled={isPending}>
+			<Button
+				type="button"
+				variant="destructive"
+				onclick={() => (showDeleteConfirm = true)}
+				disabled={isPending}
+			>
 				{isDeleting ? m['tierForm.deleting']() : m['tierForm.deleteTier']()}
 			</Button>
 		{/if}
@@ -76,3 +87,16 @@
 		</Button>
 	</div>
 </div>
+
+<ConfirmDialog
+	isOpen={showDeleteConfirm}
+	title={m['confirmDialog.title']()}
+	message={m['tierForm.deleteConfirm']({ name: tierName })}
+	confirmText={m['confirmDialog.delete']()}
+	variant="danger"
+	onConfirm={() => {
+		showDeleteConfirm = false;
+		onDelete();
+	}}
+	onCancel={() => (showDeleteConfirm = false)}
+/>

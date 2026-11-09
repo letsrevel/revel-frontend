@@ -2,6 +2,7 @@ import { test, expect, PERSONAS } from '../../support/fixtures';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { uniqueName } from '../../support/factories';
 import { ApiClient } from '../../support/api';
+import { confirmInApp } from '../../support/ui';
 
 // J10.1–10.2 (USER_JOURNEYS.md) — organizer creates an event through the
 // wizard: draft (Save) → edit page → Publish (DRAFT → OPEN) → the event is
@@ -45,9 +46,9 @@ test.describe('J10 create event via wizard @p0', () => {
 		const eventId = asOwner.url().match(/events\/([0-9a-f-]+)\/edit/)?.[1];
 		if (!eventId) throw new Error(`No event id in URL: ${asOwner.url()}`);
 
-		// Publish (native confirm dialog) — DRAFT → OPEN.
-		asOwner.on('dialog', (dialog) => void dialog.accept());
+		// Publish (in-app confirm dialog) — DRAFT → OPEN.
 		await asOwner.getByRole('button', { name: 'Publish Event', exact: true }).click();
+		await confirmInApp(asOwner);
 		await expect(asOwner.getByRole('button', { name: 'Close Event' })).toBeVisible();
 
 		// The published event is publicly visible to an anonymous visitor.

@@ -2,6 +2,7 @@ import { test, expect } from '../../support/fixtures';
 import { createTicketedEvent, createVerifiedUser, rsvpViaApi } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J5 waitlist join/leave — the mutating counterpart to the read-only
 // eligibility matrix (which only asserts the "Join Waitlist" CTA renders on
@@ -10,7 +11,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // UX quirks encoded: join success is an inline "Success!" status (no toast)
 // followed by window.location.reload() after 1.5s; leave goes through a
-// native confirm() and also reloads.
+// in-app confirm and also reloads.
 
 test.describe('J5 waitlist @p2', () => {
 	test('join and leave the waitlist on a full RSVP event', async ({ browser }) => {
@@ -28,8 +29,6 @@ test.describe('J5 waitlist @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, joiner);
 		const page = await context.newPage();
-		// Leaving the waitlist fires a native confirm() — auto-accept.
-		page.on('dialog', (dialog) => void dialog.accept());
 
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
@@ -55,9 +54,10 @@ test.describe('J5 waitlist @p2', () => {
 		await expect(onWaitlistButton).toBeVisible({ timeout: 30_000 });
 		await expect(onWaitlistButton).toBeDisabled();
 
-		// Leave: confirm() accepted above; the reload lands back on the
+		// Leave: accept the in-app confirm; the reload lands back on the
 		// join-able full-event gate.
 		await page.getByRole('button', { name: 'Leave', exact: true }).click();
+		await confirmInApp(page);
 		await expect(page.getByRole('button', { name: 'Join Waitlist' })).toBeVisible({
 			timeout: 30_000
 		});

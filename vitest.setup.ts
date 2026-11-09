@@ -1,6 +1,6 @@
 import '@testing-library/svelte/vitest';
 import '@testing-library/jest-dom/vitest';
-import { vi, afterAll } from 'vitest';
+import { vi, afterAll, afterEach } from 'vitest';
 
 // SvelteKit's `$env/dynamic/*` are virtual modules provided by the sveltekit()
 // Vite plugin. Under vitest 4's module runner they evaluate to `undefined`
@@ -10,6 +10,17 @@ import { vi, afterAll } from 'vitest';
 // (e.g. config/api.test.ts) still override via vi.doMock as needed.
 vi.mock('$env/dynamic/public', () => ({ env: {} }));
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
+
+// bits-ui modal dialogs (the shared ConfirmDialog is one) lock the page with
+// `body { pointer-events: none }` and release it on a deferred timer. In jsdom a
+// test can end, or the next one start, before that fires, leaving the lock to
+// leak into the next test's pointer interactions. Reset it between tests.
+afterEach(() => {
+	if (typeof document !== 'undefined') {
+		document.body.style.pointerEvents = '';
+		document.body.style.overflow = '';
+	}
+});
 
 // jsdom has no ResizeObserver, but Svelte's bind:clientWidth/clientHeight
 // (used by SeatMap to size its home view) requires one. A no-op stub is

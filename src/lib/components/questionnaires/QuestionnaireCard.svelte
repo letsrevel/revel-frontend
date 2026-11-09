@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Card,
@@ -174,13 +175,14 @@
 	);
 
 	// Handle delete
-	async function handleDelete() {
-		const confirmed = confirm(
-			m['questionnaireCard.confirmDelete']({ name: questionnaire.questionnaire.name })
-		);
+	let showDeleteConfirm = $state(false);
 
-		if (!confirmed) return;
+	function handleDelete() {
+		showDeleteConfirm = true;
+	}
 
+	async function confirmDelete() {
+		showDeleteConfirm = false;
 		isDeleting = true;
 
 		try {
@@ -389,4 +391,14 @@
 	questionnaireName={questionnaire.questionnaire.name}
 	{organizationSlug}
 	onClose={() => (isDuplicateModalOpen = false)}
+/>
+
+<ConfirmDialog
+	isOpen={showDeleteConfirm}
+	title={m['confirmDialog.title']()}
+	message={m['questionnaireCard.confirmDelete']({ name: questionnaire.questionnaire.name })}
+	confirmText={m['confirmDialog.delete']()}
+	variant="danger"
+	onConfirm={confirmDelete}
+	onCancel={() => (showDeleteConfirm = false)}
 />

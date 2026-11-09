@@ -7,6 +7,7 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J11.1–11.2 (USER_JOURNEYS.md) — the questionnaire BUILDER: an organizer
 // creates an admission questionnaire (top-level MCQ with weights + a section
@@ -85,9 +86,9 @@ test.describe('J11 questionnaire builder @p1', () => {
 		await expect(page.getByText('Do you agree to the house rules?').first()).toBeVisible();
 		await expect(page.getByText('What draws you to this event?').first()).toBeVisible();
 
-		// ---- Publish (status changes fire a native confirm()).
-		page.once('dialog', (dialog) => void dialog.accept());
+		// ---- Publish (status changes ask the in-app confirm dialog).
 		await page.getByRole('button', { name: 'Publish' }).click();
+		await confirmInApp(page);
 		// Published state swaps the action set to Unpublish/Mark as Draft.
 		await expect(page.getByRole('button', { name: 'Unpublish' })).toBeVisible();
 

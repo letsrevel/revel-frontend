@@ -97,7 +97,7 @@
 	Admin Layout. 4rem = the site header above this one (Header.svelte, h-16).
 
 	Structure: on md+ a collapsible left sidebar (AdminSidebar, sticky under the
-	site header) sits beside the content column (breadcrumbs + <main>); below md
+	site header) sits beside the content column (breadcrumbs + content); below md
 	a top bar with a hamburger opens a drawer rendering the same grouped nav model.
 
 	Nothing here sticks vertically except the sidebar, which sits below the
@@ -270,9 +270,9 @@
 			</nav>
 
 			<!-- Main Content -->
-			<main id="main-content" class="container mx-auto py-6">
+			<div class="container mx-auto py-6">
 				{@render children()}
-			</main>
+			</div>
 		</div>
 	</div>
 </div>

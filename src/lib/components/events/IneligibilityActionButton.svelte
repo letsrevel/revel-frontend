@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { NextStep, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -317,10 +318,14 @@
 	/**
 	 * Handle leaving the waitlist
 	 */
-	async function handleLeaveWaitlist() {
-		if (!confirm(m['ineligibilityActionButton.confirmLeaveWaitlist']())) {
-			return;
-		}
+	let showLeaveConfirm = $state(false);
+
+	function handleLeaveWaitlist() {
+		showLeaveConfirm = true;
+	}
+
+	async function confirmLeaveWaitlist() {
+		showLeaveConfirm = false;
 
 		isLeavingWaitlist = true;
 		showError = false;
@@ -504,3 +509,12 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={showLeaveConfirm}
+	title={m['confirmDialog.title']()}
+	message={m['ineligibilityActionButton.confirmLeaveWaitlist']()}
+	variant="danger"
+	onConfirm={confirmLeaveWaitlist}
+	onCancel={() => (showLeaveConfirm = false)}
+/>

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -52,7 +52,6 @@ function renderManager() {
 describe('DietaryPreferencesManager delete error handling', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('confirm', () => true);
 		vi.mocked(dietaryListMyDietaryPreferences).mockResolvedValue(
 			ok([userPreference]) as unknown as MyListResult
 		);
@@ -73,6 +72,9 @@ describe('DietaryPreferencesManager delete error handling', () => {
 
 		const remove = await screen.findByRole('button', { name: 'Remove Vegan' });
 		await user.click(remove);
+		await user.click(
+			await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Delete' })
+		);
 
 		await waitFor(() => expect(toast.error).toHaveBeenCalled());
 		expect(toast.success).not.toHaveBeenCalled();

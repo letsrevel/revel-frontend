@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	/**
 	 * Freeform layout designer route (#659, designer part 2).
 	 *
@@ -162,11 +163,26 @@
 	// --- unsaved-changes guard ------------------------------------------------
 	let dirty = $state(false);
 
+	// In-app prompt for in-app navigations. beforeNavigate must decide
+	// synchronously, so it always cancels and, on confirmation, replays the
+	// navigation with the guard disarmed. Tab close / external leave is covered
+	// by the native beforeunload handler below (the browser's own prompt).
+	let leaveTarget = $state<URL | null>(null);
+
 	beforeNavigate((navigation) => {
 		if (!dirty) return;
-		const message = m['seatDesigner.unsavedChanges']();
-		if (!confirm(message)) navigation.cancel();
+		if (navigation.willUnload || !navigation.to) return;
+		navigation.cancel();
+		leaveTarget = navigation.to.url;
 	});
+
+	function confirmLeave() {
+		const target = leaveTarget;
+		leaveTarget = null;
+		dirty = false;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- replays the URL SvelteKit already resolved for the cancelled navigation
+		if (target) void goto(target);
+	}
 
 	function handleBeforeUnload(event: BeforeUnloadEvent) {
 		if (dirty) event.preventDefault();
@@ -268,3 +284,12 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={leaveTarget !== null}
+	title={m['confirmDialog.title']()}
+	message={m['seatDesigner.unsavedChanges']()}
+	variant="warning"
+	onConfirm={confirmLeave}
+	onCancel={() => (leaveTarget = null)}
+/>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
@@ -90,10 +91,15 @@
 		}
 	}));
 
+	let showCancelConfirm = $state(false);
+
 	function handleCancel() {
-		if (confirm(m['invitationRequestCard.cancelConfirm']())) {
-			cancelMutation.mutate();
-		}
+		showCancelConfirm = true;
+	}
+
+	function confirmCancel() {
+		showCancelConfirm = false;
+		cancelMutation.mutate();
 	}
 </script>
 
@@ -203,3 +209,12 @@
 		</div>
 	</div>
 </Card>
+
+<ConfirmDialog
+	isOpen={showCancelConfirm}
+	title={m['confirmDialog.title']()}
+	message={m['invitationRequestCard.cancelConfirm']()}
+	variant="danger"
+	onConfirm={confirmCancel}
+	onCancel={() => (showCancelConfirm = false)}
+/>
