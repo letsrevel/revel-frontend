@@ -1,7 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { tokenLogout } from '$lib/api/generated';
-import { log } from '$lib/server/logger';
+import { revokeAndClearSession } from '$lib/server/auth-cookies';
 import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
 
 /**
@@ -27,6 +26,7 @@ import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
  *
  * Client-side state (authStore, query cache) is cleared by the client before
  * it submits the POST (see `postLogout` in $lib/utils/logout.ts); the action only handles cookie cleanup.
+ * The revoke is bounded by a short timeout (see `auth-cookies.ts`).
  *
  * With a `returnUrl` ("switch account" on the OAuth consent page) the user is
  * sent to /login carrying that target, so they re-authenticate and land back
@@ -56,27 +56,7 @@ export const actions: Actions = {
 			returnUrl = '';
 		}
 
-		const refreshToken = cookies.get('refresh_token');
-		if (refreshToken) {
-			try {
-				const { error: logoutError, response } = await tokenLogout({
-					body: { refresh: refreshToken },
-					fetch
-				});
-				if (logoutError) {
-					log.warning('logout_revoke_failed', { upstream_status: response?.status });
-				}
-			} catch (err) {
-				log.warning('logout_revoke_failed', { error: err });
-			}
-		}
-
-		log.debug('logout_clearing_cookies');
-
-		cookies.delete('access_token', { path: '/' });
-		cookies.delete('refresh_token', { path: '/' });
-		// "remember me" preference cookie
-		cookies.delete('remember_me', { path: '/' });
+		await revokeAndClearSession({ cookies, fetch });
 
 		if (returnUrl) {
 			throw redirect(303, loginHref(returnUrl));

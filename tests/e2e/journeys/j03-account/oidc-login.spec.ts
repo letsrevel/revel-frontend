@@ -140,7 +140,10 @@ test.describe('J03 OIDC login @p1', () => {
 		await expect(page.getByRole('heading', { name: 'Password reset successful' })).toBeVisible();
 
 		// A password reset revokes every session of the account (revel-backend
-		// #1357), so sign in again with the new password, then…
+		// #1357) and the reset action drops this browser's dead cookies, so the
+		// success state's link leads to a real login: sign in with the new password…
+		await page.getByRole('link', { name: 'Sign in to your account' }).click();
+		await page.waitForURL(/\/login(\?|$)/);
 		await uiLogin(page, { email, password: NEW_PASSWORD });
 
 		// …the identity is no longer the only way in.

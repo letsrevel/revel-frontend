@@ -8,6 +8,7 @@ vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 import { actions } from './+page.server';
 
 const fetchFn = vi.fn();
+const cookies = { delete: vi.fn(), get: vi.fn(), set: vi.fn() };
 
 function run(extra: Record<string, string> = {}) {
 	const body = new FormData();
@@ -17,11 +18,15 @@ function run(extra: Record<string, string> = {}) {
 	for (const [k, v] of Object.entries(extra)) body.set(k, v);
 	return actions.resetPassword({
 		request: new Request('http://localhost/login/reset-password', { method: 'POST', body }),
-		fetch: fetchFn
+		fetch: fetchFn,
+		cookies
 	} as unknown as Parameters<typeof actions.resetPassword>[0]);
 }
 
-beforeEach(() => resolveReturnTarget.mockReset());
+beforeEach(() => {
+	resolveReturnTarget.mockReset();
+	cookies.delete.mockReset();
+});
 
 describe('/login/reset-password return_host (#1070)', () => {
 	it('returns the validated target so the page links to {origin}/login', async () => {
@@ -42,5 +47,15 @@ describe('/login/reset-password return_host (#1070)', () => {
 		resolveReturnTarget.mockResolvedValue(null);
 		expect(await run()).toEqual({ success: true, returnTo: null });
 		expect(resolveReturnTarget).toHaveBeenCalledWith(undefined, fetchFn);
+	});
+
+	it('clears the auth cookies after a successful reset (every session was revoked)', async () => {
+		resolveReturnTarget.mockResolvedValue(null);
+		await run();
+		expect(cookies.delete.mock.calls.map((c) => c[0]).sort()).toEqual([
+			'access_token',
+			'refresh_token',
+			'remember_me'
+		]);
 	});
 });

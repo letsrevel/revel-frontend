@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
-import { uiLogin } from '../../support/session';
+import { APP_HOST, authCookie, uiLogin } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { fetchWithRetry, getBackendUrl } from '../../support/api';
 
@@ -69,6 +69,9 @@ test.describe('J3 session: refresh grace & server-side logout (#1191, #1199) @p0
 
 		await page.reload();
 		await expect.poll(() => r2, { timeout: 15_000 }).not.toBeNull();
+		// Park the page: left on the app, it keeps issuing refreshes that would
+		// reach the backend unintercepted (spending R2) once the route is gone.
+		await page.goto('about:blank');
 		await page.unroute('**/api/auth/refresh');
 
 		// route.fetch shares the context's cookie jar, which would hand the browser
@@ -76,20 +79,10 @@ test.describe('J3 session: refresh grace & server-side logout (#1191, #1199) @p0
 		// OLD tokens.
 		await context.clearCookies({ name: 'refresh_token' });
 		await context.clearCookies({ name: 'access_token' });
-		await context.addCookies(
-			[
-				{ name: 'refresh_token', value: r1 },
-				{ name: 'access_token', value: access }
-			].map((c) => ({
-				...c,
-				domain: 'localhost',
-				path: '/',
-				httpOnly: true,
-				secure: false,
-				sameSite: 'Lax' as const,
-				expires: Math.round(Date.now() / 1000) + 60 * 60
-			}))
-		);
+		await context.addCookies([
+			authCookie('refresh_token', r1, APP_HOST),
+			authCookie('access_token', access, APP_HOST)
+		]);
 
 		// The reload that follows presents the spent R1: the grace window turns it
 		// into one fresh pair instead of a sign-out.
@@ -119,18 +112,7 @@ test.describe('J3 session: refresh grace & server-side logout (#1191, #1199) @p0
 		// A "stolen copy" of the cookie gets nowhere in a fresh context.
 		const stolen = await browser.newContext();
 		try {
-			await stolen.addCookies([
-				{
-					name: 'refresh_token',
-					value: r1,
-					domain: 'localhost',
-					path: '/',
-					httpOnly: true,
-					secure: false,
-					sameSite: 'Lax',
-					expires: Math.round(Date.now() / 1000) + 60 * 60
-				}
-			]);
+			await stolen.addCookies([authCookie('refresh_token', r1, APP_HOST)]);
 			const thief = await stolen.newPage();
 			await thief.goto('/dashboard');
 			await expect(thief).toHaveURL(/\/login/);

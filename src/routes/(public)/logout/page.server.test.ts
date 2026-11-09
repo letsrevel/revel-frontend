@@ -60,7 +60,8 @@ function postArgs(returnUrl?: string) {
 			cookies,
 			fetch
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
-		cookies
+		cookies,
+		fetch
 	};
 }
 
@@ -184,7 +185,7 @@ describe('POST /logout', () => {
 	});
 
 	it('revokes the refresh cookie on the backend before clearing the cookies', async () => {
-		const { args, cookies } = postArgs();
+		const { args, cookies, fetch } = postArgs();
 		const order: string[] = [];
 		tokenLogoutMock.mockImplementation(async () => {
 			order.push('revoke');
@@ -194,7 +195,11 @@ describe('POST /logout', () => {
 		await expect(actions.default(args)).rejects.toMatchObject({ status: 303 });
 		expect(tokenLogoutMock).toHaveBeenCalledTimes(1);
 		expect(tokenLogoutMock).toHaveBeenCalledWith(
-			expect.objectContaining({ body: { refresh: 'RT-secret' } })
+			expect.objectContaining({
+				body: { refresh: 'RT-secret' },
+				fetch,
+				signal: expect.any(AbortSignal)
+			})
 		);
 		expect(order[0]).toBe('revoke');
 		expect(order.filter((o) => o === 'delete')).toHaveLength(3);
@@ -222,14 +227,20 @@ describe('POST /logout', () => {
 		expect(cookies.delete).toHaveBeenCalledTimes(3);
 	});
 
-	it('never puts the refresh token in anything the client can see', async () => {
-		const { args } = postArgs('/dashboard');
+	it('never hands the refresh token to the client', async () => {
+		const { args, cookies } = postArgs('/dashboard');
 		let thrown: unknown;
+		let returned: unknown;
 		try {
-			await actions.default(args);
+			returned = await actions.default(args);
 		} catch (err) {
 			thrown = err;
 		}
+		// Nothing is set client-visibly (deletes only), the action returns nothing
+		// and its only output is the redirect, which carries no token.
+		expect(cookies.set).not.toHaveBeenCalled();
+		expect(returned).toBeUndefined();
+		expect(thrown).toMatchObject({ status: 303 });
 		expect(JSON.stringify(thrown)).not.toContain('RT-secret');
 	});
 });
