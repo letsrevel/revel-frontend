@@ -11181,7 +11181,7 @@
 	"memberPeople.status.invited": "Convite enviado",
 	"memberPeople.status.upcoming": "Em breve",
 	"memberPeople.asOfLabel": "À data de",
-	"memberPeople.asOfShowing": "Mostra todas as pessoas que eram membros em {day}. Limpe a data para voltar aos grupos.",
+	"memberPeople.asOfShowing": "Mostra todas as pessoas que eram membros em {day}. Limpa a data para voltar aos grupos.",
 	"memberPeople.attention.heading": "Precisa da tua atenção",
 	"memberPeople.attention.duplicates": "Possíveis duplicados: {count}",
 	"memberPeople.attention.applications": "Pedidos pendentes: {count}",
