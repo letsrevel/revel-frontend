@@ -69,7 +69,22 @@
 		claim?.outcome === 'success' ? (claim.organizationName ?? claim.organizationSlug) : ''
 	);
 
-	type ResultCopy = { title: string; body: string };
+	type ResultCopy = { title: string; body: string; note?: string };
+
+	// Compare two sentences ignoring case, whitespace and trailing punctuation: an
+	// equality check (never branching on content) so a backend detail that only
+	// repeats the localized body is not shown twice.
+	const sameSentence = (a: string, b: string): boolean =>
+		a
+			.trim()
+			.toLowerCase()
+			.replace(/[\s.!]+$/u, '')
+			.replace(/\s+/gu, ' ') ===
+		b
+			.trim()
+			.toLowerCase()
+			.replace(/[\s.!]+$/u, '')
+			.replace(/\s+/gu, ' ');
 
 	const resultCopy = $derived.by((): ResultCopy | null => {
 		if (!claim) return null;
@@ -93,13 +108,14 @@
 					m['memberInvite.conflictBody']();
 				return { title: m['memberInvite.conflictTitle'](), body };
 			}
-			case 'forbidden':
-				return {
-					title: m['memberInvite.forbiddenTitle'](),
-					// The backend's only 403 detail is the same sentence as this body,
-					// so it is deliberately not shown a second time.
-					body: m['memberInvite.forbiddenBody']()
-				};
+			case 'forbidden': {
+				const body = m['memberInvite.forbiddenBody']();
+				// Show the backend reason as secondary text only when it says something the
+				// localized body doesn't (its usual 403 detail is the same sentence).
+				const detail = claim.detail?.trim();
+				const note = detail && !sameSentence(detail, body) ? detail : undefined;
+				return { title: m['memberInvite.forbiddenTitle'](), body, note };
+			}
 			case 'not_found':
 				return {
 					title: m['memberInvite.notFoundTitle'](),
@@ -132,6 +148,11 @@
 				{copy.title}
 			</h2>
 			<p class="text-sm text-muted-foreground sm:text-base">{copy.body}</p>
+			{#if copy.note}
+				<p class="text-sm text-muted-foreground" data-testid="member-invite-result-note">
+					{copy.note}
+				</p>
+			{/if}
 		</div>
 	</div>
 {/snippet}

@@ -156,6 +156,16 @@ describe('member-invite page (#1171)', () => {
 		);
 	});
 
+	it('403 shows a DISTINCT backend reason as secondary text', () => {
+		renderPage({
+			signedIn: true,
+			claim: { outcome: 'forbidden', detail: 'Your account is suspended in this organization.' }
+		});
+		expect(screen.getByTestId('member-invite-result-note')).toHaveTextContent(
+			'Your account is suspended in this organization.'
+		);
+	});
+
 	it('claim 404 shows invitation not found', () => {
 		renderPage({ signedIn: true, claim: { outcome: 'not_found' } });
 		expect(screen.getByTestId('member-invite-result')).toHaveTextContent('Invitation not found');
