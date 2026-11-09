@@ -3,7 +3,8 @@ import { getDateLocale } from '$lib/utils/date';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { RegisterApiError } from './api';
 
-export type RegisterAction = 'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all';
+export type RegisterAction =
+	'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all' | 'merge' | 'unlink';
 
 export interface DescribedError {
 	/** 409: the entry changed since the page loaded; callers refetch. */

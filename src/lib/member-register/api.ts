@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/svelte-query';
 import {
 	organizationadminmemberregisterCreateMemberRegisterRecord,
 	organizationadminmemberregisterDeleteMemberRegisterRecord,
@@ -6,12 +7,18 @@ import {
 	organizationadminmemberregisterListMemberRegister,
 	organizationadminmemberregisterUpdateMemberRegisterRecord,
 	organizationadminmemberregisterlinkingInviteAllMemberRegister,
-	organizationadminmemberregisterlinkingInviteMemberRegisterRecord
+	organizationadminmemberregisterlinkingInviteMemberRegisterRecord,
+	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches,
+	organizationadminmemberregisterlinkingListPossibleDuplicates,
+	organizationadminmemberregisterlinkingMergeMemberRegisterRecord,
+	organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord
 } from '$lib/api';
 import type {
 	MembershipRecordCreateSchema,
 	MembershipRecordSchema,
-	PaginatedResponseSchemaMembershipRecordSchema
+	PaginatedResponseSchemaMembershipRecordSchema,
+	PossibleDuplicateSchema,
+	RegisterMatchSchema
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { filtersToQuery, type RegisterFilters } from './filters';
@@ -70,8 +77,41 @@ export const memberRegisterKeys = {
 	/** Prefix of everything register-related; invalidate after any write. */
 	all: (slug: string) => ['organization', slug, 'member-register'] as const,
 	list: (slug: string, filters: RegisterFilters) =>
-		['organization', slug, 'member-register', 'list', filters] as const
+		['organization', slug, 'member-register', 'list', filters] as const,
+	/**
+	 * Deliberately OUTSIDE the `all` prefix: the possible-duplicates scan is the
+	 * expensive call, so an ordinary register write must not refetch it. Callers
+	 * that can change the pairs (merge, unlink, approve-and-link) invalidate it
+	 * explicitly via `invalidateRegister`.
+	 */
+	duplicates: (slug: string) => ['organization', slug, 'register-possible-duplicates'] as const,
+	matches: (slug: string, requestId: string) =>
+		['organization', slug, 'member-register', 'matches', requestId] as const
 };
+
+/**
+ * Invalidate the possible-duplicates scan after a write that can change the
+ * pairs (merge, unlink, approve-and-link). `refetchType: 'all'` also refreshes
+ * the scan while the Duplicates tab is closed, which keeps the tab badge true.
+ */
+export function invalidateDuplicates(queryClient: QueryClient, slug: string): Promise<void> {
+	return queryClient.invalidateQueries({
+		queryKey: memberRegisterKeys.duplicates(slug),
+		refetchType: 'all'
+	});
+}
+
+/** Invalidate the register queries, plus the duplicates scan for pair-changing actions. */
+export async function invalidateRegister(
+	queryClient: QueryClient,
+	slug: string,
+	includeDuplicates: boolean
+): Promise<void> {
+	await Promise.all([
+		queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) }),
+		includeDuplicates ? invalidateDuplicates(queryClient, slug) : Promise.resolve()
+	]);
+}
 
 export async function listRegister(
 	slug: string,
@@ -194,4 +234,64 @@ export async function inviteAll(
 	ensureOk(res);
 	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
 	return res.data.invited;
+}
+
+export async function listPossibleDuplicates(
+	slug: string,
+	accessToken: string | null | undefined
+): Promise<PossibleDuplicateSchema[]> {
+	const res = await organizationadminmemberregisterlinkingListPossibleDuplicates({
+		path: { slug },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Merge the account-less `absorbedId` entry into `survivorId`; resolves to the survivor. */
+export async function mergeRecords(
+	slug: string,
+	accessToken: string | null | undefined,
+	survivorId: string,
+	absorbedId: string
+): Promise<MembershipRecordSchema> {
+	const res = await organizationadminmemberregisterlinkingMergeMemberRegisterRecord({
+		path: { slug, record_id: survivorId },
+		body: { absorbed_record_id: absorbedId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Reverse a link or a merge. For an open linked entry this cancels the member's access. */
+export async function unlinkRecord(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<MembershipRecordSchema> {
+	const res = await organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Unlinked open entries that may be the applicant of a membership request. */
+export async function listRegisterMatches(
+	slug: string,
+	accessToken: string | null | undefined,
+	requestId: string
+): Promise<RegisterMatchSchema[]> {
+	const res = await organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches({
+		path: { slug, request_id: requestId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
 }

@@ -2,8 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { MoreVertical, Pencil, CalendarX, Trash2, Mail } from '@lucide/svelte';
+	import { MoreVertical, Pencil, CalendarX, Trash2, Mail, Unlink } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
+	import { canUnlink } from '$lib/member-register/reconcile';
 
 	interface Props {
 		record: MembershipRecordSchema;
@@ -13,9 +14,10 @@
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
+		onUnlink: (record: MembershipRecordSchema) => void;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink }: Props = $props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
 	// The backend's `can_invite` (same helper as the invite endpoint's 400) is the
@@ -28,12 +30,10 @@
 		!record.can_invite && record.invite_status !== 'linked' ? record.invite_blocked_reason : null
 	);
 	const reasonId = $derived(`invite-blocked-${record.id}`);
+	const unlinkable = $derived(canUnlink(record));
 </script>
 
-<!--
-	Row actions menu. Later register features (merge, unlink) slot in as
-	further items here without touching the table or the cards.
--->
+<!-- Row actions menu. Merge lives in the Possible duplicates view, where the pairs are. -->
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
@@ -60,6 +60,12 @@
 				{record.invite_status === 'invited'
 					? m['memberRegister.actionResendInvite']()
 					: m['memberRegister.actionInvite']()}
+			</DropdownMenu.Item>
+		{/if}
+		{#if unlinkable}
+			<DropdownMenu.Item onclick={() => onUnlink(record)}>
+				<Unlink aria-hidden="true" />
+				{m['memberRegister.actionUnlink']()}
 			</DropdownMenu.Item>
 		{/if}
 		{#if canEnd}

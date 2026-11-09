@@ -25,6 +25,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationMembershipRequestRetrieve,
+		MembershipRecordSchema,
 		MembershipTierSchema,
 		OrganizationAdminDetailSchema,
 		MembershipRequestStatus
@@ -45,6 +46,8 @@
 	import { toast } from 'svelte-sonner';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { invalidateDuplicates } from '$lib/member-register/api';
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -59,6 +62,11 @@
 		// Set only by the "approve anyway" retry; the backend treats the body with
 		// exclude_unset semantics, so the flag is omitted rather than sent false.
 		force?: boolean;
+		// Unlinked register entry to adopt ("Approve and link").
+		linkRecordId?: string;
+		// The caller shows a refusal itself (the card's inline error), so the
+		// error toast is skipped. Set only on the first attempt from the card.
+		inline?: boolean;
 	}
 
 	const { organization, tiers }: Props = $props();
@@ -87,12 +95,15 @@
 	// Approve membership request modal state
 	let requestToApprove = $state<OrganizationMembershipRequestRetrieve | null>(null);
 	let approveMembershipModalOpen = $state(false);
+	// Register entry carried along when the tier picker was opened by "Approve and link".
+	let linkRecordToApprove = $state<string | null>(null);
 
 	// Set when the backend refuses a free approval with a 400 (active subscription
 	// or paused membership); holds everything the forced retry needs.
 	let forceConfirm = $state<{
 		request: OrganizationMembershipRequestRetrieve;
 		tierId: string | null;
+		linkRecordId?: string;
 		detail: string;
 	} | null>(null);
 
@@ -127,14 +138,18 @@
 
 	// Approve request mutation
 	const approveRequestMutation = createMutation(() => ({
-		mutationFn: async ({ request, tierId, force }: ApproveVariables) => {
+		mutationFn: async ({ request, tierId, force, linkRecordId }: ApproveVariables) => {
 			if (!request.id) {
 				throw new ApproveRequestError(m['membershipRequestsTab.approveFailedGeneric'](), undefined);
 			}
 
 			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
-				body: { ...(tierId ? { tier_id: tierId } : {}), ...(force ? { force: true } : {}) },
+				body: {
+					...(tierId ? { tier_id: tierId } : {}),
+					...(force ? { force: true } : {}),
+					...(linkRecordId ? { link_record_id: linkRecordId } : {})
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -147,9 +162,10 @@
 
 			return response.data;
 		},
-		onSuccess: () => {
+		onSuccess: (_data, variables: ApproveVariables) => {
 			approveMembershipModalOpen = false;
 			requestToApprove = null;
+			linkRecordToApprove = null;
 			forceConfirm = null;
 
 			queryClient.invalidateQueries({
@@ -158,20 +174,34 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
 			});
+			// Linking changes the register, and every cached match list is now stale.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'member-register']
+			});
+			if (variables.linkRecordId) void invalidateDuplicates(queryClient, organization.slug);
 		},
 		onError: (error: Error, variables: ApproveVariables) => {
-			// A 400 on a first attempt is the guard against overwriting a paid tier —
-			// offer the override instead of dead-ending in a toast. A 400 on the
-			// forced retry is a guard `force` cannot bypass (e.g. the application is
-			// no longer pending), so it falls through to the toast.
+			// A 400 on a first attempt is the guard against overwriting a paid tier
+			// (`_assert_free_grant_allowed`: active subscription, paused membership) —
+			// offer the override instead of dead-ending in a toast. The backend marks
+			// that refusal with the status alone (a plain `{detail}` body, no code
+			// field), so the status is the only signal; localized text is never
+			// matched. The link path shares the 400 with refusals `force` cannot
+			// bypass (entry linked/merged/closed, applicant already has an open
+			// entry, future-dated, paid application): those fail again on the forced
+			// retry and land in the toast below, exactly like a plain approve does for
+			// "only pending applications". 403 (banned / blacklisted / app token) is
+			// never forceable. A 400 on the forced retry also falls through.
 			if (!variables.force && error instanceof ApproveRequestError && error.status === 400) {
 				// Close the tier picker first: the confirm dialog carries the tier
 				// itself, and stacking the two dialogs would trap focus in the wrong one.
 				approveMembershipModalOpen = false;
 				requestToApprove = null;
+				linkRecordToApprove = null;
 				forceConfirm = {
 					request: variables.request,
 					tierId: variables.tierId,
+					linkRecordId: variables.linkRecordId,
 					detail: error.message
 				};
 				return;
@@ -187,8 +217,16 @@
 				});
 			}
 
+			// The register changed under the admin (entry linked/ended meanwhile): refresh the hints.
+			if (variables.linkRecordId) {
+				queryClient.invalidateQueries({
+					queryKey: ['organization', organization.slug, 'member-register']
+				});
+			}
+
 			forceConfirm = null;
-			toast.error(error.message);
+			// The card shows an inline refusal itself; the toast would duplicate it.
+			if (!variables.inline) toast.error(error.message);
 		}
 	}));
 
@@ -255,16 +293,63 @@
 		}
 	}
 
+	/**
+	 * "Approve and link". Resolves when the card may close its dialog: the
+	 * approval went through, or control moved to another dialog (tier picker,
+	 * force confirm). Rejects with the refusal, which the card shows inline.
+	 *
+	 * Tier, in order: the application's own, the register entry's tier (the
+	 * backend's intended default), the org's single standard tier; otherwise the
+	 * same picker plain approve uses.
+	 */
+	async function handleApproveAndLink(
+		request: OrganizationMembershipRequestRetrieve,
+		record: MembershipRecordSchema
+	): Promise<void> {
+		const linkRecordId = record.id;
+		if (!linkRecordId) return;
+
+		let tierId: string | null = null;
+		if (!request.tier) {
+			const standard = standardTiers(tiers);
+			if (record.tier_id) {
+				tierId = record.tier_id;
+			} else if (standard.length === 1 && standard[0].id) {
+				tierId = standard[0].id;
+			} else if (standard.length === 0) {
+				throw new Error(m['membershipRequestsTab.noTiersAvailable']());
+			} else {
+				requestToApprove = request;
+				linkRecordToApprove = linkRecordId;
+				approveMembershipModalOpen = true;
+				return;
+			}
+		}
+
+		try {
+			await approveRequestMutation.mutateAsync({ request, tierId, linkRecordId, inline: true });
+		} catch (error) {
+			// The force-able refusal moved to the confirm dialog; nothing to show inline.
+			if (forceConfirm !== null) return;
+			throw error;
+		}
+	}
+
 	function handleCloseApproveMembershipModal() {
 		if (!approveRequestMutation.isPending) {
 			approveMembershipModalOpen = false;
 			requestToApprove = null;
+			linkRecordToApprove = null;
 		}
 	}
 
 	function handleConfirmApproveRequest(tierId: string) {
 		if (requestToApprove) {
-			approveRequestMutation.mutate({ request: requestToApprove, tierId });
+			approveRequestMutation.mutate({
+				request: requestToApprove,
+				tierId,
+				...(linkRecordToApprove ? { linkRecordId: linkRecordToApprove } : {})
+			});
 		}
 	}
 
@@ -288,6 +373,7 @@
 			approveRequestMutation.mutate({
 				request: forceConfirm.request,
 				tierId: forceConfirm.tierId,
+				...(forceConfirm.linkRecordId ? { linkRecordId: forceConfirm.linkRecordId } : {}),
 				force: true
 			});
 		}
@@ -346,6 +432,7 @@
 				{request}
 				orgSlug={organization.slug}
 				onApprove={handleApproveRequest}
+				onApproveAndLink={handleApproveAndLink}
 				onReject={(r) => rejectRequestMutation.mutate(r)}
 				isProcessing={approveRequestMutation.isPending || rejectRequestMutation.isPending}
 				showActions={request.status === 'pending'}
