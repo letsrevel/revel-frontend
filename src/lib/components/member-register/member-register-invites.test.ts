@@ -122,7 +122,11 @@ describe('row action clock', () => {
 	it('offers Invite once the passed-in now reaches valid_from', async () => {
 		const future = record({ valid_from: '2099-01-01T00:00:00Z' });
 		const { unmount } = renderRow(future, new Date('2098-12-31T00:00:00Z'));
-		expect(screen.queryByText('Invite')).toBeNull();
+		// Open the menu first: with it closed, a negative assertion passes vacuously.
+		await openMenu();
+		expect(
+			screen.queryAllByRole('menuitem', { hidden: true }).map((e) => e.textContent?.trim())
+		).not.toContain('Invite');
 		unmount();
 		renderRow(future, new Date('2099-01-01T00:00:00Z'));
 		await openMenu();
@@ -133,6 +137,12 @@ describe('row action clock', () => {
 });
 
 describe('useNow', () => {
+	// Restore in afterEach so a failed assertion can't leave fake timers active
+	// for the dialog tests that follow.
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('ticks while mounted and stops after unmount', async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date('2026-06-01T12:00:00Z'));
@@ -142,7 +152,6 @@ describe('useNow', () => {
 		expect(screen.getByTestId('now').textContent).not.toBe(first);
 		unmount();
 		expect(vi.getTimerCount()).toBe(0);
-		vi.useRealTimers();
 	});
 });
 
