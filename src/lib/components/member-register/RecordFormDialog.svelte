@@ -16,8 +16,14 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import { createRecord, memberRegisterKeys, updateRecord } from '$lib/member-register/api';
+	import {
+		createRecord,
+		inviteRecord,
+		memberRegisterKeys,
+		updateRecord
+	} from '$lib/member-register/api';
 	import { getEditability } from '$lib/member-register/editability';
 	import { describeRegisterError, type DescribedError } from '$lib/member-register/errors';
 	import {
@@ -58,6 +64,8 @@
 	let original = $state<RecordFormValues>({ ...EMPTY_FORM });
 	let fieldErrors = $state<FormErrors>({});
 	let submitError = $state<DescribedError | null>(null);
+	// Create mode only: send the claim invite right after the entry is added.
+	let sendInvite = $state(false);
 	let seededFor: string | null = null;
 
 	// Seed once per opening (and per record), never on a background refetch of the
@@ -76,8 +84,13 @@
 			original = { ...seed };
 			fieldErrors = {};
 			submitError = null;
+			sendInvite = false;
 		});
 	});
+
+	let inviteFailed = false;
+	// An invite needs an address to send to; the backend refuses future starts too.
+	const canSendInvite = $derived(mode === 'create' && values.email.trim() !== '');
 
 	const mutation = createMutation(() => ({
 		mutationFn: async (): Promise<MembershipRecordSchema> => {
@@ -89,13 +102,27 @@
 					buildUpdateBody(original, values, editability)
 				);
 			}
-			return createRecord(slug, accessToken, buildCreateBody(values));
+			const created = await createRecord(slug, accessToken, buildCreateBody(values));
+			// The entry exists from here on: a failed invite must not fail the create
+			// (a retry would add a duplicate), so it is reported separately.
+			if (canSendInvite && sendInvite && created.id) {
+				try {
+					await inviteRecord(slug, accessToken, created.id);
+				} catch {
+					inviteFailed = true;
+				}
+			}
+			return created;
 		},
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
 			toast.success(
 				mode === 'edit' ? m['memberRegister.savedEdit']() : m['memberRegister.savedCreate']()
 			);
+			if (inviteFailed) {
+				inviteFailed = false;
+				toast.error(m['memberPeople.inviteAfterCreateFailed']());
+			}
 			onClose();
 		},
 		onError: async (error: unknown) => {
@@ -331,6 +358,16 @@
 					{/if}
 				</div>
 			</div>
+
+			{#if canSendInvite}
+				<div class="flex items-start gap-2">
+					<Checkbox id="rf-send-invite" bind:checked={sendInvite} class="mt-0.5" />
+					<div class="space-y-1">
+						<Label for="rf-send-invite">{m['memberPeople.sendInvite']()}</Label>
+						<p class="text-xs text-muted-foreground">{m['memberPeople.sendInviteHelp']()}</p>
+					</div>
+				</div>
+			{/if}
 
 			{#if submitError}
 				<RegisterErrorAlert error={submitError} />

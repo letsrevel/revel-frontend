@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -36,15 +37,24 @@
 		permissions: OrganizationPermissionsSchema | null;
 		tiers: MembershipTierSchema[];
 		staffUserIds: Set<string>;
+		/** Pre-fills the search (the People tab's "Manage access" bridge). */
+		initialSearch?: string;
 	}
 
-	const { organization, isOwner, permissions, tiers, staffUserIds }: Props = $props();
+	const {
+		organization,
+		isOwner,
+		permissions,
+		tiers,
+		staffUserIds,
+		initialSearch = ''
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Search and filter state
-	let memberSearch = $state('');
+	let memberSearch = $state(untrack(() => initialSearch));
 	let memberStatusFilter = $state<MembershipStatus | 'all'>('all');
 	let memberTierFilter = $state<string | 'all'>('all');
 

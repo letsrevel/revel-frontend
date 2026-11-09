@@ -135,9 +135,13 @@ export async function createDayMembershipTier(
 	});
 }
 
-/** The org register page. */
-export function registerPath(orgSlug: string): string {
-	return `/org/${orgSlug}/admin/members/register`;
+/**
+ * The People tab of the Members area (the register's home since the Members
+ * area was unified). `view` is the group chip; the default `everyone` lists
+ * every entry, like the retired register page did.
+ */
+export function registerPath(orgSlug: string, view = 'everyone'): string {
+	return `/org/${orgSlug}/admin/members?tab=people&view=${view}`;
 }
 
 /** The public claim page of an invite link (path only: the emailed host is the platform's). */

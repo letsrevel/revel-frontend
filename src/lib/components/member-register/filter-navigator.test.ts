@@ -26,75 +26,81 @@ function slowGoto() {
 	return { calls, goto };
 }
 
+const TIER_ID = '0b8b3a52-7a54-4f6b-9a1e-6c5d1f7a3c11';
+
 function setup() {
 	const g = slowGoto();
 	render(FilterNavigatorHarness, { props: { goto: g.goto } });
-	const status = screen.getByLabelText(/status/i) as HTMLSelectElement;
-	const kind = screen.getByLabelText(/^(kind|type)/i) as HTMLSelectElement;
-	return { ...g, status, kind };
+	const tier = screen.getByLabelText(/^tier/i) as HTMLSelectElement;
+	const chip = (name: string) => screen.getByRole('button', { name });
+	return { ...g, tier, chip };
 }
+
+const pressed = (el: HTMLElement) => el.getAttribute('aria-pressed') === 'true';
 
 beforeEach(() => toast.error.mockClear());
 afterEach(() => vi.useRealTimers());
 
 describe('filter navigator race (rendered intermediate states)', () => {
-	it('keeps both selects on the intended values mid-flight and coalesces into one more goto', async () => {
-		const { calls, goto, status, kind } = setup();
-		await userEvent.selectOptions(status, 'open');
-		await userEvent.selectOptions(kind, 'temporary');
+	it('keeps the chip and tier on the intended values mid-flight and coalesces into one more goto', async () => {
+		const { calls, goto, tier, chip } = setup();
+		expect(pressed(chip('Current'))).toBe(true);
+		await userEvent.click(chip('Ended'));
+		await userEvent.selectOptions(tier, TIER_ID);
 		// (a) first goto still in flight: nothing reverted, only one goto so far
 		expect(goto).toHaveBeenCalledTimes(1);
-		expect(status.value).toBe('open');
-		expect(kind.value).toBe('temporary');
+		expect(pressed(chip('Ended'))).toBe(true);
+		expect(pressed(chip('Current'))).toBe(false);
+		expect(tier.value).toBe(TIER_ID);
 		calls[0].resolve();
 		// (b) exactly one more goto, carrying both filters
 		await waitFor(() => expect(goto).toHaveBeenCalledTimes(2));
-		expect(calls[1].qs).toBe('kind=temporary&status=open');
+		expect(calls[1].qs).toBe(`tab=people&view=ended&tier=${TIER_ID}`);
 		expect(calls[1].replace).toBe(true);
-		expect(status.value).toBe('open');
-		expect(kind.value).toBe('temporary');
+		expect(pressed(chip('Ended'))).toBe(true);
+		expect(tier.value).toBe(TIER_ID);
 		calls[1].resolve();
-		await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('kind=temporary'));
+		await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('view=ended'));
 		expect(goto).toHaveBeenCalledTimes(2);
-		expect(status.value).toBe('open');
-		expect(kind.value).toBe('temporary');
+		expect(pressed(chip('Ended'))).toBe(true);
+		expect(tier.value).toBe(TIER_ID);
 	});
 
 	it('does not wipe search text typed mid-flight and applies it after the debounce', async () => {
-		const { calls, goto, status } = setup();
-		await userEvent.selectOptions(status, 'open');
+		const { calls, goto, chip } = setup();
+		await userEvent.click(chip('Ended'));
 		const search = screen.getByLabelText(/search/i);
 		await userEvent.type(search, 'ada');
 		calls[0].resolve(); // intermediate settle while the debounce may still be pending
-		await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('status=open'));
+		await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('view=ended'));
 		expect(search).toHaveValue('ada');
 		await waitFor(() => expect(goto.mock.calls.length).toBeGreaterThanOrEqual(2));
 		const last = calls[calls.length - 1];
-		expect(last.qs).toBe('status=open&q=ada');
+		expect(last.qs).toBe('tab=people&view=ended&q=ada');
 		last.resolve();
 		await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('q=ada'));
 		expect(search).toHaveValue('ada');
 	});
 
-	it('keeps the pending status filter when Next page is clicked mid-flight', async () => {
-		const { calls, goto, status } = setup();
-		await userEvent.selectOptions(status, 'open');
+	it('keeps the pending chip when Next page is clicked mid-flight', async () => {
+		const { calls, goto, chip } = setup();
+		await userEvent.click(chip('Everyone'));
 		await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 		expect(goto).toHaveBeenCalledTimes(1);
 		calls[0].resolve();
 		await waitFor(() => expect(goto).toHaveBeenCalledTimes(2));
-		expect(calls[1].qs).toBe('status=open&page=2');
+		expect(calls[1].qs).toBe('tab=people&view=everyone&page=2');
 		// pagination is the one navigation allowed to push history
 		expect(calls[1].replace).toBe(false);
-		expect(status.value).toBe('open');
+		expect(pressed(chip('Everyone'))).toBe(true);
 	});
 
 	it('shows a toast and falls back to the URL state when a navigation rejects', async () => {
-		const { calls, status } = setup();
-		await userEvent.selectOptions(status, 'open');
+		const { calls, chip } = setup();
+		await userEvent.click(chip('Ended'));
 		calls[0].reject(new Error('nav failed'));
 		await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
 		expect(toast.error).toHaveBeenCalledWith("Couldn't apply the filters. Try again.");
-		await waitFor(() => expect(status.value).toBe('all'));
+		await waitFor(() => expect(pressed(chip('Current'))).toBe(true));
 	});
 });

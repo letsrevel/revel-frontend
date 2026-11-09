@@ -60,7 +60,9 @@ test.describe('J13 hard blacklist @p2', () => {
 		await waitForClientAuth(ownerPage);
 		await ownerPage.getByRole('tab', { name: /^Staff/ }).click();
 		await expect(ownerPage.getByText('No staff members found')).toBeVisible({ timeout: 15_000 });
-		await ownerPage.getByRole('tab', { name: /^Members/ }).click();
+		// The per-member list is the temporary "Manage access" bridge (hidden tab).
+		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
+		await waitForClientAuth(ownerPage);
 		const memberCard = ownerPage
 			.locator('article, li, div')
 			.filter({ hasText: victimName })

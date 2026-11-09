@@ -1,8 +1,17 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { canPerformAction } from '$lib/utils/permissions';
+import { legacyTabRedirect } from '$lib/member-register/redirects';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, url }) => {
+	// Tabs were renamed when the Members area was unified (members -> people,
+	// requests -> applications, tokens -> invite-links). Only `tab` is read on the
+	// common path, so in-page filter navigation does not re-run this load.
+	if (url.searchParams.get('tab')) {
+		const query = legacyTabRedirect(url.searchParams);
+		if (query) throw redirect(301, `${url.pathname}?${query}`);
+	}
+
 	// Get organization data and permissions from parent layout
 	const { organization, isOwner, isStaff, permissions } = await parent();
 

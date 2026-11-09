@@ -45,11 +45,6 @@
 		data.isOwner || canPerformAction(data.permissions, data.organization.id, 'check_in_attendees')
 	);
 
-	// The register is guarded by `manage_members` on every route.
-	const canManageMembers = $derived(
-		data.isOwner || canPerformAction(data.permissions, data.organization.id, 'manage_members')
-	);
-
 	// Shared model for the desktop sidebar and the mobile drawer.
 	// Order mirrors the dashboard's former tools index (Dashboard leads: it is
 	// this nav's landing page).
@@ -58,7 +53,6 @@
 			orgSlug: data.organization.slug,
 			isOwner: data.isOwner,
 			canVerifyMembers,
-			canManageMembers,
 			billingWarning: billingNeedsAttention(data.organization)
 		})
 	);

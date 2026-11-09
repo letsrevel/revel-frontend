@@ -60,7 +60,9 @@ test.describe('J8 staff management @p1', () => {
 			await closeDialog(page, manageModal);
 			await staffTab.click({ timeout: 3_000 });
 			if (!(await staffCard.isVisible())) {
-				await page.getByRole('tab', { name: /^Members/ }).click({ timeout: 3_000 });
+				// The per-member list is the temporary "Manage access" bridge (hidden tab).
+				await gotoHydrated(page, `/org/${org.slug}/admin/members?tab=access`);
+				await waitForClientAuth(page);
 				await page.getByRole('button', { name: `Manage ${memberName}` }).click({ timeout: 3_000 });
 				await manageModal
 					.getByRole('button', { name: 'Make Staff Member' })

@@ -91,28 +91,24 @@ describe('register list rendering', () => {
 		})
 	];
 
-	it('renders real table semantics and the status badges', () => {
+	it('renders real table semantics and ONE status badge per row', () => {
 		renderIn(RegisterTable, { records, isOwner: false, onEdit: noop, onEnd: noop, onDelete: noop });
 		const table = screen.getByRole('table');
 		expect(within(table).getAllByRole('columnheader').length).toBeGreaterThanOrEqual(8);
 		expect(within(table).getAllByRole('row')).toHaveLength(3);
-		for (const id of [
-			'no-account',
-			'day-member',
-			'approximate-dates',
-			'merged',
-			'linked-auto',
-			'duplicate-claim',
-			'reason-not-recorded'
-		]) {
-			expect(screen.getByTestId(`register-badge-${id}`)).toBeInTheDocument();
+		expect(table.querySelectorAll('[data-testid^="register-status-"]')).toHaveLength(2);
+		expect(screen.getByTestId('register-status-no-account')).toBeInTheDocument();
+		// The closed day membership reads "Ended"; the secondary badges moved to the sheet.
+		expect(screen.getByTestId('register-status-ended')).toBeInTheDocument();
+		for (const id of ['approximate-dates', 'merged', 'linked-auto', 'duplicate-claim']) {
+			expect(screen.queryByTestId(`register-badge-${id}`)).not.toBeInTheDocument();
 		}
 	});
 
 	it('renders the same entries as cards on mobile', () => {
 		renderIn(RegisterCards, { records, isOwner: false, onEdit: noop, onEnd: noop, onDelete: noop });
 		expect(screen.getAllByTestId('register-card')).toHaveLength(2);
-		expect(screen.getByTestId('register-badge-no-account')).toBeInTheDocument();
+		expect(screen.getByTestId('register-status-no-account')).toBeInTheDocument();
 	});
 });
 

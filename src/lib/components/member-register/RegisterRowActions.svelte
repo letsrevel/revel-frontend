@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { MoreVertical, Pencil, CalendarX, Trash2, Mail, Unlink } from '@lucide/svelte';
+	import { MoreVertical, Pencil, CalendarX, Trash2, Mail, Unlink, UserCog } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
 	import { canUnlink } from '$lib/member-register/reconcile';
 
@@ -15,9 +15,12 @@
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
 		onUnlink: (record: MembershipRecordSchema) => void;
+		/** Bridge to the per-member access list (until the person sheet exists). */
+		onManageAccess?: (record: MembershipRecordSchema) => void;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onManageAccess }: Props =
+		$props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
 	// The backend's `can_invite` (same helper as the invite endpoint's 400) is the
@@ -31,9 +34,11 @@
 	);
 	const reasonId = $derived(`invite-blocked-${record.id}`);
 	const unlinkable = $derived(canUnlink(record));
+	// Only a linked standard entry has an OrganizationMember behind it.
+	const manageable = $derived(!!onManageAccess && !!record.user_id && record.kind === 'standard');
 </script>
 
-<!-- Row actions menu. Merge lives in the Possible duplicates view, where the pairs are. -->
+<!-- Row actions menu. Merge lives in the Possible duplicates dialog, where the pairs are. -->
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
@@ -54,6 +59,12 @@
 			<Pencil aria-hidden="true" />
 			{m['memberRegister.actionEdit']()}
 		</DropdownMenu.Item>
+		{#if manageable}
+			<DropdownMenu.Item onclick={() => onManageAccess?.(record)} data-testid="manage-access">
+				<UserCog aria-hidden="true" />
+				{m['memberPeople.manageAccess']()}
+			</DropdownMenu.Item>
+		{/if}
 		{#if record.can_invite}
 			<DropdownMenu.Item onclick={() => onInvite(record)}>
 				<Mail aria-hidden="true" />

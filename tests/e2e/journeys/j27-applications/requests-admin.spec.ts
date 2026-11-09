@@ -65,9 +65,9 @@ function filterButton(page: Page, label: string): Locator {
 /** Open the Members area straight on the Requests tab (the URL PR④'s redirect
  *  now points at) and confirm the tab really is the selected one. */
 async function openRequestsTab(page: Page, orgSlug: string): Promise<void> {
-	await gotoHydrated(page, `/org/${orgSlug}/admin/members?tab=requests`);
+	await gotoHydrated(page, `/org/${orgSlug}/admin/members?tab=applications`);
 	await waitForClientAuth(page);
-	await expect(page.getByRole('tab', { name: 'Requests' })).toHaveAttribute(
+	await expect(page.getByRole('tab', { name: 'Applications' })).toHaveAttribute(
 		'aria-selected',
 		'true'
 	);
@@ -386,13 +386,13 @@ test.describe('j27 requests admin @p2', () => {
 		expect(redirected, 'no redirect happened at all').not.toBeNull();
 		expect((await redirected?.response())?.status()).toBe(301);
 
-		// …and it lands on the Requests tab, selected.
+		// …and it lands on the Applications tab, selected.
 		expect(new URL(page.url()).pathname + new URL(page.url()).search).toBe(
-			`/org/${org.slug}/admin/members?tab=requests`
+			`/org/${org.slug}/admin/members?tab=applications`
 		);
 		await page.locator('body[data-hydrated="true"]').waitFor({ state: 'attached' });
 		await waitForClientAuth(page);
-		await expect(page.getByRole('tab', { name: 'Requests' })).toHaveAttribute(
+		await expect(page.getByRole('tab', { name: 'Applications' })).toHaveAttribute(
 			'aria-selected',
 			'true'
 		);

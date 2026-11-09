@@ -56,11 +56,11 @@ test.describe('J31 day membership from a ticket @p1', () => {
 		const page = await context.newPage();
 		try {
 			// Register: a Day membership entry sourced from the ticket.
-			await gotoHydrated(page, `${registerPath(org.slug)}?kind=temporary`);
+			await gotoHydrated(page, registerPath(org.slug, 'day'));
 			await waitForClientAuth(page);
 			const entry = registerEntry(page, attendeeName);
 			await expect(entry).toBeVisible({ timeout: 15_000 });
-			await expect(entry.getByTestId('register-badge-day-member')).toBeVisible();
+			await expect(entry.getByTestId('register-status-day-member')).toBeVisible();
 			await expect(entry.getByText('Ticket', { exact: true })).toBeVisible();
 
 			// Staff ticket list: the holder carries the "Day member" badge.

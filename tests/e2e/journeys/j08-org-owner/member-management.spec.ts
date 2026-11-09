@@ -52,7 +52,7 @@ test.describe('J8 member management @p1', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}/admin/members`);
 		await waitForClientAuth(page);
-		await page.getByRole('tab', { name: 'Requests' }).click();
+		await page.getByRole('tab', { name: 'Applications' }).click();
 
 		// Approve with tier: two tiers exist, so the tier-selection modal opens.
 		await page.getByRole('button', { name: `Approve request from ${applicantName}` }).click();
@@ -76,7 +76,9 @@ test.describe('J8 member management @p1', () => {
 		// carry count badges, e.g. "Members (1)" — match on the prefix.) Small
 		// viewports occasionally drop clicks mid re-render, so the modal
 		// sequences run as idempotent loops keyed on the visible outcome.
-		await page.getByRole('tab', { name: /^Members/ }).click();
+		// The per-member list is the temporary "Manage access" bridge (hidden tab).
+		await gotoHydrated(page, `/org/${org.slug}/admin/members?tab=access`);
+		await waitForClientAuth(page);
 		const manageModal = page.getByRole('dialog', { name: `Manage ${applicantName}` });
 		const pausedCard = page
 			.locator('article, li, div')
