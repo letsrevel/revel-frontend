@@ -30,7 +30,9 @@ export async function withRefreshLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 function postRefresh(): Promise<Response> {
-	return fetch(REFRESH_ENDPOINT, { method: 'POST', credentials: 'include' });
+	// keepalive: a reload/navigation must not abort the request after the
+	// backend rotated the token, or the rotated Set-Cookie is lost (#1191).
+	return fetch(REFRESH_ENDPOINT, { method: 'POST', credentials: 'include', keepalive: true });
 }
 
 async function rejectedFingerprint(response: Response): Promise<string | null> {

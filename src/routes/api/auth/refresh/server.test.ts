@@ -7,6 +7,7 @@ vi.mock('$lib/api/generated', () => ({
 
 import { tokenRefresh } from '$lib/api/generated';
 import { DELETE, POST } from './+server';
+import { resetRefreshRotation } from '$lib/server/refresh-rotation';
 
 const mockedTokenRefresh = vi.mocked(tokenRefresh);
 
@@ -57,6 +58,7 @@ async function postStatus(cookies: Cookies): Promise<number> {
 }
 
 beforeEach(() => {
+	resetRefreshRotation();
 	mockedTokenRefresh.mockReset();
 });
 
@@ -154,8 +156,9 @@ describe('POST /api/auth/refresh', () => {
 	});
 
 	it('keeps the winner of two overlapping refreshes', async () => {
-		// Two requests carried the same cookie; the first rotates it, the second
-		// is rejected because that token is now blacklisted.
+		// Two requests carried the same cookie. The first rotates it; the second
+		// (#1191) is answered from the same rotation instead of replaying the
+		// now-blacklisted token, so both end up holding the winner's fresh token.
 		mockedTokenRefresh
 			.mockResolvedValueOnce({
 				data: { access: 'new-access', refresh: 'new-refresh' },
@@ -172,10 +175,12 @@ describe('POST /api/auth/refresh', () => {
 		const loser = fakeCookies({ refresh_token: 'old-refresh' });
 
 		expect((await POST(postArgs(winner.cookies))).status).toBe(200);
-		expect((await POST(postArgs(loser.cookies))).status).toBe(401);
+		expect((await POST(postArgs(loser.cookies))).status).toBe(200);
+		expect(mockedTokenRefresh).toHaveBeenCalledTimes(1);
 
 		// Apply both responses' cookie writes to the browser, winner first.
 		for (const [name, value] of winner.jar) browser.jar.set(name, value);
+		for (const [name, value] of loser.jar) browser.jar.set(name, value);
 		for (const name of loser.deleted) browser.jar.delete(name);
 
 		expect(loser.deleted).toEqual([]);

@@ -33,6 +33,16 @@ describe('requestTokenRefresh', () => {
 		expect(methods()).toEqual(['POST']);
 	});
 
+	// #1191: a reload must not abort the refresh after the backend rotated the
+	// token, or the rotated Set-Cookie is lost and the old token is blacklisted.
+	it('sends the refresh POST with keepalive so it survives a reload', async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, { access: 'a' }));
+
+		await requestTokenRefresh(0);
+
+		expect(fetchMock.mock.calls[0][1]?.keepalive).toBe(true);
+	});
+
 	// #950: a request that lost the rotation race 401s; by the retry the
 	// winner's cookie has landed and the refresh succeeds.
 	it('heals a lost rotation race with one retry', async () => {

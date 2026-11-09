@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { tokenRefresh } from '$lib/api/generated';
+import { rotateRefreshToken } from '$lib/server/refresh-rotation';
 import {
 	getAccessTokenCookieOptions,
 	getRefreshTokenCookieOptions,
@@ -32,6 +32,10 @@ import { sessionRememberMe } from '$lib/server/session';
  * origin is unreachable from the frontend container, that makes sign-in appear
  * to succeed and then silently fall back to logged-out.
  *
+ * Rotation goes through `rotateRefreshToken` (single-flight + a 30 s replay
+ * window, shared with the SSR hook) so a reload racing this call cannot present
+ * the just-blacklisted token (#1191).
+ *
  * A REJECTED refresh never deletes the cookies (#950). The rejection only
  * proves that the cookie *this request* carried was stale — a concurrent
  * request (another tab, an SSR refresh in hooks.server.ts) may already have
@@ -55,16 +59,7 @@ export const POST: RequestHandler = async ({ cookies, fetch, locals }) => {
 
 	try {
 		// Call backend to refresh the token
-		const {
-			data,
-			error: refreshError,
-			response
-		} = await tokenRefresh({
-			body: {
-				refresh: refreshToken
-			},
-			fetch
-		});
+		const { data, error: refreshError, response } = await rotateRefreshToken(refreshToken, fetch);
 
 		if (refreshError || !data || !data.access) {
 			log.warning('auth_refresh_failed', {

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
-import { tokenRefresh } from '$lib/api/generated';
+import { rotateRefreshToken } from '$lib/server/refresh-rotation';
 import { API_BASE_URL } from '$lib/config/api';
 import { prepareApiRequest } from '$lib/server/tenant-fetch';
 import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';
@@ -107,10 +107,9 @@ async function refreshSession(
 	try {
 		// `event.fetch` (not the global) so `handleFetch` below rewrites this call
 		// to INTERNAL_API_URL — see #883.
-		const { data, error: refreshError } = await tokenRefresh({
-			body: { refresh: refreshToken },
-			fetch: event.fetch
-		});
+		// Shared with POST /api/auth/refresh so a reload racing a client refresh
+		// reuses its rotation instead of replaying a blacklisted token (#1191).
+		const { data, error: refreshError } = await rotateRefreshToken(refreshToken, event.fetch);
 
 		if (refreshError || !data || !data.access || !data.refresh) {
 			log.warning('token_refresh_failed', { error: refreshError });
