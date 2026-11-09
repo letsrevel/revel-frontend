@@ -9,12 +9,12 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
-const INVITE_TOKEN_RE = /(\/join\/(?:org|event)\/)[^/\s?#]+/g;
+const INVITE_TOKEN_RE = /(\/(?:join\/(?:org|event)|member-invite)\/)[^/\s?#]+/g;
 
 /**
  * Masks invitation tokens in logged text. Two layers: the value of every
  * token-like route param (`[token_id]`, ...) in raw and encoded form, and
- * ALWAYS a regex over `/join/{org,event}/<token>` anywhere in the string,
+ * ALWAYS a regex over `/join/{org,event}/<token>` and `/member-invite/<token>` anywhere in the string,
  * because `event.params` is empty for unmatched/invalid paths (404/400) and
  * non-canonical encodings (`%61bc`) never match the raw value.
  */

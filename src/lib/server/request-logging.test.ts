@@ -238,6 +238,11 @@ describe('redactTokens', () => {
 		expect(redactTokens('Not found: /join/org/tok', {})).toBe('Not found: /join/org/REDACTED');
 	});
 
+	it('redacts member-invite paths (#1171)', () => {
+		expect(redactTokens('/member-invite/tok', {})).toBe('/member-invite/REDACTED');
+		expect(redactTokens('/member-invite/tok', { token: 'tok' })).toBe('/member-invite/REDACTED');
+	});
+
 	it('redacts non-canonical encodings via the regex fallback', () => {
 		expect(redactTokens('/join/event/%61bc123', { token_id: 'abc123' })).toBe(
 			'/join/event/REDACTED'
