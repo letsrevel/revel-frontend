@@ -173,6 +173,7 @@
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		submitError = null;
+		// Normalise once, where values enter the form state (seed and submit).
 		values.validFrom = normalizeLocalInput(values.validFrom);
 		values.validUntil = normalizeLocalInput(values.validUntil);
 		fieldErrors = validateRecordForm(values, {
@@ -181,17 +182,6 @@
 		});
 		if (Object.keys(fieldErrors).length > 0) return;
 		mutation.mutate();
-	}
-
-	// A date-only value (typed, pasted, or set by automation) means that day at
-	// 00:00: normalise it to a conforming datetime-local string.
-	function normalizeOnInput(field: 'validFrom' | 'validUntil', e: Event) {
-		const el = e.currentTarget as HTMLInputElement;
-		const next = normalizeLocalInput(el.value);
-		if (next !== el.value && next) {
-			values[field] = next;
-			el.value = next;
-		}
 	}
 
 	function handleOpenChange(next: boolean) {
@@ -296,7 +286,6 @@
 						id="rf-from"
 						type="datetime-local"
 						bind:value={values.validFrom}
-						oninput={(e) => normalizeOnInput('validFrom', e)}
 						aria-invalid={fieldErrors.validFrom ? 'true' : undefined}
 						aria-describedby="rf-from-read{fieldErrors.validFrom ? ' rf-from-err' : ''}"
 					/>
@@ -316,7 +305,6 @@
 						id="rf-until"
 						type="datetime-local"
 						bind:value={values.validUntil}
-						oninput={(e) => normalizeOnInput('validUntil', e)}
 						disabled={validUntilLocked}
 						required={editability?.reopenBlocked ?? false}
 						aria-invalid={fieldErrors.validUntil ? 'true' : undefined}

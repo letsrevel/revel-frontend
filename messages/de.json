@@ -10870,6 +10870,7 @@
 	"memberRegister.droppedLocked": "Diese Änderungen wurden nicht übernommen, weil die Felder jetzt gesperrt sind: {fields}.",
 	"memberRegister.recordGone": "Dieser Eintrag ist nicht mehr in der Liste. Die Liste wurde aktualisiert.",
 	"memberRegister.tierFilterStale": "Der Stufen-Filter wurde entfernt, weil diese Stufe nicht mehr existiert.",
+	"memberRegister.filtersApplyError": "Die Filter konnten nicht angewendet werden. Bitte versuche es erneut.",
 	"memberRegister.cancel": "Abbrechen",
 	"memberRegister.create": "Eintrag hinzufügen",
 	"memberRegister.save": "Änderungen speichern",

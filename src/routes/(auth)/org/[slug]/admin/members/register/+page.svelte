@@ -52,11 +52,10 @@
 		pageToRedirect,
 		hasActiveFilters,
 		isRegisterEmpty,
-		parseFilters,
-		type RegisterFilters as Filters
+		parseFilters
 	} from '$lib/member-register/filters';
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
-	import { createFilterNavigator } from '$lib/member-register/filter-navigator';
+	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 
 	const { data }: { data: PageData } = $props();
@@ -70,12 +69,8 @@
 	// and back/forward restores them.
 	const filters = $derived(parseFilters($page.url.searchParams));
 
-	// Bumped whenever queued navigations settle so the filter controls re-sync
-	// their DOM state with the URL.
-	let filterSyncToken = $state(0);
-
-	// Patches merge onto the latest intended filters (not the URL-derived ones,
-	// which lag a navigation behind) and navigations are serialised.
+	// Patches coalesce onto the latest intended filters (the URL lags a navigation
+	// behind); the controls render `navigator.intended`, the list queries the URL.
 	const navigator = createFilterNavigator({
 		current: () => filters,
 		navigate: async (qs, opts) => {
@@ -86,12 +81,9 @@
 				noScroll: true
 			});
 		},
-		onSettled: () => (filterSyncToken += 1)
+		onError: () => toast.error(m['memberRegister.filtersApplyError']())
 	});
-
-	function applyFilters(next: Partial<Filters>, opts?: { replace?: boolean }) {
-		navigator.apply(next, opts);
-	}
+	const intendedFilters = $derived(navigator.intended);
 
 	// All-kinds tier list: the filter offers standard AND temporary tiers; the
 	// create/edit form offers the standard ones only (derived below).
@@ -176,7 +168,7 @@
 			: null
 	);
 	$effect(() => {
-		if (redirectPage !== null) applyFilters({ ...filters, page: redirectPage }, { replace: true });
+		if (redirectPage !== null) navigator.patch({ page: redirectPage });
 	});
 
 	// A well-formed tier id that no longer exists matches nothing (the backend
@@ -185,7 +177,7 @@
 		const tierId = filters.tierId;
 		if (tierId && tiersQuery.isSuccess && !allTiers.some((t) => t.id === tierId)) {
 			toast.info(m['memberRegister.tierFilterStale']());
-			applyFilters({ ...filters, tierId: null, page: 1 }, { replace: true });
+			navigator.patch({ tierId: null, page: 1 });
 		}
 	});
 
@@ -290,11 +282,10 @@
 
 		<TabsContent value="register" class="space-y-6">
 			<RegisterFilters
-				{filters}
-				syncToken={filterSyncToken}
+				filters={intendedFilters}
 				tiers={allTiers}
 				{timezone}
-				onChange={applyFilters}
+				onChange={navigator.patch}
 			/>
 
 			<section aria-labelledby="register-results-heading" aria-busy={listQuery.isFetching}>
@@ -331,7 +322,7 @@
 					>
 						{#snippet action()}
 							{#if hasActiveFilters(filters)}
-								<Button variant="outline" onclick={() => applyFilters({ ...DEFAULT_FILTERS })}>
+								<Button variant="outline" onclick={() => navigator.patch({ ...DEFAULT_FILTERS })}>
 									{m['memberRegister.clearFilters']()}
 								</Button>
 							{:else}
@@ -374,7 +365,7 @@
 								variant="outline"
 								size="sm"
 								disabled={filters.page <= 1}
-								onclick={() => applyFilters({ ...filters, page: filters.page - 1 })}
+								onclick={() => navigator.patch({ page: intendedFilters.page - 1 }, { push: true })}
 							>
 								<ChevronLeft aria-hidden="true" />
 								{m['memberRegister.previous']()}
@@ -386,7 +377,7 @@
 								variant="outline"
 								size="sm"
 								disabled={filters.page >= pageCount}
-								onclick={() => applyFilters({ ...filters, page: filters.page + 1 })}
+								onclick={() => navigator.patch({ page: intendedFilters.page + 1 }, { push: true })}
 							>
 								{m['memberRegister.next']()}
 								<ChevronRight aria-hidden="true" />

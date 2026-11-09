@@ -435,8 +435,14 @@ describe('date-only start input', () => {
 		expect(normalizeLocalInput('')).toBe('');
 	});
 
-	it('validates and builds a create body from a date-only valid_from', () => {
-		const values = { ...EMPTY, fullName: 'A', tierId: 't', validFrom: '2026-03-04' };
+	it('validates and builds a create body from a normalised date-only valid_from', () => {
+		// The form normalises once at its entry points (seed, submit); the helpers expect that.
+		const values = {
+			...EMPTY,
+			fullName: 'A',
+			tierId: 't',
+			validFrom: normalizeLocalInput('2026-03-04')
+		};
 		expect(validateRecordForm(values, { mode: 'create' }).validFrom).toBeUndefined();
 		const body = buildCreateBody(values);
 		expect(new Date(body.valid_from).getTime()).toBe(new Date('2026-03-04T00:00').getTime());

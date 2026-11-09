@@ -10870,6 +10870,7 @@
 	"memberRegister.droppedLocked": "Estos cambios no se conservaron porque los campos ahora están bloqueados: {fields}.",
 	"memberRegister.recordGone": "Esta entrada ya no está en la lista. La lista se ha actualizado.",
 	"memberRegister.tierFilterStale": "Se quitó el filtro de nivel porque ese nivel ya no existe.",
+	"memberRegister.filtersApplyError": "No se pudieron aplicar los filtros. Inténtalo de nuevo.",
 	"memberRegister.cancel": "Cancelar",
 	"memberRegister.create": "Añadir entrada",
 	"memberRegister.save": "Guardar cambios",

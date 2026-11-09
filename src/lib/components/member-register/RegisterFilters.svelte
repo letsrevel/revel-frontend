@@ -21,26 +21,28 @@
 		/** All-kinds tier list (standard and temporary). */
 		tiers: MembershipTierSchema[];
 		timezone: string | null;
-		/** Bumped when pending navigations settle: re-syncs the selects with `filters`. */
-		syncToken?: number;
-		onChange: (patch: Partial<RegisterFilters>, opts?: { replace?: boolean }) => void;
+		/** Receives PATCHES, never full objects built from the (possibly lagging) props. */
+		onChange: (patch: Partial<RegisterFilters>) => void;
 	}
 
-	const { filters, tiers, timezone, syncToken = 0, onChange }: Props = $props();
+	const { filters, tiers, timezone, onChange }: Props = $props();
 
 	const SEARCH_DEBOUNCE_MS = 300;
 
 	let searchInput = $state(untrack(() => filters.search));
-	let lastApplied = untrack(() => filters.search);
+	// The last search value this component emitted (or mirrored from outside).
+	let lastEmitted = untrack(() => filters.search);
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
-	// Back/forward navigation changes the URL filters from outside: mirror them.
+	// Mirror the intended search into the box only when the change did NOT
+	// originate here (back/forward, clear-all elsewhere). Our own emissions are
+	// already in the box, and intermediate navigation settles never touch it.
 	$effect(() => {
 		const external = filters.search;
-		if (external !== lastApplied) {
-			lastApplied = external;
+		if (external !== lastEmitted) {
+			lastEmitted = external;
 			searchInput = external;
-			// A pending debounce would re-apply the stale text over the navigated state.
+			// The typed text is superseded by the external change.
 			clearTimeout(timer);
 		}
 	});
@@ -51,31 +53,11 @@
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			const next = searchInput.trim();
-			if (next === lastApplied) return;
-			lastApplied = next;
-			onChange({ search: next, page: 1 }, { replace: true });
+			if (next === lastEmitted) return;
+			lastEmitted = next;
+			onChange({ search: next, page: 1 });
 		}, SEARCH_DEBOUNCE_MS);
 	}
-
-	let kindEl = $state<HTMLSelectElement>();
-	let tierEl = $state<HTMLSelectElement>();
-	let openEl = $state<HTMLSelectElement>();
-	let accountEl = $state<HTMLSelectElement>();
-
-	// A native select keeps whatever the user picked; `value={...}` only writes when
-	// the prop CHANGES. If a rapid change sequence ends on the value the URL already
-	// had, the prop never changes and the DOM would stay out of sync. Re-assert the
-	// URL-derived values on every filter change and whenever navigations settle.
-	$effect(() => {
-		void syncToken;
-		const wanted: [HTMLSelectElement | undefined, string][] = [
-			[kindEl, filters.kind ?? ''],
-			[tierEl, filters.tierId ?? ''],
-			[openEl, filters.open],
-			[accountEl, filters.account]
-		];
-		for (const [el, value] of wanted) if (el && el.value !== value) el.value = value;
-	});
 
 	function update(patch: Partial<RegisterFilters>) {
 		onChange({ ...patch, page: 1 });
@@ -83,7 +65,7 @@
 
 	function clearAll() {
 		clearTimeout(timer);
-		lastApplied = '';
+		lastEmitted = '';
 		searchInput = '';
 		onChange({ ...DEFAULT_FILTERS });
 	}
@@ -118,7 +100,6 @@
 			<Label for="register-kind">{m['memberRegister.kindLabel']()}</Label>
 			<select
 				id="register-kind"
-				bind:this={kindEl}
 				class="{SELECT_CLASS} mt-2"
 				value={filters.kind ?? ''}
 				onchange={(e) => {
@@ -136,7 +117,6 @@
 			<Label for="register-tier">{m['memberRegister.tierLabel']()}</Label>
 			<select
 				id="register-tier"
-				bind:this={tierEl}
 				class="{SELECT_CLASS} mt-2"
 				value={filters.tierId ?? ''}
 				onchange={(e) => update({ tierId: e.currentTarget.value || null })}
@@ -158,7 +138,6 @@
 			<Label for="register-open">{m['memberRegister.statusLabel']()}</Label>
 			<select
 				id="register-open"
-				bind:this={openEl}
 				class="{SELECT_CLASS} mt-2"
 				value={filters.open}
 				onchange={(e) => update({ open: e.currentTarget.value as OpenFilter })}
@@ -173,7 +152,6 @@
 			<Label for="register-account">{m['memberRegister.accountLabel']()}</Label>
 			<select
 				id="register-account"
-				bind:this={accountEl}
 				class="{SELECT_CLASS} mt-2"
 				value={filters.account}
 				onchange={(e) => update({ account: e.currentTarget.value as AccountFilter })}
@@ -190,7 +168,7 @@
 			label={m['memberRegister.dayLabel']()}
 			value={filters.activeOn ?? ''}
 			{timezone}
-			onChange={(day) => onChange({ activeOn: day || null, page: 1 }, { replace: true })}
+			onChange={(day) => onChange({ activeOn: day || null, page: 1 })}
 		/>
 	</div>
 

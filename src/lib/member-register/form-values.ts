@@ -48,7 +48,7 @@ export function normalizeLocalInput(value: string | null | undefined): string {
  * shared helper does not validate; a garbage string would reach the API).
  */
 function toInstant(raw: string | null | undefined): string | null {
-	const local = normalizeLocalInput(raw);
+	const local = (raw ?? '').trim();
 	if (!local || !LOCAL_INPUT_RE.test(local) || Number.isNaN(new Date(local).getTime())) return null;
 	return toISOString(local);
 }
@@ -58,8 +58,8 @@ export function formValuesFromRecord(record: MembershipRecordSchema): RecordForm
 		fullName: record.full_name,
 		email: record.email ?? '',
 		tierId: record.tier_id ?? '',
-		validFrom: toDateTimeLocal(record.valid_from),
-		validUntil: toDateTimeLocal(record.valid_until)
+		validFrom: normalizeLocalInput(toDateTimeLocal(record.valid_from)),
+		validUntil: normalizeLocalInput(toDateTimeLocal(record.valid_until))
 	};
 }
 
@@ -105,7 +105,7 @@ export function validateRecordForm(
 	else if (
 		opts.editability?.validFromNotFuture &&
 		// Only a changed valid_from is sent, so only a changed one is checked.
-		(!opts.original || normalizeLocalInput(values.validFrom) !== opts.original.validFrom) &&
+		(!opts.original || values.validFrom !== opts.original.validFrom) &&
 		new Date(from) > (opts.now ?? new Date())
 	) {
 		errors.validFrom = 'validFromFuture';
@@ -165,7 +165,7 @@ export function buildUpdateBody(
 
 	// Compare the input strings, not instants: seconds are not representable in the input,
 	// so an untouched field must not be re-sent (and silently truncated).
-	if (current.validFrom && normalizeLocalInput(current.validFrom) !== original.validFrom) {
+	if (current.validFrom && current.validFrom !== original.validFrom) {
 		const iso = toInstant(current.validFrom);
 		if (iso) body.valid_from = iso;
 	}

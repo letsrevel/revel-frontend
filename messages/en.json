@@ -10870,6 +10870,7 @@
 	"memberRegister.droppedLocked": "These changes were not kept because the fields are now locked: {fields}.",
 	"memberRegister.recordGone": "This entry is no longer in the list. The list has been refreshed.",
 	"memberRegister.tierFilterStale": "The tier filter was removed because that tier no longer exists.",
+	"memberRegister.filtersApplyError": "Couldn't apply the filters. Try again.",
 	"memberRegister.cancel": "Cancel",
 	"memberRegister.create": "Add entry",
 	"memberRegister.save": "Save changes",
