@@ -1,5 +1,5 @@
 <script lang="ts" generics="T">
-	import { tick, untrack } from 'svelte';
+	import { tick, untrack, type Snippet } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -14,7 +14,7 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { memberRegisterKeys, RegisterApiError } from '$lib/member-register/api';
+	import { invalidateRegister, RegisterApiError } from '$lib/member-register/api';
 	import {
 		describeRegisterError,
 		type DescribedError,
@@ -49,6 +49,8 @@
 		description: string;
 		confirmLabel: string;
 		confirmVariant?: 'default' | 'destructive';
+		/** Extra content between the description and the footer (e.g. a warning). */
+		body?: Snippet;
 		successMessage: (result: T) => string;
 	}
 
@@ -65,10 +67,13 @@
 		description,
 		confirmLabel,
 		confirmVariant = 'default',
+		body,
 		successMessage
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
+	// Only merge and unlink can add or remove a possible-duplicate pair.
+	const changesPairs = $derived(action === 'merge' || action === 'unlink');
 	let submitError = $state<DescribedError | null>(null);
 
 	$effect(() => {
@@ -81,7 +86,7 @@
 			return run(record.id);
 		},
 		onSuccess: async (result: T) => {
-			await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+			await invalidateRegister(queryClient, slug, changesPairs);
 			toast.success(successMessage(result));
 			onClose();
 		},
@@ -92,7 +97,7 @@
 				described.stale ||
 				(staleOn400 && error instanceof RegisterApiError && error.status === 400);
 			if (stale) {
-				await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+				await invalidateRegister(queryClient, slug, changesPairs);
 				await tick();
 				if (!recordPresent) {
 					toast.info(m['memberRegister.recordGone']());
@@ -114,6 +119,8 @@
 				<DialogTitle>{title}</DialogTitle>
 				<DialogDescription>{description}</DialogDescription>
 			</DialogHeader>
+
+			{@render body?.()}
 
 			{#if submitError}
 				<RegisterErrorAlert error={submitError} />

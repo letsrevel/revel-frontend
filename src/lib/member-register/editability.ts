@@ -1,4 +1,5 @@
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
+import { isOpenStandard } from './open-standard';
 
 /**
  * Which fields of a register entry staff may change, mirroring
@@ -37,7 +38,7 @@ type EditabilityInput = Pick<
 
 export function getEditability(record: EditabilityInput): RecordEditability {
 	const open = !record.valid_until;
-	const linkedOpen = record.has_account && record.kind === 'standard' && open;
+	const linkedOpen = record.has_account && isOpenStandard(record);
 	const dayMember = record.kind === 'temporary';
 	return {
 		linkedOpen,
