@@ -59,6 +59,8 @@ describe('legacyTabRedirect', () => {
 		expect(legacyTabRedirect(params('tab=members'))).toBe('tab=people');
 		expect(legacyTabRedirect(params('tab=requests'))).toBe('tab=applications');
 		expect(legacyTabRedirect(params('tab=tokens&x=1'))).toBe('tab=invite-links&x=1');
+		// The retired "Manage access" bridge lands on People.
+		expect(legacyTabRedirect(params('tab=access'))).toBe('tab=people');
 	});
 
 	it('leaves canonical, unknown and missing tabs alone', () => {

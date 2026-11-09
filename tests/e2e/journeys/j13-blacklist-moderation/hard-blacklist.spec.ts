@@ -10,6 +10,7 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { openPersonSheet, registerEntry, registerPath } from '../../support/member-register';
 
 // J13 (USER_JOURNEYS.md) — hard blacklist consequences. Blacklisting a user
 // who is an active STAFF MEMBER strips their staff role, flips their
@@ -60,15 +61,17 @@ test.describe('J13 hard blacklist @p2', () => {
 		await waitForClientAuth(ownerPage);
 		await ownerPage.getByRole('tab', { name: /^Staff/ }).click();
 		await expect(ownerPage.getByText('No staff members found')).toBeVisible({ timeout: 15_000 });
-		// The per-member list is the temporary "Manage access" bridge (hidden tab).
-		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
+		// A banned membership ends the register entry: it shows up as Ended (with its
+		// end reason in the sheet's periods) and offers no member actions.
+		await gotoHydrated(ownerPage, registerPath(org.slug, 'ended'));
 		await waitForClientAuth(ownerPage);
-		const memberCard = ownerPage
-			.locator('article, li, div')
-			.filter({ hasText: victimName })
-			.filter({ hasText: /Banned/ })
-			.first();
-		await expect(memberCard).toBeVisible({ timeout: 15_000 });
+		await expect(
+			registerEntry(ownerPage, victimName).getByTestId('register-status-ended')
+		).toBeVisible({ timeout: 15_000 });
+		const sheet = await openPersonSheet(ownerPage, victimName);
+		await expect(sheet.getByTestId('person-periods')).toContainText('Ended:');
+		await expect(sheet.getByTestId('person-manage-membership')).toHaveCount(0);
+		await ownerPage.keyboard.press('Escape');
 
 		// The banned user's event access is gone outright — hard-blacklisting
 		// hides the org's events entirely: direct URL → 404.

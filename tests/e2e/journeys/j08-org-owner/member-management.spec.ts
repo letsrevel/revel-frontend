@@ -9,10 +9,11 @@ import { authenticateContext } from '../../support/session';
 import { waitForEmail } from '../../support/mailpit';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog, pickSelectOption } from '../../support/ui';
+import { registerPath } from '../../support/member-register';
 
 // J8.3 (USER_JOURNEYS.md) — member management: approve a membership request
-// with a tier, reject another, pause the approved member, ban them (behind the
-// inline ban confirmation), remove them.
+// with a tier, reject another, pause the approved member from the person sheet,
+// check the ban confirmation (behind the inline ban confirmation), remove them.
 //
 // Isolation: throwaway-owned org accepting requests; two throwaway
 // applicants. A SECOND membership tier is arranged so approval goes through
@@ -72,25 +73,28 @@ test.describe('J8 member management @p1', () => {
 		await page.getByRole('button', { name: `Reject request from ${rejectedName}` }).click();
 		await expect(page.getByText('No pending requests')).toBeVisible({ timeout: 15_000 });
 
-		// The approved applicant is an active member; pause them. (Tab names
-		// carry count badges, e.g. "Members (1)" — match on the prefix.) Small
-		// viewports occasionally drop clicks mid re-render, so the modal
-		// sequences run as idempotent loops keyed on the visible outcome.
-		// The per-member list is the temporary "Manage access" bridge (hidden tab).
-		await gotoHydrated(page, `/org/${org.slug}/admin/members?tab=access`);
+		// The approved applicant is an active member; pause them from the person
+		// sheet (People row -> sheet -> Manage membership). Small viewports
+		// occasionally drop clicks mid re-render, so the modal sequences run as
+		// idempotent loops keyed on the visible outcome.
+		await gotoHydrated(page, registerPath(org.slug, 'current'));
 		await waitForClientAuth(page);
+		const sheet = page.getByRole('dialog', { name: applicantName, exact: true });
 		const manageModal = page.getByRole('dialog', { name: `Manage ${applicantName}` });
-		const pausedCard = page
-			.locator('article, li, div')
-			.filter({ hasText: applicantName })
-			.filter({ hasText: /Paused/ })
-			.first();
+		const openManage = async () => {
+			if (!(await sheet.isVisible())) {
+				await page
+					.getByRole('button', { name: `Open ${applicantName}` })
+					.first()
+					.click({ timeout: 3_000 });
+			}
+			await sheet.getByRole('button', { name: 'Manage membership' }).click({ timeout: 3_000 });
+		};
+		const pausedBadge = sheet.getByTestId('register-status-paused');
 		await expect(async () => {
 			await closeDialog(page, manageModal);
-			if (!(await pausedCard.isVisible())) {
-				await page.getByRole('button', { name: `Manage ${applicantName}` }).click({
-					timeout: 3_000
-				});
+			if (!(await pausedBadge.isVisible())) {
+				await openManage();
 				await pickSelectOption(page, manageModal.getByLabel('Membership Status'), 'Paused');
 				const save = manageModal.getByRole('button', { name: 'Save Changes' });
 				if (await save.isVisible()) {
@@ -98,59 +102,52 @@ test.describe('J8 member management @p1', () => {
 				}
 				await closeDialog(page, manageModal);
 			}
-			await expect(pausedCard).toBeVisible({ timeout: 5_000 });
+			await expect(pausedBadge).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 90_000 });
 
-		// Ban the member. Banning is gated behind an inline confirmation because
-		// the backend also cancels the member's subscription and stops Stripe
-		// billing (BE d4570cf3) — "Save Changes" only opens the panel; the ban
-		// lands on "Yes, Ban Member".
-		const bannedCard = page
-			.locator('article, li, div')
-			.filter({ hasText: applicantName })
-			.filter({ hasText: /Banned/ })
-			.first();
+		// Banning is gated behind an inline confirmation because the backend also
+		// cancels the member's subscription and stops Stripe billing (BE d4570cf3)
+		// — "Save Changes" only opens the panel; the ban lands on "Yes, Ban
+		// Member". The ban ENDS the register entry, which takes the person off the
+		// Current list and out of reach of the member actions, so this run only
+		// checks the confirmation panel and backs out; the member is removed next.
+		// (Executing a ban is covered by the blacklist journeys, j13.)
 		await expect(async () => {
 			await closeDialog(page, manageModal);
-			if (!(await bannedCard.isVisible())) {
-				await page.getByRole('button', { name: `Manage ${applicantName}` }).click({
-					timeout: 3_000
-				});
-				await pickSelectOption(page, manageModal.getByLabel('Membership Status'), 'Banned');
-				const save = manageModal.getByRole('button', { name: 'Save Changes' });
-				if (await save.isVisible()) {
-					await save.click({ timeout: 3_000 });
-				}
-				// The confirm panel — not the ban — is what "Save Changes" produces.
-				const confirmBan = manageModal.getByRole('button', { name: 'Yes, Ban Member' });
-				await expect(confirmBan).toBeVisible({ timeout: 5_000 });
-				await expect(
-					manageModal.getByText(/lose access to every event in this organization/).first()
-				).toBeVisible();
-				// This member holds a tier but pays nothing, so the panel must NOT
-				// claim a subscription is being cancelled (BE #805 / FE: the billing
-				// sentence is now conditional on an inlined live subscription).
-				await expect(manageModal.getByText(/recurring billing stops/)).toHaveCount(0);
-				await confirmBan.click({ timeout: 3_000 });
-				await closeDialog(page, manageModal);
+			await openManage();
+			await pickSelectOption(page, manageModal.getByLabel('Membership Status'), 'Banned');
+			const save = manageModal.getByRole('button', { name: 'Save Changes' });
+			if (await save.isVisible()) {
+				await save.click({ timeout: 3_000 });
 			}
-			await expect(bannedCard).toBeVisible({ timeout: 5_000 });
+			// The confirm panel — not the ban — is what "Save Changes" produces.
+			await expect(manageModal.getByRole('button', { name: 'Yes, Ban Member' })).toBeVisible({
+				timeout: 5_000
+			});
+			await expect(
+				manageModal.getByText(/lose access to every event in this organization/).first()
+			).toBeVisible();
+			// This member holds a tier but pays nothing, so the panel must NOT
+			// claim a subscription is being cancelled (BE #805 / FE: the billing
+			// sentence is now conditional on an inlined live subscription).
+			await expect(manageModal.getByText(/recurring billing stops/)).toHaveCount(0);
 		}).toPass({ timeout: 90_000 });
+		await closeDialog(page, manageModal);
+		await expect(pausedBadge).toBeVisible();
 
-		// Remove the member entirely.
-		const membersEmpty = page.getByText('No members found');
+		// Remove the member entirely: the entry ends, the sheet closes by itself and
+		// the person leaves the Current list.
+		const personRow = page.getByRole('button', { name: `Open ${applicantName}` });
 		await expect(async () => {
 			await closeDialog(page, manageModal);
-			if (!(await membersEmpty.isVisible())) {
-				await page.getByRole('button', { name: `Manage ${applicantName}` }).click({
-					timeout: 3_000
-				});
+			if ((await personRow.count()) > 0) {
+				await openManage();
 				await manageModal
 					.getByRole('button', { name: 'Remove from Organization' })
 					.click({ timeout: 3_000 });
 				await manageModal.getByRole('button', { name: 'Yes, Remove' }).click({ timeout: 3_000 });
 			}
-			await expect(membersEmpty).toBeVisible({ timeout: 5_000 });
+			await expect(personRow).toHaveCount(0, { timeout: 5_000 });
 		}).toPass({ timeout: 90_000 });
 
 		expect(dialogs).toHaveLength(0);

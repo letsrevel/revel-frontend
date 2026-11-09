@@ -168,7 +168,7 @@ describe('UserNoteDialog', () => {
 		expect(screen.queryByText(/Saving an empty note deletes it/)).not.toBeInTheDocument();
 	});
 
-	it('writes the PUT response into the cache without refetching, and only refreshes the members list', async () => {
+	it('writes the PUT response into the cache without refetching, and refreshes the members list and the register', async () => {
 		get.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
 		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		const invalidate = vi.spyOn(client, 'invalidateQueries');
@@ -177,15 +177,17 @@ describe('UserNoteDialog', () => {
 		await userEvent.click(screen.getByRole('button', { name: 'Save note' }));
 		await waitFor(() => expect(onClose).toHaveBeenCalled());
 		expect(client.getQueryData(['organization', 'acme', 'user-note', 'u2'])).toEqual(existing);
-		expect(invalidate).toHaveBeenCalledTimes(1);
 		expect(invalidate).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'members'] });
+		expect(invalidate).toHaveBeenCalledWith({
+			queryKey: ['organization', 'acme', 'member-register']
+		});
 		expect(get).toHaveBeenCalledTimes(1);
 	});
 
 	it('removes the note from the cache after a delete', async () => {
 		get.mockResolvedValue({ data: existing, response: { status: 200 } });
 		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-		const remove = vi.spyOn(client, 'removeQueries');
+		const setData = vi.spyOn(client, 'setQueryData');
 		const invalidate = vi.spyOn(client, 'invalidateQueries');
 		const onClose = renderIt(vi.fn(), client);
 		await userEvent.click(await screen.findByRole('button', { name: 'Delete note' }));
@@ -194,8 +196,7 @@ describe('UserNoteDialog', () => {
 			within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Delete note' })
 		);
 		await waitFor(() => expect(onClose).toHaveBeenCalled());
-		expect(remove).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'user-note', 'u2'] });
-		expect(invalidate).toHaveBeenCalledTimes(1);
+		expect(setData).toHaveBeenCalledWith(['organization', 'acme', 'user-note', 'u2'], null);
 		expect(invalidate).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'members'] });
 	});
 });

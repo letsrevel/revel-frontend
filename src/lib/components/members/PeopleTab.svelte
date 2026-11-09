@@ -38,6 +38,7 @@
 	import MergeRecordsDialog from '$lib/components/member-register/MergeRecordsDialog.svelte';
 	import DuplicatesDialog from '$lib/components/member-register/DuplicatesDialog.svelte';
 	import RegisterExportDialog from '$lib/components/member-register/RegisterExportDialog.svelte';
+	import PersonSheet from '$lib/components/member-register/PersonSheet.svelte';
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
 	import PeopleChips from '$lib/components/member-register/PeopleChips.svelte';
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
@@ -75,8 +76,10 @@
 		onOpenApplications: () => void;
 		/** Open the create-invite-link dialog (the "Add person" menu). */
 		onCreateInviteLink: () => void;
-		/** Bridge to the per-member access list until the person sheet exists. */
-		onManageAccess: (record: MembershipRecordSchema) => void;
+		/** Open the Payments tab (shown to staff holding `manage_subscriptions`). */
+		onOpenPayments?: () => void;
+		/** Users who are staff: the member actions offer "make staff" only to the rest. */
+		staffUserIds: Set<string>;
 		/**
 		 * False while another tab is showing. The tab stays mounted (its filters and
 		 * dialogs survive a round trip) but fires no query and runs no correction
@@ -91,7 +94,8 @@
 		isOwner,
 		onOpenApplications,
 		onCreateInviteLink,
-		onManageAccess,
+		onOpenPayments,
+		staffUserIds,
 		active = true
 	}: Props = $props();
 
@@ -208,9 +212,6 @@
 	const registerEmpty = $derived(
 		totalQuery.isSuccess && isRegisterEmpty(totalQuery.data ?? 0, DEFAULT_FILTERS)
 	);
-	// The Ended chip is narrowed client-side after the fetch (see `toRequestQuery`),
-	// so its page numbers are the backend's: no "past the last page" correction.
-	const clientPaged = $derived(!filters.activeOn && viewFromFilters(filters) === 'ended');
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -218,7 +219,7 @@
 	// A page past the last one (stale `?page=`, or the last row of the last page was
 	// deleted) holds no rows although the list is not empty: go to the last page.
 	const redirectPage = $derived(
-		active && !clientPaged && listQuery.isSuccess && !listQuery.isPlaceholderData
+		active && listQuery.isSuccess && !listQuery.isPlaceholderData
 			? pageToRedirect(records.length, total, filters.page)
 			: null
 	);
@@ -272,6 +273,27 @@
 	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
 	const invitingPresent = $derived(!inviting || records.some((r) => r.id === inviting?.id));
+
+	// The person sheet. Holds the opened entry's snapshot; the live row from the
+	// list wins (so a refetch keeps its status and note marker true). The sheet
+	// closes when a settled refetch no longer has the row: it was ended into
+	// another chip, deleted or unlinked, and there is nothing left to show.
+	let sheetRecord = $state<MembershipRecordSchema | null>(null);
+	const liveSheetRecord = $derived(
+		sheetRecord ? (records.find((r) => r.id === sheetRecord?.id) ?? sheetRecord) : null
+	);
+	const sheetRowPresent = $derived(!sheetRecord || records.some((r) => r.id === sheetRecord?.id));
+	$effect(() => {
+		if (
+			sheetRecord &&
+			!sheetRowPresent &&
+			listQuery.isSuccess &&
+			!listQuery.isFetching &&
+			!listQuery.isPlaceholderData
+		) {
+			sheetRecord = null;
+		}
+	});
 
 	function openCreate() {
 		editing = null;
@@ -406,7 +428,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				{onManageAccess}
+				onOpen={(r) => (sheetRecord = r)}
 			/>
 			<RegisterCards
 				{records}
@@ -416,7 +438,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				{onManageAccess}
+				onOpen={(r) => (sheetRecord = r)}
 			/>
 
 			<nav
@@ -454,6 +476,25 @@
 	</section>
 </div>
 
+<PersonSheet
+	record={liveSheetRecord}
+	{slug}
+	{accessToken}
+	tiers={formTiers}
+	{staffUserIds}
+	{isOwner}
+	canOpenPayments={!!onOpenPayments}
+	onClose={() => (sheetRecord = null)}
+	onEdit={openEdit}
+	onEnd={(r) => (ending = r)}
+	onDelete={(r) => (deleting = r)}
+	onInvite={(r) => (inviting = r)}
+	onUnlink={(r) => (unlinking = r)}
+	onOpenPayments={() => {
+		sheetRecord = null;
+		onOpenPayments?.();
+	}}
+/>
 <RecordFormDialog
 	open={formOpen}
 	record={liveEditing}

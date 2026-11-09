@@ -10,8 +10,8 @@ vi.mock('$lib/api/client', () => ({ client: {} }));
 
 import { calendarDayInZone } from './calendar-day';
 import { EMPTY_FORM, isInvitableAtCreation } from './form-values';
-import { resolveAccessSearch } from './manage-access';
-import { countRegister, listPeople } from './api';
+import { findMemberByUserId } from './find-member';
+import { countRegister, listPeople, listPersonPeriods } from './api';
 
 describe('calendarDayInZone', () => {
 	it('reads the wall-clock day of the organization, not the viewer', () => {
@@ -56,41 +56,34 @@ function member(id: string, email: string): OrganizationMemberSchema {
 	} as OrganizationMemberSchema;
 }
 
-describe('resolveAccessSearch (Manage access keyed on the user)', () => {
+describe('findMemberByUserId (member actions keyed on the user)', () => {
 	const target = { user_id: 'u1', email: 'old@example.org', full_name: 'Ada Lovelace' };
 
-	it('uses the exact user-id match and its CURRENT email', async () => {
-		const find = vi
-			.fn()
-			.mockResolvedValue([member('u2', 'other@example.org'), member('u1', 'new@x.org')]);
-		await expect(resolveAccessSearch(target, find)).resolves.toBe('new@x.org');
+	it('uses the exact user-id match', async () => {
+		const mine = member('u1', 'new@x.org');
+		const find = vi.fn().mockResolvedValue([member('u2', 'other@example.org'), mine]);
+		await expect(findMemberByUserId(target, find)).resolves.toBe(mine);
 		expect(find).toHaveBeenCalledWith('old@example.org');
 	});
 
 	it('tries the name when the register email finds nobody', async () => {
-		const find = vi
-			.fn()
-			.mockResolvedValueOnce([])
-			.mockResolvedValueOnce([member('u1', 'new@x.org')]);
-		await expect(resolveAccessSearch(target, find)).resolves.toBe('new@x.org');
+		const mine = member('u1', 'new@x.org');
+		const find = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([mine]);
+		await expect(findMemberByUserId(target, find)).resolves.toBe(mine);
 		expect(find).toHaveBeenLastCalledWith('Ada Lovelace');
 	});
 
-	it('falls back to the entry email, then its name, when nothing matches or the lookup fails', async () => {
-		await expect(resolveAccessSearch(target, vi.fn().mockResolvedValue([]))).resolves.toBe(
-			'old@example.org'
-		);
+	it('resolves null when nothing matches or the lookup fails', async () => {
+		await expect(findMemberByUserId(target, vi.fn().mockResolvedValue([]))).resolves.toBeNull();
 		await expect(
-			resolveAccessSearch(target, vi.fn().mockRejectedValue(new Error('boom')))
-		).resolves.toBe('old@example.org');
-		await expect(
-			resolveAccessSearch({ ...target, email: null }, vi.fn().mockResolvedValue([]))
-		).resolves.toBe('Ada Lovelace');
+			findMemberByUserId(target, vi.fn().mockRejectedValue(new Error('boom')))
+		).resolves.toBeNull();
+		await expect(findMemberByUserId({ ...target, user_id: null }, vi.fn())).resolves.toBeNull();
 	});
 
 	it('never matches a different user that shares the email text', async () => {
 		const find = vi.fn().mockResolvedValue([member('u9', 'old@example.org')]);
-		await expect(resolveAccessSearch(target, find)).resolves.toBe('old@example.org');
+		await expect(findMemberByUserId(target, find)).resolves.toBeNull();
 	});
 });
 
@@ -105,32 +98,29 @@ describe('listPeople / countRegister', () => {
 		invite_status: 'not_invited'
 	});
 
-	it('narrows the Ended chip client-side: a future end date is not ended', async () => {
+	it('sends the Ended chip to the backend as ended=true and returns its rows untouched', async () => {
 		sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
 			data: {
-				count: 3,
+				count: 2,
 				next: null,
 				previous: null,
-				results: [
-					row('past', '2026-10-01T00:00:00Z'),
-					row('future', '2027-01-01T00:00:00Z'),
-					row('now', NOW.toISOString())
-				]
+				results: [row('past', '2026-10-01T00:00:00Z'), row('now', NOW.toISOString())]
 			}
 		});
-		const page = await listPeople('org', 'tok', { page: 1, page_size: 20, ended: true }, NOW);
+		const page = await listPeople('org', 'tok', { page: 1, page_size: 20, ended: true });
 		expect(page.results.map((r) => r.id)).toEqual(['past', 'now']);
+		expect(page.count).toBe(2);
 		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls[0][0].query;
-		expect(sent).toMatchObject({ is_open: false });
-		expect(sent).not.toHaveProperty('ended');
+		expect(sent).toEqual({ page: 1, page_size: 20, ended: true });
 	});
 
-	it('does not touch the rows of any other chip', async () => {
+	it("lists a person's periods with user_id and include_merged", async () => {
 		sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
-			data: { count: 1, next: null, previous: null, results: [row('a', '2027-01-01T00:00:00Z')] }
+			data: { count: 0, next: null, previous: null, results: [] }
 		});
-		const page = await listPeople('org', 'tok', { page: 1, page_size: 20, kind: 'standard' }, NOW);
-		expect(page.results).toHaveLength(1);
+		await listPersonPeriods('org', 'tok', 'u1');
+		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
+		expect(sent).toMatchObject({ user_id: 'u1', include_merged: true });
 	});
 
 	it('counts the whole register with an unfiltered one-row page', async () => {

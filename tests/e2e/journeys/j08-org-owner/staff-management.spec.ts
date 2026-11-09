@@ -8,6 +8,7 @@ import {
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog, confirmInApp } from '../../support/ui';
+import { registerPath } from '../../support/member-register';
 
 // J8.5 (USER_JOURNEYS.md) — staff management: promote an existing member to
 // staff, edit their permissions, remove them from staff.
@@ -42,13 +43,14 @@ test.describe('J8 staff management @p1', () => {
 			void dialog.accept();
 		});
 
-		await gotoHydrated(page, `/org/${org.slug}/admin/members`);
+		await gotoHydrated(page, registerPath(org.slug, 'current'));
 		await waitForClientAuth(page);
 
-		// Promote: member card → manage modal → Make Staff Member → they show
+		// Promote: People row → person sheet → Manage membership → Make Staff Member → they show
 		// up on the staff tab. Clicks on the small viewport are occasionally
 		// dropped mid re-render (dialog open/close animations + query settles),
 		// so the whole sequence is an idempotent loop keyed on the outcome.
+		const sheet = page.getByRole('dialog', { name: memberName, exact: true });
 		const manageModal = page.getByRole('dialog', { name: `Manage ${memberName}` });
 		const staffTab = page.getByRole('tab', { name: /^Staff/ });
 		const staffCard = page
@@ -60,14 +62,20 @@ test.describe('J8 staff management @p1', () => {
 			await closeDialog(page, manageModal);
 			await staffTab.click({ timeout: 3_000 });
 			if (!(await staffCard.isVisible())) {
-				// The per-member list is the temporary "Manage access" bridge (hidden tab).
-				await gotoHydrated(page, `/org/${org.slug}/admin/members?tab=access`);
+				await gotoHydrated(page, registerPath(org.slug, 'current'));
 				await waitForClientAuth(page);
-				await page.getByRole('button', { name: `Manage ${memberName}` }).click({ timeout: 3_000 });
+				await page
+					.getByRole('button', { name: `Open ${memberName}` })
+					.first()
+					.click({
+						timeout: 3_000
+					});
+				await sheet.getByRole('button', { name: 'Manage membership' }).click({ timeout: 3_000 });
 				await manageModal
 					.getByRole('button', { name: 'Make Staff Member' })
 					.click({ timeout: 3_000 });
 				await closeDialog(page, manageModal);
+				await closeDialog(page, sheet);
 				await staffTab.click({ timeout: 3_000 });
 			}
 			await expect(staffCard).toBeVisible({ timeout: 5_000 });

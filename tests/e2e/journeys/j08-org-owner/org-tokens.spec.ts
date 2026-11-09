@@ -3,6 +3,7 @@ import { createOrganization } from '../../support/factories';
 import { authenticateContext, uiLogin } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog } from '../../support/ui';
+import { registerEntry, registerPath } from '../../support/member-register';
 
 // J8.4 (USER_JOURNEYS.md) — org invitation tokens, fully through the UI:
 // owner creates a membership-granting link, and a fresh visitor follows the
@@ -67,16 +68,12 @@ test.describe('J8 org tokens @p1', () => {
 			timeout: 15_000
 		});
 
-		// The owner sees the claimer as a member.
-		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
-		const memberCard = ownerPage
-			.locator('article, li, div')
-			.filter({ hasText: claimerName })
-			.filter({ hasText: /Active/ })
-			.first();
+		// The owner sees the claimer as a current, active person on the People tab.
 		await expect(async () => {
-			await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members?tab=access`);
-			await expect(memberCard).toBeVisible({ timeout: 5_000 });
+			await gotoHydrated(ownerPage, registerPath(org.slug, 'current'));
+			await expect(
+				registerEntry(ownerPage, claimerName).getByTestId('register-status-active')
+			).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 45_000 });
 
 		await claimerContext.close();

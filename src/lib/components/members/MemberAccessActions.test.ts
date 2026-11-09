@@ -3,22 +3,16 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
-import MembersTab from './MembersTab.svelte';
-import type {
-	MembershipTierSchema,
-	OrganizationAdminDetailSchema,
-	OrganizationMemberSchema
-} from '$lib/api/generated/types.gen';
+import MemberAccessActions from './MemberAccessActions.svelte';
+import type { MembershipTierSchema, OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadminmembersListMembers: vi.fn(),
 	organizationadminmembersRemoveMember: vi.fn(),
 	organizationadminmembersUpdateMember: vi.fn(),
 	organizationadminmembersAddStaff: vi.fn(),
 	organizationadminblacklistCreateBlacklistEntry: vi.fn()
 }));
 import {
-	organizationadminmembersListMembers,
 	organizationadminmembersRemoveMember,
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api/generated/sdk.gen';
@@ -27,11 +21,6 @@ vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } })
 import { toast } from 'svelte-sonner';
 
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'test-token' } }));
-
-const organization = {
-	id: 'org-1',
-	slug: 'test-org'
-} as unknown as OrganizationAdminDetailSchema;
 
 const member = {
 	status: 'active',
@@ -109,6 +98,10 @@ const RESTORE_NOTICE =
 /** The prefix that also covers the metrics query (`[..., 'subscriptions', 'metrics']`). */
 const SUBSCRIPTIONS_KEY = ['organization', 'test-org', 'subscriptions'];
 
+let currentMember: OrganizationMemberSchema = member;
+const onClose = vi.fn();
+
+/** The modal is opened by the caller (the person sheet), so it is open on mount. */
 function renderTab() {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
@@ -116,13 +109,15 @@ function renderTab() {
 	render(QueryClientTestWrapper, {
 		props: {
 			client,
-			component: MembersTab,
+			component: MemberAccessActions,
 			componentProps: {
-				organization,
-				isOwner: true,
-				permissions: null,
+				slug: 'test-org',
+				accessToken: 'test-token',
+				member: currentMember,
 				tiers: [] as MembershipTierSchema[],
-				staffUserIds: new Set<string>()
+				isStaff: false,
+				open: true,
+				onClose
 			}
 		}
 	});
@@ -131,9 +126,9 @@ function renderTab() {
 	return { client };
 }
 
-/** Opens the manage modal for the seeded member. */
-async function openManageModal(user: ReturnType<typeof userEvent.setup>) {
-	await user.click(await screen.findByRole('button', { name: 'Manage Ada' }));
+/** The manage modal is already open; wait for it. */
+async function openManageModal(_user: ReturnType<typeof userEvent.setup>) {
+	await screen.findByLabelText('Membership Status');
 }
 
 /**
@@ -173,12 +168,9 @@ async function pickStatus(user: ReturnType<typeof userEvent.setup>, option: stri
 	await user.click(await screen.findByRole('option', { name: option }));
 }
 
-/** Re-arms the members-list query with a specific set of rows. */
-function seedMembers(...rows: OrganizationMemberSchema[]) {
-	vi.mocked(organizationadminmembersListMembers).mockResolvedValue({
-		data: { results: rows, count: rows.length },
-		error: undefined
-	} as never);
+/** Sets the member the modal is opened on. */
+function seedMembers(row: OrganizationMemberSchema) {
+	currentMember = row;
 }
 
 beforeAll(() => {
@@ -207,7 +199,7 @@ beforeEach(() => {
 	seedMembers(member);
 });
 
-describe('MembersTab membership-loss invalidation', () => {
+describe('MemberAccessActions membership-loss invalidation', () => {
 	// Backend `d4570cf3`: losing membership cancels the member's non-terminal
 	// subscription and stops Stripe billing. Without these invalidations the
 	// Subscriptions tab and the revenue/MRR metrics keep showing the member as an
@@ -232,6 +224,11 @@ describe('MembersTab membership-loss invalidation', () => {
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: ['organization', 'test-org', 'members']
 		});
+		// The register entry ends with the access row: the People list refetches too.
+		expect(invalidateSpy).toHaveBeenCalledWith({
+			queryKey: ['organization', 'test-org', 'member-register']
+		});
+		expect(onClose).toHaveBeenCalled();
 	});
 
 	it('invalidates the subscription queries after blacklisting a member', async () => {
@@ -257,7 +254,7 @@ describe('MembersTab membership-loss invalidation', () => {
 	});
 });
 
-describe('MembersTab membership-loss billing disclosure', () => {
+describe('MemberAccessActions membership-loss billing disclosure', () => {
 	// Backend `d4570cf3`: remove / ban / blacklist terminalize the member's
 	// non-terminal subscription and stop Stripe billing, with no automatic
 	// refund. The confirmation panels have to say so — an organizer must not
@@ -338,7 +335,7 @@ describe('MembersTab membership-loss billing disclosure', () => {
 	});
 });
 
-describe('MembersTab status-change billing disclosure', () => {
+describe('MemberAccessActions status-change billing disclosure', () => {
 	// Backend `d3773257` (`_mirror_status_to_subscriptions`): staff setting a member
 	// to CANCELLED now terminalizes their subscription and stops Stripe billing, and
 	// PAUSED pauses collection. ACTIVE is deliberately *not* mirrored back. Until
@@ -444,7 +441,7 @@ describe('MembersTab status-change billing disclosure', () => {
 	});
 });
 
-describe('MembersTab failure surfacing', () => {
+describe('MemberAccessActions failure surfacing', () => {
 	it('toasts the backend refusal instead of blocking the page with a native alert', async () => {
 		const user = userEvent.setup();
 		const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);

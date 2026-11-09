@@ -12,16 +12,13 @@
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import { orgQuestionnairesQueryOptions } from '$lib/queries/org-questionnaires';
-	import { ACCESS_TAB, isMembersTab } from '$lib/member-register/redirects';
-	import { resolveAccessSearch } from '$lib/member-register/manage-access';
-	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
+	import { isMembersTab } from '$lib/member-register/redirects';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Users,
 		UserCog,
-		ArrowLeft,
 		UserPlus,
 		Shield,
 		Link,
@@ -32,7 +29,6 @@
 		ScanLine
 	} from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import AccessBridge from '$lib/components/members/AccessBridge.svelte';
 	import PeopleTab from '$lib/components/members/PeopleTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
@@ -73,7 +69,7 @@
 		if (
 			requested &&
 			data.canManageMembers &&
-			(isMembersTab(requested) || requested === ACCESS_TAB) &&
+			isMembersTab(requested) &&
 			!(SUBSCRIPTION_TABS as readonly string[]).includes(requested)
 		) {
 			return requested;
@@ -84,34 +80,6 @@
 
 	// Create token modal state (shared between the People "Add person" menu and the invite links tab)
 	let isCreateTokenModalOpen = $state(false);
-
-	// Bridge until the person sheet (per-member actions) lands: a People row's
-	// "Manage access" opens the existing member list for that person. Hidden tab,
-	// no trigger. Keyed on the record's USER: the member is looked up by user id
-	// (see `resolveAccessSearch`), and every opening bumps `accessOpenCount`, which
-	// re-keys MembersTab so reopening the same person resets its search and filters.
-	let accessSearch = $state('');
-	let accessUserId = $state<string | null>(null);
-	let accessOpenCount = $state(0);
-	let accessRequest = 0;
-	async function manageAccess(record: MembershipRecordSchema) {
-		const request = ++accessRequest;
-		const search = await resolveAccessSearch(record, async (term) => {
-			const response = await organizationadminmembersListMembers({
-				path: { slug: organization.slug },
-				query: { search: term, page_size: 100 },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) throw new Error('Failed to fetch members');
-			return response.data?.results ?? [];
-		});
-		// A newer click superseded this one while the lookup ran.
-		if (request !== accessRequest) return;
-		accessSearch = search;
-		accessUserId = record.user_id ?? null;
-		accessOpenCount += 1;
-		activeTab = ACCESS_TAB;
-	}
 
 	// Fetch members: feeds the per-tier member counts on the Tiers tab
 	const membersQuery = createQuery(() => ({
@@ -193,7 +161,7 @@
 		(questionnairesQuery.data?.results ?? []).filter((q) => q.questionnaire_type === 'membership')
 	);
 
-	// Create a Set of staff user IDs for quick lookup (used by MembersTab)
+	// Create a Set of staff user IDs for quick lookup (the person sheet's member actions)
 	const staffUserIds = $derived(
 		new Set(staff.map((s) => s.user.id).filter((id): id is string => !!id))
 	);
@@ -333,7 +301,8 @@
 						isCreateTokenModalOpen = true;
 						activeTab = 'invite-links';
 					}}
-					onManageAccess={manageAccess}
+					{staffUserIds}
+					onOpenPayments={canManageSubscriptions ? () => (activeTab = 'payments') : undefined}
 				/>
 			</TabsContent>
 
@@ -378,26 +347,6 @@
 					tiers={pickerTiers}
 					isCreateModalOpen={isCreateTokenModalOpen}
 					onCreateModalOpenChange={(open) => (isCreateTokenModalOpen = open)}
-				/>
-			</TabsContent>
-
-			<!-- Temporary bridge (no tab trigger): per-member actions (status, tier,
-			     staff, remove, blacklist, note) until the person sheet replaces it. -->
-			<TabsContent value={ACCESS_TAB} class="space-y-4">
-				<Button variant="ghost" size="sm" onclick={() => (activeTab = 'people')}>
-					<ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
-					{m['memberPeople.backToPeople']()}
-				</Button>
-				<AccessBridge
-					{organization}
-					isOwner={!!data.isOwner}
-					permissions={data.permissions}
-					tiers={pickerTiers}
-					{staffUserIds}
-					active={activeTab === ACCESS_TAB}
-					openCount={accessOpenCount}
-					search={accessSearch}
-					userId={accessUserId}
 				/>
 			</TabsContent>
 		{/if}

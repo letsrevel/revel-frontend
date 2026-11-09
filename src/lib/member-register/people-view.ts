@@ -97,13 +97,10 @@ export function filtersForView(view: PeopleView, current: RegisterFilters): Regi
 	return { ...current, ...VIEW_FILTERS[view], page: 1 };
 }
 
-/**
- * The People list query: the register's list query plus the client-only
- * `ended` param (see `toRequestQuery`).
- */
-export type PeopleQuery = RegisterListQuery & { ended?: true };
+/** The People list query: the register's list query (the Ended chip sends `ended`). */
+export type PeopleQuery = RegisterListQuery;
 
-type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_on' | 'has_account'> & { ended?: true };
+type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_on' | 'has_account' | 'ended'>;
 
 /**
  * THE chip -> query mapping (the only place a chip becomes backend params).
@@ -113,7 +110,7 @@ type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_on' | 'has_account'> &
  *   `valid_until IS NULL`, which misses a standard entry with a future end and
  *   would include nothing time-aware.
  * - Day members: `kind=temporary`. No account: `has_account=false`.
- * - Ended: the client param `ended=true` (see `toRequestQuery`).
+ * - Ended: `ended=true` (`valid_until <= now` or revoked; the backend decides).
  * - Everyone: nothing.
  */
 export function chipToQuery(view: PeopleView, today: string): ChipQuery {
@@ -143,34 +140,9 @@ export function peopleQuery(filters: RegisterFilters, today: string): PeopleQuer
 	return view ? { ...bare, ...chipToQuery(view, today) } : filtersToQuery(filters);
 }
 
-/**
- * Split a People query into what the backend gets and whether the rows still
- * need the client-side "ended" pass.
- *
- * TODO(BE ended filter): the backend is adding an `ended` boolean filter. Until
- * it is in the generated types, the Ended chip sends `is_open=false`
- * (`valid_until` set) and the page is then narrowed client-side with
- * `getPersonStatus(...) === 'ended'` (a set end date still in the future is not
- * ended yet). The count and page numbers are the backend's, so they can be off
- * (too high) for this chip until the filter exists; then send `ended` and drop
- * the client pass.
- */
-export function toRequestQuery(query: PeopleQuery): {
-	query: RegisterListQuery;
-	clientEnded: boolean;
-} {
-	const { ended, ...rest } = query;
-	if (ended) return { query: { ...rest, is_open: false }, clientEnded: true };
-	return { query: rest, clientEnded: false };
-}
-
 /** One status per row. Precedence is the order of the checks in `getPersonStatus`. */
 export type PersonStatusId =
-	'active' | 'day-member' | 'ended' | 'upcoming' | 'no-account' | 'invited';
-
-// TODO(member_status): add a 'paused' status once the backend exposes
-// `member_status` on the register record (pending). Map it before 'active':
-// a paused member is linked and open, so today it reads as "Active".
+	'active' | 'paused' | 'day-member' | 'ended' | 'upcoming' | 'no-account' | 'invited';
 
 export interface PersonStatus {
 	id: PersonStatusId;
@@ -179,6 +151,7 @@ export interface PersonStatus {
 
 const STATUS_TONE: Record<PersonStatusId, Tone> = {
 	active: 'success',
+	paused: 'warning',
 	'day-member': 'info',
 	ended: 'neutral',
 	upcoming: 'neutral',
@@ -186,27 +159,53 @@ const STATUS_TONE: Record<PersonStatusId, Tone> = {
 	invited: 'info'
 };
 
+/** The register fields the status mapping reads. */
+export type PersonStatusInput = Pick<
+	MembershipRecordSchema,
+	'valid_from' | 'valid_until' | 'kind' | 'has_account' | 'invite_status'
+> &
+	Partial<Pick<MembershipRecordSchema, 'is_current' | 'member_status'>>;
+
 /**
- * The single status vocabulary of a People row. "Open" (`valid_until` empty) is
- * NOT "valid now": a ticket-granted day membership always has an end, and a
- * standard entry can end in the future, so only a `valid_until` at or before
- * `now` is Ended, and only a `valid_from` after `now` is Upcoming. The
- * secondary signals (approximate dates, auto-linked, duplicate claim, merged)
- * stay on the record and are surfaced elsewhere (`getRecordBadges`).
+ * The single status vocabulary of a People row. The backend's `is_current`
+ * (started, not ended, not revoked) and `member_status` (set only for linked,
+ * open, standard entries) win; the date logic below is only the fallback for a
+ * record that lacks `is_current`. "Open" (`valid_until` empty) is NOT "valid
+ * now": a ticket-granted day membership always has an end, and a standard entry
+ * can end in the future. The secondary signals (approximate dates, auto-linked,
+ * duplicate claim, merged) stay on the record and are surfaced elsewhere
+ * (`getRecordBadges`).
  */
-export function getPersonStatus(
-	record: Pick<
-		MembershipRecordSchema,
-		'valid_from' | 'valid_until' | 'kind' | 'has_account' | 'invite_status'
-	>,
-	now: Date = new Date()
-): PersonStatus {
+export function getPersonStatus(record: PersonStatusInput, now: Date = new Date()): PersonStatus {
 	const at = now.getTime();
+	const notStarted = !!record.valid_from && Date.parse(record.valid_from) > at;
 	let id: PersonStatusId;
-	if (record.valid_until && Date.parse(record.valid_until) <= at) id = 'ended';
-	else if (record.valid_from && Date.parse(record.valid_from) > at) id = 'upcoming';
+	if (record.is_current === false) id = notStarted ? 'upcoming' : 'ended';
+	else if (
+		record.is_current === undefined &&
+		record.valid_until &&
+		Date.parse(record.valid_until) <= at
+	)
+		id = 'ended';
+	else if (record.is_current === undefined && notStarted) id = 'upcoming';
+	// An access row that was banned or cancelled has no live membership behind it,
+	// whatever the entry's dates say.
+	else if (record.member_status === 'banned' || record.member_status === 'cancelled') id = 'ended';
 	else if (record.kind === 'temporary') id = 'day-member';
 	else if (!record.has_account) id = record.invite_status === 'invited' ? 'invited' : 'no-account';
+	else if (record.member_status === 'paused') id = 'paused';
 	else id = 'active';
 	return { id, tone: STATUS_TONE[id] };
+}
+
+/**
+ * Whether the member actions (change tier, pause / resume, remove, ban) apply:
+ * only a linked, current standard entry has a live access row behind it.
+ */
+export function canManageMember(
+	record: PersonStatusInput & Pick<MembershipRecordSchema, 'user_id'>
+): boolean {
+	if (!record.user_id || record.kind !== 'standard') return false;
+	const id = getPersonStatus(record).id;
+	return id === 'active' || id === 'paused';
 }

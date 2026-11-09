@@ -17,6 +17,8 @@
 		switch (id) {
 			case 'active':
 				return m['memberPeople.status.active']();
+			case 'paused':
+				return m['memberPeople.status.paused']();
 			case 'day-member':
 				return m['memberPeople.status.dayMember']();
 			case 'ended':

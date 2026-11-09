@@ -3,7 +3,7 @@
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
-	import RegisterStatusBadge from './RegisterStatusBadge.svelte';
+	import PersonStatusCell from './PersonStatusCell.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
 	interface Props {
@@ -14,12 +14,11 @@
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
 		onUnlink: (record: MembershipRecordSchema) => void;
-		/** Bridge to the per-member access list; hidden when omitted. */
-		onManageAccess?: (record: MembershipRecordSchema) => void;
+		/** Open the person sheet (row click, or Enter on the name button). */
+		onOpen: (record: MembershipRecordSchema) => void;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onManageAccess }: Props =
-		$props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onOpen }: Props = $props();
 
 	const TH =
 		'px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground';
@@ -46,8 +45,28 @@
 		</thead>
 		<tbody class="divide-y divide-border bg-card">
 			{#each records as record (record.id)}
-				<tr class="align-top hover:bg-muted/50" data-testid="register-row">
-					<th scope="row" class="px-4 py-3 text-left text-sm font-medium">{record.full_name}</th>
+				<!-- Pointer convenience only: the keyboard and screen reader path is the name
+				     button below (Tab, then Enter / Space), and the actions menu keeps its own click. -->
+				<tr
+					class="cursor-pointer align-top hover:bg-muted/50"
+					data-testid="register-row"
+					onclick={(event) => {
+						if (!(event.target as HTMLElement).closest('button, a, [role="menuitem"]')) {
+							onOpen(record);
+						}
+					}}
+				>
+					<th scope="row" class="px-4 py-3 text-left text-sm font-medium">
+						<button
+							type="button"
+							class="rounded-sm text-left font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							aria-label={m['memberPeople.row.open']({ name: record.full_name })}
+							data-testid="register-open"
+							onclick={() => onOpen(record)}
+						>
+							{record.full_name}
+						</button>
+					</th>
 					<td class="break-all px-4 py-3 text-sm text-muted-foreground">{record.email || '-'}</td>
 					<td class="px-4 py-3 text-sm">{record.tier_name || '-'}</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{kindLabel(record.kind)}</td>
@@ -56,7 +75,7 @@
 						{record.valid_until ? formatDate(record.valid_until) : m['memberRegister.openEnded']()}
 					</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{sourceLabel(record.source)}</td>
-					<td class="px-4 py-3"><RegisterStatusBadge {record} /></td>
+					<td class="px-4 py-3"><PersonStatusCell {record} /></td>
 					<td class="px-4 py-3 text-right">
 						<RegisterRowActions
 							{record}
@@ -66,7 +85,6 @@
 							{onDelete}
 							{onInvite}
 							{onUnlink}
-							{onManageAccess}
 						/>
 					</td>
 				</tr>
