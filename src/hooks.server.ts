@@ -298,6 +298,11 @@ const handleCsp: Handle = async ({ event, resolve }) => {
 	});
 };
 
+/** The logout form submission: the action revokes the refresh cookie itself. */
+function isLogoutSubmission(event: Parameters<Handle>[0]['event']): boolean {
+	return event.request.method === 'POST' && event.url.pathname === '/logout';
+}
+
 /**
  * Authentication hook
  *
@@ -312,7 +317,7 @@ const handleCsp: Handle = async ({ event, resolve }) => {
  * all registered claims. A forged cookie can influence SSR rendering but cannot
  * grant access to any protected resource: the backend will 401 the request.
  */
-const handleAuth: Handle = async ({ event, resolve }) => {
+export const handleAuth: Handle = async ({ event, resolve }) => {
 	const accessToken = event.cookies.get('access_token');
 	const refreshToken = event.cookies.get('refresh_token');
 
@@ -340,6 +345,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			email: decoded.email,
 			accessToken
 		};
+	} else if (refreshToken && isLogoutSubmission(event)) {
+		// POST /logout revokes this very refresh token. Rotating it first would
+		// only mint a pair that is revoked a moment later (and race the action's
+		// read of the cookie), so leave the ORIGINAL cookie untouched for it.
+		log.debug('token_refresh_skipped', { reason: 'logout' });
 	} else if (refreshToken) {
 		// No usable access token (missing, malformed, or expired) but a refresh
 		// token exists — rotate it now so locals.user is set before any load runs.

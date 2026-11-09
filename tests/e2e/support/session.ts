@@ -19,9 +19,9 @@ import { revealLoginForm } from './auth-forms';
  * `host` to authenticate a context for it instead (j30-custom-domains).
  */
 
-const APP_HOST = 'localhost';
+export const APP_HOST = 'localhost';
 
-function authCookie(name: string, value: string, domain: string) {
+export function authCookie(name: string, value: string, domain: string) {
 	return {
 		name,
 		value,
