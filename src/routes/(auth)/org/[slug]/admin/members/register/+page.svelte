@@ -50,13 +50,13 @@
 		DEFAULT_FILTERS,
 		REGISTER_PAGE_SIZE,
 		pageToRedirect,
-		filtersToSearch,
 		hasActiveFilters,
 		isRegisterEmpty,
 		parseFilters,
 		type RegisterFilters as Filters
 	} from '$lib/member-register/filters';
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
+	import { createFilterNavigator } from '$lib/member-register/filter-navigator';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 
 	const { data }: { data: PageData } = $props();
@@ -70,14 +70,27 @@
 	// and back/forward restores them.
 	const filters = $derived(parseFilters($page.url.searchParams));
 
-	function applyFilters(next: Filters, opts?: { replace?: boolean }) {
-		const qs = filtersToSearch(next);
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?" string keeps the current pathname (resolve() cannot express search params)
-		goto(qs ? `?${qs}` : '?', {
-			replaceState: opts?.replace ?? false,
-			keepFocus: true,
-			noScroll: true
-		});
+	// Bumped whenever queued navigations settle so the filter controls re-sync
+	// their DOM state with the URL.
+	let filterSyncToken = $state(0);
+
+	// Patches merge onto the latest intended filters (not the URL-derived ones,
+	// which lag a navigation behind) and navigations are serialised.
+	const navigator = createFilterNavigator({
+		current: () => filters,
+		navigate: async (qs, opts) => {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?" string keeps the current pathname (resolve() cannot express search params)
+			await goto(qs ? `?${qs}` : '?', {
+				replaceState: opts.replace,
+				keepFocus: true,
+				noScroll: true
+			});
+		},
+		onSettled: () => (filterSyncToken += 1)
+	});
+
+	function applyFilters(next: Partial<Filters>, opts?: { replace?: boolean }) {
+		navigator.apply(next, opts);
 	}
 
 	// All-kinds tier list: the filter offers standard AND temporary tiers; the
@@ -276,7 +289,13 @@
 		</TabsList>
 
 		<TabsContent value="register" class="space-y-6">
-			<RegisterFilters {filters} tiers={allTiers} {timezone} onChange={applyFilters} />
+			<RegisterFilters
+				{filters}
+				syncToken={filterSyncToken}
+				tiers={allTiers}
+				{timezone}
+				onChange={applyFilters}
+			/>
 
 			<section aria-labelledby="register-results-heading" aria-busy={listQuery.isFetching}>
 				<h2 id="register-results-heading" class="sr-only">

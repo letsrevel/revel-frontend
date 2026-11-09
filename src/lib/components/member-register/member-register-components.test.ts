@@ -24,6 +24,9 @@ import EndRecordDialog from './EndRecordDialog.svelte';
 import DeleteRecordDialog from './DeleteRecordDialog.svelte';
 import CalendarDayPicker from './CalendarDayPicker.svelte';
 import RegisterFilters from './RegisterFilters.svelte';
+import RegisterExportDialog from './RegisterExportDialog.svelte';
+import { createFilterNavigator } from '$lib/member-register/filter-navigator';
+import { filtersToSearch, parseFilters } from '$lib/member-register/filters';
 import { DEFAULT_FILTERS } from '$lib/member-register/filters';
 
 function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
@@ -418,5 +421,73 @@ describe('review fixes (components)', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+});
+
+describe('beta smoke fixes', () => {
+	it('shows the export day readback and timezone exactly once', () => {
+		renderIn(RegisterExportDialog, {
+			open: true,
+			slug: 'acme',
+			accessToken: 'tok',
+			timezone: 'Europe/Vienna',
+			initialDay: '2026-11-09',
+			onClose: noop
+		});
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			/Members on .*2026.*\(Europe\/Vienna\)/
+		);
+		expect(screen.queryByTestId('export-summary')).not.toBeInTheDocument();
+		expect(document.body.textContent?.match(/\(Europe\/Vienna\)/g)).toHaveLength(1);
+	});
+
+	it('keeps the status select and the URL in agreement after two quick changes', async () => {
+		let url = '';
+		const pendingNavs: Array<() => void> = [];
+		const navigator = createFilterNavigator({
+			current: () => parseFilters(new URLSearchParams(url)),
+			navigate: (qs) =>
+				new Promise<void>((resolve) => {
+					pendingNavs.push(() => {
+						url = qs;
+						resolve();
+					});
+				}),
+			onSettled: () => undefined
+		});
+		const base = { tiers: [], timezone: null, onChange: navigator.apply };
+		const { rerender } = render(RegisterFilters, {
+			props: { ...base, filters: { ...DEFAULT_FILTERS } }
+		});
+		const status = screen.getByLabelText(/status/i) as HTMLSelectElement;
+		const kind = screen.getByLabelText(/^kind|type/i) as HTMLSelectElement;
+		// Two changes before the first navigation settles.
+		await userEvent.selectOptions(status, 'open');
+		await userEvent.selectOptions(kind, 'temporary');
+		while (pendingNavs.length) {
+			const run = pendingNavs.shift();
+			run?.();
+			await new Promise((r) => setTimeout(r, 0));
+		}
+		const filters = parseFilters(new URLSearchParams(url));
+		await rerender({ ...base, filters, syncToken: 1 });
+		expect(new URLSearchParams(url).get('status')).toBe('open');
+		expect(new URLSearchParams(url).get('kind')).toBe('temporary');
+		expect(filtersToSearch(filters)).toBe(url);
+		expect(status.value).toBe('open');
+		expect(kind.value).toBe('temporary');
+	});
+
+	it('re-syncs a select to the URL when a rapid sequence ends on the old value', async () => {
+		const base = { tiers: [], timezone: null, onChange: vi.fn() };
+		const { rerender } = render(RegisterFilters, {
+			props: { ...base, filters: { ...DEFAULT_FILTERS } }
+		});
+		const status = screen.getByLabelText(/status/i) as HTMLSelectElement;
+		await userEvent.selectOptions(status, 'open');
+		expect(status.value).toBe('open');
+		// URL ended on "all" (prop unchanged): the settle token must still reset the DOM.
+		await rerender({ ...base, filters: { ...DEFAULT_FILTERS }, syncToken: 1 });
+		expect(status.value).toBe('all');
 	});
 });
