@@ -7,6 +7,7 @@ import {
 } from '../../support/factories';
 import { ApiError, API_URL, fetchWithRetry, obtainTokenPair } from '../../support/api';
 import { PERSONAS } from '../../support/personas';
+import { toDatetimeLocal } from '../../support/member-register';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J10 stats + schedule + resources.
@@ -20,11 +21,6 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // an org-level pool the editor merely attaches. Both must then show on the
 // public event page (schedule <section>, "Event Resources" with an Open
 // action for link resources).
-
-function toDatetimeLocal(date: Date): string {
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 test.describe('J10 stats, schedule & resources @p2', () => {
 	test('attendee stats tiles count the RSVP mix', async ({ asOwner }) => {
