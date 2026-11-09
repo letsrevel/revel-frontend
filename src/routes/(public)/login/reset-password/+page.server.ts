@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import { clearAuthCookies } from '$lib/server/auth-cookies';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 /** Read the HTTP status from an error shaped like `{ response: { status } }`. */
@@ -45,7 +46,7 @@ function firstString(value: unknown): string | undefined {
 }
 
 export const actions: Actions = {
-	resetPassword: async ({ request, fetch }) => {
+	resetPassword: async ({ request, fetch, cookies }) => {
 		const formData = await request.formData();
 		const password = formData.get('password') as string;
 		const confirmPassword = formData.get('confirmPassword') as string;
@@ -80,6 +81,11 @@ export const actions: Actions = {
 					token: result.data.token
 				}
 			});
+
+			// The backend revoked every session of the account: drop this browser's
+			// now-dead cookies so it is signed out and the success state's sign-in
+			// link leads to a real login instead of a stale session.
+			clearAuthCookies(cookies);
 
 			// Started on a custom domain (#1070): the page offers a way back to its
 			// login. Re-validated here; the form field is untrusted input.

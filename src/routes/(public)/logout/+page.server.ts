@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { log } from '$lib/server/logger';
+import { revokeAndClearSession } from '$lib/server/auth-cookies';
 import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
 
 /**
@@ -16,8 +16,17 @@ import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
  * native (non-`use:enhance`) submission: the 303 then produces a full document
  * load, the only thing that drops the in-memory auth store.
  *
+ * Before the cookies go, the refresh token is revoked server-side
+ * (`POST /api/auth/logout`, #1199): it kills the whole login lineage (every
+ * token rotated from this sign-in), so a copied or leaked refresh token is dead
+ * the moment the user logs out. The token is read from the httpOnly cookie
+ * HERE and never reaches client JS. The call is best effort: any failure
+ * (network, 404 from a backend that predates the endpoint, 401 for an already
+ * invalid token) is logged and ignored, and the cookies are cleared regardless.
+ *
  * Client-side state (authStore, query cache) is cleared by the client before
  * it submits the POST (see `postLogout` in $lib/utils/logout.ts); the action only handles cookie cleanup.
+ * The revoke is bounded by a short timeout (see `auth-cookies.ts`).
  *
  * With a `returnUrl` ("switch account" on the OAuth consent page) the user is
  * sent to /login carrying that target, so they re-authenticate and land back
@@ -36,7 +45,7 @@ export const load: PageServerLoad = async ({ cookies, url, locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ cookies, request }) => {
+	default: async ({ cookies, request, fetch }) => {
 		// Parse the body first: a malformed/aborted body must never prevent the
 		// cookies from being cleared.
 		let returnUrl: string;
@@ -47,12 +56,7 @@ export const actions: Actions = {
 			returnUrl = '';
 		}
 
-		log.debug('logout_clearing_cookies');
-
-		cookies.delete('access_token', { path: '/' });
-		cookies.delete('refresh_token', { path: '/' });
-		// "remember me" preference cookie
-		cookies.delete('remember_me', { path: '/' });
+		await revokeAndClearSession({ cookies, fetch });
 
 		if (returnUrl) {
 			throw redirect(303, loginHref(returnUrl));
