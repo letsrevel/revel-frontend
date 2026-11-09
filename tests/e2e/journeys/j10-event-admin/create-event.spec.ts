@@ -47,7 +47,7 @@ test.describe('J10 create event via wizard @p0', () => {
 
 		// Publish (native confirm dialog) — DRAFT → OPEN.
 		asOwner.on('dialog', (dialog) => void dialog.accept());
-		await asOwner.getByRole('button', { name: 'Publish Event' }).click();
+		await asOwner.getByRole('button', { name: 'Publish Event', exact: true }).click();
 		await expect(asOwner.getByRole('button', { name: 'Close Event' })).toBeVisible();
 
 		// The published event is publicly visible to an anonymous visitor.

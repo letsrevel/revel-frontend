@@ -60,20 +60,30 @@ test.describe('J26 season pass online cancel @p3', () => {
 			await dialog.getByRole('button', { name: 'Continue to payment' }).click();
 			await completeStripeCheckout(page);
 
-			// The webhook creates + activates the held pass — poll My passes for it.
-			const activeCard = page
-				.locator('article, li, div')
-				.filter({ hasText: pass.name })
-				.filter({ hasText: /Active/ })
-				.first();
+			// The webhook creates + activates the held pass. Polled at the API: the
+			// old poll reloaded /dashboard/passes every 5s, and a reload that lands
+			// mid refresh-token rotation blacklists the session (the later polls all
+			// landed on /login). One page visit, after the pass exists, instead.
+			const buyerApiForPass = await ApiClient.login(buyer.email, buyer.password);
 			await expectWebhookEffect(
-				'the webhook to create the Active pass on /dashboard/passes',
+				'the webhook to create the Active pass',
 				async () => {
-					await gotoHydrated(page, '/dashboard/passes');
-					await expect(activeCard).toBeVisible({ timeout: 5_000 });
+					const held = await buyerApiForPass.get<{ results: Array<{ status: string }> }>(
+						'/api/series-passes/me'
+					);
+					expect(held.results.some((h) => h.status === 'active')).toBe(true);
 				},
 				{ timeout: 90_000 }
 			);
+			await gotoHydrated(page, '/dashboard/passes');
+			await waitForClientAuth(page);
+			await expect(
+				page
+					.locator('article, li, div')
+					.filter({ hasText: pass.name })
+					.filter({ hasText: /Active/ })
+					.first()
+			).toBeVisible({ timeout: 15_000 });
 
 			// Organizer cancels the held pass from the Holders dialog.
 			await gotoHydrated(asOwner, `/org/revel-events-collective/admin/event-series/${series.id}`);
@@ -116,6 +126,7 @@ test.describe('J26 season pass online cancel @p3', () => {
 			// the materialized tickets are cancelled with it (none left Active).
 			await expect(async () => {
 				await gotoHydrated(page, '/dashboard/passes');
+				await waitForClientAuth(page);
 				await expect(
 					page
 						.locator('article, li, div')
