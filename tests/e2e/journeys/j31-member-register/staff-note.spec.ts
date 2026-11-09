@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Response } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import {
 	claimTicketViaApi,
@@ -87,10 +87,22 @@ test.describe('J31 private staff note @p1', () => {
 		await authenticateContext(attendeeContext, attendee);
 		const own = await attendeeContext.newPage();
 		const leaked: string[] = [];
-		own.on('response', async (response) => {
-			if (!response.url().includes('/api/')) return;
-			const body = await response.text().catch(() => '');
-			if (body.includes(note)) leaked.push(response.url());
+		// Body reads are collected and awaited before asserting (a handler that is
+		// not awaited can finish after the assertion and leak silently).
+		const reads: Promise<void>[] = [];
+		const inspect = (response: Response): Promise<void> =>
+			response.text().then(
+				(body) => {
+					if (body.includes(note)) leaked.push(response.url());
+				},
+				() => undefined
+			);
+		own.on('response', (response) => {
+			const url = response.url();
+			const type = response.request().resourceType();
+			if (url.includes('/api/') || url.includes('__data.json') || type === 'document') {
+				reads.push(inspect(response));
+			}
 		});
 		try {
 			await gotoHydrated(own, '/dashboard/tickets');
@@ -104,6 +116,17 @@ test.describe('J31 private staff note @p1', () => {
 			await expect(own.getByRole('heading', { level: 1 }).first()).toBeVisible();
 			await expect(own.getByText(note)).toHaveCount(0);
 			await expect(own.getByText('Staff note')).toHaveCount(0);
+
+			// Server-rendered HTML and SvelteKit data endpoints of each attendee-facing
+			// page, fetched with the attendee's cookies, must not carry the note either.
+			const origin = new URL(own.url()).origin;
+			for (const path of ['/dashboard/tickets', event.path]) {
+				for (const suffix of ['', '/__data.json']) {
+					const res = await own.request.get(`${origin}${path.replace(/\/$/, '')}${suffix}`);
+					reads.push(inspect(res));
+				}
+			}
+			await Promise.all(reads);
 			expect(leaked).toEqual([]);
 		} finally {
 			await attendeeContext.close();

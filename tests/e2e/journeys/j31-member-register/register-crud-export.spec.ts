@@ -7,7 +7,8 @@ import {
 	createRegisterEntry,
 	daysFromNow,
 	registerEntry,
-	registerPath
+	registerPath,
+	toDatetimeLocal
 } from '../../support/member-register';
 
 // FE #1166: the member register. Staff add an account-less entry, edit it, end
@@ -16,9 +17,7 @@ import {
 
 /** `<input type="datetime-local">` value for `days` from now (local wall time). */
 function localInput(days: number): string {
-	const d = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-	const pad = (n: number): string => String(n).padStart(2, '0');
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+	return toDatetimeLocal(new Date(Date.now() + days * 24 * 60 * 60 * 1000));
 }
 
 /** `YYYY-MM-DD` for `days` from now (local calendar day). */

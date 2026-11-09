@@ -2,6 +2,7 @@ import { test, expect, PERSONAS } from '../../support/fixtures';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { uniqueName } from '../../support/factories';
 import { ApiClient } from '../../support/api';
+import { toDatetimeLocal } from '../../support/member-register';
 
 // J10.1–10.2 (USER_JOURNEYS.md) — organizer creates an event through the
 // wizard: draft (Save) → edit page → Publish (DRAFT → OPEN) → the event is
@@ -11,15 +12,6 @@ import { ApiClient } from '../../support/api';
 // reset command in the README restores the seed).
 
 const ORG_SLUG = 'revel-events-collective';
-
-/** datetime-local inputs want the browser-local `YYYY-MM-DDTHH:mm` shape. */
-function toDatetimeLocal(date: Date): string {
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return (
-		`${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-		`T${pad(date.getHours())}:${pad(date.getMinutes())}`
-	);
-}
 
 test.describe('J10 create event via wizard @p0', () => {
 	test('draft → publish → publicly visible', async ({ asOwner, browser }) => {

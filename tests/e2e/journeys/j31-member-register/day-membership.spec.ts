@@ -66,19 +66,17 @@ test.describe('J31 day membership from a ticket @p1', () => {
 			// Staff ticket list: the holder carries the "Day member" badge.
 			await gotoHydrated(page, `/org/${org.slug}/admin/events/${event.id}/tickets`);
 			await waitForClientAuth(page);
-			// The list is a table on desktop and plain-div cards on mobile, so match the
-			// smallest container that holds both the holder and the badge.
-			const badge = page.getByTestId('day-member-badge').filter({ visible: true });
-			await expect(badge).toBeVisible({ timeout: 15_000 });
+			// The list is a table (<tr>, md and up) and a stack of cards (below md; the
+			// card is the bordered `rounded-lg` div directly under the md:hidden wrapper).
+			// Pick the visible holder container and require the badge INSIDE it.
+			const holder = page
+				.locator('tr, div.md\\:hidden > div.rounded-lg')
+				.filter({ hasText: attendeeName })
+				.filter({ visible: true });
+			await expect(holder).toHaveCount(1, { timeout: 15_000 });
+			const badge = holder.getByTestId('day-member-badge');
+			await expect(badge).toBeVisible();
 			await expect(badge).toHaveText('Day member');
-			await expect(
-				page
-					.locator('tr, article, li, div')
-					.filter({ hasText: attendeeName })
-					.filter({ has: page.getByTestId('day-member-badge') })
-					.filter({ visible: true })
-					.first()
-			).toBeVisible();
 		} finally {
 			await context.close();
 		}

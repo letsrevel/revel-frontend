@@ -63,7 +63,12 @@ test.describe('J31 non-members-only tier @p2', () => {
 		} finally {
 			await memberPage.context().close();
 		}
-		await expect(claimTicketViaApi(member, event.id, tier.id)).rejects.toBeInstanceOf(ApiError);
+		const refusal = await claimTicketViaApi(member, event.id, tier.id).catch((e: unknown) => e);
+		expect(refusal).toBeInstanceOf(ApiError);
+		expect((refusal as ApiError).status).toBe(400);
+		expect(JSON.parse((refusal as ApiError).body)).toMatchObject({
+			reason_code: 'members_excluded'
+		});
 
 		// Non-member: the tier is purchasable.
 		const outsiderPage = await pageAs(browser, outsider);

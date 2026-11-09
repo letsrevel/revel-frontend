@@ -86,9 +86,10 @@ test.describe('J31 series pass questionnaires @p2', () => {
 			for (const q of [qA, qB]) {
 				await page.getByRole('link', { name: `Complete the questionnaire ${q.name}` }).click();
 				await page.waitForURL(/\/questionnaire\//);
-				await page.waitForLoadState('networkidle');
 				const radio = page.getByRole('radio', { name: CORRECT });
 				const submit = page.getByRole('button', { name: 'Submit Questionnaire' });
+				await expect(radio).toBeVisible({ timeout: 15_000 });
+				await expect(submit).toBeVisible();
 				const seriesUrl = new RegExp(`/series/${series.slug}`);
 				await expect(async () => {
 					if (seriesUrl.test(page.url())) return;

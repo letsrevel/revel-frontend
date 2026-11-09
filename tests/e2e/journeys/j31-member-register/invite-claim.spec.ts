@@ -68,7 +68,10 @@ test.describe('J31 member invite claim with a different email @p1', () => {
 			await expect(page.getByText(`You're signed in as ${claimerEmail}`)).toBeVisible({
 				timeout: 15_000
 			});
-			expect((await listRegisterEntries(org.owner, org.slug))[0]?.invite_status).not.toBe('linked');
+			const pending = (await listRegisterEntries(org.owner, org.slug)).find(
+				(r) => r.id === record.id
+			);
+			expect(pending?.invite_status).toBe('invited');
 
 			await page.getByRole('button', { name: 'Link to my account' }).click();
 			await expect(page.getByRole('heading', { name: 'Membership linked' })).toBeVisible({

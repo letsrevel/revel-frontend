@@ -18,6 +18,15 @@ export function daysFromNow(days: number): string {
 	return new Date(Date.now() + days * DAY_MS).toISOString();
 }
 
+/** `<input type="datetime-local">` value (browser-local `YYYY-MM-DDTHH:mm`) for a date. */
+export function toDatetimeLocal(date: Date): string {
+	const pad = (n: number): string => String(n).padStart(2, '0');
+	return (
+		`${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+		`T${pad(date.getHours())}:${pad(date.getMinutes())}`
+	);
+}
+
 export interface RegisterRecord {
 	id: string;
 	full_name: string;
@@ -34,8 +43,18 @@ export interface RegisterRecord {
 	ticket_id: string | null;
 }
 
-async function loginOwner(owner: ThrowawayUser): Promise<ApiClient> {
-	return ApiClient.login(owner.email, owner.password);
+// One login per owner per worker process: every arrange helper reuses it.
+const ownerClients = new Map<string, Promise<ApiClient>>();
+
+function loginOwner(owner: ThrowawayUser): Promise<ApiClient> {
+	let client = ownerClients.get(owner.email);
+	if (!client) {
+		client = ApiClient.login(owner.email, owner.password);
+		// Do not cache a failed login.
+		client.catch(() => ownerClients.delete(owner.email));
+		ownerClients.set(owner.email, client);
+	}
+	return client;
 }
 
 /**
@@ -116,17 +135,6 @@ export async function createDayMembershipTier(
 	});
 }
 
-/** Write the private staff note about a person (replaces any existing one). */
-export async function putUserNote(
-	owner: ThrowawayUser,
-	orgSlug: string,
-	userId: string,
-	body: string
-): Promise<void> {
-	const api = await loginOwner(owner);
-	await api.put(`/api/organization-admin/${orgSlug}/users/${userId}/note`, { body });
-}
-
 /** The org register page. */
 export function registerPath(orgSlug: string): string {
 	return `/org/${orgSlug}/admin/members/register`;
@@ -168,7 +176,7 @@ export async function chooseEntryAction(
 /** True when the document scrolls horizontally (the phone-width regression check). */
 export async function hasHorizontalOverflow(page: Page): Promise<boolean> {
 	return page.evaluate(() => {
-		const el = document.scrollingElement ?? document.documentElement;
-		return el.scrollWidth > window.innerWidth;
+		const el = document.documentElement;
+		return el.scrollWidth > el.clientWidth;
 	});
 }
