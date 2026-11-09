@@ -8,6 +8,7 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J20 (USER_JOURNEYS.md) — discount code lifecycle: admin creates a
 // percentage code → buyer applies it at checkout (invalid codes rejected
@@ -131,14 +132,14 @@ test.describe('J20 discount lifecycle @p2', () => {
 			timeout: 15_000
 		});
 
-		// Deleting the used code deactivates it instead (native confirm()).
+		// Deleting the used code deactivates it instead (in-app confirm).
 		await gotoHydrated(asOwner, ADMIN_LIST);
 		await waitForClientAuth(asOwner);
-		asOwner.once('dialog', (dialog) => dialog.accept());
 		await asOwner
 			.getByRole('button', { name: `Deactivate discount code ${CODE}` })
 			.filter({ visible: true })
 			.click();
+		await confirmInApp(asOwner);
 		await expect(
 			asOwner.getByText("Discount code deactivated (it has been used, so it can't be deleted).")
 		).toBeVisible({ timeout: 15_000 });

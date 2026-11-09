@@ -64,7 +64,6 @@ function renderManager() {
 describe('DietaryRestrictionsManager delete error handling', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('confirm', () => true);
 		vi.mocked(dietaryListDietaryRestrictions).mockResolvedValue(
 			ok([restriction]) as unknown as RestrictionsResult
 		);
@@ -106,6 +105,9 @@ describe('DietaryRestrictionsManager delete error handling', () => {
 
 		const remove = await screen.findByRole('button', { name: 'Remove Peanuts' });
 		await user.click(remove);
+		await user.click(
+			await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Delete' })
+		);
 
 		await waitFor(() => expect(toast.error).toHaveBeenCalled());
 		expect(toast.success).not.toHaveBeenCalled();

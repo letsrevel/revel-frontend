@@ -3,6 +3,7 @@ import { createTicketedEvent, createVerifiedUser, rsvpViaApi } from '../../suppo
 import { ApiError } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J10.2 (USER_JOURNEYS.md) — event lifecycle: OPEN → CLOSED stops new RSVPs;
 // cancel with a reason → ATTENDEES see the reason, non-attendees see only the
@@ -26,13 +27,12 @@ test.describe('J10 event lifecycle @p1', () => {
 		await rsvpViaApi(attendee, event.id, 'yes');
 
 		const page = asOwner;
-		// Status changes fire native confirm() dialogs — auto-accept.
-		page.on('dialog', (dialog) => void dialog.accept());
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
 
 		// Close the event (page reloads itself on success).
 		await page.getByRole('button', { name: 'Close Event' }).click();
+		await confirmInApp(page);
 		await expect(page.getByRole('button', { name: 'Reopen Event' })).toBeVisible({
 			timeout: 20_000
 		});

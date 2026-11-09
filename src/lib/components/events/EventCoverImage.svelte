@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onImageError } from '$lib/utils/image-error';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import {
@@ -61,7 +62,7 @@
 				alt={event.name}
 				class="h-full w-full object-cover"
 				loading="lazy"
-				onerror={handleImageError}
+				{@attach onImageError(handleImageError)}
 			/>
 		{:else}
 			<!-- Fallback gradient with logo -->

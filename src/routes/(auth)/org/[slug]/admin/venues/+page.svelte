@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -85,8 +87,16 @@
 		showModal = true;
 	}
 
-	function handleDelete(venueId: string) {
-		if (confirm(m['orgAdmin.venues.delete.confirm']())) {
+	const confirmation = createConfirm();
+
+	async function handleDelete(venueId: string) {
+		if (
+			await confirmation.ask({
+				message: m['orgAdmin.venues.delete.confirm'](),
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
 			deleteMutation.mutate(venueId);
 		}
 	}
@@ -217,3 +227,5 @@
 		onSuccess={handleModalSuccess}
 	/>
 {/if}
+
+<ConfirmDialog {...confirmation.dialogProps} />

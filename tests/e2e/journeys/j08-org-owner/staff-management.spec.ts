@@ -7,7 +7,7 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { closeDialog } from '../../support/ui';
+import { closeDialog, confirmInApp } from '../../support/ui';
 
 // J8.5 (USER_JOURNEYS.md) — staff management: promote an existing member to
 // staff, edit their permissions, remove them from staff.
@@ -15,7 +15,7 @@ import { closeDialog } from '../../support/ui';
 // Isolation: throwaway-owned org; the promoted member is a throwaway user
 // arranged into ACTIVE membership via the request→approve API flow.
 //
-// Dialog note: staff removal uses a native confirm() and several failure
+// Dialog note: staff removal uses the in-app confirm dialog and several failure
 // paths use native alert() — a page dialog handler accepts everything and
 // records the messages so unexpected alerts fail the test at the end.
 
@@ -35,6 +35,7 @@ test.describe('J8 staff management @p1', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
+		// Any NATIVE dialog is a regression (#1193): collect them to assert none appear.
 		const dialogs: string[] = [];
 		page.on('dialog', (dialog) => {
 			dialogs.push(dialog.message());
@@ -101,19 +102,20 @@ test.describe('J8 staff management @p1', () => {
 		});
 		await closeDialog(page, permissionsDialog);
 
-		// Remove from staff (native confirm, auto-accepted by the handler).
+		// Remove from staff (in-app confirm dialog).
 		const staffEmpty = page.getByText('No staff members found');
 		await expect(async () => {
 			if (!(await staffEmpty.isVisible()) && (await staffCard.isVisible())) {
 				await staffCard
 					.getByRole('button', { name: `Remove ${memberName} from staff` })
 					.click({ timeout: 3_000 });
+				await confirmInApp(page);
 			}
 			await expect(staffEmpty).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 
-		// The only native dialog should have been the removal confirm.
-		expect(dialogs.filter((m) => !m.startsWith('Are you sure'))).toHaveLength(0);
+		// The removal confirm is in-app now: no native dialog may have fired.
+		expect(dialogs).toHaveLength(0);
 
 		await context.close();
 	});

@@ -4,13 +4,14 @@ import { createOrganization, uniqueName } from '../../support/factories';
 import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { cancelInApp } from '../../support/ui';
 
 // J8 (USER_JOURNEYS.md) — sector-block DESIGNER smoke: the venue's /designer
 // route renders each SECTOR as a block (plus the stage) on one SVG canvas. A
 // block can be selected and keyboard-ROTATED (the a11y path — [ and ] rotate by
 // 15°, more deterministic than drag in e2e), which makes the layout dirty, and
 // Save persists the arrangement (sector.metadata.transform / venue.metadata).
-// The unsaved-changes guard fires a confirm() when navigating away dirty.
+// The unsaved-changes guard opens the in-app confirm when navigating away dirty.
 //
 // Transform/save round-trip is unit-tested (designer-save / designer-interactions);
 // this smoke proves the route + render + rotate + save wiring end to end.
@@ -89,7 +90,9 @@ test.describe('J8 venue designer @p2', () => {
 		await close();
 	});
 
-	test('unsaved-changes guard fires confirm() when navigating away dirty', async ({ browser }) => {
+	test('unsaved-changes guard opens the in-app confirm when navigating away dirty', async ({
+		browser
+	}) => {
 		test.setTimeout(150_000);
 
 		const { page, close } = await openDesigner(browser);
@@ -106,18 +109,10 @@ test.describe('J8 venue designer @p2', () => {
 		await page.keyboard.press(']');
 		await expect(page.getByRole('button', { name: 'Save layout' })).toBeEnabled();
 
-		// Navigating away now must prompt: beforeNavigate calls confirm(). Dismiss
-		// it (stay), and prove it fired and the navigation was cancelled.
-		let confirmSeen = false;
-		page.on('dialog', async (dialog) => {
-			confirmSeen = true;
-			expect(dialog.type()).toBe('confirm');
-			await dialog.dismiss();
-		});
-
+		// Navigating away now must prompt: beforeNavigate opens the in-app confirm.
+		// Cancel it (stay), and prove it fired and the navigation was cancelled.
 		await page.getByRole('button', { name: 'Back to venue' }).click();
-
-		await expect.poll(() => confirmSeen, { timeout: 10_000 }).toBe(true);
+		await cancelInApp(page);
 		// Cancelled navigation keeps us on the designer (canvas still present).
 		await expect(page).toHaveURL(/\/designer$/);
 		await expect(page.getByRole('application', { name: 'Seat layout canvas' })).toBeVisible();

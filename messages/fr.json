@@ -877,7 +877,9 @@
 	"confirmDialog": {
 		"confirm": "Confirmer",
 		"cancel": "Annuler",
-		"closeDialog": "Fermer la boîte de dialogue"
+		"title": "Confirmer l'action ?",
+		"delete": "Supprimer",
+		"remove": "Retirer"
 	},
 	"bookmark": {
 		"add": "Mettre cet événement en favori",
@@ -6279,6 +6281,8 @@
 		"loading": "Chargement..."
 	},
 	"staffCard": {
+		"removeTitle": "Retirer un membre de l'équipe",
+		"removeConfirm": "Veux-tu vraiment retirer {name} de l'équipe ?",
 		"staff": "Personnel",
 		"staffSince": "Membre du personnel depuis :",
 		"createEvents": "Créer des événements",

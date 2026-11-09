@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { NextStep, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -317,8 +319,15 @@
 	/**
 	 * Handle leaving the waitlist
 	 */
-	async function handleLeaveWaitlist() {
-		if (!confirm(m['ineligibilityActionButton.confirmLeaveWaitlist']())) {
+	const confirmation = createConfirm();
+
+	async function handleLeaveWaitlist(): Promise<void> {
+		if (
+			!(await confirmation.ask({
+				message: m['ineligibilityActionButton.confirmLeaveWaitlist'](),
+				destructive: true
+			}))
+		) {
 			return;
 		}
 
@@ -504,3 +513,5 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog {...confirmation.dialogProps} />

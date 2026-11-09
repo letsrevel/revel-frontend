@@ -230,6 +230,8 @@ describe('Developer app detail page', () => {
 			)
 		).not.toContain(SECRET);
 
+		// bits-ui releases the modal body lock on a deferred timer after the dialog closes.
+		await waitFor(() => expect(document.body.style.pointerEvents).not.toBe('none'));
 		await user.click(screen.getByRole('button', { name: "I've saved it" }));
 		expect(screen.queryByDisplayValue(SECRET)).toBeNull();
 	});

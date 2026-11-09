@@ -11,12 +11,17 @@
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
 	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 
 	const accessToken = $derived(authStore.accessToken);
+
+	// One confirm dialog for every request card.
+	const confirmation = createConfirm();
 
 	// Tab state
 	type TabType = 'invitations' | 'requests';
@@ -398,10 +403,19 @@
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each requests as request (request.id)}
-						<InvitationRequestCard {request} />
+						<InvitationRequestCard
+							{request}
+							confirmCancel={() =>
+								confirmation.ask({
+									message: m['invitationRequestCard.cancelConfirm'](),
+									destructive: true
+								})}
+						/>
 					{/each}
 				</div>
 			{/if}
 		</div>
 	{/if}
 </DashboardBandLayout>
+
+<ConfirmDialog {...confirmation.dialogProps} />

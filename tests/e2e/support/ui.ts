@@ -25,3 +25,32 @@ export async function closeDialog(page: Page, dialog: Locator): Promise<void> {
 	}
 	await dialog.waitFor({ state: 'hidden', timeout: 10_000 });
 }
+
+/**
+ * Accept the shared in-app confirmation dialog (`common/ConfirmDialog`), which
+ * replaced every native `window.confirm()` (#1193). Matches the confirm button
+ * by test id so the helper is independent of its per-flow label ("Confirm",
+ * "Delete", "Remove"). Returns the dialog's text so callers can assert on the
+ * message the old `dialog.message()` handlers used to capture.
+ */
+export async function confirmInApp(page: Page): Promise<string> {
+	const dialog = page.getByTestId('confirm-dialog');
+	await dialog.waitFor({ state: 'visible', timeout: 10_000 });
+	const text = (await dialog.innerText()).trim();
+	await dialog.getByTestId('confirm-dialog-confirm').click();
+	await dialog.waitFor({ state: 'hidden', timeout: 10_000 });
+	return text;
+}
+
+/**
+ * Dismiss the shared in-app confirmation dialog with its Cancel button and
+ * return its text (the in-app counterpart of `dialog.dismiss()`).
+ */
+export async function cancelInApp(page: Page): Promise<string> {
+	const dialog = page.getByTestId('confirm-dialog');
+	await dialog.waitFor({ state: 'visible', timeout: 10_000 });
+	const text = (await dialog.innerText()).trim();
+	await dialog.getByTestId('confirm-dialog-cancel').click();
+	await dialog.waitFor({ state: 'hidden', timeout: 10_000 });
+	return text;
+}

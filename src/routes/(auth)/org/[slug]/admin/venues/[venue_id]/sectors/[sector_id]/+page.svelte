@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -418,6 +420,9 @@
 		});
 	}
 
+	// Promise-based in-app confirm for the async save flow below.
+	const confirmation = createConfirm();
+
 	// Orchestrated save: paint preview + live-sales confirmation first (nothing
 	// written yet, so cancelling aborts the WHOLE save cleanly), then the
 	// sector SHAPE when the save changes it, then bulk create/update/delete,
@@ -470,7 +475,7 @@
 					...strandedLines,
 					m['orgAdmin.seats.repriceConfirm.question']()
 				].join('\n');
-				if (!confirm(message)) return;
+				if (!(await confirmation.ask({ message }))) return;
 			}
 		}
 
@@ -629,3 +634,5 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog {...confirmation.dialogProps} />

@@ -1014,7 +1014,9 @@
 	"confirmDialog": {
 		"confirm": "Bestätigen",
 		"cancel": "Abbrechen",
-		"closeDialog": "Dialog schließen"
+		"title": "Bist du sicher?",
+		"delete": "Löschen",
+		"remove": "Entfernen"
 	},
 	"bookmark": {
 		"add": "Dieses Event merken",
@@ -6309,6 +6311,8 @@
 		"loading": "Lädt..."
 	},
 	"staffCard": {
+		"removeTitle": "Teammitglied entfernen",
+		"removeConfirm": "Möchtest du {name} wirklich aus dem Team entfernen?",
 		"staff": "Personal",
 		"staffSince": "Personal seit:",
 		"createEvents": "Veranstaltungen erstellen",

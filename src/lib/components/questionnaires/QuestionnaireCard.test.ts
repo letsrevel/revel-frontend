@@ -80,7 +80,8 @@ describe('QuestionnaireCard', () => {
 					questionnaire,
 					organizationSlug: 'acme',
 					organizationId: 'org-1',
-					accessToken: 'test-token'
+					accessToken: 'test-token',
+					confirmDelete: () => Promise.resolve(true)
 				}
 			}
 		});

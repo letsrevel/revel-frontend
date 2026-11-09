@@ -3,6 +3,7 @@ import { createTicketedEvent, createVerifiedUser, rsvpViaApi } from '../../suppo
 import { ApiClient } from '../../support/api';
 import { PERSONAS } from '../../support/personas';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J10 waitlist admin — the /waitlist admin page: issue, revoke and
 // reactivate offers for a waitlist entry, then remove the entry.
@@ -13,7 +14,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // Locator gotcha: every row renders twice (table + md:hidden mobile card),
 // so all row-level lookups filter on visibility. Removing an entry uses a
-// native confirm().
+// in-app confirm.
 
 test.describe('J10 waitlist admin @p2', () => {
 	test('issue, revoke and reactivate an offer; remove the entry', async ({ asOwner }) => {
@@ -40,7 +41,6 @@ test.describe('J10 waitlist admin @p2', () => {
 		const waiterName = `${waiter.firstName} ${waiter.lastName}`;
 
 		const page = asOwner;
-		page.on('dialog', (dialog) => void dialog.accept());
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/waitlist`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Event Waitlist', level: 1 })).toBeVisible();
@@ -88,8 +88,9 @@ test.describe('J10 waitlist admin @p2', () => {
 		await page.getByRole('tab', { name: 'Entries' }).click();
 		await expect(visibleButton('Revoke offer')).toBeVisible({ timeout: 15_000 });
 
-		// Remove the entry (native confirm auto-accepted) → empty state.
+		// Remove the entry (in-app confirm) → empty state.
 		await visibleButton('Remove').click();
+		await confirmInApp(page);
 		await expect(page.getByRole('heading', { name: 'No Waitlist Entries' })).toBeVisible({
 			timeout: 15_000
 		});

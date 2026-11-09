@@ -122,7 +122,7 @@
 	     to be `bg-card/50`, a 1.21:1 seam against the band); the Cards below it
 	     are opaque by default. -->
 	<div class="flex-1">
-		<main class="container mx-auto -mt-8 max-w-3xl space-y-6 px-4 pb-8">
+		<div class="container mx-auto -mt-8 max-w-3xl space-y-6 px-4 pb-8">
 			{#if data.forbidden}
 				<!--
 					Backend returned 403: the poll exists but the caller is not in any
@@ -249,7 +249,7 @@
 					</Card>
 				{/if}
 			{/if}
-		</main>
+		</div>
 	</div>
 </div>
 

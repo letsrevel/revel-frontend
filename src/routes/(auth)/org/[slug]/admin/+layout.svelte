@@ -97,7 +97,7 @@
 	Admin Layout. 4rem = the site header above this one (Header.svelte, h-16).
 
 	Structure: on md+ a collapsible left sidebar (AdminSidebar, sticky under the
-	site header) sits beside the content column (breadcrumbs + <main>); below md
+	site header) sits beside the content column (breadcrumbs + content); below md
 	a top bar with a hamburger opens a drawer rendering the same grouped nav model.
 
 	Nothing here sticks vertically except the sidebar, which sits below the
@@ -269,10 +269,12 @@
 				</ol>
 			</nav>
 
-			<!-- Main Content -->
-			<main id="main-content" class="container mx-auto py-6">
+			<!-- Content column: the skip link ("Skip to main content") targets this, so it
+			     jumps past the admin nav. The enclosing AuthLayout <main> drops its own id
+			     on admin routes; this is the only #main-content. -->
+			<div id="main-content" tabindex="-1" class="container mx-auto py-6 focus:outline-none">
 				{@render children()}
-			</main>
+			</div>
 		</div>
 	</div>
 </div>

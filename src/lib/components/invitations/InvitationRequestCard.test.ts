@@ -39,7 +39,7 @@ function renderCard() {
 		props: {
 			client,
 			component: InvitationRequestCard,
-			componentProps: { request }
+			componentProps: { request, confirmCancel: () => Promise.resolve(true) }
 		}
 	});
 }
@@ -47,7 +47,6 @@ function renderCard() {
 describe('InvitationRequestCard cancel error handling', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('confirm', () => true);
 	});
 	afterEach(() => {
 		vi.unstubAllGlobals();

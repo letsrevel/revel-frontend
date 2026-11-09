@@ -543,7 +543,6 @@
 
 	function handleDelete() {
 		if (!tier) return;
-		if (!confirm(m['tierForm.deleteConfirm']({ name: tier.name }))) return;
 		tierDeleteMutation.mutate();
 	}
 
@@ -723,6 +722,7 @@
 
 			<TierFormActions
 				isEditing={!!tier}
+				tierName={tier?.name ?? ''}
 				{isPending}
 				isDeleting={tierDeleteMutation.isPending}
 				submitDisabled={saveHeld ||
