@@ -55,7 +55,15 @@
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{sourceLabel(record.source)}</td>
 					<td class="px-4 py-3"><RegisterBadges {record} /></td>
 					<td class="px-4 py-3 text-right">
-						<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} {onInvite} {onUnlink} />
+						<RegisterRowActions
+							{record}
+							{isOwner}
+							{onEdit}
+							{onEnd}
+							{onDelete}
+							{onInvite}
+							{onUnlink}
+						/>
 					</td>
 				</tr>
 			{/each}

@@ -337,10 +337,18 @@ describe('MembershipRequestsTab reject errors', () => {
 
 describe('MembershipRequestsTab force approve', () => {
 	/** hey-api hands the raw fetch Response through as `response`. */
-	function approveFailure(status: number, detail?: string) {
+	function approveFailure(status: number, detail?: string, error?: Record<string, unknown>) {
 		return {
 			data: undefined,
-			error: detail ? { detail } : {},
+			// A bare 400 here is the forceable refusal (subscription / paused); tests of
+			// the other shapes pass `error` explicitly.
+			error:
+				error ??
+				(detail
+					? status === 400
+						? { detail, code: 'subscription_active', forceable: true }
+						: { detail }
+					: {}),
 			response: { status }
 		} as never;
 	}
@@ -375,6 +383,42 @@ describe('MembershipRequestsTab force approve', () => {
 		// the backend's own detail above it is the single source of the cause.
 		expect(dialog).toHaveTextContent(/Approving anyway overrides the refusal above/i);
 		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('shows localized copy and never offers force for a non-forceable coded refusal', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, undefined, {
+				detail: 'backend sentence that must not be shown',
+				code: 'applicant_has_entry',
+				forceable: false
+			})
+		);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith('This applicant already has an open register entry.')
+		);
+		expect(screen.queryByRole('dialog')).toBeNull();
+		expect(approveCallBodies()).toHaveLength(1);
+	});
+
+	it('shows the detail and never offers force for an uncoded 400', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, undefined, { detail: 'Only pending applications can be approved.' })
+		);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith('Only pending applications can be approved.')
+		);
+		expect(screen.queryByRole('dialog')).toBeNull();
+		expect(approveCallBodies()).toHaveLength(1);
 	});
 
 	it('describes the dialog with both the backend detail and the explainer', async () => {
@@ -750,12 +794,32 @@ describe('MembershipRequestsTab approve and link', () => {
 		expect(screen.getAllByRole('button', { name: /^approve/i }).length).toBeGreaterThan(0);
 	});
 
+	it('shows localized copy inline for a non-forceable coded link refusal', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'raw backend text', code: 'link_future_dated', forceable: false },
+			response: { status: 400 }
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		const inline = await screen.findByTestId('approve-and-link-error');
+		expect(inline.textContent).toContain('This register entry starts in the future');
+		expect(screen.queryByText(/approve anyway/i)).toBeNull();
+	});
+
 	it('offers force on a 400 for the link path and re-sends it with link_record_id', async () => {
 		const user = userEvent.setup();
 		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
 			.mockResolvedValueOnce({
 				data: undefined,
-				error: { detail: 'Ada Lovelace holds an active subscription.' },
+				error: {
+					detail: 'Ada Lovelace holds an active subscription.',
+					code: 'subscription_active',
+					forceable: true
+				},
 				response: { status: 400 }
 			} as never)
 			.mockResolvedValueOnce({ data: undefined, error: undefined } as never);
