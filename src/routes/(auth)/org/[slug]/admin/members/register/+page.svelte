@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import {
 		BookUser,
@@ -97,20 +98,29 @@
 
 	let view = $state('register');
 
-	// The possible-duplicates scan is expensive and not paginated, so it runs only
-	// while the Duplicates tab is open, plus ONE seeding fetch for the tab badge
-	// (the backend offers no count endpoint). After that the badge keeps the last
-	// fetched value; ordinary register writes do not touch this query (its key sits
-	// outside `memberRegisterKeys.all`) and merge / unlink / approve-and-link
-	// invalidate it explicitly.
-	let duplicatesSeeded = $state(false);
+	// The possible-duplicates scan is expensive and not paginated. It runs ONCE on
+	// load (for the tab badge; the backend offers no count endpoint), again on each
+	// entry into the Duplicates tab, and whenever merge / unlink / approve-and-link
+	// invalidate it explicitly. Ordinary register writes don't touch it (its key sits
+	// outside `memberRegisterKeys.all`). The query stays ENABLED so those explicit
+	// invalidations refetch it from any tab (a disabled query is skipped by
+	// refetchQueries); `staleTime: Infinity` plus no focus/reconnect refetch keeps
+	// it from scanning in the background.
 	const duplicatesQuery = createQuery(() => ({
 		queryKey: memberRegisterKeys.duplicates(slug),
 		queryFn: () => listPossibleDuplicates(slug, accessToken),
-		enabled: !!accessToken && (view === 'duplicates' || !duplicatesSeeded)
+		enabled: !!accessToken,
+		staleTime: Infinity,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false
 	}));
+	let previousView = 'register';
 	$effect(() => {
-		if (duplicatesQuery.isSuccess) duplicatesSeeded = true;
+		const current = view;
+		if (current === 'duplicates' && previousView !== 'duplicates') {
+			untrack(() => duplicatesQuery.refetch());
+		}
+		previousView = current;
 	});
 	const duplicates = $derived(duplicatesQuery.data ?? []);
 	const duplicatesError = $derived(

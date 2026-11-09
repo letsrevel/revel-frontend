@@ -11036,7 +11036,7 @@
 	"memberRegister.viewsLabel": "Vues du registre",
 	"memberRegister.tabRegister": "Registre",
 	"memberRegister.tabDuplicates": "Doublons possibles",
-	"memberRegister.duplicatesIntro": "Entrées sans compte qui pourraient être la même personne qu'un membre lié. Examinez chaque paire et fusionnez celles qui correspondent.",
+	"memberRegister.duplicatesIntro": "Entrées sans compte qui pourraient être la même personne qu'un membre lié. Examine chaque paire et fusionne celles qui correspondent.",
 	"memberRegister.duplicatesEmptyTitle": "Aucun doublon possible",
 	"memberRegister.duplicatesEmptyBody": "Aucune entrée sans compte ne ressemble actuellement à un membre lié.",
 	"memberRegister.reasonsLabel": "Pourquoi elles pourraient correspondre",
