@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { grantConflicts } from './tier-grants';
@@ -33,7 +34,19 @@
 		onClose
 	}: Props = $props();
 
-	let showDeleteConfirm = $state(false);
+	const confirmation = createConfirm();
+
+	async function handleDeleteClick(): Promise<void> {
+		if (
+			await confirmation.ask({
+				message: m['tierForm.deleteConfirm']({ name: tierName }),
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
+			onDelete();
+		}
+	}
 
 	const uid = $props.id();
 	const conflictId = `${uid}-grant-conflict`;
@@ -60,12 +73,7 @@
 <div class="flex justify-between gap-2 border-t border-border pt-4">
 	<div>
 		{#if isEditing}
-			<Button
-				type="button"
-				variant="destructive"
-				onclick={() => (showDeleteConfirm = true)}
-				disabled={isPending}
-			>
+			<Button type="button" variant="destructive" onclick={handleDeleteClick} disabled={isPending}>
 				{isDeleting ? m['tierForm.deleting']() : m['tierForm.deleteTier']()}
 			</Button>
 		{/if}
@@ -88,15 +96,4 @@
 	</div>
 </div>
 
-<ConfirmDialog
-	isOpen={showDeleteConfirm}
-	title={m['confirmDialog.title']()}
-	message={m['tierForm.deleteConfirm']({ name: tierName })}
-	confirmText={m['confirmDialog.delete']()}
-	variant="danger"
-	onConfirm={() => {
-		showDeleteConfirm = false;
-		onDelete();
-	}}
-	onCancel={() => (showDeleteConfirm = false)}
-/>
+<ConfirmDialog {...confirmation.dialogProps} />

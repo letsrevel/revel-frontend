@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -93,15 +94,18 @@
 		showModal = true;
 	}
 
-	let pendingConfirm = $state<{ message: string; run: () => void } | null>(null);
+	const confirmation = createConfirm();
 
-	function handleDelete(resourceId: string) {
-		pendingConfirm = {
-			message: m['orgAdmin.resources.confirmDelete'](),
-			run: () => {
-				deleteMutation.mutate(resourceId);
-			}
-		};
+	async function handleDelete(resourceId: string) {
+		if (
+			await confirmation.ask({
+				message: m['orgAdmin.resources.confirmDelete'](),
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
+			deleteMutation.mutate(resourceId);
+		}
 	}
 
 	function handleModalClose() {
@@ -243,16 +247,4 @@
 	/>
 {/if}
 
-<ConfirmDialog
-	isOpen={pendingConfirm !== null}
-	title={m['confirmDialog.title']()}
-	message={pendingConfirm?.message ?? ''}
-	confirmText={m['confirmDialog.delete']()}
-	variant="danger"
-	onConfirm={() => {
-		const run = pendingConfirm?.run;
-		pendingConfirm = null;
-		run?.();
-	}}
-	onCancel={() => (pendingConfirm = null)}
-/>
+<ConfirmDialog {...confirmation.dialogProps} />

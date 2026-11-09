@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -118,15 +119,18 @@
 		createReactivateWaitlistOfferMutationOptions(data.eventId, () => accessToken, queryClient)
 	);
 
-	let pendingConfirm = $state<{ message: string; run: () => void } | null>(null);
+	const confirmation = createConfirm();
 
-	function handleDelete(waitlistId: string, userName: string) {
-		pendingConfirm = {
-			message: m['orgAdmin.waitlist.confirmDelete']({ userName }),
-			run: () => {
-				deleteMutation.mutate(waitlistId);
-			}
-		};
+	async function handleDelete(waitlistId: string, userName: string) {
+		if (
+			await confirmation.ask({
+				message: m['orgAdmin.waitlist.confirmDelete']({ userName }),
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
+			deleteMutation.mutate(waitlistId);
+		}
 	}
 
 	function getErrorStatus(err: unknown): number | null {
@@ -465,16 +469,4 @@
 	onConfirm={handleExpiryDialogConfirm}
 />
 
-<ConfirmDialog
-	isOpen={pendingConfirm !== null}
-	title={m['confirmDialog.title']()}
-	message={pendingConfirm?.message ?? ''}
-	confirmText={m['confirmDialog.delete']()}
-	variant="danger"
-	onConfirm={() => {
-		const run = pendingConfirm?.run;
-		pendingConfirm = null;
-		run?.();
-	}}
-	onCancel={() => (pendingConfirm = null)}
-/>
+<ConfirmDialog {...confirmation.dialogProps} />

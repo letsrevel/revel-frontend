@@ -49,3 +49,25 @@ describe.each([
 		expect(screen.getByRole('link', { name: 'Privacy' })).toBeInTheDocument();
 	});
 });
+
+describe('AuthLayout skip-link target', () => {
+	function setRoute(id: string | null) {
+		pageStore.current?.set({
+			url: new URL('http://localhost/'),
+			data: { features: {}, tenant: null },
+			route: { id }
+		});
+	}
+
+	it('owns #main-content on ordinary authenticated routes', () => {
+		setRoute('/(auth)/dashboard');
+		const { container } = render(AuthLayout);
+		expect(container.querySelector('main')).toHaveAttribute('id', 'main-content');
+	});
+
+	it('hands #main-content to the admin content column on admin routes', () => {
+		setRoute('/(auth)/org/[slug]/admin/events');
+		const { container } = render(AuthLayout);
+		expect(container.querySelector('main')).not.toHaveAttribute('id');
+	});
+});

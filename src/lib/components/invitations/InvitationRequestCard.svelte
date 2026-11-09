@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
@@ -17,9 +16,11 @@
 
 	interface Props {
 		request: EventInvitationRequestSchema;
+		/** The list owner's single confirm dialog: resolves true to proceed with the cancellation. */
+		confirmCancel: () => Promise<boolean>;
 	}
 
-	const { request }: Props = $props();
+	const { request, confirmCancel }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const accessToken = $derived(authStore.accessToken);
@@ -91,15 +92,8 @@
 		}
 	}));
 
-	let showCancelConfirm = $state(false);
-
-	function handleCancel() {
-		showCancelConfirm = true;
-	}
-
-	function confirmCancel() {
-		showCancelConfirm = false;
-		cancelMutation.mutate();
+	async function handleCancel() {
+		if (await confirmCancel()) cancelMutation.mutate();
 	}
 </script>
 
@@ -209,12 +203,3 @@
 		</div>
 	</div>
 </Card>
-
-<ConfirmDialog
-	isOpen={showCancelConfirm}
-	title={m['confirmDialog.title']()}
-	message={m['invitationRequestCard.cancelConfirm']()}
-	variant="danger"
-	onConfirm={confirmCancel}
-	onCancel={() => (showCancelConfirm = false)}
-/>

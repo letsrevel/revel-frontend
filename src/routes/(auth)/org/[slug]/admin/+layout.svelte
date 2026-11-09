@@ -269,8 +269,10 @@
 				</ol>
 			</nav>
 
-			<!-- Main Content -->
-			<div class="container mx-auto py-6">
+			<!-- Content column: the skip link ("Skip to main content") targets this, so it
+			     jumps past the admin nav. The enclosing AuthLayout <main> drops its own id
+			     on admin routes; this is the only #main-content. -->
+			<div id="main-content" tabindex="-1" class="container mx-auto py-6 focus:outline-none">
 				{@render children()}
 			</div>
 		</div>

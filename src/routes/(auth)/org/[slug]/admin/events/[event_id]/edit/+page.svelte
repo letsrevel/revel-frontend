@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import { stripeSetupState } from '$lib/utils/org-setup-progress';
 	import { canRunVereinPreset } from '$lib/utils/permissions';
 	import * as m from '$lib/paraglide/messages.js';
@@ -202,18 +203,15 @@
 		}
 	}));
 
-	let pendingConfirm = $state<{ message: string; danger?: boolean; run: () => void } | null>(null);
+	const confirmation = createConfirm();
 
 	/**
 	 * Publish event (draft → open)
 	 */
-	function publishEvent(): void {
-		pendingConfirm = {
-			message: m['eventEditPage.publishConfirm'](),
-			run: () => {
-				updateStatusMutation.mutate('open');
-			}
-		};
+	async function publishEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.publishConfirm']() })) {
+			updateStatusMutation.mutate('open');
+		}
 	}
 
 	// Platform-relative preview link; absolute (custom-domain aware) URL to share.
@@ -222,25 +220,19 @@
 	/**
 	 * Close event (open → closed)
 	 */
-	function closeEvent(): void {
-		pendingConfirm = {
-			message: m['eventEditPage.closeConfirm'](),
-			run: () => {
-				updateStatusMutation.mutate('closed');
-			}
-		};
+	async function closeEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.closeConfirm']() })) {
+			updateStatusMutation.mutate('closed');
+		}
 	}
 
 	/**
 	 * Mark as draft (open/closed → draft)
 	 */
-	function markAsDraft(): void {
-		pendingConfirm = {
-			message: m['eventEditPage.draftConfirm'](),
-			run: () => {
-				updateStatusMutation.mutate('draft');
-			}
-		};
+	async function markAsDraft(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.draftConfirm']() })) {
+			updateStatusMutation.mutate('draft');
+		}
 	}
 
 	/**
@@ -248,13 +240,10 @@
 	 * with reopen-specific confirmation copy so admins see the right
 	 * intent when transitioning from closed.
 	 */
-	function reopenEvent(): void {
-		pendingConfirm = {
-			message: m['orgAdmin.events.confirmations.reopen'](),
-			run: () => {
-				updateStatusMutation.mutate('open');
-			}
-		};
+	async function reopenEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['orgAdmin.events.confirmations.reopen']() })) {
+			updateStatusMutation.mutate('open');
+		}
 	}
 
 	/**
@@ -271,18 +260,20 @@
 	 * stronger confirmation that names what just happened (attendees
 	 * notified, record removal on top of that).
 	 */
-	function deleteEvent(): void {
+	async function deleteEvent(): Promise<void> {
 		const message =
 			currentStatus === 'cancelled'
 				? m['orgAdmin.events.confirmations.deleteCancelled']()
 				: m['orgAdmin.events.confirmations.delete']();
-		pendingConfirm = {
-			message: message,
-			danger: true,
-			run: () => {
-				deleteEventMutation.mutate();
-			}
-		};
+		if (
+			await confirmation.ask({
+				message: message,
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
+			deleteEventMutation.mutate();
+		}
 	}
 
 	// Duplicate modal state
@@ -531,16 +522,4 @@
 	retryRefunds={currentStatus === 'cancelled'}
 />
 
-<ConfirmDialog
-	isOpen={pendingConfirm !== null}
-	title={m['confirmDialog.title']()}
-	message={pendingConfirm?.message ?? ''}
-	confirmText={pendingConfirm?.danger ? m['confirmDialog.delete']() : m['confirmDialog.confirm']()}
-	variant={pendingConfirm?.danger ? 'danger' : 'warning'}
-	onConfirm={() => {
-		const run = pendingConfirm?.run;
-		pendingConfirm = null;
-		run?.();
-	}}
-	onCancel={() => (pendingConfirm = null)}
-/>
+<ConfirmDialog {...confirmation.dialogProps} />

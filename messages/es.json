@@ -1014,8 +1014,7 @@
 	"confirmDialog": {
 		"confirm": "Confirmar",
 		"cancel": "Cancelar",
-		"closeDialog": "Cerrar diálogo",
-		"title": "¿Estás seguro?",
+		"title": "¿Confirmas?",
 		"delete": "Eliminar",
 		"remove": "Quitar"
 	},
@@ -6313,7 +6312,7 @@
 	},
 	"staffCard": {
 		"removeTitle": "Quitar miembro del equipo",
-		"removeConfirm": "¿Seguro que quieres quitar a {name} del equipo?",
+		"removeConfirm": "¿Quieres quitar a {name} del equipo?",
 		"staff": "Staff",
 		"staffSince": "Staff desde:",
 		"createEvents": "Crear eventos",

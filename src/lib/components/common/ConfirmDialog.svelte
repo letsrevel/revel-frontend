@@ -10,6 +10,8 @@
 		message: string;
 		confirmText?: string;
 		cancelText?: string;
+		/** Disables Confirm (set while the dialog is closing so it cannot re-fire). */
+		confirmDisabled?: boolean;
 		variant?: 'warning' | 'danger' | 'info';
 		onConfirm: () => void;
 		onCancel: () => void;
@@ -22,6 +24,7 @@
 		message,
 		confirmText = m['confirmDialog.confirm'](),
 		cancelText = m['confirmDialog.cancel'](),
+		confirmDisabled = false,
 		variant = 'warning',
 		onConfirm,
 		onCancel,
@@ -107,9 +110,10 @@
 			<button
 				type="button"
 				onclick={onConfirm}
+				disabled={confirmDisabled}
 				data-testid="confirm-dialog-confirm"
 				class={cn(
-					'rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+					'rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
 					variant === 'warning' &&
 						'bg-highlight text-highlight-foreground hover:bg-highlight/90 focus-visible:ring-highlight',
 					variant === 'danger' &&

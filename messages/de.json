@@ -1014,7 +1014,6 @@
 	"confirmDialog": {
 		"confirm": "Bestätigen",
 		"cancel": "Abbrechen",
-		"closeDialog": "Dialog schließen",
 		"title": "Bist du sicher?",
 		"delete": "Löschen",
 		"remove": "Entfernen"

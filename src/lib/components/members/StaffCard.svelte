@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationStaffSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
@@ -43,14 +42,8 @@
 		Object.values(staff.permissions?.default || {}).filter(Boolean).length
 	);
 
-	let showRemoveConfirm = $state(false);
-
+	// Confirmation is the list owner's job (one dialog for all rows): this only reports intent.
 	function handleRemove() {
-		showRemoveConfirm = true;
-	}
-
-	function confirmRemove() {
-		showRemoveConfirm = false;
 		onRemove(staff);
 	}
 
@@ -140,13 +133,3 @@
 		</div>
 	</div>
 </div>
-
-<ConfirmDialog
-	isOpen={showRemoveConfirm}
-	title={m['staffCard.removeTitle']()}
-	message={m['staffCard.removeConfirm']({ name: displayName })}
-	confirmText={m['confirmDialog.remove']()}
-	variant="danger"
-	onConfirm={confirmRemove}
-	onCancel={() => (showRemoveConfirm = false)}
-/>

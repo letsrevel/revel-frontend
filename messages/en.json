@@ -1014,7 +1014,6 @@
 	"confirmDialog": {
 		"confirm": "Confirm",
 		"cancel": "Cancel",
-		"closeDialog": "Close dialog",
 		"title": "Are you sure?",
 		"delete": "Delete",
 		"remove": "Remove"

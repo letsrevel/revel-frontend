@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 
 /**
@@ -15,10 +16,39 @@ import type { Attachment } from 'svelte/attachments';
  */
 export function onImageError(handler: () => void): Attachment<HTMLImageElement> {
 	return (img) => {
-		img.addEventListener('error', handler);
-		if (img.complete && img.naturalWidth === 0 && img.currentSrc !== '') {
-			handler();
+		let active = true;
+		// The handler usually reads and writes reactive state. Attachments re-run
+		// when anything read synchronously inside them changes, so the handler must
+		// never run in the attachment's tracking scope.
+		const fire = (): void => {
+			if (active) untrack(handler);
+		};
+
+		img.addEventListener('error', fire);
+
+		// Already settled before hydration. `naturalWidth === 0` alone is not proof
+		// of failure: an SVG without intrinsic dimensions loads fine with both
+		// naturalWidth and naturalHeight at 0. Confirm with decode(), which rejects
+		// for a broken image and resolves for a usable one.
+		if (
+			img.complete &&
+			img.naturalWidth === 0 &&
+			img.naturalHeight === 0 &&
+			img.currentSrc !== ''
+		) {
+			if (typeof img.decode === 'function') {
+				img.decode().then(
+					() => undefined,
+					() => fire()
+				);
+			} else {
+				queueMicrotask(fire);
+			}
 		}
-		return () => img.removeEventListener('error', handler);
+
+		return () => {
+			active = false;
+			img.removeEventListener('error', fire);
+		};
 	};
 }

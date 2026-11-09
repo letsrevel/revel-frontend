@@ -877,8 +877,7 @@
 	"confirmDialog": {
 		"confirm": "Confirmer",
 		"cancel": "Annuler",
-		"closeDialog": "Fermer la boîte de dialogue",
-		"title": "Es-tu sûr ?",
+		"title": "Confirmer l'action ?",
 		"delete": "Supprimer",
 		"remove": "Retirer"
 	},

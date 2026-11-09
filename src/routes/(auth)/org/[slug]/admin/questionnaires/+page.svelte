@@ -7,6 +7,8 @@
 	import QuestionnaireCard from '$lib/components/questionnaires/QuestionnaireCard.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type { PageData } from './$types';
@@ -33,6 +35,9 @@
 		void data.questionnaires; // tracked: a fresh array on load and on invalidateAll
 		void invalidateOrgQuestionnaires(queryClient, data.organization.slug);
 	});
+
+	// One confirm dialog for every card.
+	const confirmation = createConfirm();
 
 	// Search state
 	let searchQuery = $state('');
@@ -116,7 +121,17 @@
 				organizationSlug={data.organization.slug}
 				organizationId={data.organization.id}
 				accessToken={authStore.accessToken ?? ''}
+				confirmDelete={() =>
+					confirmation.ask({
+						message: m['questionnaireCard.confirmDelete']({
+							name: questionnaire.questionnaire.name
+						}),
+						confirmLabel: m['confirmDialog.delete'](),
+						destructive: true
+					})}
 			/>
 		{/each}
 	</div>
 {/if}
+
+<ConfirmDialog {...confirmation.dialogProps} />

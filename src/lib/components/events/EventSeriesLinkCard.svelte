@@ -68,12 +68,13 @@
 			class="flex items-center gap-3 rounded-md font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			{#if logoUrl}
+				{@const failingUrl = logoUrl}
 				<img
 					src={logoUrl}
 					alt=""
 					class="h-12 w-12 shrink-0 rounded-md object-cover"
 					loading="lazy"
-					{@attach onImageError(() => (failedLogoUrls = [...failedLogoUrls, logoUrl]))}
+					{@attach onImageError(() => (failedLogoUrls = [...failedLogoUrls, failingUrl]))}
 				/>
 			{/if}
 			<span>{series.name}</span>
