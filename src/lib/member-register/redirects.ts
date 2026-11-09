@@ -10,17 +10,13 @@ export const MEMBERS_TABS = [
 ] as const;
 export type MembersTab = (typeof MEMBERS_TABS)[number];
 
-/**
- * Hidden destination (no tab trigger): the per-member access list, reached from
- * a People row's "Manage access" until the person sheet replaces it.
- */
-export const ACCESS_TAB = 'access';
-
 /** Tab names used before the Members area was unified. */
 export const LEGACY_TAB_MAP: Readonly<Record<string, MembersTab>> = {
 	members: 'people',
 	requests: 'applications',
-	tokens: 'invite-links'
+	tokens: 'invite-links',
+	// The temporary "Manage access" bridge; the person sheet replaced it.
+	access: 'people'
 };
 
 export function isMembersTab(value: string | null | undefined): value is MembersTab {

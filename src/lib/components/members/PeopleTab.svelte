@@ -38,6 +38,7 @@
 	import MergeRecordsDialog from '$lib/components/member-register/MergeRecordsDialog.svelte';
 	import DuplicatesDialog from '$lib/components/member-register/DuplicatesDialog.svelte';
 	import RegisterExportDialog from '$lib/components/member-register/RegisterExportDialog.svelte';
+	import PersonSheet from '$lib/components/member-register/PersonSheet.svelte';
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
 	import PeopleChips from '$lib/components/member-register/PeopleChips.svelte';
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
@@ -64,6 +65,11 @@
 		type PeopleView
 	} from '$lib/member-register/people-view';
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
+	import {
+		sheetStateFor,
+		sheetStateForRecord,
+		type SheetState
+	} from '$lib/member-register/person-target';
 	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 	import { calendarDayInZone, formatCalendarDay } from '$lib/member-register/calendar-day';
@@ -75,8 +81,10 @@
 		onOpenApplications: () => void;
 		/** Open the create-invite-link dialog (the "Add person" menu). */
 		onCreateInviteLink: () => void;
-		/** Bridge to the per-member access list until the person sheet exists. */
-		onManageAccess: (record: MembershipRecordSchema) => void;
+		/** Open the Payments tab (shown to staff holding `manage_subscriptions`). */
+		onOpenPayments?: () => void;
+		/** Users who are staff: the member actions offer "make staff" only to the rest. */
+		staffUserIds: Set<string>;
 		/**
 		 * False while another tab is showing. The tab stays mounted (its filters and
 		 * dialogs survive a round trip) but fires no query and runs no correction
@@ -91,7 +99,8 @@
 		isOwner,
 		onOpenApplications,
 		onCreateInviteLink,
-		onManageAccess,
+		onOpenPayments,
+		staffUserIds,
 		active = true
 	}: Props = $props();
 
@@ -208,9 +217,6 @@
 	const registerEmpty = $derived(
 		totalQuery.isSuccess && isRegisterEmpty(totalQuery.data ?? 0, DEFAULT_FILTERS)
 	);
-	// The Ended chip is narrowed client-side after the fetch (see `toRequestQuery`),
-	// so its page numbers are the backend's: no "past the last page" correction.
-	const clientPaged = $derived(!filters.activeOn && viewFromFilters(filters) === 'ended');
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -218,7 +224,7 @@
 	// A page past the last one (stale `?page=`, or the last row of the last page was
 	// deleted) holds no rows although the list is not empty: go to the last page.
 	const redirectPage = $derived(
-		active && !clientPaged && listQuery.isSuccess && !listQuery.isPlaceholderData
+		active && listQuery.isSuccess && !listQuery.isPlaceholderData
 			? pageToRedirect(records.length, total, filters.page)
 			: null
 	);
@@ -258,7 +264,9 @@
 	const liveDeleting = $derived(records.find((r) => r.id === deleting?.id) ?? deleting);
 	const liveInviting = $derived(records.find((r) => r.id === inviting?.id) ?? inviting);
 	const liveUnlinking = $derived(records.find((r) => r.id === unlinking?.id) ?? unlinking);
-	const unlinkingPresent = $derived(!unlinking || records.some((r) => r.id === unlinking?.id));
+	const unlinkingPresent = $derived(
+		!unlinking || !!unlinking.merged_into_id || records.some((r) => r.id === unlinking?.id)
+	);
 	const foundMerging = $derived(
 		merging
 			? duplicates.find(
@@ -272,6 +280,29 @@
 	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
 	const invitingPresent = $derived(!inviting || records.some((r) => r.id === inviting?.id));
+
+	// The person sheet. A linked person is followed by their USER id (a tier change
+	// ends one entry and opens another); an account-less or merged entry is followed
+	// by its record id. The sheet resolves the live entry itself. A record-keyed
+	// sheet closes when a settled refetch no longer has its row: it was ended into
+	// another chip, deleted or unlinked, and there is nothing left to show. A
+	// merged entry (opened from a periods list) is never in the list, so it stays.
+	let sheet = $state<SheetState | null>(null);
+	const sheetRecordId = $derived(
+		sheet?.target.kind === 'record' && !sheet.seed.merged_into_id ? sheet.target.recordId : null
+	);
+	const sheetRowPresent = $derived(!sheetRecordId || records.some((r) => r.id === sheetRecordId));
+	$effect(() => {
+		if (
+			sheet &&
+			!sheetRowPresent &&
+			listQuery.isSuccess &&
+			!listQuery.isFetching &&
+			!listQuery.isPlaceholderData
+		) {
+			sheet = null;
+		}
+	});
 
 	function openCreate() {
 		editing = null;
@@ -406,7 +437,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				{onManageAccess}
+				onOpen={(r) => (sheet = sheetStateFor(r))}
 			/>
 			<RegisterCards
 				{records}
@@ -416,7 +447,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				{onManageAccess}
+				onOpen={(r) => (sheet = sheetStateFor(r))}
 			/>
 
 			<nav
@@ -454,6 +485,32 @@
 	</section>
 </div>
 
+<PersonSheet
+	{sheet}
+	rows={records}
+	{slug}
+	{accessToken}
+	tiers={formTiers}
+	{staffUserIds}
+	{isOwner}
+	canOpenPayments={!!onOpenPayments}
+	onClose={() => (sheet = null)}
+	onOpenRecord={(r) => (sheet = sheetStateForRecord(r))}
+	onEdit={openEdit}
+	onEnd={(r) => (ending = r)}
+	onDelete={(r) => (deleting = r)}
+	onInvite={(r) => (inviting = r)}
+	onUnlink={(r) => {
+		unlinking = r;
+		// A merged entry is not in the list: once unlinked it is a different row, so
+		// the sheet closes rather than keep showing the stale merged snapshot.
+		if (r.merged_into_id) sheet = null;
+	}}
+	onOpenPayments={() => {
+		sheet = null;
+		onOpenPayments?.();
+	}}
+/>
 <RecordFormDialog
 	open={formOpen}
 	record={liveEditing}

@@ -78,7 +78,7 @@ test.describe('Org admin members page reflows on narrow screens @p2', () => {
 			// Tiers: the long tier + plan names are rendered, and the page fits.
 			await openTab(page, /Tiers/);
 			await expect(page.getByText(LONG_PLAN, { exact: true })).toBeVisible({ timeout: 15_000 });
-			await expect(page.getByText(LONG_TIER).first()).toBeVisible();
+			await expect(page.getByText(LONG_TIER).filter({ visible: true }).first()).toBeVisible();
 			await expect.poll(() => horizontalOverflow(page)).toBe(0);
 			// …and every plan-row action is reachable inside the viewport.
 			// (Scrolled vertically into view first — the card may sit below the fold;

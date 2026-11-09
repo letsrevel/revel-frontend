@@ -120,46 +120,26 @@ describe('"Send an invite" on create', () => {
 	});
 });
 
-describe('"Manage access" row action', () => {
-	async function items(rec: MembershipRecordSchema): Promise<string[]> {
+describe('row actions menu (member actions moved to the person sheet)', () => {
+	it('no longer offers "Manage access", even on a linked, current standard entry', async () => {
 		renderIn(RegisterRowActions, {
-			record: rec,
+			record: record({ user_id: 'u1', has_account: true, invite_status: 'linked' as const }),
 			isOwner: false,
 			onEdit: vi.fn(),
 			onEnd: vi.fn(),
 			onDelete: vi.fn(),
 			onInvite: vi.fn(),
-			onUnlink: vi.fn(),
-			onManageAccess: vi.fn()
+			onUnlink: vi.fn()
 		});
 		screen.getByTestId('register-row-actions').focus();
 		await userEvent.keyboard('{Enter}');
 		await waitFor(() =>
 			expect(screen.queryAllByRole('menuitem', { hidden: true }).length).toBeGreaterThan(0)
 		);
-		return screen
+		const labels = screen
 			.queryAllByRole('menuitem', { hidden: true })
 			.map((el) => el.textContent?.trim() ?? '');
-	}
-	const linked = { user_id: 'u1', has_account: true, invite_status: 'linked' as const };
-
-	it('is offered on a linked, current standard entry', async () => {
-		expect(await items(record(linked))).toContain('Manage access');
-	});
-
-	it('is also offered while a future end date has not passed yet', async () => {
-		expect(await items(record({ ...linked, valid_until: '2099-01-01T00:00:00Z' }))).toContain(
-			'Manage access'
-		);
-	});
-
-	it('is not offered on an ended linked entry', async () => {
-		expect(await items(record({ ...linked, valid_until: '2026-02-01T00:00:00Z' }))).not.toContain(
-			'Manage access'
-		);
-	});
-
-	it('is not offered on an unlinked entry or a day membership', async () => {
-		expect(await items(record())).not.toContain('Manage access');
+		expect(labels).not.toContain('Manage access');
+		expect(labels).toContain('Edit');
 	});
 });

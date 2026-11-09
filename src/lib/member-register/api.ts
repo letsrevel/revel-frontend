@@ -22,7 +22,7 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { filtersToQuery, type RegisterFilters, type RegisterListQuery } from './filters';
-import { getPersonStatus, toRequestQuery, type PeopleQuery } from './people-view';
+import type { PeopleQuery } from './people-view';
 import type { EndBody, RecordUpdateBody } from './form-values';
 
 /**
@@ -89,6 +89,11 @@ export const memberRegisterKeys = {
 	duplicates: (slug: string) => ['organization', slug, 'register-possible-duplicates'] as const,
 	/** Unfiltered total; inside `all`, so every register write refreshes it. */
 	total: (slug: string) => ['organization', slug, 'member-register', 'total'] as const,
+	periods: (slug: string, userId: string) =>
+		['organization', slug, 'member-register', 'periods', userId] as const,
+	/** Entries absorbed into one (account-less) survivor. */
+	mergedInto: (slug: string, recordId: string) =>
+		['organization', slug, 'member-register', 'merged-into', recordId] as const,
 	matches: (slug: string, requestId: string) =>
 		['organization', slug, 'member-register', 'matches', requestId] as const
 };
@@ -140,20 +145,45 @@ export function listRegister(
 	return fetchRegisterPage(slug, accessToken, filtersToQuery(filters));
 }
 
-/**
- * The People list. Applies the client-side "ended" pass of the Ended chip (see
- * `toRequestQuery`): the backend's `count` is NOT adjusted for it.
- */
-export async function listPeople(
+/** The People list (the Ended chip is filtered by the backend's `ended` param). */
+export function listPeople(
 	slug: string,
 	accessToken: string | null | undefined,
-	query: PeopleQuery,
-	now: Date = new Date()
+	query: PeopleQuery
 ): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
-	const { query: request, clientEnded } = toRequestQuery(query);
-	const page = await fetchRegisterPage(slug, accessToken, request);
-	if (!clientEnded) return page;
-	return { ...page, results: page.results.filter((r) => getPersonStatus(r, now).id === 'ended') };
+	return fetchRegisterPage(slug, accessToken, query);
+}
+
+/**
+ * Every period of one person: their own entries plus the ones merged into them
+ * (`include_merged`). Keyed under `memberRegisterKeys.all`, so every register
+ * write refreshes it.
+ */
+export const PERIODS_PAGE_SIZE = 100;
+export function listPersonPeriods(
+	slug: string,
+	accessToken: string | null | undefined,
+	userId: string
+): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
+	return fetchRegisterPage(slug, accessToken, {
+		user_id: userId,
+		include_merged: true,
+		page: 1,
+		page_size: PERIODS_PAGE_SIZE
+	});
+}
+
+/** The entries absorbed into one survivor (an account-less survivor has no `user_id` to ask by). */
+export function listMergedInto(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
+	return fetchRegisterPage(slug, accessToken, {
+		merged_into: recordId,
+		page: 1,
+		page_size: PERIODS_PAGE_SIZE
+	});
 }
 
 /** Total entries in the register, ignoring every filter (one-row page). */
@@ -231,11 +261,15 @@ export async function deleteRecord(
 export async function startRegisterExport(
 	slug: string,
 	accessToken: string | null | undefined,
-	activeOn: string | null
+	activeOn: string | null,
+	includeMerged = false
 ): Promise<string> {
 	const res = await organizationadminmemberregisterExportMemberRegister({
 		path: { slug },
-		body: activeOn ? { active_on: activeOn } : {},
+		body: {
+			...(activeOn ? { active_on: activeOn } : {}),
+			...(includeMerged ? { include_merged: true } : {})
+		},
 		headers: authHeaders(accessToken)
 	});
 	ensureOk(res);

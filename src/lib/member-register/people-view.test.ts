@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 import { DEFAULT_FILTERS } from './filters';
 import {
 	PEOPLE_VIEWS,
 	chipToQuery,
 	filtersForView,
 	peopleQuery,
-	toRequestQuery,
+	canManageMember,
 	getPersonStatus,
 	parsePeopleFilters,
 	peopleFiltersToSearch,
+	type PersonStatusInput,
 	viewFromFilters
 } from './people-view';
 
@@ -52,15 +52,11 @@ describe('chip <-> register filter mapping', () => {
 		}
 	});
 
-	it('sends is_open=false for Ended and flags the client-side pass (until the BE filter)', () => {
+	it('sends the real ended=true filter for Ended (no is_open, no client pass)', () => {
 		const ended = peopleQuery(filtersForView('ended', parse('')), TODAY);
-		const { query, clientEnded } = toRequestQuery(ended);
-		expect(clientEnded).toBe(true);
-		expect(query).toMatchObject({ is_open: false });
-		expect(query).not.toHaveProperty('ended');
-		const other = toRequestQuery(peopleQuery(parse(''), TODAY));
-		expect(other.clientEnded).toBe(false);
-		expect(other.query).not.toHaveProperty('is_open');
+		expect(ended).toMatchObject({ ended: true });
+		expect(ended).not.toHaveProperty('is_open');
+		expect(peopleQuery(parse(''), TODAY)).not.toHaveProperty('ended');
 	});
 
 	it('keeps the raw filters of a combination no chip covers', () => {
@@ -106,10 +102,7 @@ describe('chip <-> register filter mapping', () => {
 
 describe('status vocabulary', () => {
 	const NOW = new Date('2026-11-09T12:00:00Z');
-	const base: Pick<
-		MembershipRecordSchema,
-		'valid_from' | 'valid_until' | 'kind' | 'has_account' | 'invite_status'
-	> = {
+	const base: PersonStatusInput = {
 		valid_from: '2026-01-01T00:00:00Z',
 		valid_until: null,
 		kind: 'standard',
@@ -136,6 +129,17 @@ describe('status vocabulary', () => {
 		});
 	});
 
+	it('reads a revoked entry as Ended even when it never started (before the Upcoming fallback)', () => {
+		expect(
+			status({ ended_reason: 'revoked', valid_from: '2026-12-01T00:00:00Z', is_current: false })
+		).toEqual({ id: 'ended', tone: 'neutral' });
+		// Without is_current the not-started fallback must not win either.
+		expect(status({ ended_reason: 'revoked', valid_from: '2026-12-01T00:00:00Z' }).id).toBe(
+			'ended'
+		);
+		expect(status({ valid_from: '2026-12-01T00:00:00Z', is_current: false }).id).toBe('upcoming');
+	});
+
 	it('is not "ended" just because an end date is set: only one at or before now', () => {
 		// A running day membership (ticket-granted: it always has an end, the event end).
 		expect(status({ kind: 'temporary', valid_until: '2026-11-09T18:00:00Z' }).id).toBe(
@@ -156,5 +160,54 @@ describe('status vocabulary', () => {
 		expect(status({ valid_until: closed, invite_status: 'invited' }).id).toBe('ended');
 		expect(status({ valid_from: '2026-12-01T00:00:00Z', kind: 'temporary' }).id).toBe('upcoming');
 		expect(status({ valid_from: '2026-12-01T00:00:00Z', has_account: true }).id).toBe('upcoming');
+	});
+});
+
+describe('backend status fields (is_current / member_status)', () => {
+	const NOW = new Date('2026-11-09T12:00:00Z');
+	const base: PersonStatusInput = {
+		valid_from: '2026-01-01T00:00:00Z',
+		valid_until: null,
+		kind: 'standard',
+		has_account: true,
+		invite_status: 'linked',
+		is_current: true,
+		member_status: 'active'
+	};
+	const status = (extra: Partial<PersonStatusInput>) => getPersonStatus({ ...base, ...extra }, NOW);
+
+	it('maps a paused member to Paused, with a warning tone', () => {
+		expect(status({ member_status: 'paused' })).toEqual({ id: 'paused', tone: 'warning' });
+		expect(status({ member_status: 'active' }).id).toBe('active');
+	});
+
+	it('trusts is_current over the dates', () => {
+		// An end date in the past, yet the backend says it is current (e.g. clock skew).
+		expect(status({ valid_until: '2026-02-01T00:00:00Z' }).id).toBe('active');
+		// No end date, yet the backend says it is not current (revoked).
+		expect(status({ is_current: false })).toEqual({ id: 'ended', tone: 'neutral' });
+		expect(status({ is_current: false, valid_from: '2026-12-01T00:00:00Z' }).id).toBe('upcoming');
+	});
+
+	it('reads a banned or cancelled access row as Ended', () => {
+		expect(status({ member_status: 'banned' }).id).toBe('ended');
+		expect(status({ member_status: 'cancelled' }).id).toBe('ended');
+	});
+
+	it('does not show Paused for an ended entry', () => {
+		expect(status({ member_status: 'paused', is_current: false }).id).toBe('ended');
+	});
+
+	it('falls back to the dates when is_current is missing', () => {
+		expect(status({ is_current: undefined, valid_until: '2026-02-01T00:00:00Z' }).id).toBe('ended');
+		expect(status({ is_current: undefined, member_status: null }).id).toBe('active');
+	});
+
+	it('offers member actions only for linked, current standard entries', () => {
+		expect(canManageMember({ ...base, user_id: 'u1' })).toBe(true);
+		expect(canManageMember({ ...base, user_id: 'u1', member_status: 'paused' })).toBe(true);
+		expect(canManageMember({ ...base, user_id: null })).toBe(false);
+		expect(canManageMember({ ...base, user_id: 'u1', is_current: false })).toBe(false);
+		expect(canManageMember({ ...base, user_id: 'u1', kind: 'temporary' })).toBe(false);
 	});
 });

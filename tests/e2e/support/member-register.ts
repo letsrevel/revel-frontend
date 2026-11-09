@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { ApiClient } from './api';
 import type { ThrowawayUser } from './factories';
 
@@ -175,6 +175,22 @@ export async function chooseEntryAction(
 ): Promise<void> {
 	await registerEntryActions(page, fullName).click();
 	await page.getByRole('menuitem', { name: action }).click();
+}
+
+/**
+ * Open the person sheet of a People row (the visible copy of the row's name
+ * button) and return the sheet: a modal dialog named exactly after the person.
+ * The member actions (Manage membership), periods, staff note and account live
+ * inside it.
+ */
+export async function openPersonSheet(page: Page, fullName: string): Promise<Locator> {
+	await page
+		.getByRole('button', { name: `Open ${fullName}` })
+		.first()
+		.click();
+	const sheet = page.getByRole('dialog', { name: fullName, exact: true });
+	await expect(sheet).toBeVisible();
+	return sheet;
 }
 
 /** True when the document scrolls horizontally (the phone-width regression check). */

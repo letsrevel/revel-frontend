@@ -1,7 +1,10 @@
 import {
 	organizationadminusernotesGetNote,
 	organizationadminusernotesUpsertNote,
-	organizationadminusernotesDeleteNote
+	organizationadminusernotesDeleteNote,
+	organizationadminusernotesGetRecordNote,
+	organizationadminusernotesUpsertRecordNote,
+	organizationadminusernotesDeleteRecordNote
 } from '$lib/api/generated/sdk.gen';
 import type { UserNoteSchema } from '$lib/api/generated/types.gen';
 
@@ -142,6 +145,92 @@ export async function deleteUserNote(
 		headers: authHeaders(accessToken)
 	});
 	// Deleting a note that is already gone is the outcome the user asked for.
+	if (res.response?.status === 404) return;
+	if (res.error) throw res.error;
+}
+
+/**
+ * Where a note lives. A `user` target is the person's own note; a `record`
+ * target goes through the register entry: for a LINKED entry the backend proxies
+ * to the user's note (the same text the members area shows), for an unlinked one
+ * it is the entry's own note. A merged (absorbed) entry refuses writes (400).
+ */
+export type NoteTarget = { kind: 'user'; userId: string } | { kind: 'record'; recordId: string };
+
+/** Query key for a note, whichever way it is reached. */
+export function noteKey(slug: string, target: NoteTarget): readonly unknown[] {
+	return target.kind === 'user'
+		? userNoteKey(slug, target.userId)
+		: ['organization', slug, 'record-note', target.recordId];
+}
+
+export function fetchNote(
+	slug: string,
+	target: NoteTarget,
+	accessToken: string | null | undefined
+): Promise<UserNoteSchema | null> {
+	if (target.kind === 'user') return fetchUserNote(slug, target.userId, accessToken);
+	return fetchRecordNote(slug, target.recordId, accessToken);
+}
+
+export function saveNote(
+	slug: string,
+	target: NoteTarget,
+	body: string,
+	accessToken: string | null | undefined
+): Promise<UserNoteSchema> {
+	if (target.kind === 'user') return saveUserNote(slug, target.userId, body, accessToken);
+	return saveRecordNote(slug, target.recordId, body, accessToken);
+}
+
+export function deleteNote(
+	slug: string,
+	target: NoteTarget,
+	accessToken: string | null | undefined
+): Promise<void> {
+	if (target.kind === 'user') return deleteUserNote(slug, target.userId, accessToken);
+	return deleteRecordNote(slug, target.recordId, accessToken);
+}
+
+export async function fetchRecordNote(
+	slug: string,
+	recordId: string,
+	accessToken: string | null | undefined
+): Promise<UserNoteSchema | null> {
+	const res = await organizationadminusernotesGetRecordNote({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
+	if (res.response?.status === 404) return null;
+	if (res.error) throw res.error;
+	return res.data ?? null;
+}
+
+export async function saveRecordNote(
+	slug: string,
+	recordId: string,
+	body: string,
+	accessToken: string | null | undefined
+): Promise<UserNoteSchema> {
+	const res = await organizationadminusernotesUpsertRecordNote({
+		path: { slug, record_id: recordId },
+		body: { body },
+		headers: authHeaders(accessToken)
+	});
+	if (res.error) throw res.error;
+	if (!res.data) throw new Error('Empty response');
+	return res.data;
+}
+
+export async function deleteRecordNote(
+	slug: string,
+	recordId: string,
+	accessToken: string | null | undefined
+): Promise<void> {
+	const res = await organizationadminusernotesDeleteRecordNote({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
 	if (res.response?.status === 404) return;
 	if (res.error) throw res.error;
 }

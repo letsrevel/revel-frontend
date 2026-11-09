@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -6,6 +7,7 @@ import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen
 
 const api = vi.hoisted(() => ({
 	listPeople: vi.fn(),
+	listPersonPeriods: vi.fn(),
 	countRegister: vi.fn(),
 	listPossibleDuplicates: vi.fn()
 }));
@@ -42,11 +44,21 @@ vi.mock('$app/stores', async () => {
 		}
 	};
 });
+vi.mock('$lib/api/generated/sdk.gen', () => ({
+	organizationadminmembersListMembers: vi.fn().mockResolvedValue({ data: { results: [] } }),
+	organizationadminmembersGetMember: vi
+		.fn()
+		.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } }),
+	organizationadminusernotesGetRecordNote: vi
+		.fn()
+		.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } })
+}));
 vi.mock('$app/navigation', () => ({ goto: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() } }));
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 
 import PeopleTab from './PeopleTab.svelte';
+import { makeRecord } from '../member-register/person-fixtures';
 
 const organization = {
 	slug: 'acme',
@@ -64,7 +76,7 @@ function renderTab(active: boolean) {
 				active,
 				onOpenApplications: vi.fn(),
 				onCreateInviteLink: vi.fn(),
-				onManageAccess: vi.fn()
+				staffUserIds: new Set<string>()
 			}
 		}
 	});
@@ -75,6 +87,9 @@ const emptyPage = { count: 0, next: null, previous: null, results: [] };
 beforeEach(() => {
 	nav.search = '?tab=people';
 	api.listPeople.mockReset().mockResolvedValue(emptyPage);
+	api.listPersonPeriods
+		.mockReset()
+		.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
 	api.countRegister.mockReset().mockResolvedValue(0);
 	api.listPossibleDuplicates.mockReset().mockResolvedValue([]);
 	tiers.fetch.mockReset().mockResolvedValue([]);
@@ -129,6 +144,42 @@ describe('PeopleTab chips and queries', () => {
 		expect(await screen.findByTestId('people-as-of-note')).toHaveTextContent(
 			/showing everyone who was a member on/i
 		);
+	});
+});
+
+describe('PeopleTab Ended chip', () => {
+	it('sends the real ended=true filter, with no is_open and no client-side narrowing', async () => {
+		nav.search = '?tab=people&view=ended';
+		renderTab(true);
+		await waitFor(() => expect(api.listPeople).toHaveBeenCalled());
+		const query = api.listPeople.mock.calls[0][2];
+		expect(query).toMatchObject({ ended: true, page: 1 });
+		expect(query).not.toHaveProperty('is_open');
+		expect(query).not.toHaveProperty('active_on');
+	});
+});
+
+describe('PeopleTab person sheet', () => {
+	const row = makeRecord();
+	const rowPage = { count: 1, next: null, previous: null, results: [row] };
+
+	it('opens from the row button, names itself after the person, and gives focus back on close', async () => {
+		api.listPeople.mockResolvedValue(rowPage);
+		api.listPersonPeriods.mockResolvedValue(rowPage);
+		renderTab(true);
+		const opener = await screen.findAllByRole('button', { name: 'Open Ada Rossi' });
+		opener[0].focus();
+		await userEvent.keyboard('{Enter}');
+
+		const dialog = await screen.findByRole('dialog', { name: 'Ada Rossi' });
+		// Focus moved into the sheet.
+		await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+		// The periods are requested for the person, merged entries included.
+		await waitFor(() => expect(api.listPersonPeriods).toHaveBeenCalledWith('acme', 'tok', 'u1'));
+
+		await userEvent.keyboard('{Escape}');
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		await waitFor(() => expect(document.activeElement).toBe(opener[0]));
 	});
 });
 
