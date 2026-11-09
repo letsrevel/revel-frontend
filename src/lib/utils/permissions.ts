@@ -261,3 +261,17 @@ export function canEditPotluckItem(isOwned: boolean, hasManagePermission: boolea
 export function canDeletePotluckItem(isOwned: boolean, hasManagePermission: boolean): boolean {
 	return isOwned || hasManagePermission;
 }
+
+/**
+ * The Verein event preset creates a membership tier AND an admission
+ * questionnaire, so it is offered only to users who may do both.
+ */
+export function canRunVereinPreset(
+	permissions: OrganizationPermissionsSchema | null,
+	orgId: string
+): boolean {
+	return (
+		canPerformAction(permissions, orgId, 'manage_members') &&
+		canPerformAction(permissions, orgId, 'create_questionnaire')
+	);
+}

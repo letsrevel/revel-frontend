@@ -19,8 +19,10 @@
 	import { Info, Ticket } from '@lucide/svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import VereinPresetCard from './VereinPresetCard.svelte';
+	import type { TicketCurrency } from './verein-preset';
 	import type { OrgVatContext } from './tier-vat';
-	import { takeTierDraft, type TierDraft } from './tier-draft';
+	import { stripeGateFor, takeTierDraft, type TierDraft } from './tier-draft';
 	import { onMount } from 'svelte';
 	import { effectiveEventCapacity } from './event-capacity';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -53,6 +55,10 @@
 	interface Props {
 		eventId: string;
 		organizationSlug: string;
+		/** Needed by the Verein preset (creates the admission questionnaire); the preset is hidden without it. */
+		organizationId?: string;
+		/** The user may do every preset step (manage_members + create_questionnaire); the preset is hidden otherwise. */
+		canUseVereinPreset?: boolean;
 		organizationStripeConnected: boolean;
 		/** Connected, but billing details are missing (see billingNeedsAttention). */
 		billingNeedsAttention?: boolean;
@@ -77,6 +83,8 @@
 	const {
 		eventId,
 		organizationSlug,
+		organizationId = '',
+		canUseVereinPreset = false,
 		organizationStripeConnected,
 		billingNeedsAttention = false,
 		stripeEmail = '',
@@ -99,10 +107,16 @@
 	// Fetch ticket tiers for this event
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'ticket-tiers'],
-		queryFn: () =>
-			eventadminticketsListTicketTiers({
+		queryFn: async () => {
+			const res = await eventadminticketsListTicketTiers({
 				path: { event_id: eventId }
-			})
+			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false);
+			// throw the body so an error response puts the query in the error state.
+			// The resolved value keeps the SDK result shape the consumers read `.data` from.
+			if (res.error) throw res.error;
+			return res;
+		}
 	}));
 
 	// ONE all-kinds fetch (the exact `all` key, so TiersTab invalidation refreshes it),
@@ -180,6 +194,36 @@
 	let showTierForm = $state(false);
 
 	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+	// The preset prices in the currency the event already sells in. Neither the event
+	// nor the org carries a currency of its own, so EUR is only a default for an event
+	// that genuinely has no tiers (query succeeded); an errored query hides the card.
+	const presetCurrency = $derived<TicketCurrency>(
+		(tiers[0]?.currency as TicketCurrency | undefined) ?? 'EUR'
+	);
+
+	// Card payment, by the same rules as TierForm: the event's country rules must
+	// have loaded (loading / error fail closed) and allow it, then the org's Stripe
+	// / billing gate (stripeGateFor) must be clear.
+	const stripeGate = $derived(
+		stripeGateFor(
+			'online',
+			complianceStatus !== 'ready' || onlineBlocked,
+			organizationStripeConnected,
+			billingNeedsAttention
+		)
+	);
+	const canChargeOnline = $derived(
+		complianceStatus === 'ready' && !onlineBlocked && stripeGate === null
+	);
+	const onlineReason = $derived.by((): string | null => {
+		if (canChargeOnline) return null;
+		if (complianceStatus === 'loading') return m['verein.preset.online.reason.loading']();
+		if (complianceStatus === 'error') return m['verein.preset.online.reason.rulesError']();
+		if (onlineBlocked) return m['verein.preset.online.reason.blocked']();
+		return stripeGate === 'billing'
+			? m['verein.preset.online.reason.billing']()
+			: m['verein.preset.online.reason.connect']();
+	});
 
 	// Back from Stripe onboarding (?stripe_success / ?stripe_refresh): reopen the
 	// tier form the organizer was filling in, prefilled from the stash.
@@ -463,6 +507,21 @@
 				</p>
 			</div>
 		{/if}
+	{/if}
+
+	{#if organizationId && canUseVereinPreset && tiersQuery.isSuccess}
+		<VereinPresetCard
+			{eventId}
+			{organizationId}
+			{organizationSlug}
+			dayTiers={grantableTiers}
+			currency={presetCurrency}
+			{canChargeOnline}
+			{onlineReason}
+			dayTiersStatus={membershipTiersQuery.status}
+			onRetryDayTiers={() => void membershipTiersQuery.refetch()}
+			{orgVat}
+		/>
 	{/if}
 
 	<!-- Add Another Tier Button -->
