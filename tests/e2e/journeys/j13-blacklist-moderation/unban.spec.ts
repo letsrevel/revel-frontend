@@ -78,7 +78,7 @@ test.describe('J13 unban @p3', () => {
 					registerEntry(ownerPage, victimName).getByTestId('register-status-ended')
 				).toBeVisible({ timeout: 15_000 });
 				const sheet = await openPersonSheet(ownerPage, victimName);
-				await expect(sheet.getByTestId('person-periods')).toContainText('Ended:');
+				await expect(sheet.getByTestId('person-periods')).toContainText('Ended: expelled');
 				await expect(sheet.getByTestId('person-manage-membership')).toHaveCount(0);
 			} finally {
 				await ownerContext.close();

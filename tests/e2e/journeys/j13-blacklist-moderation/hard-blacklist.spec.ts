@@ -69,7 +69,7 @@ test.describe('J13 hard blacklist @p2', () => {
 			registerEntry(ownerPage, victimName).getByTestId('register-status-ended')
 		).toBeVisible({ timeout: 15_000 });
 		const sheet = await openPersonSheet(ownerPage, victimName);
-		await expect(sheet.getByTestId('person-periods')).toContainText('Ended:');
+		await expect(sheet.getByTestId('person-periods')).toContainText('Ended: expelled');
 		await expect(sheet.getByTestId('person-manage-membership')).toHaveCount(0);
 		await ownerPage.keyboard.press('Escape');
 

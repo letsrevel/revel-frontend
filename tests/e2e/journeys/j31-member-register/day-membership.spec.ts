@@ -60,7 +60,11 @@ test.describe('J31 day membership from a ticket @p1', () => {
 			await waitForClientAuth(page);
 			const entry = registerEntry(page, attendeeName);
 			await expect(entry).toBeVisible({ timeout: 15_000 });
-			await expect(entry.getByTestId('register-status-day-member')).toBeVisible();
+			// The ticket's event is in the future, so the People status is "Upcoming"
+			// (not "Day member", which is reserved for a day membership valid right now);
+			// the Kind column still reads "Day membership".
+			await expect(entry.getByTestId('register-status-upcoming')).toBeVisible();
+			await expect(entry.getByText('Day membership', { exact: true }).first()).toBeVisible();
 			await expect(entry.getByText('Ticket', { exact: true })).toBeVisible();
 
 			// Staff ticket list: the holder carries the "Day member" badge.

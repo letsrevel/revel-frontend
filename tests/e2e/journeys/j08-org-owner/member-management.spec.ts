@@ -135,20 +135,35 @@ test.describe('J8 member management @p1', () => {
 		await closeDialog(page, manageModal);
 		await expect(pausedBadge).toBeVisible();
 
-		// Remove the member entirely: the entry ends, the sheet closes by itself and
-		// the person leaves the Current list.
+		// Remove the member entirely: the entry ends and the sheet stays open,
+		// re-rendered as an ended membership ("Ended: removed" in its periods).
+		// The Current view is read as of today and the entry ends today, so the
+		// row stays in the list, now flagged Ended (and has no member actions).
 		const personRow = page.getByRole('button', { name: `Open ${applicantName}` });
+		const endedBadge = sheet.getByTestId('register-status-ended');
 		await expect(async () => {
 			await closeDialog(page, manageModal);
-			if ((await personRow.count()) > 0) {
+			if (!(await endedBadge.isVisible())) {
 				await openManage();
 				await manageModal
 					.getByRole('button', { name: 'Remove from Organization' })
 					.click({ timeout: 3_000 });
 				await manageModal.getByRole('button', { name: 'Yes, Remove' }).click({ timeout: 3_000 });
 			}
-			await expect(personRow).toHaveCount(0, { timeout: 5_000 });
+			await expect(endedBadge).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 90_000 });
+		await expect(sheet.getByTestId('person-periods')).toContainText('Ended: removed');
+		await closeDialog(page, sheet);
+		await expect(personRow).toHaveCount(1, { timeout: 15_000 });
+		await expect(
+			page
+				.locator('[data-testid="register-row"], [data-testid="register-card"]')
+				.filter({
+					has: personRow
+				})
+				.filter({ visible: true })
+				.getByTestId('register-status-ended')
+		).toBeVisible();
 
 		expect(dialogs).toHaveLength(0);
 
