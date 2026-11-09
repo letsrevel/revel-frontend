@@ -5,6 +5,7 @@ const base = {
 	orgSlug: 'acme',
 	isOwner: false,
 	canVerifyMembers: false,
+	canManageMembers: false,
 	billingWarning: false
 };
 const ids = (o: Partial<typeof base>) =>
@@ -28,6 +29,11 @@ describe('buildAdminNav', () => {
 	it('shows verify members only when allowed', () => {
 		expect(ids({})).not.toContain('verify-members');
 		expect(ids({ canVerifyMembers: true })).toContain('verify-members');
+	});
+
+	it('shows the member register only with manage_members', () => {
+		expect(ids({})).not.toContain('member-register');
+		expect(ids({ canManageMembers: true })).toContain('member-register');
 	});
 
 	it('flags billing with a warning badge only when needed', () => {
@@ -66,6 +72,10 @@ describe('activeNavHref', () => {
 			'/org/acme/admin/members/verify'
 		);
 		expect(activeNavHref(nav, '/org/acme/admin/members')).toBe('/org/acme/admin/members');
+		const withRegister = buildAdminNav({ ...base, canManageMembers: true });
+		expect(activeNavHref(withRegister, '/org/acme/admin/members/register')).toBe(
+			'/org/acme/admin/members/register'
+		);
 		expect(activeNavHref(nav, '/org/acme/admin')).toBe('/org/acme/admin');
 		expect(activeNavHref(nav, '/elsewhere')).toBeNull();
 	});

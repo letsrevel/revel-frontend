@@ -4,6 +4,7 @@ import type { ResolvedPathname } from '$app/types';
 import type { Component } from 'svelte';
 import {
 	Ban,
+	BookUser,
 	BarChart3,
 	Calendar,
 	ClipboardList,
@@ -47,6 +48,8 @@ export interface AdminNavOptions {
 	orgSlug: string;
 	isOwner: boolean;
 	canVerifyMembers: boolean;
+	/** `manage_members`: gates the member register, which the backend guards the same way. */
+	canManageMembers: boolean;
 	billingWarning: boolean;
 }
 
@@ -57,7 +60,7 @@ export interface AdminNavOptions {
  */
 export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 	const slug = opts.orgSlug;
-	const { isOwner, canVerifyMembers, billingWarning } = opts;
+	const { isOwner, canVerifyMembers, canManageMembers, billingWarning } = opts;
 
 	const dashboard: NavItem = {
 		id: 'dashboard',
@@ -107,6 +110,16 @@ export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 					icon: Users,
 					href: resolve('/(auth)/org/[slug]/admin/members', { slug })
 				},
+				...(canManageMembers
+					? [
+							{
+								id: 'member-register',
+								label: m['orgAdmin.nav.memberRegister'](),
+								icon: BookUser,
+								href: resolve('/(auth)/org/[slug]/admin/members/register', { slug })
+							}
+						]
+					: []),
 				// Gated on `check_in_attendees`, the same permission the backend's verify
 				// endpoint requires. This is the ONLY entry point for a door steward who
 				// holds nothing else: the Members page itself 403s them.
