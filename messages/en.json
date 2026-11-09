@@ -11174,7 +11174,7 @@
 	"verein.guide.step3.link": "New questionnaire",
 	"verein.guide.step4.title": "Keep a record",
 	"verein.guide.step4.body": "Day memberships and regular memberships both end up in your member register. From there you can export who was a member on a given date, as a record of who took part in an event as a member or as a day member.",
-	"verein.guide.step4.link": "Open members",
+	"verein.guide.step4.link": "Open the member register",
 	"verein.guide.shortcut.title": "Prefer a shortcut?",
 	"verein.guide.shortcut.body": "On the Ticketing tab of an event, the button \"Set up a Verein day-membership event\" creates the tiers and the questionnaire described above in one go. It shows you exactly what it will make before it does anything.",
 	"verein.guide.stepLabel": "Step {number}",

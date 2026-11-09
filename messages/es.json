@@ -11174,7 +11174,7 @@
 	"verein.guide.step3.link": "Nuevo cuestionario",
 	"verein.guide.step4.title": "Guarda una constancia",
 	"verein.guide.step4.body": "Las membresías de un día y las membresías normales acaban en tu registro de miembros. Desde ahí puedes exportar quién era miembro en una fecha concreta, como constancia de quién participó en un evento como miembro o con membresía de un día.",
-	"verein.guide.step4.link": "Abrir miembros",
+	"verein.guide.step4.link": "Abrir el registro de miembros",
 	"verein.guide.shortcut.title": "¿Prefieres un atajo?",
 	"verein.guide.shortcut.body": "En la pestaña Entradas de un evento, el botón «Configurar un evento de asociación con membresía de un día» crea de una vez los niveles y el cuestionario descritos arriba. Antes te muestra exactamente lo que va a crear.",
 	"verein.guide.stepLabel": "Paso {number}",

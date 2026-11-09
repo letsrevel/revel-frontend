@@ -11174,7 +11174,7 @@
 	"verein.guide.step3.link": "Nouveau questionnaire",
 	"verein.guide.step4.title": "Garde une trace",
 	"verein.guide.step4.body": "Les adhésions d'un jour et les adhésions ordinaires se retrouvent toutes dans ton registre des membres. Tu peux y exporter qui était membre à une date donnée, comme trace de qui a participé à un événement en tant que membre ou avec une adhésion d'un jour.",
-	"verein.guide.step4.link": "Ouvrir les membres",
+	"verein.guide.step4.link": "Ouvrir le registre des membres",
 	"verein.guide.shortcut.title": "Envie d'un raccourci ?",
 	"verein.guide.shortcut.body": "Dans l'onglet Billetterie d'un événement, le bouton « Configurer un événement d'association avec adhésion d'un jour » crée en une fois les niveaux et le questionnaire décrits ci-dessus. Il te montre exactement ce qu'il va créer avant de faire quoi que ce soit.",
 	"verein.guide.stepLabel": "Étape {number}",
