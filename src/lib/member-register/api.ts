@@ -21,7 +21,8 @@ import type {
 	RegisterMatchSchema
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
-import { filtersToQuery, type RegisterFilters } from './filters';
+import { filtersToQuery, type RegisterFilters, type RegisterListQuery } from './filters';
+import { getPersonStatus, toRequestQuery, type PeopleQuery } from './people-view';
 import type { EndBody, RecordUpdateBody } from './form-values';
 
 /**
@@ -76,8 +77,9 @@ function authHeaders(accessToken: string | null | undefined): { Authorization: s
 export const memberRegisterKeys = {
 	/** Prefix of everything register-related; invalidate after any write. */
 	all: (slug: string) => ['organization', slug, 'member-register'] as const,
-	list: (slug: string, filters: RegisterFilters) =>
-		['organization', slug, 'member-register', 'list', filters] as const,
+	/** `query` is whatever identifies the request: register filters or a People query. */
+	list: (slug: string, query: RegisterFilters | PeopleQuery) =>
+		['organization', slug, 'member-register', 'list', query] as const,
 	/**
 	 * Deliberately OUTSIDE the `all` prefix: the possible-duplicates scan is the
 	 * expensive call, so an ordinary register write must not refetch it. Callers
@@ -85,6 +87,8 @@ export const memberRegisterKeys = {
 	 * explicitly via `invalidateRegister`.
 	 */
 	duplicates: (slug: string) => ['organization', slug, 'register-possible-duplicates'] as const,
+	/** Unfiltered total; inside `all`, so every register write refreshes it. */
+	total: (slug: string) => ['organization', slug, 'member-register', 'total'] as const,
 	matches: (slug: string, requestId: string) =>
 		['organization', slug, 'member-register', 'matches', requestId] as const
 };
@@ -113,19 +117,52 @@ export async function invalidateRegister(
 	]);
 }
 
-export async function listRegister(
+async function fetchRegisterPage(
 	slug: string,
 	accessToken: string | null | undefined,
-	filters: RegisterFilters
+	query: RegisterListQuery
 ): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
 	const res = await organizationadminmemberregisterListMemberRegister({
 		path: { slug },
-		query: filtersToQuery(filters),
+		query,
 		headers: authHeaders(accessToken)
 	});
 	ensureOk(res);
 	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
 	return res.data;
+}
+
+export function listRegister(
+	slug: string,
+	accessToken: string | null | undefined,
+	filters: RegisterFilters
+): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
+	return fetchRegisterPage(slug, accessToken, filtersToQuery(filters));
+}
+
+/**
+ * The People list. Applies the client-side "ended" pass of the Ended chip (see
+ * `toRequestQuery`): the backend's `count` is NOT adjusted for it.
+ */
+export async function listPeople(
+	slug: string,
+	accessToken: string | null | undefined,
+	query: PeopleQuery,
+	now: Date = new Date()
+): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
+	const { query: request, clientEnded } = toRequestQuery(query);
+	const page = await fetchRegisterPage(slug, accessToken, request);
+	if (!clientEnded) return page;
+	return { ...page, results: page.results.filter((r) => getPersonStatus(r, now).id === 'ended') };
+}
+
+/** Total entries in the register, ignoring every filter (one-row page). */
+export async function countRegister(
+	slug: string,
+	accessToken: string | null | undefined
+): Promise<number> {
+	const page = await fetchRegisterPage(slug, accessToken, { page: 1, page_size: 1 });
+	return page.count;
 }
 
 export async function createRecord(

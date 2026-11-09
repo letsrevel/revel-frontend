@@ -21,6 +21,8 @@
 				return m['memberPeople.status.dayMember']();
 			case 'ended':
 				return m['memberPeople.status.ended']();
+			case 'upcoming':
+				return m['memberPeople.status.upcoming']();
 			case 'no-account':
 				return m['memberPeople.status.noAccount']();
 			case 'invited':

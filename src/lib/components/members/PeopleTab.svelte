@@ -43,16 +43,22 @@
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
 	import AddPersonMenu from '$lib/components/member-register/AddPersonMenu.svelte';
 	import {
+		countRegister,
+		listPeople,
 		listPossibleDuplicates,
-		listRegister,
 		memberRegisterKeys
 	} from '$lib/member-register/api';
 	import { describeRegisterError } from '$lib/member-register/errors';
-	import { REGISTER_PAGE_SIZE, pageToRedirect } from '$lib/member-register/filters';
+	import {
+		DEFAULT_FILTERS,
+		REGISTER_PAGE_SIZE,
+		isRegisterEmpty,
+		pageToRedirect
+	} from '$lib/member-register/filters';
 	import {
 		VIEW_FILTERS,
-		hasExtraFilters,
 		parsePeopleFilters,
+		peopleQuery,
 		peopleFiltersToSearch,
 		viewFromFilters,
 		type PeopleView
@@ -60,6 +66,7 @@
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
 	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
+	import { calendarDayInZone, formatCalendarDay } from '$lib/member-register/calendar-day';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -70,10 +77,23 @@
 		onCreateInviteLink: () => void;
 		/** Bridge to the per-member access list until the person sheet exists. */
 		onManageAccess: (record: MembershipRecordSchema) => void;
+		/**
+		 * False while another tab is showing. The tab stays mounted (its filters and
+		 * dialogs survive a round trip) but fires no query and runs no correction
+		 * effect, so the duplicates scan, the register list and the applications
+		 * count only run while People is on screen.
+		 */
+		active?: boolean;
 	}
 
-	const { organization, isOwner, onOpenApplications, onCreateInviteLink, onManageAccess }: Props =
-		$props();
+	const {
+		organization,
+		isOwner,
+		onOpenApplications,
+		onCreateInviteLink,
+		onManageAccess,
+		active = true
+	}: Props = $props();
 
 	const slug = $derived(organization.slug);
 	const accessToken = $derived(authStore.accessToken);
@@ -82,8 +102,11 @@
 	// The URL query is the single source of truth: shareable, and back/forward
 	// restores it. The group chip is `?view=`, absent for the default ("Current").
 	const filters = $derived(parsePeopleFilters($page.url.searchParams));
-	// An "As of" day is a snapshot of that day, so "open now" no longer applies.
-	const queryFilters = $derived(filters.activeOn ? { ...filters, open: 'all' as const } : filters);
+	// "Today" on the organization's wall clock: what the Current chip asks for.
+	const today = $derived(calendarDayInZone(timezone));
+	// Chip -> backend params (one mapping). In "As of" mode every chip filter is
+	// dropped: the snapshot is everyone active that day.
+	const listParams = $derived(peopleQuery(filters, today));
 
 	const navigator = createFilterNavigator({
 		current: () => filters,
@@ -104,16 +127,24 @@
 	// All-kinds tier list for the filter; the create/edit form offers standard tiers.
 	const tiersQuery = createQuery(() => ({
 		...allTiersQueryOptions(slug, accessToken),
-		enabled: !!accessToken
+		enabled: active && !!accessToken
 	}));
 	const allTiers = $derived(tiersQuery.data ?? []);
 	const formTiers = $derived(standardTiers(allTiers));
 
 	const listQuery = createQuery(() => ({
-		queryKey: memberRegisterKeys.list(slug, queryFilters),
-		queryFn: () => listRegister(slug, accessToken, queryFilters),
-		enabled: !!accessToken,
+		queryKey: memberRegisterKeys.list(slug, listParams),
+		queryFn: () => listPeople(slug, accessToken, listParams),
+		enabled: active && !!accessToken,
 		placeholderData: keepPreviousData
+	}));
+
+	// The register's true size, ignoring every filter and chip: only this proves
+	// the register itself is empty (the default "Current" chip alone cannot).
+	const totalQuery = createQuery(() => ({
+		queryKey: memberRegisterKeys.total(slug),
+		queryFn: () => countRegister(slug, accessToken),
+		enabled: active && !!accessToken
 	}));
 
 	// The possible-duplicates scan is expensive and not paginated: it runs ONCE on
@@ -127,7 +158,7 @@
 	const duplicatesQuery = createQuery(() => ({
 		queryKey: memberRegisterKeys.duplicates(slug),
 		queryFn: () => listPossibleDuplicates(slug, accessToken),
-		enabled: !!accessToken,
+		enabled: active && !!accessToken,
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: false
@@ -146,7 +177,10 @@
 
 	// Pending applications: a count for "Needs attention", cached with the
 	// Applications tab's own default view.
-	const applicationsQuery = createQuery(() => pendingApplicationsQueryOptions(slug, accessToken));
+	const applicationsQuery = createQuery(() => ({
+		...pendingApplicationsQueryOptions(slug, accessToken),
+		enabled: active && !!accessToken
+	}));
 	const pendingApplications = $derived(applicationsQuery.data?.count ?? 0);
 
 	const records = $derived(listQuery.data?.results ?? []);
@@ -156,11 +190,12 @@
 	// state, so schedule ONE refetch for the nearest upcoming start.
 	const queryClient = useQueryClient();
 	$effect(() => {
+		if (!active) return;
 		const delay = nextInviteRefetchDelay(records);
 		if (delay === null) return;
 		const handle = setTimeout(() => {
 			void queryClient.invalidateQueries({
-				queryKey: memberRegisterKeys.list(slug, queryFilters)
+				queryKey: memberRegisterKeys.list(slug, listParams)
 			});
 		}, delay);
 		return () => clearTimeout(handle);
@@ -169,11 +204,13 @@
 	const pageCount = $derived(Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE)));
 	const rangeFrom = $derived(total === 0 ? 0 : (filters.page - 1) * REGISTER_PAGE_SIZE + 1);
 	const rangeTo = $derived(Math.min(filters.page * REGISTER_PAGE_SIZE, total));
-	// Only the "Everyone" view without narrowing proves the register itself is empty.
-	const narrowed = $derived(viewFromFilters(filters) !== 'everyone' || hasExtraFilters(filters));
+	// Empty REGISTER (not merely an empty chip): the unfiltered total is zero.
 	const registerEmpty = $derived(
-		listQuery.isSuccess && !listQuery.isPlaceholderData && total === 0 && !narrowed
+		totalQuery.isSuccess && isRegisterEmpty(totalQuery.data ?? 0, DEFAULT_FILTERS)
 	);
+	// The Ended chip is narrowed client-side after the fetch (see `toRequestQuery`),
+	// so its page numbers are the backend's: no "past the last page" correction.
+	const clientPaged = $derived(!filters.activeOn && viewFromFilters(filters) === 'ended');
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -181,20 +218,20 @@
 	// A page past the last one (stale `?page=`, or the last row of the last page was
 	// deleted) holds no rows although the list is not empty: go to the last page.
 	const redirectPage = $derived(
-		listQuery.isSuccess && !listQuery.isPlaceholderData
+		active && !clientPaged && listQuery.isSuccess && !listQuery.isPlaceholderData
 			? pageToRedirect(records.length, total, filters.page)
 			: null
 	);
 	// Corrections wait while a filter change is pending: they are computed from the
 	// URL's result set, which that change is about to replace.
 	$effect(() => {
-		if (navigator.isPending) return;
+		if (!active || navigator.isPending) return;
 		if (redirectPage !== null) navigator.patch({ page: redirectPage });
 	});
 
 	// A well-formed tier id that no longer exists matches nothing: drop the filter and say so.
 	$effect(() => {
-		if (navigator.isPending) return;
+		if (!active || navigator.isPending) return;
 		const tierId = filters.tierId;
 		if (tierId && tiersQuery.isSuccess && !allTiers.some((t) => t.id === tierId)) {
 			toast.info(m['memberRegister.tierFilterStale']());
@@ -258,7 +295,9 @@
 		{#if !filters.activeOn}
 			<PeopleChips value={activeView} onChange={selectView} />
 		{:else}
-			<p class="text-sm text-muted-foreground">{m['memberPeople.asOfActive']()}</p>
+			<p class="text-sm text-muted-foreground" data-testid="people-as-of-note">
+				{m['memberPeople.asOfShowing']({ day: formatCalendarDay(filters.activeOn) })}
+			</p>
 		{/if}
 		<div class="flex flex-wrap items-center gap-2">
 			<Button variant="outline" onclick={() => (exportOpen = true)} data-testid="people-export">
@@ -311,7 +350,7 @@
 			{m['memberRegister.resultsHeading']()}
 		</h2>
 
-		{#if listQuery.isPending}
+		{#if listQuery.isPending || (records.length === 0 && totalQuery.isPending)}
 			<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
 				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 				{m['memberRegister.loading']()}
@@ -331,13 +370,15 @@
 		{:else if records.length === 0}
 			<EmptyState
 				icon={BookUser}
-				title={narrowed
-					? m['memberRegister.emptyFilteredTitle']()
-					: m['memberRegister.emptyTitle']()}
-				body={narrowed ? m['memberRegister.emptyFilteredBody']() : m['memberRegister.emptyBody']()}
+				title={registerEmpty
+					? m['memberRegister.emptyTitle']()
+					: m['memberRegister.emptyFilteredTitle']()}
+				body={registerEmpty
+					? m['memberRegister.emptyBody']()
+					: m['memberRegister.emptyFilteredBody']()}
 			>
 				{#snippet action()}
-					{#if narrowed}
+					{#if !registerEmpty}
 						<Button
 							variant="outline"
 							onclick={() =>

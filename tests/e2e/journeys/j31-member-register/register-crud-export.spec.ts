@@ -36,7 +36,9 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
 		try {
-			await gotoHydrated(page, registerPath(org.slug));
+			// The DEFAULT view ("Current" chip): a brand-new org must still read as an
+			// empty register, not as "no entries match these filters".
+			await gotoHydrated(page, `/org/${org.slug}/admin/members`);
 			await waitForClientAuth(page);
 			await expect(page.getByRole('heading', { name: 'Members & Staff', level: 1 })).toBeVisible();
 			await expect(page.getByText('No register entries yet')).toBeVisible({ timeout: 15_000 });
@@ -73,6 +75,9 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 			await end.getByLabel('Removed').check();
 			await end.getByRole('button', { name: 'End membership', exact: true }).click();
 			await expect(end).toBeHidden({ timeout: 15_000 });
+			// An ended entry leaves "Current": switch to "Everyone" to keep checking it.
+			await page.getByTestId('people-chip-everyone').click();
+			await expect(page).toHaveURL(/[?&]view=everyone/);
 			await expect(
 				registerEntry(page, editedName).getByTestId('register-status-ended')
 			).toBeVisible({

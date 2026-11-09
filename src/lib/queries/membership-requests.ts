@@ -8,7 +8,11 @@ import { organizationadminmembershiprequestsListMembershipRequests } from '$lib/
  */
 export function pendingApplicationsQueryOptions(slug: string, accessToken: string | null) {
 	return {
-		queryKey: ['organization', slug, 'membership-requests', 'pending', 1] as const,
+		// Widened so the Applications tab can return these options OR its own
+		// (filtered / paged) ones from one query without a tuple-type clash.
+		queryKey: ['organization', slug, 'membership-requests', 'pending', 1] as readonly (
+			string | number
+		)[],
 		queryFn: async () => {
 			const response = await organizationadminmembershiprequestsListMembershipRequests({
 				path: { slug },

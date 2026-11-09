@@ -19,6 +19,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import {
+		RegisterApiError,
 		createRecord,
 		inviteRecord,
 		memberRegisterKeys,
@@ -31,6 +32,7 @@
 		buildCreateBody,
 		buildUpdateBody,
 		formValuesFromRecord,
+		isInvitableAtCreation,
 		normalizeLocalInput,
 		reconcileAfterStale,
 		validateRecordForm,
@@ -39,6 +41,7 @@
 		type RecordFormValues
 	} from '$lib/member-register/form-values';
 	import { SELECT_CLASS } from '$lib/member-register/ui';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import RegisterErrorAlert from './RegisterErrorAlert.svelte';
 
 	interface Props {
@@ -88,9 +91,11 @@
 		});
 	});
 
-	let inviteFailed = false;
-	// An invite needs an address to send to; the backend refuses future starts too.
-	const canSendInvite = $derived(mode === 'create' && values.email.trim() !== '');
+	// The backend's reason when the invite after create was refused (null = no failure).
+	let inviteFailure: { detail: string | null } | null = null;
+	// Only offered when the new entry is invitable right away: an address, already
+	// started, not already ended (the create form only has standard tiers).
+	const canSendInvite = $derived(mode === 'create' && isInvitableAtCreation(values));
 
 	const mutation = createMutation(() => ({
 		mutationFn: async (): Promise<MembershipRecordSchema> => {
@@ -108,8 +113,10 @@
 			if (canSendInvite && sendInvite && created.id) {
 				try {
 					await inviteRecord(slug, accessToken, created.id);
-				} catch {
-					inviteFailed = true;
+				} catch (error) {
+					inviteFailure = {
+						detail: error instanceof RegisterApiError ? backendMessage(error.body) : null
+					};
 				}
 			}
 			return created;
@@ -119,9 +126,13 @@
 			toast.success(
 				mode === 'edit' ? m['memberRegister.savedEdit']() : m['memberRegister.savedCreate']()
 			);
-			if (inviteFailed) {
-				inviteFailed = false;
-				toast.error(m['memberPeople.inviteAfterCreateFailed']());
+			if (inviteFailure) {
+				const { detail } = inviteFailure;
+				inviteFailure = null;
+				toast.error(
+					m['memberPeople.inviteAfterCreateFailed'](),
+					detail ? { description: detail } : undefined
+				);
 			}
 			onClose();
 		},

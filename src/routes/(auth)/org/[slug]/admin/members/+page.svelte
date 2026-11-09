@@ -13,6 +13,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { orgQuestionnairesQueryOptions } from '$lib/queries/org-questionnaires';
 	import { ACCESS_TAB, isMembersTab } from '$lib/member-register/redirects';
+	import { resolveAccessSearch } from '$lib/member-register/manage-access';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
@@ -31,7 +32,7 @@
 		ScanLine
 	} from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import MembersTab from '$lib/components/members/MembersTab.svelte';
+	import AccessBridge from '$lib/components/members/AccessBridge.svelte';
 	import PeopleTab from '$lib/components/members/PeopleTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
@@ -85,15 +86,34 @@
 	let isCreateTokenModalOpen = $state(false);
 
 	// Bridge until the person sheet (per-member actions) lands: a People row's
-	// "Manage access" opens the existing member list, pre-searched for that person.
-	// Hidden tab, no trigger.
+	// "Manage access" opens the existing member list for that person. Hidden tab,
+	// no trigger. Keyed on the record's USER: the member is looked up by user id
+	// (see `resolveAccessSearch`), and every opening bumps `accessOpenCount`, which
+	// re-keys MembersTab so reopening the same person resets its search and filters.
 	let accessSearch = $state('');
-	function manageAccess(record: MembershipRecordSchema) {
-		accessSearch = record.email || record.full_name;
+	let accessUserId = $state<string | null>(null);
+	let accessOpenCount = $state(0);
+	let accessRequest = 0;
+	async function manageAccess(record: MembershipRecordSchema) {
+		const request = ++accessRequest;
+		const search = await resolveAccessSearch(record, async (term) => {
+			const response = await organizationadminmembersListMembers({
+				path: { slug: organization.slug },
+				query: { search: term, page_size: 100 },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw new Error('Failed to fetch members');
+			return response.data?.results ?? [];
+		});
+		// A newer click superseded this one while the lookup ran.
+		if (request !== accessRequest) return;
+		accessSearch = search;
+		accessUserId = record.user_id ?? null;
+		accessOpenCount += 1;
 		activeTab = ACCESS_TAB;
 	}
 
-	// Fetch members (for tab badge counts and cross-tab data)
+	// Fetch members: feeds the per-tier member counts on the Tiers tab
 	const membersQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'members', '', 'all', 'all'],
 		queryFn: async () => {
@@ -306,6 +326,7 @@
 			<TabsContent value="people" class="space-y-4">
 				<PeopleTab
 					{organization}
+					active={activeTab === 'people'}
 					isOwner={!!data.isOwner}
 					onOpenApplications={() => (activeTab = 'applications')}
 					onCreateInviteLink={() => {
@@ -367,16 +388,17 @@
 					<ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
 					{m['memberPeople.backToPeople']()}
 				</Button>
-				{#key accessSearch}
-					<MembersTab
-						{organization}
-						isOwner={!!data.isOwner}
-						permissions={data.permissions}
-						tiers={pickerTiers}
-						{staffUserIds}
-						initialSearch={accessSearch}
-					/>
-				{/key}
+				<AccessBridge
+					{organization}
+					isOwner={!!data.isOwner}
+					permissions={data.permissions}
+					tiers={pickerTiers}
+					{staffUserIds}
+					active={activeTab === ACCESS_TAB}
+					openCount={accessOpenCount}
+					search={accessSearch}
+					userId={accessUserId}
+				/>
 			</TabsContent>
 		{/if}
 	</Tabs>

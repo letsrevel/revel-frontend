@@ -1,6 +1,13 @@
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 import type { Tone } from '$lib/components/common/tones';
-import { filtersToSearch, parseFilters, type RegisterFilters } from './filters';
+import {
+	filtersToQuery,
+	filtersToSearch,
+	hasActiveFilters,
+	parseFilters,
+	type RegisterFilters,
+	type RegisterListQuery
+} from './filters';
 
 /** The People tab's group chips. Each one is a preset of the register filters. */
 export type PeopleView = 'current' | 'day' | 'ended' | 'no-account' | 'everyone';
@@ -18,9 +25,13 @@ export const DEFAULT_PEOPLE_VIEW: PeopleView = 'current';
 
 type ViewFilters = Pick<RegisterFilters, 'kind' | 'open' | 'account'>;
 
-/** Chip -> register filters (`kind` / `is_open` / `has_account`). */
+/**
+ * Chip -> URL filter state, so a chip round-trips through `?view=` / raw params.
+ * What a chip SENDS to the backend is `chipToQuery`, not these fields ("Current"
+ * is not `is_open`: it needs today's date).
+ */
 export const VIEW_FILTERS: Record<PeopleView, ViewFilters> = {
-	current: { kind: 'standard', open: 'open', account: 'all' },
+	current: { kind: 'standard', open: 'all', account: 'all' },
 	day: { kind: 'temporary', open: 'all', account: 'all' },
 	ended: { kind: null, open: 'closed', account: 'all' },
 	'no-account': { kind: null, open: 'all', account: 'without' },
@@ -78,7 +89,7 @@ export function peopleFiltersToSearch(filters: RegisterFilters): string {
 
 /** Anything narrowing the list beyond the group chip (drives "clear filters"). */
 export function hasExtraFilters(filters: RegisterFilters): boolean {
-	return filters.tierId !== null || filters.activeOn !== null || filters.search.trim() !== '';
+	return hasActiveFilters({ ...filters, ...VIEW_FILTERS.everyone });
 }
 
 /** Filters for a chip, keeping search / tier / day. Resets the page. */
@@ -86,8 +97,76 @@ export function filtersForView(view: PeopleView, current: RegisterFilters): Regi
 	return { ...current, ...VIEW_FILTERS[view], page: 1 };
 }
 
+/**
+ * The People list query: the register's list query plus the client-only
+ * `ended` param (see `toRequestQuery`).
+ */
+export type PeopleQuery = RegisterListQuery & { ended?: true };
+
+type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_on' | 'has_account'> & { ended?: true };
+
+/**
+ * THE chip -> query mapping (the only place a chip becomes backend params).
+ * `today` is the calendar day in the ORGANIZATION's timezone.
+ *
+ * - Current: `active_on=<today>` + `kind=standard`. Not `is_open`: that is
+ *   `valid_until IS NULL`, which misses a standard entry with a future end and
+ *   would include nothing time-aware.
+ * - Day members: `kind=temporary`. No account: `has_account=false`.
+ * - Ended: the client param `ended=true` (see `toRequestQuery`).
+ * - Everyone: nothing.
+ */
+export function chipToQuery(view: PeopleView, today: string): ChipQuery {
+	switch (view) {
+		case 'current':
+			return { active_on: today, kind: 'standard' };
+		case 'day':
+			return { kind: 'temporary' };
+		case 'ended':
+			return { ended: true };
+		case 'no-account':
+			return { has_account: false };
+		case 'everyone':
+			return {};
+	}
+}
+
+/**
+ * Filters -> People list query. An "As of" day is a snapshot of everyone active
+ * that day, so it drops EVERY chip filter (kind, account, open, ended). A
+ * combination no chip covers (a legacy raw link) keeps its raw filters.
+ */
+export function peopleQuery(filters: RegisterFilters, today: string): PeopleQuery {
+	const bare = filtersToQuery({ ...filters, ...VIEW_FILTERS.everyone });
+	if (filters.activeOn) return bare;
+	const view = viewFromFilters(filters);
+	return view ? { ...bare, ...chipToQuery(view, today) } : filtersToQuery(filters);
+}
+
+/**
+ * Split a People query into what the backend gets and whether the rows still
+ * need the client-side "ended" pass.
+ *
+ * TODO(BE ended filter): the backend is adding an `ended` boolean filter. Until
+ * it is in the generated types, the Ended chip sends `is_open=false`
+ * (`valid_until` set) and the page is then narrowed client-side with
+ * `getPersonStatus(...) === 'ended'` (a set end date still in the future is not
+ * ended yet). The count and page numbers are the backend's, so they can be off
+ * (too high) for this chip until the filter exists; then send `ended` and drop
+ * the client pass.
+ */
+export function toRequestQuery(query: PeopleQuery): {
+	query: RegisterListQuery;
+	clientEnded: boolean;
+} {
+	const { ended, ...rest } = query;
+	if (ended) return { query: { ...rest, is_open: false }, clientEnded: true };
+	return { query: rest, clientEnded: false };
+}
+
 /** One status per row. Precedence is the order of the checks in `getPersonStatus`. */
-export type PersonStatusId = 'active' | 'day-member' | 'ended' | 'no-account' | 'invited';
+export type PersonStatusId =
+	'active' | 'day-member' | 'ended' | 'upcoming' | 'no-account' | 'invited';
 
 // TODO(member_status): add a 'paused' status once the backend exposes
 // `member_status` on the register record (pending). Map it before 'active':
@@ -102,23 +181,32 @@ const STATUS_TONE: Record<PersonStatusId, Tone> = {
 	active: 'success',
 	'day-member': 'info',
 	ended: 'neutral',
+	upcoming: 'neutral',
 	'no-account': 'neutral',
 	invited: 'info'
 };
 
 /**
- * The single status vocabulary of a People row. The secondary signals
- * (approximate dates, auto-linked, duplicate claim, merged) stay on the record
- * and are surfaced elsewhere (`getRecordBadges`).
+ * The single status vocabulary of a People row. "Open" (`valid_until` empty) is
+ * NOT "valid now": a ticket-granted day membership always has an end, and a
+ * standard entry can end in the future, so only a `valid_until` at or before
+ * `now` is Ended, and only a `valid_from` after `now` is Upcoming. The
+ * secondary signals (approximate dates, auto-linked, duplicate claim, merged)
+ * stay on the record and are surfaced elsewhere (`getRecordBadges`).
  */
 export function getPersonStatus(
-	record: Pick<MembershipRecordSchema, 'valid_until' | 'kind' | 'has_account' | 'invite_status'>
+	record: Pick<
+		MembershipRecordSchema,
+		'valid_from' | 'valid_until' | 'kind' | 'has_account' | 'invite_status'
+	>,
+	now: Date = new Date()
 ): PersonStatus {
+	const at = now.getTime();
 	let id: PersonStatusId;
-	if (record.valid_until) id = 'ended';
+	if (record.valid_until && Date.parse(record.valid_until) <= at) id = 'ended';
+	else if (record.valid_from && Date.parse(record.valid_from) > at) id = 'upcoming';
 	else if (record.kind === 'temporary') id = 'day-member';
-	else if (record.has_account) id = 'active';
-	else if (record.invite_status === 'invited') id = 'invited';
-	else id = 'no-account';
+	else if (!record.has_account) id = record.invite_status === 'invited' ? 'invited' : 'no-account';
+	else id = 'active';
 	return { id, tone: STATUS_TONE[id] };
 }

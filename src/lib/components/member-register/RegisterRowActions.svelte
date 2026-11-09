@@ -5,6 +5,7 @@
 	import { MoreVertical, Pencil, CalendarX, Trash2, Mail, Unlink, UserCog } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
 	import { canUnlink } from '$lib/member-register/reconcile';
+	import { getPersonStatus } from '$lib/member-register/people-view';
 
 	interface Props {
 		record: MembershipRecordSchema;
@@ -34,8 +35,14 @@
 	);
 	const reasonId = $derived(`invite-blocked-${record.id}`);
 	const unlinkable = $derived(canUnlink(record));
-	// Only a linked standard entry has an OrganizationMember behind it.
-	const manageable = $derived(!!onManageAccess && !!record.user_id && record.kind === 'standard');
+	// Only a linked, current standard entry has a live OrganizationMember behind
+	// it: an ended (or not yet started) entry has nothing to manage.
+	const manageable = $derived(
+		!!onManageAccess &&
+			!!record.user_id &&
+			record.kind === 'standard' &&
+			getPersonStatus(record).id === 'active'
+	);
 </script>
 
 <!-- Row actions menu. Merge lives in the Possible duplicates dialog, where the pairs are. -->
