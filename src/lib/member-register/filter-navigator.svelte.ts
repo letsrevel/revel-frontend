@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { filtersToSearch, type RegisterFilters } from './filters';
 
 export interface FilterNavigatorOptions {
@@ -42,7 +43,12 @@ export function createFilterNavigator(options: FilterNavigatorOptions) {
 				const push = pushRequested;
 				pushRequested = false;
 				await options.navigate(search, { replace: !push });
-				if (pending && filtersToSearch(pending) === search) pending = null;
+				if (pending && filtersToSearch(pending) === search) {
+					// Settled on what was just sent: drop a push request that coalesced into it,
+					// or the next unrelated change would push history (e.g. Next then Prev).
+					pending = null;
+					pushRequested = false;
+				}
 			}
 		} catch (error) {
 			pending = null;
@@ -54,9 +60,14 @@ export function createFilterNavigator(options: FilterNavigatorOptions) {
 	}
 
 	function patch(change: Partial<RegisterFilters>, opts?: PatchOptions): void {
-		const base = pending ?? options.current();
+		// Read untracked: `patch` is called from effects, and tracking `pending` / the
+		// URL filters there (while also writing `pending`) would loop the effect.
+		const { base, current } = untrack(() => ({
+			base: pending ?? options.current(),
+			current: options.current()
+		}));
 		const next: RegisterFilters = { ...base, ...change };
-		if (!inFlight && filtersToSearch(next) === filtersToSearch(options.current())) return;
+		if (!inFlight && filtersToSearch(next) === filtersToSearch(current)) return;
 		pending = next;
 		if (opts?.push) pushRequested = true;
 		if (!inFlight) void drain();
@@ -66,6 +77,10 @@ export function createFilterNavigator(options: FilterNavigatorOptions) {
 		/** The filters the UI should reflect: pending while navigating, else the URL's. */
 		get intended(): RegisterFilters {
 			return pending ?? options.current();
+		},
+		/** True while a filter change is queued or in flight (corrections should wait). */
+		get isPending(): boolean {
+			return pending !== null;
 		},
 		patch
 	};

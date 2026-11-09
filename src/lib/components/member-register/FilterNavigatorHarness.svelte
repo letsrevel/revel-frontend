@@ -26,6 +26,6 @@
 
 <RegisterFilters filters={intended} tiers={[]} timezone={null} onChange={navigator.patch} />
 <button type="button" onclick={() => navigator.patch({ page: intended.page + 1 }, { push: true })}>
-	Next page
+	{m['memberRegister.next']()}
 </button>
 <output data-testid="url">{url}</output>

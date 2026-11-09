@@ -167,13 +167,19 @@
 			? pageToRedirect(records.length, total, filters.page)
 			: null
 	);
+	// Corrections wait while a filter change is pending: they are computed from the
+	// URL's result set, which that change is about to replace. `isPending` is read
+	// tracked, so the correction re-evaluates once the navigation settles; `patch`
+	// reads its own state untracked, so calling it here can't loop the effect.
 	$effect(() => {
+		if (navigator.isPending) return;
 		if (redirectPage !== null) navigator.patch({ page: redirectPage });
 	});
 
 	// A well-formed tier id that no longer exists matches nothing (the backend
 	// returns an empty list, not an error): drop the filter and say so.
 	$effect(() => {
+		if (navigator.isPending) return;
 		const tierId = filters.tierId;
 		if (tierId && tiersQuery.isSuccess && !allTiers.some((t) => t.id === tierId)) {
 			toast.info(m['memberRegister.tierFilterStale']());

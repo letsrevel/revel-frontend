@@ -79,7 +79,7 @@ describe('filter navigator race (rendered intermediate states)', () => {
 	it('keeps the pending status filter when Next page is clicked mid-flight', async () => {
 		const { calls, goto, status } = setup();
 		await userEvent.selectOptions(status, 'open');
-		await userEvent.click(screen.getByRole('button', { name: 'Next page' }));
+		await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 		expect(goto).toHaveBeenCalledTimes(1);
 		calls[0].resolve();
 		await waitFor(() => expect(goto).toHaveBeenCalledTimes(2));
