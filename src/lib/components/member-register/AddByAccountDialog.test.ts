@@ -281,6 +281,26 @@ describe('AddByAccountDialog', () => {
 		expect(await screen.findByRole('button', { name: 'Find account' })).toBeDisabled();
 	});
 
+	it('e) a stale 429 (email edited meanwhile) shows nothing but still locks Find', async () => {
+		let settle: (value: unknown) => void = () => undefined;
+		sdk.organizationadminuserlookupLookupUser.mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			})
+		);
+		const { user } = setup();
+		await lookup(user);
+		await user.type(screen.getByLabelText('Account email'), 'x');
+		settle({
+			error: { detail: 'throttled' },
+			response: { status: 429, headers: new Headers({ 'Retry-After': '1200' }) }
+		});
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Find account' })).toBeDisabled()
+		);
+		expect(screen.queryByRole('alert')).toBeNull();
+	});
+
 	it('e) another error shows a generic message and allows retry', async () => {
 		sdk.organizationadminuserlookupLookupUser.mockResolvedValue({
 			error: { detail: 'boom' },

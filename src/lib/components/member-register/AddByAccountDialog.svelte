@@ -138,13 +138,16 @@
 	}
 
 	function showFailure(error: unknown, typed: string) {
+		const described = describeRegisterError(error, 'lookup');
+		// The lockout is per staff user, so a 429 starts it even when the answer is
+		// stale (the admin kept typing); only the visible state ignores stale answers.
+		if (described.throttled) {
+			startThrottle(error instanceof RegisterApiError ? error.retryAfterSeconds : null);
+		}
 		if (email.trim() !== typed) return;
 		outcome = null;
 		refusedAdd = null;
-		failure = describeRegisterError(error, 'lookup');
-		if (failure.throttled) {
-			startThrottle(error instanceof RegisterApiError ? error.retryAfterSeconds : null);
-		}
+		failure = described;
 	}
 
 	const lookup = createMutation(() => ({
