@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Einträge zusammengeführt.",
 	"memberRegister.actionUnlink": "Verknüpfung lösen",
 	"memberRegister.unlinkTitle": "Verknüpfung von {name} lösen?",
-	"memberRegister.unlinkReverseMerge": "Damit wird die Zusammenführung rückgängig gemacht. Der Eintrag ist wieder eigenständig, und das früheste Beitrittsdatum des anderen Eintrags wird wiederhergestellt, sofern es nicht inzwischen vom Team bearbeitet wurde.",
+	"memberRegister.unlinkReverseMerge": "Der zusammengeführte Eintrag wird wieder eigenständig. Hat eine frühere Zusammenführung das Beitrittsdatum dieser Person verschoben, wird das ursprüngliche Datum wiederhergestellt, sofern das Team es seitdem nicht geändert hat.",
 	"memberRegister.unlinkCancelsAccessDescription": "Damit wird das Konto von diesem Eintrag getrennt.",
 	"memberRegister.unlinkCancelsAccessWarning": "Damit verliert das Mitglied den Zugang und seine Abos werden gekündigt. Es wird nicht benachrichtigt.",
 	"memberRegister.unlinkClearsUser": "Damit wird das Konto von diesem Eintrag getrennt. Der Eintrag selbst bleibt im Register.",

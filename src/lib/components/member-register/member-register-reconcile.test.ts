@@ -223,6 +223,15 @@ describe('UnlinkRecordDialog', () => {
 		expect(screen.queryByTestId('unlink-access-warning')).toBeNull();
 	});
 
+	it('explains that unlinking a merge restores a start date only when an earlier merge moved it', () => {
+		renderIn(UnlinkRecordDialog, { ...base, record: record({ merged_into_id: 'r2' }) });
+		const text = document.body.textContent ?? '';
+		expect(text).toContain(
+			"The merged entry becomes separate again. If an earlier merge had moved this person's start date, the original date is restored unless staff changed it since."
+		);
+		expect(text).not.toContain('earliest');
+	});
+
 	it('closes with a toast instead of the clears-user copy when the entry is no longer linked', async () => {
 		const onClose = vi.fn();
 		renderIn(UnlinkRecordDialog, { ...base, onClose, record: record({ has_account: false }) });

@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Entradas fusionadas.",
 	"memberRegister.actionUnlink": "Desvincular",
 	"memberRegister.unlinkTitle": "¿Desvincular a {name}?",
-	"memberRegister.unlinkReverseMerge": "Esto revierte la fusión. La entrada vuelve a ser independiente y se restaura la fecha de alta más antigua de la otra entrada, salvo que el equipo la haya editado después.",
+	"memberRegister.unlinkReverseMerge": "La entrada fusionada vuelve a ser independiente. Si una fusión anterior había movido la fecha de alta de esta persona, se restaura la fecha original, salvo que el equipo la haya cambiado después.",
 	"memberRegister.unlinkCancelsAccessDescription": "Esto separa la cuenta de esta entrada.",
 	"memberRegister.unlinkCancelsAccessWarning": "Esto elimina el acceso del miembro y cancela sus suscripciones. No se le notificará.",
 	"memberRegister.unlinkClearsUser": "Esto separa la cuenta de esta entrada. La entrada en sí permanece en el registro.",

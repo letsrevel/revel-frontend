@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Entradas juntas.",
 	"memberRegister.actionUnlink": "Desassociar",
 	"memberRegister.unlinkTitle": "Desassociar {name}?",
-	"memberRegister.unlinkReverseMerge": "Isto reverte a junção. A entrada volta a ser independente e a data de adesão mais antiga da outra entrada é reposta, a menos que a equipa a tenha editado entretanto.",
+	"memberRegister.unlinkReverseMerge": "A entrada junta volta a ser independente. Se uma junção anterior tiver alterado a data de adesão desta pessoa, a data original é reposta, a menos que a equipa a tenha alterado entretanto.",
 	"memberRegister.unlinkCancelsAccessDescription": "Isto separa a conta desta entrada.",
 	"memberRegister.unlinkCancelsAccessWarning": "Isto remove o acesso do membro e cancela as suas subscrições. Não será notificado.",
 	"memberRegister.unlinkClearsUser": "Isto separa a conta desta entrada. A própria entrada permanece no registo.",

@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Entrées fusionnées.",
 	"memberRegister.actionUnlink": "Délier",
 	"memberRegister.unlinkTitle": "Délier {name} ?",
-	"memberRegister.unlinkReverseMerge": "Cela annule la fusion. L'entrée redevient indépendante et la date d'adhésion la plus ancienne de l'autre entrée est rétablie, sauf si l'équipe l'a modifiée depuis.",
+	"memberRegister.unlinkReverseMerge": "L'entrée fusionnée redevient indépendante. Si une fusion précédente avait déplacé la date d'adhésion de cette personne, la date d'origine est rétablie, sauf si l'équipe l'a modifiée depuis.",
 	"memberRegister.unlinkCancelsAccessDescription": "Cela détache le compte de cette entrée.",
 	"memberRegister.unlinkCancelsAccessWarning": "Cela retire l'accès du membre et annule ses abonnements. Il ne sera pas averti.",
 	"memberRegister.unlinkClearsUser": "Cela détache le compte de cette entrée. L'entrée elle-même reste dans le registre.",

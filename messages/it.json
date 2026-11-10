@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Voci unite.",
 	"memberRegister.actionUnlink": "Scollega",
 	"memberRegister.unlinkTitle": "Scollegare {name}?",
-	"memberRegister.unlinkReverseMerge": "Questo annulla l'unione. La voce torna indipendente e la data di iscrizione più antica dell'altra voce viene ripristinata, a meno che lo staff non l'abbia modificata nel frattempo.",
+	"memberRegister.unlinkReverseMerge": "La voce unita torna indipendente. Se una fusione precedente aveva spostato la data di iscrizione di questa persona, viene ripristinata la data originale, a meno che lo staff non l'abbia modificata nel frattempo.",
 	"memberRegister.unlinkCancelsAccessDescription": "Questo stacca l'account da questa voce.",
 	"memberRegister.unlinkCancelsAccessWarning": "Questo rimuove l'accesso del membro e annulla i suoi abbonamenti. Non riceverà alcuna notifica.",
 	"memberRegister.unlinkClearsUser": "Questo stacca l'account da questa voce. La voce resta nel registro.",

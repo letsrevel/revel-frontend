@@ -11057,7 +11057,7 @@
 	"memberRegister.mergedToast": "Entries merged.",
 	"memberRegister.actionUnlink": "Unlink",
 	"memberRegister.unlinkTitle": "Unlink {name}?",
-	"memberRegister.unlinkReverseMerge": "This reverses the merge. The entry becomes a separate entry again, and the earliest join date of the other entry is restored unless staff edited it since.",
+	"memberRegister.unlinkReverseMerge": "The merged entry becomes separate again. If an earlier merge had moved this person's start date, the original date is restored unless staff changed it since.",
 	"memberRegister.unlinkCancelsAccessDescription": "This detaches the account from this entry.",
 	"memberRegister.unlinkCancelsAccessWarning": "This removes the member's access and cancels their subscriptions. They won't be notified.",
 	"memberRegister.unlinkClearsUser": "This detaches the account from this entry. The entry itself stays in the register.",
