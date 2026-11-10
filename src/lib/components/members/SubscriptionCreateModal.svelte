@@ -231,9 +231,10 @@
 					<DateTimePicker
 						id="sub-occurred"
 						bind:value={occurredAt}
+						describedBy="sub-occurred-hint"
 						label={m['orgAdmin.members.subscriptions.create.occurredAt']()}
 					/>
-					<p class="text-xs text-muted-foreground">
+					<p id="sub-occurred-hint" class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.subscriptions.create.occurredAtHint']()}
 					</p>
 				</div>

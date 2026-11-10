@@ -46,13 +46,17 @@ export function isTerminalSubscriptionStatus(status: string | null | undefined):
 	return status === 'cancelled' || status === 'expired';
 }
 
-const REFUSAL_CODES: readonly MembershipPaymentEditRefusalCode[] = [
-	'payment_online',
-	'payment_refunded',
-	'payment_voided',
-	'payment_not_latest',
-	'subscription_terminal'
-];
+const REFUSAL_MESSAGES: Record<MembershipPaymentEditRefusalCode, () => string> = {
+	payment_online: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_online'](),
+	payment_refunded: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_refunded'](),
+	payment_voided: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_voided'](),
+	payment_not_latest: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_not_latest'](),
+	subscription_terminal: () =>
+		m['orgAdmin.members.subscriptions.paymentRefused.subscription_terminal']()
+};
+
+/** One source of truth: every code with a message is recognised. */
+const REFUSAL_CODES = Object.keys(REFUSAL_MESSAGES) as MembershipPaymentEditRefusalCode[];
 
 /**
  * Reads the machine-readable `code` off a 409 body. Branching on `code`, never on
@@ -63,15 +67,6 @@ export function paymentRefusalCode(error: unknown): MembershipPaymentEditRefusal
 	const code = (error as { code: unknown }).code;
 	return REFUSAL_CODES.find((c) => c === code) ?? null;
 }
-
-const REFUSAL_MESSAGES: Record<MembershipPaymentEditRefusalCode, () => string> = {
-	payment_online: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_online'](),
-	payment_refunded: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_refunded'](),
-	payment_voided: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_voided'](),
-	payment_not_latest: () => m['orgAdmin.members.subscriptions.paymentRefused.payment_not_latest'](),
-	subscription_terminal: () =>
-		m['orgAdmin.members.subscriptions.paymentRefused.subscription_terminal']()
-};
 
 /** A 409 from the edit/void endpoints: the row is not (or no longer) eligible. */
 export class PaymentRefusedError extends Error {

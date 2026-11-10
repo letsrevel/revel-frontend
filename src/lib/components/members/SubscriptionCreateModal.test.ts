@@ -85,6 +85,14 @@ describe('SubscriptionCreateModal initial payment date', () => {
 		).toBeInTheDocument();
 	});
 
+	it('links the payment date input to its hint for screen readers', async () => {
+		renderModal();
+		await userEvent.click(await screen.findByLabelText('Record initial payment'));
+		expect(screen.getByLabelText('Payment date')).toHaveAccessibleDescription(
+			/The membership start date is edited separately, in the register entry/
+		);
+	});
+
 	it('sends initial_payment_occurred_at when a date is set', async () => {
 		const { onSubmit } = renderModal();
 		await fillRequired();
