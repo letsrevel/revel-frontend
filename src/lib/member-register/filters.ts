@@ -79,6 +79,17 @@ type ListRegisterQuery = NonNullable<
 export type RegisterListQuery = ListRegisterQuery &
 	Required<Pick<ListRegisterQuery, 'page' | 'page_size'>>;
 
+/**
+ * A list QUERY KEY that stands for "the current instant" without holding it:
+ * `activeNow: true` is replaced by `active_at=<now>` by `toRegisterRequest` at
+ * send time, so the key stays stable while every fetch uses the real time. It
+ * is key-only: `RegisterRequest` below rejects it.
+ */
+export type RegisterListKey = Omit<RegisterListQuery, 'active_at'> & { activeNow?: true };
+
+/** What is actually sent to the SDK: a real query with no key-only fields. */
+export type RegisterRequest = RegisterListQuery & { activeNow?: never };
+
 export function filtersToQuery(filters: RegisterFilters): RegisterListQuery {
 	const query: RegisterListQuery = { page: filters.page, page_size: REGISTER_PAGE_SIZE };
 	if (filters.kind) query.kind = filters.kind;

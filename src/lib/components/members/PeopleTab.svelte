@@ -62,10 +62,11 @@
 		parsePeopleFilters,
 		peopleQuery,
 		peopleFiltersToSearch,
+		toRequest,
 		viewFromFilters,
 		type PeopleView
 	} from '$lib/member-register/people-view';
-	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
+	import { nextListRefetchDelay } from '$lib/member-register/invite-schedule';
 	import {
 		sheetStateFor,
 		sheetStateForRecord,
@@ -73,7 +74,7 @@
 	} from '$lib/member-register/person-target';
 	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
-	import { calendarDayInZone, formatCalendarDay } from '$lib/member-register/calendar-day';
+	import { formatCalendarDay } from '$lib/member-register/calendar-day';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -115,11 +116,9 @@
 	// The URL query is the single source of truth: shareable, and back/forward
 	// restores it. The group chip is `?view=`, absent for the default ("Current").
 	const filters = $derived(parsePeopleFilters($page.url.searchParams));
-	// "Today" on the organization's wall clock: what the Current chip asks for.
-	const today = $derived(calendarDayInZone(timezone));
 	// Chip -> backend params (one mapping). In "As of" mode every chip filter is
 	// dropped: the snapshot is everyone active that day.
-	const listParams = $derived(peopleQuery(filters, today));
+	const listParams = $derived(peopleQuery(filters));
 
 	const navigator = createFilterNavigator({
 		current: () => filters,
@@ -147,7 +146,8 @@
 
 	const listQuery = createQuery(() => ({
 		queryKey: memberRegisterKeys.list(slug, listParams),
-		queryFn: () => listPeople(slug, accessToken, listParams),
+		// The key keeps `activeNow`; the request gets the real instant at send time.
+		queryFn: () => listPeople(slug, accessToken, toRequest(listParams, new Date())),
 		enabled: active && !!accessToken,
 		placeholderData: keepPreviousData
 	}));
@@ -198,18 +198,27 @@
 
 	const records = $derived(listQuery.data?.results ?? []);
 
-	// `can_invite` is computed by the backend when the list is fetched. A row whose
-	// start date passes while the page stays open would keep its stale "not yet"
-	// state, so schedule ONE refetch for the nearest upcoming start.
+	// Two boundaries can pass while the page stays open, and the backend only
+	// answers at fetch time: a row's start (`can_invite` flips) and, on the Current
+	// chip, a listed row's end (it would keep showing as Active). ONE timer, for the
+	// nearer of the two. It re-arms whenever the rows or the chip change; the cleanup
+	// clears it on unmount. A wake-up bumps `wakeTick` so the effect re-runs even when
+	// the refetch returned the same rows (structural sharing keeps `records` as it
+	// was): a capped delay or a late server then still gets its next timer, and a
+	// null delay stops the loop.
 	const queryClient = useQueryClient();
+	const activeNow = $derived(listParams.activeNow === true);
+	let wakeTick = $state(0);
 	$effect(() => {
 		if (!active) return;
-		const delay = nextInviteRefetchDelay(records);
+		void wakeTick;
+		const delay = nextListRefetchDelay(records, { activeNow });
 		if (delay === null) return;
 		const handle = setTimeout(() => {
 			void queryClient.invalidateQueries({
 				queryKey: memberRegisterKeys.list(slug, listParams)
 			});
+			wakeTick += 1;
 		}, delay);
 		return () => clearTimeout(handle);
 	});

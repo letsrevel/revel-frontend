@@ -25,8 +25,12 @@ import type {
 	RegisterMatchSchema
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
-import { filtersToQuery, type RegisterFilters, type RegisterListQuery } from './filters';
-import type { PeopleQuery } from './people-view';
+import {
+	filtersToQuery,
+	type RegisterFilters,
+	type RegisterListKey,
+	type RegisterRequest
+} from './filters';
 import type { EndBody, RecordUpdateBody } from './form-values';
 
 /**
@@ -82,7 +86,7 @@ export const memberRegisterKeys = {
 	/** Prefix of everything register-related; invalidate after any write. */
 	all: (slug: string) => ['organization', slug, 'member-register'] as const,
 	/** `query` is whatever identifies the request: register filters or a People query. */
-	list: (slug: string, query: RegisterFilters | PeopleQuery) =>
+	list: (slug: string, query: RegisterFilters | RegisterListKey) =>
 		['organization', slug, 'member-register', 'list', query] as const,
 	/**
 	 * Deliberately OUTSIDE the `all` prefix: the possible-duplicates scan is the
@@ -130,7 +134,7 @@ export async function invalidateRegister(
 async function fetchRegisterPage(
 	slug: string,
 	accessToken: string | null | undefined,
-	query: RegisterListQuery
+	query: RegisterRequest
 ): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
 	const res = await organizationadminmemberregisterListMemberRegister({
 		path: { slug },
@@ -154,7 +158,7 @@ export function listRegister(
 export function listPeople(
 	slug: string,
 	accessToken: string | null | undefined,
-	query: PeopleQuery
+	query: RegisterRequest
 ): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
 	return fetchRegisterPage(slug, accessToken, query);
 }

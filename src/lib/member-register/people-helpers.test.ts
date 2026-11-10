@@ -10,7 +10,6 @@ vi.mock('$lib/api/client', () => ({ client: {} }));
 const gen = vi.hoisted(() => ({ getMember: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ organizationadminmembersGetMember: gen.getMember }));
 
-import { calendarDayInZone } from './calendar-day';
 import { EMPTY_FORM, isInvitableAtCreation } from './form-values';
 import { fetchMemberAccess, memberAccessKey, memberAccessPrefix } from './member-access';
 import { pickCurrentEntry } from './person-target';
@@ -22,20 +21,6 @@ import {
 	startRegisterExport
 } from './api';
 import { makeRecord } from '$lib/components/member-register/person-fixtures';
-
-describe('calendarDayInZone', () => {
-	it('reads the wall-clock day of the organization, not the viewer', () => {
-		const instant = new Date('2026-11-09T23:30:00Z');
-		expect(calendarDayInZone('UTC', instant)).toBe('2026-11-09');
-		expect(calendarDayInZone('Europe/Berlin', instant)).toBe('2026-11-10');
-		expect(calendarDayInZone('America/Los_Angeles', instant)).toBe('2026-11-09');
-	});
-
-	it('falls back to a day for a missing or unknown zone', () => {
-		expect(calendarDayInZone(null)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-		expect(calendarDayInZone('Not/AZone')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-	});
-});
 
 describe('isInvitableAtCreation', () => {
 	const now = new Date('2026-11-09T12:00:00Z');
