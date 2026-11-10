@@ -11,19 +11,24 @@
 /** Longest wait between hydration retries, and the cap on a server Retry-After. */
 export const MAX_RETRY_DELAY_MS = 60_000;
 
-/** Backoff ladder (ms) used when the server gives no Retry-After. */
+/** Floor for any retry delay, so `Retry-After: 0` can't hot-loop. */
+export const MIN_RETRY_DELAY_MS = 1_000;
+
+/** Backoff ladder (ms) used when the server gives no Retry-After. Stays at the last rung. */
 const BACKOFF_MS = [2_000, 5_000, 15_000, 30_000, MAX_RETRY_DELAY_MS] as const;
 
-/** Retries after the initial failure before we stop scheduling more. */
-export const MAX_HYDRATION_RETRIES = 6;
-
-/** A failed user/permissions fetch, carrying the HTTP status when there was a response. */
+/**
+ * A failed user/permissions fetch, carrying the HTTP status when there was a
+ * response. The hey-api client never rejects on a network failure: it returns
+ * `{ error: TypeError, response: undefined }`, which surfaces here as an
+ * `AuthFetchError` with `status === undefined` and the original error as `cause`.
+ */
 export class AuthFetchError extends Error {
 	readonly status: number | undefined;
 	readonly retryAfterMs: number | undefined;
 
-	constructor(message: string, response?: Response) {
-		super(message);
+	constructor(message: string, response?: Response, cause?: unknown) {
+		super(message, { cause });
 		this.name = 'AuthFetchError';
 		this.status = response?.status;
 		this.retryAfterMs = parseRetryAfter(response?.headers?.get('Retry-After') ?? null);
@@ -35,17 +40,18 @@ export function parseRetryAfter(value: string | null): number | undefined {
 	if (value === null || value.trim() === '') return undefined;
 	const seconds = Number(value);
 	if (!Number.isFinite(seconds) || seconds < 0) return undefined;
-	return Math.min(seconds * 1000, MAX_RETRY_DELAY_MS);
+	return Math.min(Math.max(seconds * 1000, MIN_RETRY_DELAY_MS), MAX_RETRY_DELAY_MS);
 }
 
-/** True for failures that say nothing about session validity: 429, 5xx, network errors. */
+/**
+ * True for failures that say nothing about session validity: no response at all
+ * (network error), 429 or 5xx. Any other error (including a bare TypeError, which
+ * is a programming bug) is not transient.
+ */
 export function isTransientAuthError(error: unknown): boolean {
-	if (error instanceof AuthFetchError) {
-		const { status } = error;
-		return status !== undefined && (status === 429 || status >= 500);
-	}
-	// fetch() rejects with a TypeError on network failure / blocked request.
-	return error instanceof TypeError;
+	if (!(error instanceof AuthFetchError)) return false;
+	const { status } = error;
+	return status === undefined || status === 429 || status >= 500;
 }
 
 /** Delay before retry number `attempt` (0-based); Retry-After wins when present. */

@@ -12,12 +12,7 @@ import { decodeToken } from './jwt';
 import { requestTokenRefresh } from './auth-refresh';
 import { clearGuestHoldToken } from '$lib/utils/guest-hold';
 import { hasAnonymousHolds } from '$lib/utils/seat-holds';
-import {
-	AuthFetchError,
-	MAX_HYDRATION_RETRIES,
-	hydrationRetryDelay,
-	isTransientAuthError
-} from './auth-transient';
+import { AuthFetchError, hydrationRetryDelay, isTransientAuthError } from './auth-transient';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -32,6 +27,11 @@ class AuthStore {
 	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 	// At most one pending retry of the user/permissions fetches (#1207).
 	private _hydrationTimer: ReturnType<typeof setTimeout> | null = null;
+	// Consecutive transient failures; drives the backoff ladder. Reset only by a
+	// successful hydrate() or a session end, never by a new failure.
+	private _hydrationAttempt = 0;
+	// Single-flight: retry timer, refresh, initialize() and login share one fetch.
+	private _hydratePromise: Promise<void> | null = null;
 	// Shared promise to prevent concurrent refresh attempts
 	private _refreshPromise: Promise<void> | null = null;
 	// True only while `logout()` is running. Used by `_performRefresh` to
@@ -165,10 +165,10 @@ class AuthStore {
 		this._isLoading = true;
 		try {
 			await this.hydrate();
-		} catch (error) {
-			// 429/5xx/network: the token is still good, retry later (#1207).
-			// Anything else (401, ...) means the session is gone.
-			if (!this.deferHydration(error, 0)) this.logout();
+		} catch {
+			// hydrate() already absorbed transient failures (#1207); what reaches
+			// here (401, ...) means the session is gone.
+			this.logout();
 		} finally {
 			this._isLoading = false;
 		}
@@ -214,8 +214,8 @@ class AuthStore {
 			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
-			await this.fetchUserData();
-			await this.fetchPermissions();
+			// A transient failure here keeps the login (retried in the background).
+			await this.hydrate();
 		} finally {
 			this._isLoading = false;
 		}
@@ -254,8 +254,7 @@ class AuthStore {
 			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
-			await this.fetchUserData();
-			await this.fetchPermissions();
+			await this.hydrate();
 		} finally {
 			this._isLoading = false;
 		}
@@ -272,6 +271,7 @@ class AuthStore {
 		// Clear the token refresh timer and any pending hydration retry
 		this.clearTokenRefreshTimer();
 		this.clearHydrationTimer();
+		this._hydratePromise = null;
 
 		// Clear any in-progress refresh
 		this._refreshPromise = null;
@@ -377,11 +377,7 @@ class AuthStore {
 			// They should still be valid. Only fetch if we don't have them.
 			// The refresh itself succeeded, so a transient failure here (429, 5xx,
 			// network) must not end the session: keep the token and retry (#1207).
-			try {
-				await this.hydrate();
-			} catch (error) {
-				if (!this.deferHydration(error, 0)) throw error;
-			}
+			await this.hydrate();
 		} catch (error) {
 			console.error('[AUTH STORE] Token refresh failed:', error);
 			// Clear auth state on refresh failure
@@ -390,43 +386,61 @@ class AuthStore {
 		}
 	}
 
-	/** Fetch whichever of user / permissions we don't have yet. */
-	private async hydrate(): Promise<void> {
-		if (!this._user) await this.fetchUserData();
-		if (!this._permissions) await this.fetchPermissions();
+	/**
+	 * Fetch whichever of user / permissions we don't have yet. Single-flight.
+	 * Resolves on success AND on a transient failure (429, 5xx, network), which
+	 * keeps the session and schedules a retry (#1207); rejects only for a
+	 * definitive failure (e.g. 401) so the caller can end the session.
+	 */
+	private hydrate(): Promise<void> {
+		if (this._hydratePromise) return this._hydratePromise;
+		const run: Promise<void> = (async () => {
+			try {
+				if (!this._user) await this.fetchUserData();
+				if (!this._permissions) await this.fetchPermissions();
+				this._hydrationAttempt = 0;
+			} catch (error) {
+				if (!this.deferHydration(error)) throw error;
+			}
+		})().finally(() => {
+			if (this._hydratePromise === run) this._hydratePromise = null;
+		});
+		this._hydratePromise = run;
+		return run;
 	}
 
 	/**
-	 * Handle a failed hydrate(). Returns true when the failure is transient (or the
-	 * store is logging out) and so must NOT end the session; a retry is scheduled
-	 * while attempts remain. Returns false for a definitive failure (e.g. 401).
+	 * True when the failure is transient (or the store is logging out) and must
+	 * NOT end the session; schedules the next retry on the ladder. Retries go on
+	 * indefinitely (at the max delay once the ladder tops out) while the session
+	 * lives; logout()/resetForSwap() cancel them.
 	 */
-	private deferHydration(error: unknown, attempt: number): boolean {
+	private deferHydration(error: unknown): boolean {
 		if (this._isLoggingOut) return true;
 		if (!isTransientAuthError(error)) return false;
 		console.warn('[AUTH STORE] Transient failure loading user data, will retry:', error);
-		if (attempt >= MAX_HYDRATION_RETRIES) return true;
 		const retryAfterMs = error instanceof AuthFetchError ? error.retryAfterMs : undefined;
-		this.clearHydrationTimer(); // never stack: one pending retry at a time
+		this.clearHydrationTimer(true); // never stack: one pending retry at a time
 		this._hydrationTimer = setTimeout(
-			() => void this.runHydrationRetry(attempt),
-			hydrationRetryDelay(attempt, retryAfterMs)
+			() => void this.runHydrationRetry(),
+			hydrationRetryDelay(this._hydrationAttempt, retryAfterMs)
 		);
+		this._hydrationAttempt++;
 		return true;
 	}
 
-	private async runHydrationRetry(attempt: number): Promise<void> {
+	private async runHydrationRetry(): Promise<void> {
 		this._hydrationTimer = null;
 		if (this._isLoggingOut || !this._accessToken) return;
 		try {
 			await this.hydrate();
-		} catch (error) {
-			if (this._isLoggingOut) return;
-			if (!this.deferHydration(error, attempt + 1)) this.logout();
+		} catch {
+			if (!this._isLoggingOut) this.logout();
 		}
 	}
 
-	private clearHydrationTimer(): void {
+	private clearHydrationTimer(keepAttempt = false): void {
+		if (!keepAttempt) this._hydrationAttempt = 0;
 		if (this._hydrationTimer) {
 			clearTimeout(this._hydrationTimer);
 			this._hydrationTimer = null;
@@ -443,7 +457,7 @@ class AuthStore {
 			});
 
 			if (error || !data) {
-				throw new AuthFetchError('Failed to fetch user data', response);
+				throw new AuthFetchError('Failed to fetch user data', response, error);
 			}
 
 			this._user = data;
@@ -454,7 +468,8 @@ class AuthStore {
 			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)
-			if (err instanceof TypeError && err.message === 'Failed to fetch') {
+			const cause = err instanceof AuthFetchError ? err.cause : err;
+			if (cause instanceof TypeError && cause.message === 'Failed to fetch') {
 				const { API_BASE_URL_DISPLAY } = await import('$lib/config/api');
 				console.error(
 					`⚠️  API request blocked! Please disable your ad blocker for ${API_BASE_URL_DISPLAY}`
@@ -475,7 +490,7 @@ class AuthStore {
 
 		if (error || !data) {
 			console.error('[AUTH STORE] Failed to fetch permissions:', error);
-			throw new AuthFetchError('Failed to fetch permissions', response);
+			throw new AuthFetchError('Failed to fetch permissions', response, error);
 		}
 
 		this._permissions = data;
@@ -566,6 +581,8 @@ class AuthStore {
 	 */
 	resetForSwap(): void {
 		this.clearTokenRefreshTimer();
+		this.clearHydrationTimer();
+		this._hydratePromise = null;
 		this._refreshPromise = null;
 		this._user = null;
 		this._accessToken = null;
