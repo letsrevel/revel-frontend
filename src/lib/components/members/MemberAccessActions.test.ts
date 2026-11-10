@@ -490,3 +490,48 @@ describe('MemberAccessActions failure surfacing', () => {
 		expect(alertSpy).not.toHaveBeenCalled();
 	});
 });
+
+/** The footer "Close" text button (the corner X also has the accessible name "Close"). */
+function footerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') === null);
+	if (!button) throw new Error('footer Close button not found');
+	return button;
+}
+
+describe('MemberAccessActions unsaved-changes guard', () => {
+	it('closes immediately when nothing changed', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+
+		await user.click(footerClose());
+
+		expect(onClose).toHaveBeenCalledTimes(1);
+		expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument();
+	});
+
+	it('asks before discarding a staged change; Keep editing keeps it, Discard closes', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+		await pickStatus(user, 'Paused');
+
+		await user.click(footerClose());
+
+		expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+		expect(onClose).not.toHaveBeenCalled();
+
+		await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+		await waitFor(() =>
+			expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument()
+		);
+		expect(onClose).not.toHaveBeenCalled();
+		expect(screen.getByLabelText('Membership Status')).toBeInTheDocument();
+
+		await user.click(footerClose());
+		await user.click(await screen.findByRole('button', { name: 'Discard' }));
+		expect(onClose).toHaveBeenCalledTimes(1);
+	});
+});

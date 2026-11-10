@@ -10,6 +10,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
@@ -64,6 +65,7 @@
 			showRemoveConfirm = false;
 			showBlacklistConfirm = false;
 			showBanConfirm = false;
+			showDiscardConfirm = false;
 			blacklistReason = '';
 		}
 	});
@@ -200,10 +202,26 @@
 	const isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
 
 	// Handle dialog open/close changes
+	// Close / Escape / overlay click with unsaved tier or status edits asks first
+	// (in-app confirm, never window.confirm); a clean dialog closes immediately.
+	let showDiscardConfirm = $state(false);
+
 	function handleOpenChange(isOpen: boolean) {
-		if (!isOpen) {
-			onClose();
+		if (isOpen) return;
+		if (hasChanges && !isProcessing) {
+			showDiscardConfirm = true;
+			return;
 		}
+		onClose();
+	}
+
+	function handleKeepEditing() {
+		showDiscardConfirm = false;
+	}
+
+	function handleDiscard() {
+		showDiscardConfirm = false;
+		onClose();
 	}
 </script>
 
@@ -558,10 +576,21 @@
 
 			<!-- Close Button -->
 			<div class="flex justify-end border-t border-border pt-4">
-				<Button variant="ghost" onclick={onClose} disabled={isProcessing}>
+				<Button variant="ghost" onclick={() => handleOpenChange(false)} disabled={isProcessing}>
 					{m['manageMemberModal.close']()}
 				</Button>
 			</div>
 		{/if}
 	</DialogContent>
 </Dialog>
+
+<ConfirmDialog
+	isOpen={showDiscardConfirm}
+	title={m['manageMemberModal.discardTitle']()}
+	message={m['manageMemberModal.discardMessage']()}
+	confirmText={m['manageMemberModal.discardConfirm']()}
+	cancelText={m['manageMemberModal.discardKeep']()}
+	variant="warning"
+	onConfirm={handleDiscard}
+	onCancel={handleKeepEditing}
+/>

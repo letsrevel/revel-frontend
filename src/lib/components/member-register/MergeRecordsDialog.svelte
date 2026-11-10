@@ -20,6 +20,14 @@
 
 	const plan = $derived(pair ? planMerge(pair) : null);
 
+	// Two entries with the same name read as "Merge X into X": name the kinds instead.
+	function normalizeName(name: string): string {
+		return name.trim().replace(/\s+/g, ' ').toLowerCase();
+	}
+	const sameName = $derived(
+		!!plan && normalizeName(plan.absorbed.full_name) === normalizeName(plan.survivor.full_name)
+	);
+
 	const preview = $derived.by(() => {
 		if (!plan) return '';
 		const survivor = plan.survivor.full_name;
@@ -49,10 +57,12 @@
 	action="merge"
 	staleOn400
 	run={(survivorId) => mergeRecords(slug, accessToken, survivorId, plan?.absorbed.id ?? '')}
-	title={m['memberRegister.mergeTitle']({
-		absorbed: plan?.absorbed.full_name ?? '',
-		survivor: plan?.survivor.full_name ?? ''
-	})}
+	title={sameName
+		? m['memberRegister.mergeTitleSameName']({ survivor: plan?.survivor.full_name ?? '' })
+		: m['memberRegister.mergeTitle']({
+				absorbed: plan?.absorbed.full_name ?? '',
+				survivor: plan?.survivor.full_name ?? ''
+			})}
 	description={preview}
 	confirmLabel={m['memberRegister.mergeConfirm']()}
 	successMessage={() => m['memberRegister.mergedToast']()}

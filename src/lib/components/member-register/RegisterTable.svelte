@@ -4,6 +4,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
 	import { rowHasOpenMenu, shouldOpenRow } from '$lib/member-register/row-click';
+	import RegisterEmail from './RegisterEmail.svelte';
 	import PersonStatusCell from './PersonStatusCell.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
@@ -72,7 +73,9 @@
 							{record.full_name}
 						</button>
 					</th>
-					<td class="break-all px-4 py-3 text-sm text-muted-foreground">{record.email || '-'}</td>
+					<td class="px-4 py-3 text-sm text-muted-foreground">
+						{#if record.email}<RegisterEmail email={record.email} />{:else}-{/if}
+					</td>
 					<td class="px-4 py-3 text-sm">{record.tier_name || '-'}</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{kindLabel(record.kind)}</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{formatDate(record.valid_from)}</td>

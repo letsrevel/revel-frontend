@@ -91,6 +91,22 @@ describe('MergeRecordsDialog', () => {
 		expect(text).toContain('Ada L. is marked as merged.');
 	});
 
+	it('keeps the "X into Y" title when the names differ', () => {
+		renderIn(MergeRecordsDialog, props);
+		expect(screen.getByText('Merge Ada L. into Ada Lovelace?')).toBeInTheDocument();
+	});
+
+	it('names the entry kinds when both names are the same (case and spacing aside)', () => {
+		renderIn(MergeRecordsDialog, {
+			...props,
+			pair: { ...pair, unlinked: record({ id: 'U', full_name: ' ada  lovelace ' }) }
+		});
+		expect(
+			screen.getByText("Merge the entry without an account into Ada Lovelace's record?")
+		).toBeInTheDocument();
+		expect(screen.queryByText(/Merge .* into Ada Lovelace\?/)).not.toBeInTheDocument();
+	});
+
 	it('says a closed entry is attached to the account', () => {
 		renderIn(MergeRecordsDialog, {
 			...props,

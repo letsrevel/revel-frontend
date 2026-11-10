@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RegisterTable from './RegisterTable.svelte';
+import RegisterCards from './RegisterCards.svelte';
+import RegisterEmail from './RegisterEmail.svelte';
 import PersonStatusCell from './PersonStatusCell.svelte';
 import { makeRecord, makeUnlinked } from './person-fixtures';
 
@@ -62,6 +64,39 @@ describe('PersonStatusCell', () => {
 	it('shows no subscription line for an unlinked entry', () => {
 		render(PersonStatusCell, { props: { record: makeUnlinked() } });
 		expect(screen.queryByTestId('register-subscription-line')).not.toBeInTheDocument();
+	});
+});
+
+describe('RegisterEmail', () => {
+	const LONG = 'karen.multiorg@example.com';
+
+	it('keeps the full address as text and title, with a break point after the @', () => {
+		render(RegisterEmail, { props: { email: LONG } });
+		const el = screen.getByTestId('register-email');
+		expect(el).toHaveTextContent(LONG);
+		expect(el.textContent).toBe(LONG);
+		expect(el).toHaveAttribute('title', LONG);
+		expect(screen.getByText(LONG)).toBe(el);
+		const wbr = el.querySelector('wbr');
+		expect(wbr?.previousSibling?.textContent).toMatch(/@$/);
+	});
+
+	it('is the cell content in the table and the card list', () => {
+		const records = [makeRecord({ email: LONG })];
+		const handlers = {
+			isOwner: false,
+			onEdit: vi.fn(),
+			onEnd: vi.fn(),
+			onDelete: vi.fn(),
+			onInvite: vi.fn(),
+			onUnlink: vi.fn(),
+			onOpen: vi.fn()
+		};
+		const { unmount } = render(RegisterTable, { props: { records, ...handlers } });
+		expect(screen.getByTestId('register-email').textContent).toBe(LONG);
+		unmount();
+		render(RegisterCards, { props: { records, ...handlers } });
+		expect(screen.getByTestId('register-email').textContent).toBe(LONG);
 	});
 });
 

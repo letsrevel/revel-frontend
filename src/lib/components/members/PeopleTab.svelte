@@ -335,10 +335,15 @@
 				{m['memberPeople.asOfShowing']({ day: formatCalendarDay(filters.activeOn) })}
 			</p>
 		{/if}
-		<div class="flex flex-wrap items-center gap-2">
-			<Button variant="outline" onclick={() => (exportOpen = true)} data-testid="people-export">
+		<div class="flex shrink-0 items-center gap-2">
+			<Button
+				variant="outline"
+				class="max-sm:w-10 max-sm:px-0"
+				onclick={() => (exportOpen = true)}
+				data-testid="people-export"
+			>
 				<Download aria-hidden="true" />
-				{m['memberRegister.exportOpen']()}
+				<span class="max-sm:sr-only">{m['memberRegister.exportOpen']()}</span>
 			</Button>
 			<AddPersonMenu
 				onAddToRegister={openCreate}

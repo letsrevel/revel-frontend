@@ -3,6 +3,7 @@
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
+	import RegisterEmail from './RegisterEmail.svelte';
 	import PersonStatusCell from './PersonStatusCell.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
@@ -37,7 +38,7 @@
 						<span class="break-words">{record.full_name}</span>
 					</button>
 					{#if record.email}
-						<p class="break-all text-sm text-muted-foreground">{record.email}</p>
+						<p class="text-sm text-muted-foreground"><RegisterEmail email={record.email} /></p>
 					{/if}
 				</div>
 				<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} {onInvite} {onUnlink} />
