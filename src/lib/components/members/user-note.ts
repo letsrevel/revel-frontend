@@ -78,12 +78,31 @@ export function noteLength(body: string): number {
  * silent while `ok`, so a screen reader is not read a number on every keystroke.
  */
 export function noteCounter(body: string, max: number = NOTE_MAX_LENGTH): NoteCounter {
-	const count = noteLength(body);
+	return noteCounterOfText(unescapeHtml(body.trim()), max);
+}
+
+/** Same as `noteCounter`, for text that is already trimmed and unescaped. */
+export function noteCounterOfText(plain: string, max: number = NOTE_MAX_LENGTH): NoteCounter {
+	const count = Array.from(plain).length;
 	const remaining = Math.max(0, max - count);
 	const over = Math.max(0, count - max);
 	const state: NoteCounterState =
 		count > max ? 'over' : count >= max * NEAR_LIMIT_RATIO ? 'near' : 'ok';
 	return { count, remaining, over, state };
+}
+
+/**
+ * Readable one-paragraph plain text for a note's Markdown (already unescaped):
+ * emphasis markers, heading hashes, quote and list markers are dropped, links
+ * keep their text, and whitespace collapses to single spaces.
+ */
+export function notePreviewText(markdown: string): string {
+	return markdown
+		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/^[ \t]{0,3}(?:#{1,6}[ \t]+|>[ \t]?|[-*+][ \t]+|\d+[.)][ \t]+)/gm, '')
+		.replace(/(\*+|~~|`+|(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9]))/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 /** Query key for one person's note inside one organization. */

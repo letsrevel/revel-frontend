@@ -18,7 +18,8 @@
 		deleteNote,
 		fetchNote,
 		membersListKey,
-		noteCounter,
+		noteCounterOfText,
+		notePreviewText,
 		noteKey,
 		saveNote,
 		type NoteTarget
@@ -60,6 +61,13 @@
 		onChanged
 	}: Props = $props();
 
+	// Per-instance ids: two editors on one page must not collide.
+	const uid = $props.id();
+	const headingId = `${uid}-heading`;
+	const bodyId = `${uid}-body`;
+	const panelId = `${uid}-panel`;
+	const hintId = `${uid}-hint`;
+
 	const queryClient = useQueryClient();
 	const confirmation = createConfirm();
 
@@ -93,10 +101,10 @@
 		}
 	});
 
-	// Plain-text preview of the draft (so an unsaved edit shows too).
-	const preview = $derived(unescapeHtml(draft).trim());
-
-	const counter = $derived(noteCounter(draft));
+	// Unescape once: the counter and the preview both read it.
+	const plain = $derived(unescapeHtml(draft.trim()));
+	const preview = $derived(notePreviewText(plain));
+	const counter = $derived(noteCounterOfText(plain));
 	const isEmpty = $derived(draft.trim().length === 0);
 
 	/** The backend's `detail` when it sent one; otherwise the localized fallback. Never raw `Error.message`. */
@@ -194,13 +202,13 @@
 </script>
 
 <section
-	aria-labelledby={showHeader ? 'staff-note-heading' : undefined}
+	aria-labelledby={showHeader ? headingId : undefined}
 	class="space-y-3"
 	data-testid="staff-note"
 >
 	{#if showHeader}
 		<SectionHeader
-			id="staff-note-heading"
+			id={headingId}
 			level={3}
 			title={m['memberPeople.sheet.noteHeading']()}
 			subtitle={open ? m['userNote.hint']() : undefined}
@@ -216,34 +224,41 @@
 		<p class="py-2 text-sm text-destructive" role="alert">{m['userNote.loadError']()}</p>
 	{:else}
 		{#if collapsible}
-			<p
-				class="line-clamp-3 whitespace-pre-line break-words text-sm {preview
-					? ''
-					: 'text-muted-foreground'}"
-				hidden={expanded}
-				data-testid="staff-note-preview"
-			>
-				{preview || m['userNote.noNoteYet']()}
-			</p>
+			<!-- Conditionally rendered, not `hidden`: line-clamp sets display:-webkit-box, which beats [hidden]. -->
+			{#if !expanded}
+				<p
+					class="line-clamp-3 break-words text-sm {preview ? '' : 'text-muted-foreground'}"
+					data-testid="staff-note-preview"
+				>
+					{preview || m['userNote.noNoteYet']()}
+				</p>
+			{/if}
 			<Button
 				type="button"
 				variant="ghost"
 				size="sm"
 				class="-ml-3"
 				aria-expanded={expanded}
-				aria-controls="staff-note-panel"
+				aria-controls={panelId}
+				aria-describedby={expanded && dirty ? hintId : undefined}
+				disabled={expanded && dirty}
 				onclick={() => (expanded = !expanded)}
 			>
 				<ChevronDown
 					class="mr-1 h-4 w-4 transition-transform {expanded ? 'rotate-180' : ''}"
 					aria-hidden="true"
 				/>
-				{expanded ? m['userNote.hide']() : preview ? m['userNote.show']() : m['userNote.add']()}
+				{m['userNote.toggle']()}
 			</Button>
+			{#if expanded && dirty}
+				<p id={hintId} class="text-xs text-muted-foreground" data-testid="staff-note-dirty-hint">
+					{m['userNote.unsavedHint']()}
+				</p>
+			{/if}
 		{/if}
-		<div id="staff-note-panel" class="space-y-3" hidden={!open}>
+		<div id={panelId} class="space-y-3" hidden={!open}>
 			<MarkdownEditor
-				id="staff-note-body"
+				id={bodyId}
 				label={m['userNote.label']()}
 				placeholder={m['userNote.placeholder']()}
 				rows={6}

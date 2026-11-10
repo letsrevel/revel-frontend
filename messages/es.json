@@ -4217,7 +4217,7 @@
 					"editFor": "Editar el pago de {amount} del {date}",
 					"void": "Anular",
 					"voidFor": "Anular el pago de {amount} del {date}",
-					"showVoided": "Incluir pagos anulados"
+					"includeVoided": "Incluir pagos anulados"
 				},
 				"editPayment": {
 					"title": "Editar pago",
@@ -10984,9 +10984,8 @@
 	"userNote.label": "Nota",
 	"userNote.placeholder": "Por ejemplo: prefiere que la llamen Sam, necesita acceso sin escalones.",
 	"userNote.noNoteYet": "Todavía no hay nota.",
-	"userNote.show": "Mostrar y editar la nota",
-	"userNote.hide": "Ocultar la nota",
-	"userNote.add": "Añadir una nota",
+	"userNote.toggle": "Detalles de la nota",
+	"userNote.unsavedHint": "Guarda tus cambios antes de ocultar la nota.",
 	"userNote.counter": "{count} / {max} caracteres",
 	"userNote.counterNear": "Quedan {remaining} caracteres",
 	"userNote.counterOver": "La nota supera el límite en {over} caracteres",

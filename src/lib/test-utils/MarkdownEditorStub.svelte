@@ -4,11 +4,13 @@
 		id?: string;
 		label?: string;
 		value?: string;
+		placeholder?: string;
+		rows?: number;
+		disabled?: boolean;
 		[key: string]: unknown;
 	}
-	let { id, label, value = $bindable(''), ...rest }: Props = $props();
-	void rest;
+	let { id, label, value = $bindable(''), placeholder, rows, disabled }: Props = $props();
 </script>
 
 <label for={id}>{label}</label>
-<textarea {id} bind:value></textarea>
+<textarea {id} {placeholder} {rows} {disabled} bind:value></textarea>
