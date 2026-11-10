@@ -67,7 +67,9 @@
 
 	const options = $derived(eligibleChangePlans(plansQuery.data ?? [], sub.plan));
 	const groups = $derived(groupPlansByTier(options));
-	const target = $derived(options.find((p) => p.id === planId) ?? null);
+	// Only a plan that is still offered (and not sold out) counts: a refetch can drop
+	// the selected plan, and a stale id must never be sent.
+	const target = $derived(options.find((p) => p.id === planId && !isPlanSoldOut(p)) ?? null);
 
 	// A fresh session each time the dialog opens.
 	$effect(() => {
@@ -100,9 +102,9 @@
 
 	function handleSubmit(e: Event): void {
 		e.preventDefault();
-		if (!planId || changeMut.isPending) return;
+		if (!target?.id || changeMut.isPending) return;
 		submitError = null;
-		changeMut.mutate(planId);
+		changeMut.mutate(target.id);
 	}
 </script>
 
@@ -176,7 +178,7 @@
 				<Button type="button" variant="outline" onclick={onClose} disabled={changeMut.isPending}>
 					{m['tierForm.cancel']()}
 				</Button>
-				<Button type="submit" disabled={!planId || changeMut.isPending}>
+				<Button type="submit" disabled={!target || changeMut.isPending}>
 					{#if changeMut.isPending}<Loader2
 							class="mr-2 h-4 w-4 animate-spin"
 							aria-hidden="true"

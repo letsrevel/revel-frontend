@@ -262,6 +262,22 @@ describe('Change plan dialog', () => {
 		expect(toast.success).not.toHaveBeenCalled();
 	});
 
+	it('never sends a selected plan that a refetch no longer offers', async () => {
+		arrange(makeSub());
+		const { client } = renderDrawer();
+		const dialog = await openChangePlan();
+		const submit = within(dialog).getByRole('button', { name: 'Change plan' });
+		await userEvent.selectOptions(await within(dialog).findByLabelText('New plan'), 'plan-silver');
+		expect(submit).toBeEnabled();
+
+		// The plan list refreshes and Silver is gone (archived or sold out meanwhile).
+		sdk.listPlans.mockResolvedValue(ok(PLANS.filter((p) => p.id !== 'plan-silver')));
+		await client.invalidateQueries();
+		await waitFor(() => expect(submit).toBeDisabled());
+		await userEvent.click(submit);
+		expect(sdk.changePlan).not.toHaveBeenCalled();
+	});
+
 	it('maps the 400 (sold out) and the 404', async () => {
 		arrange(makeSub());
 		sdk.changePlan.mockResolvedValueOnce({
