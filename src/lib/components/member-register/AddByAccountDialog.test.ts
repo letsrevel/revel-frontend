@@ -219,7 +219,7 @@ describe('AddByAccountDialog', () => {
 				found({ membership_status: 'active', is_member: true, register_record_id: 'r1' })
 			);
 		sdk.organizationadminmembersAddMember.mockResolvedValue({
-			error: { detail: 'already' },
+			error: { detail: 'already', code: 'already_member' },
 			response: { status: 400 }
 		});
 		sdk.organizationadminmemberregisterGetMemberRegisterRecord.mockResolvedValue({
@@ -235,10 +235,25 @@ describe('AddByAccountDialog', () => {
 		expect(cb.onOpenPerson).not.toHaveBeenCalled();
 	});
 
-	it('d) a 400 whose re-lookup still says addable shows the refusal', async () => {
+	it('d) a plain 400 (not already_member) shows the refusal without a second lookup', async () => {
 		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
 		sdk.organizationadminmembersAddMember.mockResolvedValue({
 			error: { detail: 'Tier is not available.' },
+			response: { status: 400 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Add as member' }));
+		expect(await screen.findByTestId('register-error')).toHaveTextContent('Tier is not available.');
+		expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(1);
+		expect(cb.onClose).not.toHaveBeenCalled();
+	});
+
+	it('d) already_member whose re-lookup still says addable shows the refusal', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmembersAddMember.mockResolvedValue({
+			error: { detail: 'You are already a member of this organization.', code: 'already_member' },
 			response: { status: 400 }
 		});
 		const { user } = setup();
@@ -342,7 +357,7 @@ describe('AddByAccountDialog', () => {
 			.mockResolvedValueOnce({ error: { detail: 'boom' }, response: { status: 500 } })
 			.mockResolvedValueOnce(found());
 		sdk.organizationadminmembersAddMember.mockResolvedValue({
-			error: { detail: 'Tier is not available.' },
+			error: { detail: 'Tier is not available.', code: 'already_member' },
 			response: { status: 400 }
 		});
 		const { user } = setup();
@@ -364,7 +379,7 @@ describe('AddByAccountDialog', () => {
 			.mockResolvedValueOnce(found())
 			.mockReturnValueOnce(new Promise((r) => (resolveSecond = r)));
 		sdk.organizationadminmembersAddMember.mockResolvedValue({
-			error: { detail: 'nope' },
+			error: { detail: 'nope', code: 'already_member' },
 			response: { status: 400 }
 		});
 		const { user } = setup();

@@ -179,6 +179,14 @@
 	const kind = $derived(found ? classifyLookup(found.user) : null);
 	const name = $derived(found ? lookupDisplayName(found.user, queriedEmail) : '');
 
+	function isAlreadyMember(error: unknown): boolean {
+		if (!(error instanceof RegisterApiError) || error.status !== 400) return false;
+		const body = error.body;
+		return (
+			typeof body === 'object' && body !== null && 'code' in body && body.code === 'already_member'
+		);
+	}
+
 	const add = createMutation(() => ({
 		mutationFn: async (user: OrgUserLookupSchema) => {
 			await addMemberByAccount(slug, accessToken, user.user_id, tierId);
@@ -200,9 +208,10 @@
 			if (seed) onOpenPerson(seed);
 		},
 		onError: (error: unknown) => {
-			// 400 is the backend's "already a member" (a race with another admin or
-			// an approval): look again and show what they hold now.
-			if (error instanceof RegisterApiError && error.status === 400 && queriedEmail) {
+			// `already_member` (backend #1363) means a race with another admin or an
+			// approval: look again and show what they hold now. Any other 400 is a
+			// plain refusal, shown as is, without spending a throttled lookup.
+			if (isAlreadyMember(error) && queriedEmail) {
 				refusedAdd = error;
 				lookup.mutate(queriedEmail);
 				return;
