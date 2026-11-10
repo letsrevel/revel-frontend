@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import { describe, it, expect, vi } from 'vitest';
 import Layout from './+layout.svelte';
+import type { LayoutData } from './$types';
 
 vi.mock('$app/navigation', () => ({ afterNavigate: vi.fn() }));
 vi.mock('$app/state', () => ({ page: { data: {} } }));
@@ -33,8 +34,9 @@ function renderLayout(embed: boolean) {
 	const children = createRawSnippet(() => ({
 		render: () => '<main id="main-content"><a href="/x">page link</a></main>'
 	}));
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial LayoutData for the test
-	return render(Layout, { props: { data: { embed, auth } as any, children } });
+	// Partial LayoutData: the layout only reads `embed` and `auth` on this path.
+	const data = { embed, auth } as unknown as LayoutData;
+	return render(Layout, { props: { data, children } });
 }
 
 describe('root layout skip link', () => {
