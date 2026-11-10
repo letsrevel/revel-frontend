@@ -42,6 +42,8 @@
 	} from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { changePlanState } from '$lib/utils/plan-change';
+	import { invalidateRegister } from '$lib/member-register/api';
+	import { memberAccessPrefix } from '$lib/member-register/member-access';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -183,6 +185,14 @@
 		queryClient.invalidateQueries({
 			queryKey: ['organization', organization.slug, 'members']
 		});
+	}
+
+	// A plan change moves the member's tier: the register and the person sheet's
+	// access row change with it, on top of everything invalidateAll refreshes.
+	function invalidateAfterPlanChange() {
+		invalidateAll();
+		void invalidateRegister(queryClient, organization.slug, true);
+		queryClient.invalidateQueries({ queryKey: memberAccessPrefix(organization.slug) });
 	}
 
 	const recordMut = createMutation(() => ({
@@ -484,15 +494,14 @@
 				<p id="change-plan-paused-hint" class="text-xs text-muted-foreground">
 					{m['subscriptionChangePlan.pausedHint']()}
 				</p>
-			{:else if changePlan === 'online' && !!sub && !TERMINAL_STATUSES.includes(sub.status)}
-				<p class="text-xs text-muted-foreground" data-testid="change-plan-online-note">
-					{m['subscriptionChangePlan.onlineNote']()}
-				</p>
 			{/if}
 
 			{#if showOnlinePaymentsNote}
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.subscriptions.drawer.onlinePayments']()}
+					<span data-testid="change-plan-online-note">
+						{m['subscriptionChangePlan.onlineNote']()}
+					</span>
 				</p>
 			{/if}
 
@@ -532,7 +541,7 @@
 				{sub}
 				open={changePlanOpen}
 				onClose={() => (changePlanOpen = false)}
-				onChanged={invalidateAll}
+				onChanged={invalidateAfterPlanChange}
 			/>
 			<StaffReviveModal
 				{sub}

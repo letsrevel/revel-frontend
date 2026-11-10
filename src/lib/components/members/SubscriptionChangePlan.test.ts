@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import SubscriptionDrawer from './SubscriptionDrawer.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { memberRegisterKeys } from '$lib/member-register/api';
 import type {
 	OrganizationAdminDetailSchema,
 	PlanSchema,
@@ -161,9 +162,11 @@ describe('Change plan action in the subscription drawer', () => {
 	it('shows a note instead of the button for an online plan', async () => {
 		arrange(makeSub({ plan: makePlan({ payment_method: 'online' }) }));
 		renderDrawer();
-		expect(await screen.findByTestId('change-plan-online-note')).toHaveTextContent(
-			'Members change an online plan themselves.'
-		);
+		const note = await screen.findByTestId('change-plan-online-note');
+		expect(note).toHaveTextContent('Members change an online plan themselves.');
+		// One note: it shares the paragraph of the online-payments sentence.
+		expect(note.parentElement).toHaveTextContent('arrive automatically via Stripe');
+		expect(screen.getAllByText(/change an online plan themselves/)).toHaveLength(1);
 		expect(screen.queryByRole('button', { name: 'Change plan' })).not.toBeInTheDocument();
 	});
 });
@@ -175,7 +178,7 @@ describe('Change plan dialog', () => {
 		const dialog = await openChangePlan();
 		const select = await within(dialog).findByLabelText('New plan');
 		const options = within(select as HTMLElement).getAllByRole('option');
-		const labels = options.map((o) => o.textContent?.split(' — ')[0]);
+		const labels = options.map((o) => o.textContent?.split(' — ')[0].trim());
 		expect(labels).toEqual(['—', 'Gold yearly', 'Silver monthly']);
 		const groups = within(select as HTMLElement).getAllByRole('group');
 		expect(groups.map((g) => g.getAttribute('label'))).toEqual(['Gold', 'Silver']);
@@ -220,7 +223,8 @@ describe('Change plan dialog', () => {
 			['organization', 'test-org', 'subscription', 'sub-1', 'payments'],
 			['organization', 'test-org', 'subscriptions'],
 			['organization', 'test-org', 'members'],
-			['organization', 'test-org', 'member']
+			['organization', 'test-org', 'member'],
+			[...memberRegisterKeys.all('test-org')]
 		]) {
 			expect(keys).toContain(JSON.stringify(expected));
 		}
@@ -280,6 +284,33 @@ describe('Change plan dialog', () => {
 		await waitFor(() =>
 			expect(within(dialog).getByRole('alert')).toHaveTextContent("wasn't found")
 		);
+	});
+
+	it('disables plans whose cap is reached and marks them sold out', async () => {
+		arrange(makeSub());
+		sdk.listPlans.mockResolvedValue(
+			ok([
+				makePlan(),
+				makePlan({
+					id: 'plan-full',
+					name: 'Full plan',
+					max_subscriptions: 5,
+					active_subscription_count: 5
+				}),
+				makePlan({
+					id: 'plan-room',
+					name: 'Roomy plan',
+					max_subscriptions: 5,
+					active_subscription_count: 4
+				})
+			])
+		);
+		renderDrawer();
+		const dialog = await openChangePlan();
+		const full = await within(dialog).findByRole('option', { name: /Full plan/ });
+		expect(full).toBeDisabled();
+		expect(full).toHaveTextContent('(sold out)');
+		expect(within(dialog).getByRole('option', { name: /Roomy plan/ })).toBeEnabled();
 	});
 
 	it('says so when no other plan fits', async () => {

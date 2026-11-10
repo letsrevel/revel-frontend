@@ -150,12 +150,16 @@
 					{m['memberPeople.sheet.manage']()}
 				</Button>
 				{#if showSubscription && organization && member}
-					<PersonSubscriptionActions
-						bind:this={subscriptionActions}
-						{organization}
-						{accessToken}
-						{member}
-					/>
+					<!-- Keyed per person: a pending delayed open and the drawer id never
+					     outlive the person they were started for. -->
+					{#key member.user.id}
+						<PersonSubscriptionActions
+							bind:this={subscriptionActions}
+							{organization}
+							{accessToken}
+							{member}
+						/>
+					{/key}
 				{/if}
 			</div>
 		</div>

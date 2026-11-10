@@ -11329,5 +11329,6 @@
 	"subscriptionChangePlan.errors.currencyMismatch": "Questo piano usa una valuta diversa da quella attuale.",
 	"subscriptionChangePlan.errors.soldOut": "Questo piano è esaurito.",
 	"subscriptionChangePlan.errors.notFound": "Abbonamento o piano non trovati. Ricarica la pagina e riprova.",
-	"subscriptionChangePlan.errors.generic": "Impossibile cambiare il piano."
+	"subscriptionChangePlan.errors.generic": "Impossibile cambiare il piano.",
+	"subscriptionChangePlan.soldOutSuffix": "(esaurito)"
 }

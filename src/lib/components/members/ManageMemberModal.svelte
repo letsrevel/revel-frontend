@@ -110,9 +110,13 @@
 	// the plan instead. A 409 from a race (the subscription appeared after this
 	// dialog loaded) locks it too.
 	const tierLocked = $derived(!!member?.tier_locked_by_subscription || !!tierLockDetail);
+	// "Manage subscription" is only advertised when there is a subscription to open:
+	// in the 409 race the member row may not carry its id yet (it is refetched), and
+	// a button that closes this dialog and then does nothing is worse than none.
+	const canManageSubscription = $derived(!!onManageSubscription && !!member?.subscription_id);
 	const tierLockReason = $derived(
 		tierLockDetail ??
-			(onManageSubscription
+			(canManageSubscription
 				? m['manageMemberModal.tierLockedReason']()
 				: m['manageMemberModal.tierLockedReasonNoAction']())
 	);
@@ -442,7 +446,7 @@
 							<p id="member-tier-lock-reason" class="text-sm text-muted-foreground">
 								{tierLockReason}
 							</p>
-							{#if onManageSubscription}
+							{#if canManageSubscription}
 								<Button
 									variant="outline"
 									size="sm"

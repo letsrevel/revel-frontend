@@ -11329,5 +11329,6 @@
 	"subscriptionChangePlan.errors.currencyMismatch": "Cette formule utilise une autre devise que l'actuelle.",
 	"subscriptionChangePlan.errors.soldOut": "Cette formule est complète.",
 	"subscriptionChangePlan.errors.notFound": "Abonnement ou formule introuvable. Recharge la page et réessaie.",
-	"subscriptionChangePlan.errors.generic": "Impossible de changer la formule."
+	"subscriptionChangePlan.errors.generic": "Impossible de changer la formule.",
+	"subscriptionChangePlan.soldOutSuffix": "(complet)"
 }

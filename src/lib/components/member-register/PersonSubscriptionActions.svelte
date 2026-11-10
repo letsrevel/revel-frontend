@@ -50,11 +50,12 @@
 
 	/** Open the drawer of the member's live subscription (no-op without one). */
 	export function openManage(): void {
-		if (!liveSubscriptionId) return;
+		const id = liveSubscriptionId;
+		if (!id) return;
 		clearTimeout(openTimer);
 		// Wait out the closing Manage membership dialog before opening the next.
 		openTimer = setTimeout(() => {
-			drawerSubId = liveSubscriptionId;
+			drawerSubId = id;
 			drawerOpen = true;
 		}, DIALOG_CLOSE_MS);
 	}

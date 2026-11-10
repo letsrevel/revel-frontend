@@ -51,6 +51,28 @@
 	class TierLockedError extends Error {}
 	let tierLockDetail = $state<string | null>(null);
 
+	// A 409 lock belongs to one editing session of one person: drop it whenever the
+	// dialog is closed (by ANY path, including a successful save) or the member
+	// changes. Keyed on the user id, so a refreshed object for the same member keeps it.
+	$effect(() => {
+		void member?.user.id;
+		if (!open) tierLockDetail = null;
+	});
+	let lockedFor: string | null | undefined;
+	$effect(() => {
+		const id = member?.user.id;
+		if (id !== lockedFor) {
+			lockedFor = id;
+			tierLockDetail = null;
+		}
+	});
+
+	/** Every way out of the dialog resets the session lock. */
+	function finish(): void {
+		tierLockDetail = null;
+		onClose();
+	}
+
 	function userIdOf(target: OrganizationMemberSchema): string {
 		const id = target.user.id;
 		if (!id) throw new Error('User ID not found in member data');
@@ -70,7 +92,7 @@
 		},
 		onSuccess: () => {
 			refreshAll();
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
 			toast.error(m['membersTab.removeMemberFailed']({ error: error.message }));
@@ -104,7 +126,7 @@
 		},
 		onSuccess: () => {
 			refreshAll();
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
 			if (error instanceof TierLockedError) {
@@ -133,7 +155,7 @@
 		onSuccess: () => {
 			refreshAll();
 			void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'staff'] });
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
 			toast.error(m['membersTab.promoteStaffFailed']({ error: error.message }));
@@ -154,7 +176,7 @@
 			refreshAll();
 			void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'blacklist'] });
 			toast.success(m['membersTab.memberBlacklisted']());
-			onClose();
+			finish();
 		},
 		onError: () => {
 			toast.error(m['membersTab.blacklistFailed']());
@@ -170,8 +192,7 @@
 
 	function handleClose(): void {
 		if (pending) return;
-		tierLockDetail = null;
-		onClose();
+		finish();
 	}
 </script>
 

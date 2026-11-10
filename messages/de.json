@@ -11329,5 +11329,6 @@
 	"subscriptionChangePlan.errors.currencyMismatch": "Dieser Tarif nutzt eine andere Währung als der aktuelle.",
 	"subscriptionChangePlan.errors.soldOut": "Dieser Tarif ist ausverkauft.",
 	"subscriptionChangePlan.errors.notFound": "Abo oder Tarif wurden nicht gefunden. Lade die Seite neu und versuche es erneut.",
-	"subscriptionChangePlan.errors.generic": "Der Tarif konnte nicht gewechselt werden."
+	"subscriptionChangePlan.errors.generic": "Der Tarif konnte nicht gewechselt werden.",
+	"subscriptionChangePlan.soldOutSuffix": "(ausverkauft)"
 }

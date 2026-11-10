@@ -11329,5 +11329,6 @@
 	"subscriptionChangePlan.errors.currencyMismatch": "This plan uses a different currency than the current one.",
 	"subscriptionChangePlan.errors.soldOut": "This plan is sold out.",
 	"subscriptionChangePlan.errors.notFound": "The subscription or the plan wasn't found. Reload and try again.",
-	"subscriptionChangePlan.errors.generic": "Couldn't change the plan."
+	"subscriptionChangePlan.errors.generic": "Couldn't change the plan.",
+	"subscriptionChangePlan.soldOutSuffix": "(sold out)"
 }

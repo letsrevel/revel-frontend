@@ -8,6 +8,7 @@ import type {
 	OrganizationAdminDetailSchema
 } from '$lib/api/generated/types.gen';
 import { makeRecord, makeUnlinked } from './person-fixtures';
+import { memberAccessKey } from '$lib/member-register/member-access';
 import { sheetStateFor } from '$lib/member-register/person-target';
 
 vi.mock('$env/dynamic/public', () => ({ env: { PUBLIC_API_URL: '' } }));
@@ -59,37 +60,49 @@ const baseMember = {
 
 const ok = <T>(data: T) => ({ data, error: undefined, response: { status: 200 } });
 
+function sheetProps(
+	record: MembershipRecordSchema,
+	extra: { canManageSubscriptions?: boolean; withOrg?: boolean } = {}
+) {
+	return {
+		sheet: sheetStateFor(record),
+		rows: [record],
+		slug: 'acme',
+		accessToken: 'tok',
+		tiers: [],
+		staffUserIds: new Set<string>(),
+		isOwner: true,
+		canOpenPayments: false,
+		organization: extra.withOrg === false ? null : organization,
+		canManageSubscriptions: extra.canManageSubscriptions ?? true,
+		onClose: vi.fn(),
+		onOpenRecord: vi.fn(),
+		onEdit: vi.fn(),
+		onEnd: vi.fn(),
+		onDelete: vi.fn(),
+		onInvite: vi.fn(),
+		onUnlink: vi.fn(),
+		onOpenPayments: vi.fn()
+	};
+}
+
 function renderSheet(
 	record: MembershipRecordSchema,
 	extra: { canManageSubscriptions?: boolean; withOrg?: boolean } = {}
 ) {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-	render(QueryClientTestWrapper, {
-		props: {
-			client,
-			component: PersonSheet as never,
-			componentProps: {
-				sheet: sheetStateFor(record),
-				rows: [record],
-				slug: 'acme',
-				accessToken: 'tok',
-				tiers: [],
-				staffUserIds: new Set<string>(),
-				isOwner: true,
-				canOpenPayments: false,
-				organization: extra.withOrg === false ? null : organization,
-				canManageSubscriptions: extra.canManageSubscriptions ?? true,
-				onClose: vi.fn(),
-				onOpenRecord: vi.fn(),
-				onEdit: vi.fn(),
-				onEnd: vi.fn(),
-				onDelete: vi.fn(),
-				onInvite: vi.fn(),
-				onUnlink: vi.fn(),
-				onOpenPayments: vi.fn()
-			}
-		}
+	const view = render(QueryClientTestWrapper, {
+		props: { client, component: PersonSheet as never, componentProps: sheetProps(record, extra) }
 	});
+	return {
+		client,
+		switchTo: (next: MembershipRecordSchema) =>
+			view.rerender({
+				client,
+				component: PersonSheet as never,
+				componentProps: sheetProps(next, extra)
+			})
+	};
 }
 
 beforeEach(() => {
@@ -173,5 +186,34 @@ describe('person sheet subscription button', () => {
 		// The only combobox left is the plan select: the member picker is gone.
 		expect(within(create as HTMLElement).getAllByRole('combobox')).toHaveLength(1);
 		expect(within(create as HTMLElement).getByLabelText('Plan')).toBeInTheDocument();
+	});
+
+	it("does not open the old person's drawer when the sheet switches person mid-delay", async () => {
+		const locked = { ...baseMember, subscription_id: 'sub-9', tier_locked_by_subscription: true };
+		sdk.getMember.mockImplementation(async ({ path }: { path: { user_id: string } }) =>
+			ok(
+				path.user_id === 'u1'
+					? locked
+					: {
+							...baseMember,
+							subscription_id: 'sub-2',
+							user: { ...baseMember.user, id: 'u2', first_name: 'Bo' }
+						}
+			)
+		);
+		const view = renderSheet(makeRecord());
+		// The next person is already cached, so there is no loading gap that would
+		// unmount the buttons on its own: only the per-person key tears the pending open down.
+		view.client.setQueryData(memberAccessKey('acme', 'u2'), {
+			...baseMember,
+			subscription_id: 'sub-2',
+			user: { ...baseMember.user, id: 'u2', first_name: 'Bo' }
+		});
+		await userEvent.click(await screen.findByTestId('person-manage-membership'));
+		await userEvent.click(await screen.findByTestId('member-tier-lock-manage-subscription'));
+		// Within the 250 ms the open is delayed by, the sheet moves to someone else.
+		await view.switchTo(makeRecord({ id: 'r3', user_id: 'u2', full_name: 'Bo Verdi' }));
+		await new Promise((r) => setTimeout(r, 450));
+		expect(sdk.getSub).not.toHaveBeenCalled();
 	});
 });

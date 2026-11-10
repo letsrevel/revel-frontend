@@ -4,6 +4,7 @@ import {
 	changePlanState,
 	eligibleChangePlans,
 	groupPlansByTier,
+	isPlanSoldOut,
 	planChangeErrorMessage,
 	planChangeRefusalCode
 } from './plan-change';
@@ -129,5 +130,15 @@ describe('planChangeRefusalCode', () => {
 		expect(planChangeRefusalCode({ code: 'plan_archived' })).toBe('plan_archived');
 		expect(planChangeRefusalCode({ code: 'something_new' })).toBeNull();
 		expect(planChangeRefusalCode(null)).toBeNull();
+	});
+});
+
+describe('isPlanSoldOut', () => {
+	it('is sold out only when a cap exists and is reached', () => {
+		expect(isPlanSoldOut(plan({ max_subscriptions: 2, active_subscription_count: 2 }))).toBe(true);
+		expect(isPlanSoldOut(plan({ max_subscriptions: 2, active_subscription_count: 1 }))).toBe(false);
+		expect(isPlanSoldOut(plan({ max_subscriptions: null, active_subscription_count: 99 }))).toBe(
+			false
+		);
 	});
 });

@@ -19,6 +19,8 @@
 	import MemberCombobox from './MemberCombobox.svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { groupPlansByTier } from '$lib/utils/plan-change';
+	import { getUserDisplayName } from '$lib/utils/user-display';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -54,12 +56,7 @@
 	let pickedMember = $state<OrganizationMemberSchema | null>(null);
 	const selectedMember = $derived(fixedMember ?? pickedMember);
 	const fixedName = $derived(
-		fixedMember
-			? fixedMember.user.preferred_name ||
-					[fixedMember.user.first_name, fixedMember.user.last_name].filter(Boolean).join(' ') ||
-					fixedMember.user.email ||
-					''
-			: ''
+		fixedMember ? getUserDisplayName(fixedMember.user, m['manageMemberModal.unknownUser']()) : ''
 	);
 	let planId = $state<string>('');
 	let recordInitial = $state(false);
@@ -95,19 +92,7 @@
 	);
 
 	// Group plans by tier (preserves backend order: tier asc, plan asc).
-	const plansByTier = $derived.by(() => {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this $derived.by computation, never stored
-		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
-		for (const p of selectablePlans) {
-			let g = groups.get(p.tier_id);
-			if (!g) {
-				g = { tierName: p.tier_name, plans: [] };
-				groups.set(p.tier_id, g);
-			}
-			g.plans.push(p);
-		}
-		return Array.from(groups, ([tierId, g]) => ({ tierId, ...g }));
-	});
+	const plansByTier = $derived(groupPlansByTier(selectablePlans));
 
 	// Sync currency to selected plan's currency
 	$effect(() => {

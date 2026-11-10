@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListOrganizationPlans,
 		organizationadminsubscriptionsStaffChangeSubscriptionPlan
@@ -26,9 +26,9 @@
 	import {
 		eligibleChangePlans,
 		groupPlansByTier,
+		isPlanSoldOut,
 		planChangeErrorMessage
 	} from '$lib/utils/plan-change';
-	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 
 	/**
 	 * Staff move a member to another OFFLINE / FREE plan. The change is immediate,
@@ -40,13 +40,12 @@
 		sub: SubscriptionSchema;
 		open: boolean;
 		onClose: () => void;
-		/** Called after a successful change, once the shared lists are invalidated. */
+		/** Called after a successful change; the owner invalidates what it shows. */
 		onChanged: () => void;
 	}
 
 	const { organization, sub, open, onClose, onChanged }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
-	const queryClient = useQueryClient();
 
 	let planId = $state('');
 	let submitError = $state<string | null>(null);
@@ -88,11 +87,11 @@
 			if (res.error) throw new Error(planChangeErrorMessage(res.error, res.response?.status));
 			return res.data;
 		},
-		onSuccess: async (data) => {
+		onSuccess: (data) => {
 			toast.success(
 				m['subscriptionChangePlan.success']({ plan: data?.plan.name ?? target?.name ?? '' })
 			);
-			await invalidateAfterMemberWrite(queryClient, organization.slug);
+			// The parent invalidates (once, fire-and-forget): the dialog closes at once.
 			onChanged();
 			onClose();
 		},
@@ -151,7 +150,11 @@
 						{#each groups as group (group.tierId)}
 							<optgroup label={group.tierName}>
 								{#each group.plans as p (p.id)}
-									<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
+									<option value={p.id ?? ''} disabled={isPlanSoldOut(p)}>
+										{p.name} — {formatPlanPrice(p)}{isPlanSoldOut(p)
+											? ` ${m['subscriptionChangePlan.soldOutSuffix']()}`
+											: ''}
+									</option>
 								{/each}
 							</optgroup>
 						{/each}

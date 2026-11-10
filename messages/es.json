@@ -11329,5 +11329,6 @@
 	"subscriptionChangePlan.errors.currencyMismatch": "Este plan usa una moneda distinta de la actual.",
 	"subscriptionChangePlan.errors.soldOut": "Este plan está agotado.",
 	"subscriptionChangePlan.errors.notFound": "No se encontró la suscripción o el plan. Recarga la página e inténtalo de nuevo.",
-	"subscriptionChangePlan.errors.generic": "No se pudo cambiar el plan."
+	"subscriptionChangePlan.errors.generic": "No se pudo cambiar el plan.",
+	"subscriptionChangePlan.soldOutSuffix": "(agotado)"
 }

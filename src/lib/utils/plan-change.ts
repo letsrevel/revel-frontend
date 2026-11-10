@@ -42,16 +42,24 @@ export function eligibleChangePlans(plans: PlanSchema[], current: PlanSchema): P
 export function groupPlansByTier(
 	plans: PlanSchema[]
 ): { tierId: string; tierName: string; plans: PlanSchema[] }[] {
-	const groups: { tierId: string; tierName: string; plans: PlanSchema[] }[] = [];
+	// A Map iterates in insertion order, so the first appearance of a tier fixes its place.
+	const groups = new Map<string, { tierId: string; tierName: string; plans: PlanSchema[] }>();
 	for (const p of plans) {
-		let group = groups.find((g) => g.tierId === p.tier_id);
+		let group = groups.get(p.tier_id);
 		if (!group) {
 			group = { tierId: p.tier_id, tierName: p.tier_name, plans: [] };
-			groups.push(group);
+			groups.set(p.tier_id, group);
 		}
 		group.plans.push(p);
 	}
-	return groups;
+	return [...groups.values()];
+}
+
+/** The plan's cap on concurrent subscriptions is reached (`max_subscriptions` null = unlimited). */
+export function isPlanSoldOut(
+	plan: Pick<PlanSchema, 'max_subscriptions' | 'active_subscription_count'>
+): boolean {
+	return plan.max_subscriptions != null && plan.active_subscription_count >= plan.max_subscriptions;
 }
 
 const REFUSAL_CODES: readonly SubscriptionPlanChangeRefusalCode[] = [

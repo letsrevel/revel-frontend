@@ -85,6 +85,8 @@
 		onCreateInviteLink: () => void;
 		/** Open the Payments tab (shown to staff holding `manage_subscriptions`). */
 		onOpenPayments?: () => void;
+		/** The viewer holds `manage_subscriptions` (Manage / Add subscription in the person sheet). */
+		canManageSubscriptions?: boolean;
 		/** Open the Tiers tab (the "Add by account" dialog offers it when no standard tier exists). */
 		onOpenTiers?: () => void;
 		/** Users who are staff: the member actions offer "make staff" only to the rest. */
@@ -104,6 +106,7 @@
 		onOpenApplications,
 		onCreateInviteLink,
 		onOpenPayments,
+		canManageSubscriptions = false,
 		onOpenTiers,
 		staffUserIds,
 		active = true
@@ -521,7 +524,7 @@
 	{isOwner}
 	canOpenPayments={!!onOpenPayments}
 	{organization}
-	canManageSubscriptions={!!onOpenPayments}
+	{canManageSubscriptions}
 	onClose={() => (sheet = null)}
 	onOpenRecord={(r) => (sheet = sheetStateForRecord(r))}
 	onEdit={openEdit}

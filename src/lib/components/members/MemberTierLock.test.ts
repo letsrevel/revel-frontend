@@ -51,22 +51,24 @@ function renderActions(member: OrganizationMemberSchema, withManage = true) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
-	render(QueryClientTestWrapper, {
-		props: {
-			client,
-			component: MemberAccessActions as never,
-			componentProps: {
-				slug: 'test-org',
-				accessToken: 'test-token',
-				member,
-				tiers,
-				isStaff: false,
-				open: true,
-				onClose,
-				onManageSubscription: withManage ? onManageSubscription : undefined
-			}
+	const propsFor = (m: OrganizationMemberSchema, open: boolean) => ({
+		client,
+		component: MemberAccessActions as never,
+		componentProps: {
+			slug: 'test-org',
+			accessToken: 'test-token',
+			member: m,
+			tiers,
+			isStaff: false,
+			open,
+			onClose,
+			onManageSubscription: withManage ? onManageSubscription : undefined
 		}
 	});
+	const view = render(QueryClientTestWrapper, { props: propsFor(member, true) });
+	return {
+		rerender: (m: OrganizationMemberSchema, open = true) => view.rerender(propsFor(m, open))
+	};
 }
 
 beforeAll(() => {
@@ -208,5 +210,89 @@ describe('Manage membership: the tier follows the subscription plan', () => {
 		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
 		await waitFor(() => expect(toast.error).toHaveBeenCalled());
 		await waitFor(() => expect(screen.getByLabelText('Membership Tier')).toBeEnabled());
+	});
+
+	// A 409 lock is one editing session of one person.
+	it('drops a 409 lock once the dialog closes after a successful save, and on reopen', async () => {
+		const user = userEvent.setup();
+		const member = makeMember();
+		sdk.update.mockResolvedValueOnce({
+			data: undefined,
+			error: {
+				detail: 'The tier follows the subscription plan.',
+				code: 'tier_follows_subscription'
+			},
+			response: { status: 409 }
+		});
+		sdk.update.mockResolvedValueOnce({ data: {}, error: undefined, response: { status: 200 } });
+		const view = renderActions(member);
+		await pick(user, 'Membership Tier', 'Gold');
+		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(screen.getByLabelText('Membership Tier')).toBeDisabled());
+
+		// A later, successful status save closes through the success path (not handleClose).
+		await pick(user, 'Membership Status', 'Paused');
+		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+
+		await view.rerender(member, false);
+		await view.rerender(member, true);
+		await waitFor(() => expect(screen.getByLabelText('Membership Tier')).toBeEnabled());
+		expect(screen.queryByTestId('member-tier-lock')).not.toBeInTheDocument();
+	});
+
+	it('does not carry a 409 lock over to another member', async () => {
+		const user = userEvent.setup();
+		sdk.update.mockResolvedValue({
+			data: undefined,
+			error: {
+				detail: 'The tier follows the subscription plan.',
+				code: 'tier_follows_subscription'
+			},
+			response: { status: 409 }
+		});
+		const view = renderActions(makeMember());
+		await pick(user, 'Membership Tier', 'Gold');
+		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(screen.getByLabelText('Membership Tier')).toBeDisabled());
+
+		await view.rerender(
+			makeMember({
+				user: { id: 'user-2', email: 'bo@example.com', first_name: 'Bo', last_name: 'Li' }
+			})
+		);
+		await waitFor(() => expect(screen.getByLabelText('Membership Tier')).toBeEnabled());
+	});
+
+	it('only offers Manage subscription once a subscription id exists (409 race)', async () => {
+		const user = userEvent.setup();
+		sdk.update.mockResolvedValue({
+			data: undefined,
+			error: {
+				detail: 'The tier follows the subscription plan.',
+				code: 'tier_follows_subscription'
+			},
+			response: { status: 409 }
+		});
+		const view = renderActions(makeMember());
+		await pick(user, 'Membership Tier', 'Gold');
+		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
+		await screen.findByText('The tier follows the subscription plan.');
+		// Locked by the 409 but the member row has no subscription id yet: no dead button.
+		expect(screen.queryByTestId('member-tier-lock-manage-subscription')).not.toBeInTheDocument();
+
+		// The refetched member row now carries the id: the action appears and works.
+		await view.rerender(
+			makeMember({ subscription_id: 'sub-1', tier_locked_by_subscription: true })
+		);
+		await user.click(await screen.findByTestId('member-tier-lock-manage-subscription'));
+		expect(onManageSubscription).toHaveBeenCalledTimes(1);
+	});
+
+	it('uses the no-action copy for a locked member with no subscription id', async () => {
+		renderActions(makeMember({ tier_locked_by_subscription: true, subscription_id: null }));
+		await screen.findByLabelText('Membership Tier');
+		expect(screen.queryByText(REASON)).not.toBeInTheDocument();
+		expect(screen.queryByTestId('member-tier-lock-manage-subscription')).not.toBeInTheDocument();
 	});
 });
