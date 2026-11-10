@@ -64,17 +64,15 @@ describe('planMerge', () => {
 		expect(plan.absorbed.id).toBe('U');
 		expect(plan.canSwap).toBe(false);
 	});
-	it('absorbs an open entry and keeps the earliest start', () => {
-		const plan = planMerge(pair(record({ id: 'U', valid_from: '2025-01-01T00:00:00Z' })));
-		expect(plan.outcome).toBe('absorb');
-		expect(plan.earliestStart).toBe('2025-01-01T00:00:00Z');
+	it('absorbs an open entry whatever its start date, the survivor keeps its own', () => {
+		const earlier = planMerge(pair(record({ id: 'U', valid_from: '2025-01-01T00:00:00Z' })));
+		expect(earlier.outcome).toBe('absorb');
 		const later = planMerge(pair(record({ id: 'U', valid_from: '2027-01-01T00:00:00Z' })));
-		expect(later.earliestStart).toBe('2026-03-01T00:00:00Z');
+		expect(later.outcome).toBe('absorb');
 	});
 	it('attaches a closed entry', () => {
 		const plan = planMerge(pair(record({ id: 'U', valid_until: '2025-06-01T00:00:00Z' })));
 		expect(plan.outcome).toBe('attach');
-		expect(plan.earliestStart).toBeNull();
 	});
 	it('attaches a day membership', () => {
 		expect(planMerge(pair(record({ id: 'U', kind: 'temporary' }))).outcome).toBe('attach');

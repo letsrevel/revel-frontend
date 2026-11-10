@@ -109,9 +109,10 @@ describe('MergeRecordsDialog', () => {
 	it('previews the outcome for an open absorbed entry', () => {
 		renderIn(MergeRecordsDialog, props);
 		const text = document.body.textContent ?? '';
-		expect(text).toContain("Ada Lovelace's current tier (Gold)");
-		expect(text).toContain('Keeps the earliest join date (');
-		expect(text).toContain('Ada L. is marked as merged.');
+		expect(text).toContain(
+			"Keeps Ada Lovelace's own start date and current tier (Gold). Ada L.'s period stays on the register as merged."
+		);
+		expect(text).not.toContain('earliest');
 	});
 
 	it('keeps the "X into Y" title when the names differ', () => {
@@ -136,7 +137,10 @@ describe('MergeRecordsDialog', () => {
 			pair: { ...pair, unlinked: record({ id: 'U', full_name: 'Ada Lovelace' }) }
 		});
 		const text = document.body.textContent ?? '';
-		expect(text).toContain('The entry without an account is marked as merged.');
+		expect(text).toContain(
+			'The person keeps their own start date and current tier (Gold). The entry without an account stays on the register as merged.'
+		);
+		expect(text).not.toContain('earliest');
 		expect(text).not.toContain('Ada Lovelace is marked as merged.');
 	});
 
@@ -217,6 +221,15 @@ describe('UnlinkRecordDialog', () => {
 			record: record({ has_account: true, valid_until: '2026-05-01T00:00:00Z' })
 		});
 		expect(screen.queryByTestId('unlink-access-warning')).toBeNull();
+	});
+
+	it('explains that unlinking a merge restores a start date only when an earlier merge moved it', () => {
+		renderIn(UnlinkRecordDialog, { ...base, record: record({ merged_into_id: 'r2' }) });
+		const text = document.body.textContent ?? '';
+		expect(text).toContain(
+			"The merged entry becomes separate again. If an earlier merge had moved this person's start date, the original date is restored unless staff changed it since."
+		);
+		expect(text).not.toContain('earliest');
 	});
 
 	it('closes with a toast instead of the clears-user copy when the entry is no longer linked', async () => {

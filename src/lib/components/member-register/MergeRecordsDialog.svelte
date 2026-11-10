@@ -3,7 +3,6 @@
 	import type { PossibleDuplicateSchema } from '$lib/api/generated/types.gen';
 	import { mergeRecords } from '$lib/member-register/api';
 	import { isSameName, planMerge } from '$lib/member-register/reconcile';
-	import { formatDate } from '$lib/utils/date';
 	import ConfirmRecordDialog from './ConfirmRecordDialog.svelte';
 
 	interface Props {
@@ -27,22 +26,14 @@
 		if (!plan) return '';
 		const survivor = plan.survivor.full_name;
 		const absorbed = plan.absorbed.full_name;
+		const tier = plan.survivor.tier_name || '-';
 		if (sameName) {
-			return plan.outcome === 'absorb' && plan.earliestStart
-				? m['memberRegister.mergePreviewAbsorbSameName']({
-						date: formatDate(plan.earliestStart),
-						survivor,
-						tier: plan.survivor.tier_name || '-'
-					})
+			return plan.outcome === 'absorb'
+				? m['memberRegister.mergePreviewAbsorbSameName']({ tier })
 				: m['memberRegister.mergePreviewAttachSameName']({ survivor });
 		}
-		return plan.outcome === 'absorb' && plan.earliestStart
-			? m['memberRegister.mergePreviewAbsorb']({
-					date: formatDate(plan.earliestStart),
-					survivor,
-					tier: plan.survivor.tier_name || '-',
-					absorbed
-				})
+		return plan.outcome === 'absorb'
+			? m['memberRegister.mergePreviewAbsorb']({ survivor, tier, absorbed })
 			: m['memberRegister.mergePreviewAttach']({ survivor, absorbed });
 	});
 </script>

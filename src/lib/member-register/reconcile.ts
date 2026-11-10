@@ -44,13 +44,11 @@ export interface MergePlan {
 	survivor: MembershipRecordSchema;
 	absorbed: MembershipRecordSchema;
 	/**
-	 * `absorb`: an open standard entry is folded into the survivor (earliest start
-	 * kept, absorbed marked merged). `attach`: a closed or day-membership entry is
-	 * attached to the survivor's account unchanged.
+	 * `absorb`: an open standard entry is folded into the survivor (the survivor keeps
+	 * its own start, absorbed marked merged). `attach`: a closed or day-membership entry
+	 * is attached to the survivor's account unchanged.
 	 */
 	outcome: MergeOutcome;
-	/** ISO instant the survivor will start from (earliest of both); `absorb` only. */
-	earliestStart: string | null;
 	/**
 	 * Always false. The backend only lets an entry WITHOUT an account be absorbed
 	 * (`merge_records`: "Only an entry without an account can be merged into
@@ -70,16 +68,10 @@ export function isSameName(a: string, b: string): boolean {
 /** The survivor is the linked entry; the account-less one is absorbed. */
 export function planMerge(pair: PossibleDuplicateSchema): MergePlan {
 	const { linked: survivor, unlinked: absorbed } = pair;
-	const openStandard = isOpenStandard(absorbed);
-	const earliest =
-		Date.parse(absorbed.valid_from) < Date.parse(survivor.valid_from)
-			? absorbed.valid_from
-			: survivor.valid_from;
 	return {
 		survivor,
 		absorbed,
-		outcome: openStandard ? 'absorb' : 'attach',
-		earliestStart: openStandard ? earliest : null,
+		outcome: isOpenStandard(absorbed) ? 'absorb' : 'attach',
 		canSwap: false
 	};
 }
