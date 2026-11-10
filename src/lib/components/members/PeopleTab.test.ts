@@ -66,7 +66,7 @@ const organization = {
 } as unknown as OrganizationAdminDetailSchema;
 
 function renderTab(active: boolean) {
-	render(QueryClientTestWrapper, {
+	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: PeopleTab as never,
@@ -122,11 +122,15 @@ describe('PeopleTab while another tab is showing', () => {
 });
 
 describe('PeopleTab chips and queries', () => {
-	it('asks for the instant (active_at now) + standard on the default "Current" chip', async () => {
+	it('sends the real instant (active_at ISO) + standard on the default "Current" chip', async () => {
+		const before = Date.now();
 		renderTab(true);
 		await waitFor(() => expect(api.listPeople).toHaveBeenCalled());
 		const query = api.listPeople.mock.calls[0][2];
-		expect(query).toMatchObject({ kind: 'standard', page: 1, active_at: 'now' });
+		expect(query).toMatchObject({ kind: 'standard', page: 1 });
+		expect(query.active_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+		expect(Date.parse(query.active_at)).toBeGreaterThanOrEqual(before);
+		expect(query).not.toHaveProperty('activeNow');
 		expect(query).not.toHaveProperty('active_on');
 		expect(query).not.toHaveProperty('is_open');
 	});
@@ -144,6 +148,60 @@ describe('PeopleTab chips and queries', () => {
 		expect(await screen.findByTestId('people-as-of-note')).toHaveTextContent(
 			/showing everyone who was a member on/i
 		);
+	});
+});
+
+describe('PeopleTab refetches when a listed Current row ends', () => {
+	const NOW = new Date('2026-11-09T12:00:00.000Z');
+	const END = '2026-11-09T12:10:00.000Z';
+	const GRACE = 1000;
+	const page = {
+		count: 1,
+		next: null,
+		previous: null,
+		results: [makeRecord({ id: 'r1', valid_until: END })]
+	};
+
+	beforeEach(() => {
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+		vi.setSystemTime(NOW);
+		api.listPeople.mockReset().mockResolvedValue(page);
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('fires ONE refetch at the row end plus the grace, not before', async () => {
+		renderTab(true);
+		await vi.advanceTimersByTimeAsync(0);
+		expect(api.listPeople).toHaveBeenCalledTimes(1);
+		await vi.advanceTimersByTimeAsync(Date.parse(END) - NOW.getTime() + GRACE - 1);
+		expect(api.listPeople).toHaveBeenCalledTimes(1);
+		await vi.advanceTimersByTimeAsync(1);
+		expect(api.listPeople).toHaveBeenCalledTimes(2);
+		// The refetched rows carry no future end: nothing else is scheduled.
+		await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+		expect(api.listPeople).toHaveBeenCalledTimes(2);
+	});
+
+	it('schedules nothing on the Ended chip (rows there already ended)', async () => {
+		nav.search = '?tab=people&view=ended';
+		renderTab(true);
+		await vi.advanceTimersByTimeAsync(0);
+		await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+		expect(api.listPeople).toHaveBeenCalledTimes(1);
+	});
+
+	it('clears the pending refetch on unmount', async () => {
+		// An unmounted query is inactive, so a leaked timer would not refetch it; the
+		// invalidation itself is what must not happen.
+		const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+		const { unmount } = renderTab(true);
+		await vi.advanceTimersByTimeAsync(0);
+		unmount();
+		await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+		expect(invalidate).not.toHaveBeenCalled();
+		invalidate.mockRestore();
 	});
 });
 

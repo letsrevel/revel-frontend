@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
-import { MAX_REFETCH_DELAY_MS, nextInviteRefetchDelay } from './invite-schedule';
+import {
+	MAX_REFETCH_DELAY_MS,
+	nextExpiryRefetchDelay,
+	nextInviteRefetchDelay,
+	nextListRefetchDelay
+} from './invite-schedule';
 
 const NOW = new Date('2026-06-01T12:00:00Z');
 
@@ -75,5 +80,57 @@ describe('nextInviteRefetchDelay', () => {
 		expect(fire).not.toHaveBeenCalled();
 		vi.advanceTimersByTime(1);
 		expect(fire).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('nextExpiryRefetchDelay', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('is the nearest future valid_until plus the grace, ignoring open and past ends', () => {
+		const delay = nextExpiryRefetchDelay([
+			record({ valid_until: '2026-06-01T12:30:00Z' }),
+			record({ valid_until: '2026-06-01T12:05:00Z' }),
+			record({ valid_until: '2026-06-01T11:00:00Z' }),
+			record({ valid_until: null })
+		]);
+		expect(delay).toBe(5 * 60 * 1000 + 1000);
+	});
+
+	it('is null when no listed row has a future end, and caps at the maximum', () => {
+		expect(nextExpiryRefetchDelay([record({ valid_until: null })])).toBeNull();
+		expect(nextExpiryRefetchDelay([record({ valid_until: '2027-06-01T12:00:00Z' })])).toBe(
+			MAX_REFETCH_DELAY_MS
+		);
+	});
+});
+
+describe('nextListRefetchDelay', () => {
+	it('takes the nearer of the invite start and, on Current, the expiry', () => {
+		const rows = [
+			record({ valid_until: '2026-06-01T12:30:00Z' }),
+			record({ valid_from: '2026-06-01T12:10:00Z', valid_until: null })
+		];
+		// invite start in 10 min (+grace); expiry in 30 min (+grace): the start is nearer.
+		expect(nextListRefetchDelay(rows, { activeNow: true }, NOW.getTime())).toBe(
+			10 * 60 * 1000 + 1000
+		);
+		// Off the Current chip the expiry is ignored, the start still applies.
+		expect(nextListRefetchDelay(rows, { activeNow: false }, NOW.getTime())).toBe(
+			10 * 60 * 1000 + 1000
+		);
+	});
+
+	it('uses the expiry alone when no row is waiting to start, and is null when neither applies', () => {
+		const ended = [record({ valid_until: '2026-06-01T12:30:00Z' })];
+		expect(nextListRefetchDelay(ended, { activeNow: true }, NOW.getTime())).toBe(
+			30 * 60 * 1000 + 1000
+		);
+		expect(nextListRefetchDelay(ended, { activeNow: false }, NOW.getTime())).toBeNull();
 	});
 });

@@ -6,7 +6,8 @@ import {
 	hasActiveFilters,
 	parseFilters,
 	type RegisterFilters,
-	type RegisterListQuery
+	type RegisterListKey,
+	type RegisterRequest
 } from './filters';
 
 /** The People tab's group chips. Each one is a preset of the register filters. */
@@ -28,7 +29,7 @@ type ViewFilters = Pick<RegisterFilters, 'kind' | 'open' | 'account'>;
 /**
  * Chip -> URL filter state, so a chip round-trips through `?view=` / raw params.
  * What a chip SENDS to the backend is `chipToQuery`, not these fields ("Current"
- * is not `is_open`: it needs today's date).
+ * is not `is_open`: it is the instant filter `active_at`, resolved at send time).
  */
 export const VIEW_FILTERS: Record<PeopleView, ViewFilters> = {
 	current: { kind: 'standard', open: 'all', account: 'all' },
@@ -97,27 +98,19 @@ export function filtersForView(view: PeopleView, current: RegisterFilters): Regi
 	return { ...current, ...VIEW_FILTERS[view], page: 1 };
 }
 
-/** The People list query: the register's list query (the Ended chip sends `ended`). */
-export type PeopleQuery = RegisterListQuery;
+/** The People list QUERY KEY (see `RegisterListKey`): sent via `toRequest`, never directly. */
+export type PeopleQuery = RegisterListKey;
+
+type ChipQuery = Pick<RegisterListKey, 'kind' | 'activeNow' | 'has_account' | 'ended'>;
 
 /**
- * Placeholder for "the current instant" in a People query KEY. It is replaced by
- * the real `new Date().toISOString()` when the request is sent (`resolveActiveNow`),
- * so the query key stays stable while every fetch and refetch uses the actual time.
- * It is never sent to the backend.
- */
-export const ACTIVE_NOW = 'now';
-
-type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_at' | 'has_account' | 'ended'>;
-
-/**
- * THE chip -> query mapping (the only place a chip becomes backend params).
+ * THE chip -> query-key mapping (the only place a chip becomes list params).
  *
- * - Current: `active_at=now` + `kind=standard` (`now` is `ACTIVE_NOW`, resolved at
- *   send time). It is an INSTANT filter, not `active_on`: `active_on` matches
- *   everyone who overlaps the calendar day, so a period that ended at 01:00 still
- *   showed as Current until midnight. Not `is_open`: that is `valid_until IS NULL`,
- *   which misses a standard entry with a future end.
+ * - Current: `activeNow: true` + `kind=standard`. `toRequest` turns `activeNow`
+ *   into `active_at=<now>` at send time. It is an INSTANT filter, not `active_on`:
+ *   `active_on` matches everyone who overlaps the calendar day, so a period that
+ *   ended at 01:00 still showed as Current until midnight. Not `is_open`: that is
+ *   `valid_until IS NULL`, which misses a standard entry with a future end.
  * - Day members: `kind=temporary`. No account: `has_account=false`.
  * - Ended: `ended=true` (`valid_until <= now` or revoked; the backend decides).
  * - Everyone: nothing.
@@ -125,7 +118,7 @@ type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_at' | 'has_account' | 
 export function chipToQuery(view: PeopleView): ChipQuery {
 	switch (view) {
 		case 'current':
-			return { active_at: ACTIVE_NOW, kind: 'standard' };
+			return { activeNow: true, kind: 'standard' };
 		case 'day':
 			return { kind: 'temporary' };
 		case 'ended':
@@ -138,9 +131,9 @@ export function chipToQuery(view: PeopleView): ChipQuery {
 }
 
 /**
- * Filters -> People list query. An "As of" day is a snapshot of everyone active
- * that day, so it drops EVERY chip filter (kind, account, open, ended) and sends
- * `active_on` only, never `active_at`. A combination no chip covers (a legacy raw
+ * Filters -> People list query KEY. An "As of" day is a snapshot of everyone active
+ * that day, so it drops EVERY chip filter (kind, account, open, ended) and carries
+ * `active_on` only, never `activeNow`. A combination no chip covers (a legacy raw
  * link) keeps its raw filters.
  */
 export function peopleQuery(filters: RegisterFilters): PeopleQuery {
@@ -149,6 +142,23 @@ export function peopleQuery(filters: RegisterFilters): PeopleQuery {
 	const view = viewFromFilters(filters);
 	return view ? { ...bare, ...chipToQuery(view) } : filtersToQuery(filters);
 }
+
+/**
+ * Key -> request, the only way a People key reaches the SDK. `activeNow` becomes
+ * `active_at` = the given instant (an aware ISO datetime) and the key-only field
+ * is dropped. `RegisterRequest` has `activeNow?: never`, so passing a key that
+ * still carries `activeNow: true` to the SDK wrapper is a compile error.
+ */
+export function toRequest(key: PeopleQuery, now: Date): RegisterRequest {
+	const { activeNow, ...rest } = key;
+	return activeNow ? { ...rest, active_at: now.toISOString() } : rest;
+}
+
+// Compile-time guard, enforced by `make types`. Test files are excluded from that
+// gate (tsconfig), so the guard lives here: a People key must NOT satisfy the SDK
+// request type, and this line fails to compile if it ever does.
+type KeyIsNotARequest = PeopleQuery extends RegisterRequest ? never : true;
+const _keyIsNotARequest: KeyIsNotARequest = true;
 
 /** One status per row. Precedence is the order of the checks in `getPersonStatus`. */
 export type PersonStatusId =

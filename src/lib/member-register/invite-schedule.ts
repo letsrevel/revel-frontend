@@ -27,3 +27,40 @@ export function nextInviteRefetchDelay(
 	if (nearest === null) return null;
 	return Math.min(nearest - now + GRACE_MS, MAX_REFETCH_DELAY_MS);
 }
+
+/**
+ * Delay in ms until the nearest displayed row's `valid_until` passes, plus the
+ * grace, or `null` when no listed row has a future end. The Current list (active
+ * at an instant) keeps a row until its end, so the row would stay "Active" past
+ * its end until the next refetch.
+ */
+export function nextExpiryRefetchDelay(
+	records: readonly MembershipRecordSchema[],
+	now: number = Date.now()
+): number | null {
+	let nearest: number | null = null;
+	for (const r of records) {
+		if (!r.valid_until) continue;
+		const end = Date.parse(r.valid_until);
+		if (Number.isNaN(end) || end <= now) continue;
+		if (nearest === null || end < nearest) nearest = end;
+	}
+	if (nearest === null) return null;
+	return Math.min(nearest - now + GRACE_MS, MAX_REFETCH_DELAY_MS);
+}
+
+/**
+ * The ONE list-refetch delay: the nearer of the invite-start boundary and, while
+ * the Current list is showing, the expiry boundary. `null` when neither applies.
+ */
+export function nextListRefetchDelay(
+	records: readonly MembershipRecordSchema[],
+	{ activeNow }: { activeNow: boolean },
+	now: number = Date.now()
+): number | null {
+	const invite = nextInviteRefetchDelay(records, now);
+	const expiry = activeNow ? nextExpiryRefetchDelay(records, now) : null;
+	if (invite === null) return expiry;
+	if (expiry === null) return invite;
+	return Math.min(invite, expiry);
+}

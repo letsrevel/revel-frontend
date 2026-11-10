@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_FILTERS } from './filters';
 import {
-	ACTIVE_NOW,
 	PEOPLE_VIEWS,
 	chipToQuery,
 	filtersForView,
@@ -10,6 +9,7 @@ import {
 	getPersonStatus,
 	parsePeopleFilters,
 	peopleFiltersToSearch,
+	toRequest,
 	type PersonStatusInput,
 	viewFromFilters
 } from './people-view';
@@ -20,14 +20,14 @@ describe('chip <-> register filter mapping', () => {
 	it('defaults to "Current" when the URL carries no filters', () => {
 		const filters = parse('');
 		expect(viewFromFilters(filters)).toBe('current');
-		expect(peopleQuery(filters)).toMatchObject({ active_at: ACTIVE_NOW, kind: 'standard' });
+		expect(peopleQuery(filters)).toMatchObject({ activeNow: true, kind: 'standard' });
 		expect(peopleQuery(filters)).not.toHaveProperty('active_on');
 		expect(peopleQuery(filters)).not.toHaveProperty('is_open');
 		expect(parse('tab=people').kind).toBe('standard');
 	});
 
 	it('maps every chip to its backend params (chipToQuery is the only mapping)', () => {
-		expect(chipToQuery('current')).toEqual({ active_at: ACTIVE_NOW, kind: 'standard' });
+		expect(chipToQuery('current')).toEqual({ activeNow: true, kind: 'standard' });
 		expect(chipToQuery('day')).toEqual({ kind: 'temporary' });
 		expect(chipToQuery('ended')).toEqual({ ended: true });
 		expect(chipToQuery('no-account')).toEqual({ has_account: false });
@@ -41,26 +41,40 @@ describe('chip <-> register filter mapping', () => {
 	it('keeps search and tier with a chip', () => {
 		const tier = '0b8b3a52-7a54-4f6b-9a1e-6c5d1f7a3c11';
 		const query = peopleQuery(parse(`q=ada&tier=${tier}`));
-		expect(query).toMatchObject({ search: 'ada', tier_id: tier, active_at: ACTIVE_NOW });
+		expect(query).toMatchObject({ search: 'ada', tier_id: tier, activeNow: true });
 		expect(query).not.toHaveProperty('active_on');
 	});
 
-	it('drops every chip filter in "As of" mode, keeping only the day', () => {
+	it('drops every chip filter in "As of" mode: active_on only, never activeNow', () => {
 		for (const view of PEOPLE_VIEWS) {
 			const filters = { ...filtersForView(view, parse('')), activeOn: '2026-03-12' };
 			const query = peopleQuery(filters);
 			expect(query).toEqual({ page: 1, page_size: 20, active_on: '2026-03-12' });
-			expect(query).not.toHaveProperty('active_at');
+			expect(query).not.toHaveProperty('activeNow');
 		}
 	});
 
-	it('never sends active_on and active_at together', () => {
-		const asOf = peopleQuery({ ...parse(''), activeOn: '2026-03-12' });
-		expect(asOf).toHaveProperty('active_on', '2026-03-12');
-		expect(asOf).not.toHaveProperty('active_at');
+	it('Current sends the instant (activeNow), never active_on', () => {
 		const current = peopleQuery(parse(''));
-		expect(current).toHaveProperty('active_at', ACTIVE_NOW);
+		expect(current).toHaveProperty('activeNow', true);
 		expect(current).not.toHaveProperty('active_on');
+	});
+
+	it('toRequest turns activeNow into active_at at the given instant, dropping the key field', () => {
+		const now = new Date('2026-11-09T01:30:00.000Z');
+		expect(toRequest(peopleQuery(parse('')), now)).toEqual({
+			page: 1,
+			page_size: 20,
+			kind: 'standard',
+			active_at: '2026-11-09T01:30:00.000Z'
+		});
+	});
+
+	it('toRequest passes an As-of key through unchanged (active_on, no active_at)', () => {
+		const asOf = peopleQuery({ ...parse(''), activeOn: '2026-03-12' });
+		const request = toRequest(asOf, new Date('2026-11-09T01:30:00.000Z'));
+		expect(request).toEqual({ page: 1, page_size: 20, active_on: '2026-03-12' });
+		expect(request).not.toHaveProperty('active_at');
 	});
 
 	it('sends the real ended=true filter for Ended (no is_open, no client pass)', () => {
@@ -74,7 +88,7 @@ describe('chip <-> register filter mapping', () => {
 		const query = peopleQuery(parse('account=with'));
 		expect(query).toMatchObject({ has_account: true });
 		expect(query).not.toHaveProperty('active_on');
-		expect(query).not.toHaveProperty('active_at');
+		expect(query).not.toHaveProperty('activeNow');
 	});
 
 	it('keeps the chip in the URL, omitting only the default', () => {

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 
 const sdk = vi.hoisted(() => ({
@@ -10,7 +10,6 @@ vi.mock('$lib/api/client', () => ({ client: {} }));
 const gen = vi.hoisted(() => ({ getMember: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ organizationadminmembersGetMember: gen.getMember }));
 
-import { calendarDayInZone } from './calendar-day';
 import { EMPTY_FORM, isInvitableAtCreation } from './form-values';
 import { fetchMemberAccess, memberAccessKey, memberAccessPrefix } from './member-access';
 import { pickCurrentEntry } from './person-target';
@@ -19,25 +18,9 @@ import {
 	listMergedInto,
 	listPeople,
 	listPersonPeriods,
-	resolveActiveNow,
 	startRegisterExport
 } from './api';
-import { ACTIVE_NOW } from './people-view';
 import { makeRecord } from '$lib/components/member-register/person-fixtures';
-
-describe('calendarDayInZone', () => {
-	it('reads the wall-clock day of the organization, not the viewer', () => {
-		const instant = new Date('2026-11-09T23:30:00Z');
-		expect(calendarDayInZone('UTC', instant)).toBe('2026-11-09');
-		expect(calendarDayInZone('Europe/Berlin', instant)).toBe('2026-11-10');
-		expect(calendarDayInZone('America/Los_Angeles', instant)).toBe('2026-11-09');
-	});
-
-	it('falls back to a day for a missing or unknown zone', () => {
-		expect(calendarDayInZone(null)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-		expect(calendarDayInZone('Not/AZone')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-	});
-});
 
 describe('isInvitableAtCreation', () => {
 	const now = new Date('2026-11-09T12:00:00Z');
@@ -147,29 +130,6 @@ describe('merged_into and export include_merged', () => {
 	});
 });
 
-describe('resolveActiveNow', () => {
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	it('replaces the placeholder with the exact current ISO instant', () => {
-		vi.useFakeTimers();
-		vi.setSystemTime(new Date('2026-11-09T01:30:00.000Z'));
-		expect(resolveActiveNow({ page: 1, page_size: 20, active_at: ACTIVE_NOW })).toEqual({
-			page: 1,
-			page_size: 20,
-			active_at: '2026-11-09T01:30:00.000Z'
-		});
-	});
-
-	it('leaves every other query untouched', () => {
-		const query = { page: 1, page_size: 20, active_on: '2026-03-12', kind: 'standard' as const };
-		expect(resolveActiveNow(query)).toBe(query);
-		const instant = { page: 1, page_size: 20, active_at: '2026-03-12T10:00:00.000Z' };
-		expect(resolveActiveNow(instant)).toBe(instant);
-	});
-});
-
 describe('listPeople / countRegister', () => {
 	const NOW = new Date('2026-11-09T12:00:00Z');
 	const row = (id: string, valid_until: string | null): Partial<MembershipRecordSchema> => ({
@@ -195,33 +155,6 @@ describe('listPeople / countRegister', () => {
 		expect(page.count).toBe(2);
 		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
 		expect(sent).toEqual({ page: 1, page_size: 20, ended: true });
-	});
-
-	it('sends Current as a real ISO instant, never the placeholder', async () => {
-		vi.useFakeTimers();
-		vi.setSystemTime(new Date('2026-11-09T01:30:00.000Z'));
-		try {
-			sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
-				data: { count: 0, next: null, previous: null, results: [] }
-			});
-			await listPeople('org', 'tok', {
-				page: 1,
-				page_size: 20,
-				active_at: ACTIVE_NOW,
-				kind: 'standard'
-			});
-			const sent =
-				sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
-			expect(sent).toEqual({
-				page: 1,
-				page_size: 20,
-				active_at: '2026-11-09T01:30:00.000Z',
-				kind: 'standard'
-			});
-			expect(sent).not.toHaveProperty('active_on');
-		} finally {
-			vi.useRealTimers();
-		}
 	});
 
 	it("lists a person's periods with user_id and include_merged", async () => {
