@@ -79,7 +79,14 @@
 	}
 </script>
 
-<Dialog {open} onOpenChange={(v: boolean) => (!v && !voidMut.isPending ? onClose() : null)}>
+<Dialog
+	bind:open={
+		() => open,
+		(v: boolean) => {
+			if (!v && !voidMut.isPending) onClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.voidPayment.title']()}</DialogTitle>

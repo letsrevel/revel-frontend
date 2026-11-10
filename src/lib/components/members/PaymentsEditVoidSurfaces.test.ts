@@ -172,6 +172,17 @@ describe('org-wide payments tab', () => {
 		);
 	});
 
+	it('has a Voided status filter that sends status=voided', async () => {
+		arrange([ledgerRow()]);
+		await screen.findByRole('table');
+		await userEvent.selectOptions(screen.getByLabelText('Filter by payment status'), 'voided');
+		await waitFor(() =>
+			expect(ledger).toHaveBeenLastCalledWith(
+				expect.objectContaining({ query: expect.objectContaining({ status: 'voided' }) })
+			)
+		);
+	});
+
 	it('renders a voided row with its badge and no actions', async () => {
 		arrange([ledgerRow({ status: 'voided', can_edit: false, can_void: false })]);
 		const table = await screen.findByRole('table');

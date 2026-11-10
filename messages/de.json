@@ -4230,7 +4230,10 @@
 					"lockedHint": "Nur Datum und Status der letzten Zahlung können geändert werden.",
 					"submit": "Änderungen speichern",
 					"saved": "Zahlung aktualisiert.",
-					"error": "Diese Zahlung konnte nicht aktualisiert werden."
+					"error": "Diese Zahlung konnte nicht aktualisiert werden.",
+					"lockedHintEnded": "Die Mitgliedschaft ist beendet, daher lassen sich Datum und Status ihrer Zahlungen nicht ändern.",
+					"lockedHintAny": "Nur Datum und Status der letzten Zahlung können geändert werden, und nur solange die Mitgliedschaft läuft.",
+					"dateRequired": "Wähle ein Zahlungsdatum."
 				},
 				"voidPayment": {
 					"title": "Diese Zahlung stornieren?",

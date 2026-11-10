@@ -94,6 +94,12 @@
 	const totalCount = $derived(subsQuery.data?.count ?? 0);
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
 
+	function openCreate() {
+		// A refusal from an earlier attempt must not greet the next one.
+		createError = null;
+		createOpen = true;
+	}
+
 	const createMut = createMutation(() => ({
 		mutationFn: async (payload: SubscriptionCreateSchema) => {
 			const res = await organizationadminsubscriptionsCreateSubscription({
@@ -150,7 +156,7 @@
 				{/each}
 			</select>
 		</div>
-		<Button onclick={() => (createOpen = true)}>
+		<Button onclick={openCreate}>
 			<Plus class="mr-1 h-4 w-4" />
 			{m['orgAdmin.members.subscriptions.create.title']()}
 		</Button>

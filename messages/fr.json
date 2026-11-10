@@ -4187,7 +4187,7 @@
 					"editFor": "Modifier le paiement de {amount} du {date}",
 					"void": "Invalider",
 					"voidFor": "Invalider le paiement de {amount} du {date}",
-					"showVoided": "Afficher les paiements annulés"
+					"showVoided": "Afficher les paiements invalidés"
 				},
 				"editPayment": {
 					"title": "Modifier le paiement",
@@ -4200,7 +4200,10 @@
 					"lockedHint": "Seuls la date et le statut du dernier paiement peuvent être modifiés.",
 					"submit": "Enregistrer les modifications",
 					"saved": "Paiement mis à jour.",
-					"error": "Impossible de mettre à jour ce paiement."
+					"error": "Impossible de mettre à jour ce paiement.",
+					"lockedHintEnded": "L'adhésion est terminée, la date et le statut de ses paiements ne peuvent donc plus être modifiés.",
+					"lockedHintAny": "Seuls la date et le statut du dernier paiement peuvent être modifiés, et seulement tant que l'adhésion est en cours.",
+					"dateRequired": "Choisis une date de paiement."
 				},
 				"voidPayment": {
 					"title": "Invalider ce paiement ?",
@@ -4214,7 +4217,7 @@
 				"paymentRefused": {
 					"payment_online": "Ce paiement est passé par Stripe et ne peut pas être modifié ici. Gère-le depuis le tableau de bord Stripe.",
 					"payment_refunded": "Un paiement remboursé ne peut pas être modifié.",
-					"payment_voided": "Ce paiement a déjà été annulé.",
+					"payment_voided": "Ce paiement a déjà été invalidé.",
 					"payment_not_latest": "Seuls la date et le statut du dernier paiement peuvent être modifiés.",
 					"subscription_terminal": "Cet abonnement est terminé : la date et le statut de ses paiements ne peuvent plus être modifiés et les paiements ne peuvent pas être invalidés."
 				}
@@ -4238,7 +4241,7 @@
 					"succeeded": "Réussi",
 					"failed": "Échoué",
 					"refunded": "Remboursé",
-					"voided": "Annulé"
+					"voided": "Invalidé"
 				},
 				"col": {
 					"member": "Membre",

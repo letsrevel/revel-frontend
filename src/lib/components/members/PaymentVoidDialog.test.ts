@@ -115,7 +115,9 @@ describe('PaymentVoidDialog', () => {
 			expect.arrayContaining([
 				['organization', 'test-org', 'subscription-payments'],
 				['organization', 'test-org', 'subscription'],
-				['organization', 'test-org', 'subscriptions']
+				['organization', 'test-org', 'subscriptions'],
+				['organization', 'test-org', 'member-register'],
+				['organization', 'test-org', 'member']
 			])
 		);
 	});

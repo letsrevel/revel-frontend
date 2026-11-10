@@ -569,6 +569,7 @@
 			<PaymentEditDialog
 				slug={organization.slug}
 				payment={editTarget}
+				subscriptionStatus={sub.status}
 				open={!!editTarget}
 				onClose={() => (editTarget = null)}
 			/>

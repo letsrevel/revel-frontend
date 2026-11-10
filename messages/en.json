@@ -4230,7 +4230,10 @@
 					"lockedHint": "Only the latest payment's date and status can be changed.",
 					"submit": "Save changes",
 					"saved": "Payment updated.",
-					"error": "Couldn't update this payment."
+					"error": "Couldn't update this payment.",
+					"lockedHintEnded": "The membership has ended, so the date and status of its payments can't be changed.",
+					"lockedHintAny": "Only the latest payment's date and status can be changed, and only while the membership is running.",
+					"dateRequired": "Pick a payment date."
 				},
 				"voidPayment": {
 					"title": "Void this payment?",

@@ -48,7 +48,7 @@ function respond(result: { data?: unknown; error?: unknown }) {
 	>);
 }
 
-function renderDialog(payment: EditablePayment = makePayment()) {
+function renderDialog(payment: EditablePayment = makePayment(), subscriptionStatus?: string) {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
 	const invalidate = vi.spyOn(client, 'invalidateQueries');
 	const onClose = vi.fn();
@@ -56,7 +56,7 @@ function renderDialog(payment: EditablePayment = makePayment()) {
 		props: {
 			client,
 			component: PaymentEditDialog,
-			componentProps: { slug: 'test-org', payment, open: true, onClose }
+			componentProps: { slug: 'test-org', payment, open: true, onClose, subscriptionStatus }
 		}
 	});
 	return { invalidate, onClose };
@@ -85,7 +85,7 @@ describe('PaymentEditDialog fields', () => {
 	});
 
 	it('locks status and date with an explanation when the row is not the latest (!can_void)', async () => {
-		renderDialog(makePayment({ can_void: false }));
+		renderDialog(makePayment({ can_void: false }), 'active');
 		const status = await screen.findByLabelText('Status');
 		expect(status).toBeDisabled();
 		expect(screen.getByLabelText('Payment date')).toBeDisabled();
@@ -95,6 +95,34 @@ describe('PaymentEditDialog fields', () => {
 		// Amount and notes stay editable.
 		expect(screen.getByLabelText('Amount')).toBeEnabled();
 		expect(screen.getByLabelText('Notes')).toBeEnabled();
+	});
+
+	it('names the real lock reason: an ended membership, not "not the latest"', async () => {
+		renderDialog(makePayment({ can_void: false }), 'cancelled');
+		expect(
+			await screen.findByText(/The membership has ended, so the date and status of its payments/)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText("Only the latest payment's date and status can be changed.")
+		).toBeNull();
+	});
+
+	it('gives a neutral hint when the subscription status is unknown (org-wide ledger)', async () => {
+		renderDialog(makePayment({ can_void: false }));
+		expect(await screen.findByText(/and only while the membership is running/)).toBeInTheDocument();
+	});
+
+	it('links the disabled date and status to the lock hint for screen readers', async () => {
+		renderDialog(makePayment({ can_void: false }), 'active');
+		const hint = await screen.findByText(
+			"Only the latest payment's date and status can be changed."
+		);
+		expect(hint.id).toBe('ep-locked-hint');
+		expect(screen.getByLabelText('Payment date')).toHaveAttribute(
+			'aria-describedby',
+			expect.stringContaining('ep-locked-hint')
+		);
+		expect(screen.getByLabelText('Status')).toHaveAttribute('aria-describedby', 'ep-locked-hint');
 	});
 
 	it('keeps Save disabled until something changed', async () => {
@@ -152,6 +180,50 @@ describe('PaymentEditDialog submit', () => {
 		);
 	});
 
+	it('does not send occurred_at for a notes-only edit, even when the date has seconds', async () => {
+		respond({ data: {} });
+		renderDialog(makePayment({ occurred_at: '2026-08-03T10:15:42.123Z' }));
+		await userEvent.type(await screen.findByLabelText('Notes'), ' more');
+		await userEvent.click(save());
+
+		await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
+		expect(updateMock.mock.calls[0][0].body).toEqual({ notes: 'first more' });
+	});
+
+	it('never sends status for a notes-only edit', async () => {
+		respond({ data: {} });
+		renderDialog();
+		await userEvent.type(await screen.findByLabelText('Notes'), '!');
+		await userEvent.click(save());
+
+		await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
+		expect('status' in updateMock.mock.calls[0][0].body).toBe(false);
+	});
+
+	it('shows a status outside the editable set as-is, locked, and never sends it', async () => {
+		respond({ data: {} });
+		renderDialog(makePayment({ status: 'refunded', can_edit: true, can_void: true }));
+		const status = await screen.findByLabelText('Status');
+		expect(status).toBeDisabled();
+		expect(status).toHaveValue('refunded');
+		await userEvent.type(screen.getByLabelText('Notes'), '!');
+		await userEvent.click(save());
+
+		await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
+		expect(updateMock.mock.calls[0][0].body).toEqual({ notes: 'first!' });
+	});
+
+	it('requires the date once it has been cleared: field error and Save blocked', async () => {
+		renderDialog();
+		await userEvent.type(await screen.findByLabelText('Notes'), '!');
+		expect(save()).toBeEnabled();
+		await fireEvent.input(screen.getByLabelText('Payment date'), { target: { value: '' } });
+
+		expect(await screen.findByText('Pick a payment date.')).toBeInTheDocument();
+		expect(save()).toBeDisabled();
+		expect(updateMock).not.toHaveBeenCalled();
+	});
+
 	it('never sends status or date for a locked row, even if the amount changed', async () => {
 		respond({ data: {} });
 		renderDialog(makePayment({ can_void: false }));
@@ -178,7 +250,9 @@ describe('PaymentEditDialog submit', () => {
 				['organization', 'test-org', 'subscription-payments'],
 				['organization', 'test-org', 'subscription'],
 				['organization', 'test-org', 'subscriptions'],
-				['organization', 'test-org', 'members']
+				['organization', 'test-org', 'members'],
+				['organization', 'test-org', 'member-register'],
+				['organization', 'test-org', 'member']
 			])
 		);
 	});

@@ -3,7 +3,10 @@
 	import { toast } from 'svelte-sonner';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationadminsubscriptionsUpdateSubscriptionPayment } from '$lib/api/generated/sdk.gen';
-	import type { MembershipPaymentUpdateSchema } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipPaymentStatus,
+		MembershipPaymentUpdateSchema
+	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -12,9 +15,12 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
+	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import {
 		PaymentRefusedError,
 		invalidatePaymentCaches,
+		isEditableStatus,
+		isTerminalSubscriptionStatus,
 		toPaymentError,
 		type EditablePayment
 	} from './paymentEdit';
@@ -24,17 +30,24 @@
 		payment: EditablePayment | null;
 		open: boolean;
 		onClose: () => void;
+		/**
+		 * The owning subscription's status when the caller knows it (the drawer does;
+		 * the org-wide ledger rows carry no subscription status). It only decides which
+		 * reason the lock hint gives.
+		 */
+		subscriptionStatus?: string | null;
 	}
 
-	type EditableStatus = 'pending' | 'succeeded' | 'failed';
-
-	const { slug, payment, open, onClose }: Props = $props();
+	const { slug, payment, open, onClose, subscriptionStatus }: Props = $props();
 	const queryClient = useQueryClient();
 	const accessToken = $derived(authStore.accessToken);
 
 	let amount = $state('');
-	let status = $state<EditableStatus>('succeeded');
+	let status = $state<MembershipPaymentStatus>('succeeded');
 	let occurredAt = $state('');
+	// Whether the admin actually touched the date field. The picker drops seconds, so
+	// comparing the value alone could report a change nobody made.
+	let dateTouched = $state(false);
 	let notes = $state('');
 	let formError = $state<string | null>(null);
 
@@ -45,22 +58,49 @@
 	$effect(() => {
 		if (open && payment) {
 			amount = String(payment.amount);
-			status = (
-				['pending', 'succeeded', 'failed'].includes(payment.status) ? payment.status : 'succeeded'
-			) as EditableStatus;
+			status = payment.status;
+			dateTouched = false;
 			occurredAt = payment.occurred_at ?? payment.created_at;
 			notes = payment.notes ?? '';
 			formError = null;
 		}
 	});
 
-	// Status and date move the subscription's billing period, which the backend
-	// only allows on the latest payment (`can_void` carries that rule).
+	// Status and date move the subscription's billing period. The backend contract
+	// (revel-backend#1366) says `can_void` also gates the status/occurred_at fields:
+	// it is true only for the LATEST payment of a non-terminal subscription.
 	const periodFieldsEditable = $derived(!!payment?.can_void);
+	// A refunded/voided row has no editable status: keep the field on its real value.
+	const statusEditable = $derived(
+		periodFieldsEditable && !!payment && isEditableStatus(payment.status)
+	);
 
-	function sameInstant(a: string, b: string): boolean {
-		return new Date(a).getTime() === new Date(b).getTime();
+	// Why the period fields are locked. `can_void` is false for a payment that is not
+	// the latest AND for a terminal subscription, so name the reason only when known.
+	const lockHint = $derived(
+		isTerminalSubscriptionStatus(subscriptionStatus)
+			? m['orgAdmin.members.subscriptions.editPayment.lockedHintEnded']()
+			: subscriptionStatus
+				? m['orgAdmin.members.subscriptions.editPayment.lockedHint']()
+				: m['orgAdmin.members.subscriptions.editPayment.lockedHintAny']()
+	);
+
+	const MINUTE_MS = 60_000;
+	/** The picker works at minute precision, so compare there. */
+	function sameMinute(a: string, b: string): boolean {
+		return (
+			Math.floor(new Date(a).getTime() / MINUTE_MS) ===
+			Math.floor(new Date(b).getTime() / MINUTE_MS)
+		);
 	}
+
+	// The date is required once the admin has touched it: clearing it is an error,
+	// never silently ignored.
+	const dateError = $derived(
+		periodFieldsEditable && dateTouched && !occurredAt
+			? m['orgAdmin.members.subscriptions.editPayment.dateRequired']()
+			: undefined
+	);
 
 	// `bind:value` on a number input hands back a number, or null once the field is
 	// cleared (the same shape the sibling numeric forms guard against).
@@ -74,12 +114,13 @@
 			body.amount = amountText;
 		if (notes !== (payment.notes ?? '')) body.notes = notes;
 		if (periodFieldsEditable) {
-			if (status !== payment.status) body.status = status;
-			if (occurredAt && !sameInstant(occurredAt, originalDate)) body.occurred_at = occurredAt;
+			if (statusEditable && status !== payment.status) body.status = status;
+			if (dateTouched && occurredAt && !sameMinute(occurredAt, originalDate))
+				body.occurred_at = occurredAt;
 		}
 		return body;
 	});
-	const hasChanges = $derived(Object.keys(changes).length > 0);
+	const hasChanges = $derived(Object.keys(changes).length > 0 && !dateError);
 
 	const editMut = createMutation(() => ({
 		mutationFn: async (body: MembershipPaymentUpdateSchema) => {
@@ -121,7 +162,14 @@
 	}
 </script>
 
-<Dialog {open} onOpenChange={(v: boolean) => (!v && !editMut.isPending ? onClose() : null)}>
+<Dialog
+	bind:open={
+		() => open,
+		(v: boolean) => {
+			if (!v && !editMut.isPending) onClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.editPayment.title']()}</DialogTitle>
@@ -151,23 +199,12 @@
 
 				<div class="space-y-1">
 					<Label for="ep-status">{m['orgAdmin.members.subscriptions.editPayment.status']()}</Label>
-					<select
+					<EditableStatusSelect
 						id="ep-status"
 						bind:value={status}
-						disabled={!periodFieldsEditable}
-						aria-describedby={periodFieldsEditable ? undefined : 'ep-locked-hint'}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-					>
-						<option value="succeeded">
-							{m['orgAdmin.members.subscriptions.recordPayment.statusOption.succeeded']()}
-						</option>
-						<option value="pending">
-							{m['orgAdmin.members.subscriptions.recordPayment.statusOption.pending']()}
-						</option>
-						<option value="failed">
-							{m['orgAdmin.members.subscriptions.recordPayment.statusOption.failed']()}
-						</option>
-					</select>
+						disabled={!statusEditable}
+						describedBy={periodFieldsEditable ? undefined : 'ep-locked-hint'}
+					/>
 				</div>
 
 				<div class="space-y-1">
@@ -175,11 +212,14 @@
 						id="ep-occurred"
 						bind:value={occurredAt}
 						disabled={!periodFieldsEditable}
+						error={dateError}
+						describedBy={periodFieldsEditable ? undefined : 'ep-locked-hint'}
+						onValueChange={() => (dateTouched = true)}
 						label={m['orgAdmin.members.subscriptions.editPayment.occurredAt']()}
 					/>
 					{#if !periodFieldsEditable}
 						<p id="ep-locked-hint" class="text-xs text-muted-foreground">
-							{m['orgAdmin.members.subscriptions.editPayment.lockedHint']()}
+							{lockHint}
 						</p>
 					{/if}
 				</div>

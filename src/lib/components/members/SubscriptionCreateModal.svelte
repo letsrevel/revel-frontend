@@ -148,7 +148,16 @@
 	}
 </script>
 
-<Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
+<!-- Not dismissible while the create is in flight: an Esc/overlay close would drop the
+     backend's answer (and its error) on the floor. -->
+<Dialog
+	bind:open={
+		() => open,
+		(v: boolean) => {
+			if (!v && !isSubmitting) onClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.create.title']()}</DialogTitle>

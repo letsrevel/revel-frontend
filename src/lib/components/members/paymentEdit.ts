@@ -1,8 +1,10 @@
 import * as m from '$lib/paraglide/messages.js';
 import type { QueryClient } from '@tanstack/svelte-query';
+import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 import type {
 	MembershipPaymentEditRefusalCode,
-	MembershipPaymentSchema
+	MembershipPaymentSchema,
+	MembershipPaymentStatus
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { formatDate } from '$lib/utils/date';
@@ -26,6 +28,23 @@ export type EditablePayment = Pick<
 	| 'can_edit'
 	| 'can_void'
 >;
+
+/**
+ * The only statuses an edit may set (the backend refuses refunded/voided here:
+ * those have their own routes). One source for the edit dialog, the record
+ * form and the status select.
+ */
+export const EDITABLE_STATUSES = ['succeeded', 'pending', 'failed'] as const;
+export type EditableStatus = (typeof EDITABLE_STATUSES)[number];
+
+export function isEditableStatus(status: MembershipPaymentStatus): status is EditableStatus {
+	return (EDITABLE_STATUSES as readonly string[]).includes(status);
+}
+
+/** Subscription statuses the backend treats as terminal (status/date edits refused). */
+export function isTerminalSubscriptionStatus(status: string | null | undefined): boolean {
+	return status === 'cancelled' || status === 'expired';
+}
 
 const REFUSAL_CODES: readonly MembershipPaymentEditRefusalCode[] = [
 	'payment_online',
@@ -72,14 +91,17 @@ export function toPaymentError(error: unknown, fallback: string): Error {
 }
 
 /**
- * Everything an edit or void can move: the payment lists (drawer + org-wide), the
- * subscription itself (period and status are recomputed), the subscriptions list
- * and its metrics (same key prefix), and the member rows the BE signal syncs.
+ * Everything an edit or void can move: the payment lists (drawer + org-wide) and
+ * the subscription itself (period and status are recomputed), plus everything a
+ * member write refreshes (`invalidateAfterMemberWrite`: members list, member
+ * register, the person sheet's access row, subscriptions list and metrics),
+ * because a recomputed period can change a member's status.
  */
 export function invalidatePaymentCaches(queryClient: QueryClient, slug: string): void {
-	for (const key of ['subscription-payments', 'subscription', 'subscriptions', 'members']) {
+	for (const key of ['subscription-payments', 'subscription']) {
 		queryClient.invalidateQueries({ queryKey: ['organization', slug, key] });
 	}
+	void invalidateAfterMemberWrite(queryClient, slug);
 }
 
 /** "10.00 EUR from Aug 1, 2026": the context screen readers need to tell rows apart. */

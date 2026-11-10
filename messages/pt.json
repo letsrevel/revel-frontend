@@ -4230,7 +4230,10 @@
 					"lockedHint": "Só a data e o estado do último pagamento podem ser alterados.",
 					"submit": "Guardar alterações",
 					"saved": "Pagamento atualizado.",
-					"error": "Não foi possível atualizar este pagamento."
+					"error": "Não foi possível atualizar este pagamento.",
+					"lockedHintEnded": "A adesão terminou, por isso a data e o estado dos seus pagamentos não podem ser alterados.",
+					"lockedHintAny": "Só a data e o estado do último pagamento podem ser alterados, e só enquanto a adesão estiver em curso.",
+					"dateRequired": "Escolhe uma data de pagamento."
 				},
 				"voidPayment": {
 					"title": "Anular este pagamento?",

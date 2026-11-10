@@ -205,6 +205,7 @@
 				<option value="pending">{m['orgAdmin.members.payments.status.pending']()}</option>
 				<option value="failed">{m['orgAdmin.members.payments.status.failed']()}</option>
 				<option value="refunded">{m['orgAdmin.members.payments.status.refunded']()}</option>
+				<option value="voided">{m['orgAdmin.members.payments.status.voided']()}</option>
 			</select>
 		</div>
 

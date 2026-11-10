@@ -4230,7 +4230,10 @@
 					"lockedHint": "Solo se pueden cambiar la fecha y el estado del último pago.",
 					"submit": "Guardar cambios",
 					"saved": "Pago actualizado.",
-					"error": "No se ha podido actualizar este pago."
+					"error": "No se ha podido actualizar este pago.",
+					"lockedHintEnded": "La membresía ha terminado, así que no se pueden cambiar la fecha ni el estado de sus pagos.",
+					"lockedHintAny": "Solo se pueden cambiar la fecha y el estado del último pago, y solo mientras la membresía siga en curso.",
+					"dateRequired": "Elige una fecha de pago."
 				},
 				"voidPayment": {
 					"title": "¿Anular este pago?",
