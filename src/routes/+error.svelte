@@ -174,7 +174,7 @@
      numbers hold. Both remain decorative art, not a second announcement: the
      h1 is the accessible heading and the status code is separately in the
      errorPage.errorLabel copy. -->
-<div class="min-h-screen bg-background">
+<main id="main-content" class="min-h-screen bg-background">
 	<section class="bg-secondary text-secondary-foreground">
 		<div class="container mx-auto max-w-2xl px-4 pb-20 pt-12 text-center sm:pt-16">
 			<div class="mb-6 flex justify-center">
@@ -261,4 +261,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</main>
