@@ -19,6 +19,7 @@
 	import MemberCombobox from './MemberCombobox.svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -26,9 +27,22 @@
 		onClose: () => void;
 		onSubmit: (payload: SubscriptionCreateSchema) => void;
 		isSubmitting?: boolean;
+		/**
+		 * The backend's refusal of the last submit (e.g. a future payment date, or a
+		 * backdated payment whose period has already lapsed). Shown in the form so the
+		 * value can be corrected without the dialog closing.
+		 */
+		submitError?: string | null;
 	}
 
-	const { organization, open, onClose, onSubmit, isSubmitting = false }: Props = $props();
+	const {
+		organization,
+		open,
+		onClose,
+		onSubmit,
+		isSubmitting = false,
+		submitError = null
+	}: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
 	let selectedMember = $state<OrganizationMemberSchema | null>(null);
@@ -37,6 +51,7 @@
 	let amount = $state('0.00');
 	let currency = $state<string>('EUR');
 	let notes = $state('');
+	let occurredAt = $state('');
 	let errors = $state<{ user?: string; plan?: string }>({});
 
 	const plansQuery = createQuery(() => ({
@@ -94,6 +109,7 @@
 			amount = '0.00';
 			currency = 'EUR';
 			notes = '';
+			occurredAt = '';
 			errors = {};
 		}
 	});
@@ -125,12 +141,23 @@
 			payload.initial_payment_currency =
 				currency as SubscriptionCreateSchema['initial_payment_currency'];
 			payload.initial_payment_notes = notes;
+			// Empty = "now" on the backend, so the field is omitted rather than sent blank.
+			if (occurredAt) payload.initial_payment_occurred_at = occurredAt;
 		}
 		onSubmit(payload);
 	}
 </script>
 
-<Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
+<!-- Not dismissible while the create is in flight: an Esc/overlay close would drop the
+     backend's answer (and its error) on the floor. -->
+<Dialog
+	bind:open={
+		() => open,
+		(v: boolean) => {
+			if (!v && !isSubmitting) onClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.create.title']()}</DialogTitle>
@@ -201,9 +228,24 @@
 					</div>
 				</div>
 				<div class="space-y-1">
+					<DateTimePicker
+						id="sub-occurred"
+						bind:value={occurredAt}
+						describedBy="sub-occurred-hint"
+						label={m['orgAdmin.members.subscriptions.create.occurredAt']()}
+					/>
+					<p id="sub-occurred-hint" class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.subscriptions.create.occurredAtHint']()}
+					</p>
+				</div>
+				<div class="space-y-1">
 					<Label for="sub-notes">{m['orgAdmin.members.subscriptions.create.notes']()}</Label>
 					<Textarea id="sub-notes" bind:value={notes} rows={2} />
 				</div>
+			{/if}
+
+			{#if submitError}
+				<p role="alert" class="text-sm text-destructive">{submitError}</p>
 			{/if}
 
 			<div class="flex flex-wrap justify-end gap-2">

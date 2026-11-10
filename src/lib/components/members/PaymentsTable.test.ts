@@ -49,7 +49,7 @@ function withFee(overrides: Partial<MembershipPaymentSchema> = {}): MembershipPa
 
 function renderTable(payments: MembershipPaymentSchema[], isOnlinePlan = false) {
 	return render(PaymentsTable, {
-		props: { payments, isOnlinePlan, onRefund: vi.fn() }
+		props: { payments, isOnlinePlan, onRefund: vi.fn(), onEdit: vi.fn(), onVoid: vi.fn() }
 	});
 }
 

@@ -4096,7 +4096,9 @@
 					"errors": {
 						"userRequired": "Escolhe um membro",
 						"planRequired": "Escolhe um plano"
-					}
+					},
+					"occurredAt": "Data do pagamento",
+					"occurredAtHint": "Deixa em branco para usar a data atual. É o dia em que o pagamento foi mesmo feito. A data de início da adesão edita-se à parte, na entrada do registo."
 				},
 				"empty": "Ainda sem subscrições.",
 				"col": {
@@ -4209,6 +4211,45 @@
 					"error": "Não foi possível carregar as métricas de subscrição.",
 					"statusBreakdown": "Por estado",
 					"activeIncludesPastDue": "Ativas + em atraso"
+				},
+				"paymentActions": {
+					"edit": "Editar",
+					"editFor": "Editar o pagamento de {amount} de {date}",
+					"void": "Anular",
+					"voidFor": "Anular o pagamento de {amount} de {date}",
+					"showVoided": "Mostrar pagamentos anulados"
+				},
+				"editPayment": {
+					"title": "Editar pagamento",
+					"amount": "Valor",
+					"currency": "Moeda",
+					"currencyLocked": "A moeda não pode ser alterada.",
+					"status": "Estado",
+					"occurredAt": "Data do pagamento",
+					"notes": "Notas",
+					"lockedHint": "Só a data e o estado do último pagamento podem ser alterados.",
+					"submit": "Guardar alterações",
+					"saved": "Pagamento atualizado.",
+					"error": "Não foi possível atualizar este pagamento.",
+					"lockedHintEnded": "A adesão terminou, por isso a data e o estado dos seus pagamentos não podem ser alterados.",
+					"lockedHintAny": "Só a data e o estado do último pagamento podem ser alterados, e só enquanto a adesão estiver em curso.",
+					"dateRequired": "Escolhe uma data de pagamento."
+				},
+				"voidPayment": {
+					"title": "Anular este pagamento?",
+					"body": "Anular remove o pagamento dos totais e das listas e recalcula o período da adesão. Fica no histórico de auditoria.",
+					"reason": "Motivo (opcional)",
+					"submit": "Anular pagamento",
+					"keep": "Manter o pagamento",
+					"done": "Pagamento anulado. O período da adesão foi recalculado.",
+					"error": "Não foi possível anular este pagamento."
+				},
+				"paymentRefused": {
+					"payment_online": "Este pagamento foi feito através do Stripe e não pode ser alterado aqui. Gere-o no painel do Stripe.",
+					"payment_refunded": "Um pagamento reembolsado não pode ser alterado.",
+					"payment_voided": "Este pagamento já foi anulado.",
+					"payment_not_latest": "Só a data e o estado do último pagamento podem ser alterados.",
+					"subscription_terminal": "Esta subscrição terminou, por isso a data e o estado dos seus pagamentos já não podem ser alterados nem os pagamentos anulados."
 				}
 			},
 			"payments": {

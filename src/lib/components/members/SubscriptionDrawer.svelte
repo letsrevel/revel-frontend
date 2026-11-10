@@ -29,6 +29,10 @@
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 	import StaffReviveModal from './StaffReviveModal.svelte';
+	import PaymentEditDialog from './PaymentEditDialog.svelte';
+	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
+	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
+	import type { EditablePayment } from './paymentEdit';
 	import {
 		getAvailableActions,
 		formatPlanPrice,
@@ -50,6 +54,10 @@
 	const queryClient = useQueryClient();
 
 	const subKey = $derived(['organization', organization.slug, 'subscription', subId]);
+	let showVoided = $state(false);
+	// `includeVoided` is part of the key so the toggle refetches instead of
+	// reusing the default (voided-free) list. The key keeps the `payments` prefix,
+	// so invalidating `paymentsKey`-shaped keys still reaches both variants.
 	const paymentsKey = $derived([
 		'organization',
 		organization.slug,
@@ -57,6 +65,7 @@
 		subId,
 		'payments'
 	]);
+	const paymentsQueryKey = $derived([...paymentsKey, { includeVoided: showVoided }]);
 
 	const subQuery = createQuery(() => ({
 		queryKey: subKey,
@@ -75,10 +84,12 @@
 	}));
 
 	const paymentsQuery = createQuery(() => ({
-		queryKey: paymentsKey,
+		queryKey: paymentsQueryKey,
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptionPayments({
 				path: { slug: organization.slug, sub_id: subId },
+				// Voided rows are hidden by default; off means "omit", not "false".
+				query: { include_voided: showVoided ? true : undefined },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error)
@@ -152,6 +163,8 @@
 	let pauseConfirmOpen = $state(false);
 	let reviveOpen = $state(false);
 	let refundTarget = $state<MembershipPaymentSchema | null>(null);
+	let editTarget = $state<EditablePayment | null>(null);
+	let voidTarget = $state<EditablePayment | null>(null);
 
 	function invalidateAll() {
 		queryClient.invalidateQueries({ queryKey: subKey });
@@ -457,13 +470,26 @@
 			{/if}
 
 			<div class="pt-2">
-				<h4 class="mb-2 text-sm font-bold">
-					{m['orgAdmin.members.subscriptions.drawer.payments']()}
-				</h4>
+				<div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+					<h4 class="text-sm font-bold">
+						{m['orgAdmin.members.subscriptions.drawer.payments']()}
+					</h4>
+					<ShowVoidedToggle
+						id="drawer-show-voided"
+						checked={showVoided}
+						onChange={(c) => (showVoided = c)}
+					/>
+				</div>
 				{#if paymentsQuery.isLoading}
 					<Loader2 class="h-4 w-4 animate-spin" />
 				{:else}
-					<PaymentsTable {payments} {isOnlinePlan} onRefund={(p) => (refundTarget = p)} />
+					<PaymentsTable
+						{payments}
+						{isOnlinePlan}
+						onRefund={(p) => (refundTarget = p)}
+						onEdit={(p) => (editTarget = p)}
+						onVoid={(p) => (voidTarget = p)}
+					/>
 				{/if}
 			</div>
 
@@ -539,6 +565,19 @@
 					}
 				}}
 				isSubmitting={refundMut.isPending}
+			/>
+			<PaymentEditDialog
+				slug={organization.slug}
+				payment={editTarget}
+				subscriptionStatus={sub.status}
+				open={!!editTarget}
+				onClose={() => (editTarget = null)}
+			/>
+			<PaymentVoidDialog
+				slug={organization.slug}
+				payment={voidTarget}
+				open={!!voidTarget}
+				onClose={() => (voidTarget = null)}
 			/>
 		{/if}
 	</DialogContent>

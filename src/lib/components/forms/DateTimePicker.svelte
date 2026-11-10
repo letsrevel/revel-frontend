@@ -40,6 +40,8 @@
 		max?: string;
 		/** Error message to display */
 		error?: string;
+		/** Id(s) of extra hint elements to announce with the input (space separated) */
+		describedBy?: string;
 		/** Additional CSS classes */
 		class?: string;
 		/** Callback fired when value changes */
@@ -56,6 +58,7 @@
 		min,
 		max,
 		error,
+		describedBy,
 		class: className,
 		onValueChange
 	}: Props = $props();
@@ -125,7 +128,9 @@
 		min={toDateTimeLocal(min)}
 		max={toDateTimeLocal(max)}
 		aria-invalid={!!error}
-		aria-describedby={error ? `${inputId}-error` : undefined}
+		aria-describedby={[error ? `${inputId}-error` : '', describedBy ?? '']
+			.filter(Boolean)
+			.join(' ') || undefined}
 		class={cn(
 			'flex h-10 w-full rounded-md border-2 px-3 py-2 text-sm transition-colors',
 			'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',

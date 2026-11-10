@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListSubscriptions,
@@ -45,6 +44,8 @@
 	let statusFilter = $state<SubscriptionStatus | 'all'>('all');
 	let pageNum = $state(1);
 	let createOpen = $state(false);
+	// The backend's refusal of the last create, shown inside the dialog that stays open.
+	let createError = $state<string | null>(null);
 	let drawerSubId = $state<string | null>(null);
 	let drawerOpenTimer: ReturnType<typeof setTimeout> | undefined;
 	onDestroy(() => clearTimeout(drawerOpenTimer));
@@ -93,6 +94,12 @@
 	const totalCount = $derived(subsQuery.data?.count ?? 0);
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
 
+	function openCreate() {
+		// A refusal from an earlier attempt must not greet the next one.
+		createError = null;
+		createOpen = true;
+	}
+
 	const createMut = createMutation(() => ({
 		mutationFn: async (payload: SubscriptionCreateSchema) => {
 			const res = await organizationadminsubscriptionsCreateSubscription({
@@ -122,7 +129,7 @@
 				drawerSubId = id;
 			}, DIALOG_CLOSE_MS);
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error) => (createError = err.message)
 	}));
 </script>
 
@@ -149,7 +156,7 @@
 				{/each}
 			</select>
 		</div>
-		<Button onclick={() => (createOpen = true)}>
+		<Button onclick={openCreate}>
 			<Plus class="mr-1 h-4 w-4" />
 			{m['orgAdmin.members.subscriptions.create.title']()}
 		</Button>
@@ -234,8 +241,15 @@
 <SubscriptionCreateModal
 	{organization}
 	open={createOpen}
-	onClose={() => (createOpen = false)}
-	onSubmit={(p) => createMut.mutate(p)}
+	onClose={() => {
+		createOpen = false;
+		createError = null;
+	}}
+	onSubmit={(p) => {
+		createError = null;
+		createMut.mutate(p);
+	}}
+	submitError={createError}
 	isSubmitting={createMut.isPending}
 />
 
