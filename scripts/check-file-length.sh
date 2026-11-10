@@ -22,11 +22,14 @@ FAILED=0
 # Per-file cap overrides — the only sanctioned way for a file to exceed the
 # default cap. Each entry needs a rationale; the override IS the ceiling
 # (no hardcoded current line counts).
-#   auth.svelte.ts → 620: token race guards + single-flight refresh thread all
+#   auth.svelte.ts → 670: token race guards + single-flight refresh thread all
 #   state through one class; split rejected twice as invariant-threatening
 #   (#544 Task 12/13 analyses, #557). Raised 550→620 for the bootstrap gate +
 #   interrupted-rotation retry (#596) — both must share the store's settle
 #   points (setAccessToken/logout), so they belong to the same class.
+#   Raised 620→670 for the transient user/permissions retry (#1207): its single
+#   pending timer is cancelled by logout() and gated by _isLoggingOut, so it
+#   lives in the class too (pure classification is split into auth-transient.ts).
 #   designer-controller.svelte.ts → 540: the sector-block arranger unifies every
 #   pointer/keyboard/drag handler with the editable transform/shape/stage/selection
 #   state and the world↔canvas frame they all read and mutate. Splitting the
@@ -44,7 +47,7 @@ FAILED=0
 #   and numeric:'auto' idiom behavior documented in place per the same rule.
 max_for() {
     case "$1" in
-        src/lib/stores/auth.svelte.ts) echo 620 ;;
+        src/lib/stores/auth.svelte.ts) echo 670 ;;
         src/lib/components/venues/designer/designer-controller.svelte.ts) echo 540 ;;
         src/lib/utils/date.ts) echo 650 ;;
         *) echo "$2" ;;
