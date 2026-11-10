@@ -11251,5 +11251,7 @@
 	"memberPeople.byAccount.addMember": "Adicionar como membro",
 	"memberPeople.byAccount.added": "{name} passou a fazer parte dos membros.",
 	"memberPeople.byAccount.throttledIn": "Demasiadas pesquisas. Tente novamente dentro de {time}.",
-	"memberPeople.byAccount.throttled": "Demasiadas pesquisas. Tente novamente daqui a pouco."
+	"memberPeople.byAccount.throttled": "Demasiadas pesquisas. Tente novamente daqui a pouco.",
+	"memberPeople.byAccount.noTiers": "Crie primeiro um nível de adesão padrão para adicionar membros.",
+	"memberPeople.byAccount.goToTiers": "Ir para os níveis"
 }

@@ -71,6 +71,11 @@ export function describeRegisterError(error: unknown, action: RegisterAction): D
 				: m['memberRegister.errorStale']();
 		return { stale: action !== 'delete', message, detail: server };
 	}
+	if (status === 404 && action === 'lookup') {
+		// A 404 that is not `user_not_found` (that one never reaches here) is a broken
+		// route or org, not a stale register entry.
+		return { stale: false, message: m['memberRegister.errorGeneric'](), detail: null };
+	}
 	if (status === 404) {
 		return { stale: true, message: m['memberRegister.errorNotFound'](), detail: null };
 	}

@@ -21,6 +21,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), error: vi.fn(
 vi.mock('svelte-sonner', () => ({ toast }));
 
 import AddByAccountDialog from './AddByAccountDialog.svelte';
+import { clearLookupThrottles } from '$lib/member-register/lookup-throttle';
 
 function rec(id: string, extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
 	return {
@@ -61,20 +62,21 @@ const cb = {
 	onClose: vi.fn(),
 	onOpenPerson: vi.fn(),
 	onOpenApplications: vi.fn(),
-	onCreateInviteLink: vi.fn()
+	onCreateInviteLink: vi.fn(),
+	onOpenTiers: vi.fn()
 };
 
 function setup(tiers: MembershipTierSchema[] = [tier('t1', 'Full')]) {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	const invalidate = vi.spyOn(client, 'invalidateQueries');
-	render(QueryClientTestWrapper, {
+	const view = render(QueryClientTestWrapper, {
 		props: {
 			client,
 			component: AddByAccountDialog as never,
 			componentProps: { open: true, slug: 'acme', accessToken: 'tok', tiers, ...cb }
 		}
 	});
-	return { invalidate, user: userEvent.setup() };
+	return { invalidate, user: userEvent.setup(), view, client };
 }
 
 async function lookup(user: ReturnType<typeof userEvent.setup>, email = 'ada@example.org') {
@@ -83,6 +85,7 @@ async function lookup(user: ReturnType<typeof userEvent.setup>, email = 'ada@exa
 }
 
 beforeEach(() => {
+	clearLookupThrottles();
 	for (const fn of Object.values(sdk)) fn.mockReset();
 	for (const fn of Object.values(toast)) fn.mockReset();
 	for (const fn of Object.values(cb)) fn.mockReset();
@@ -296,5 +299,93 @@ describe('AddByAccountDialog', () => {
 		await screen.findByTestId('by-account-not-found');
 		await user.type(screen.getByLabelText('Account email'), 'x');
 		expect(screen.queryByTestId('by-account-not-found')).not.toBeInTheDocument();
+	});
+
+	it('a seed failure keeps the already-has-membership state, without the Open button', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ membership_status: 'active', is_member: true, register_record_id: 'r1' })
+		);
+		sdk.organizationadminmemberregisterGetMemberRegisterRecord.mockResolvedValue({
+			error: { detail: 'boom' },
+			response: { status: 500 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		expect(await screen.findByTestId('by-account-has-membership')).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Open person' })).not.toBeInTheDocument();
+		expect(screen.queryByTestId('register-error')).toBeNull();
+	});
+
+	it('a failed 400 re-lookup does not resurrect the refusal on a later manual Find', async () => {
+		sdk.organizationadminuserlookupLookupUser
+			.mockResolvedValueOnce(found())
+			.mockResolvedValueOnce({ error: { detail: 'boom' }, response: { status: 500 } })
+			.mockResolvedValueOnce(found());
+		sdk.organizationadminmembersAddMember.mockResolvedValue({
+			error: { detail: 'Tier is not available.' },
+			response: { status: 400 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Add as member' }));
+		await waitFor(() => expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(2));
+		await screen.findByRole('alert');
+		await user.click(screen.getByRole('button', { name: 'Find account' }));
+		await screen.findByTestId('by-account-found');
+		await waitFor(() => expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(3));
+		expect(screen.queryByTestId('register-error')).toBeNull();
+		expect(screen.queryByRole('alert')).toBeNull();
+	});
+
+	it('disables Add as member while the 400 re-lookup is in flight', async () => {
+		let resolveSecond: (v: unknown) => void = () => undefined;
+		sdk.organizationadminuserlookupLookupUser
+			.mockResolvedValueOnce(found())
+			.mockReturnValueOnce(new Promise((r) => (resolveSecond = r)));
+		sdk.organizationadminmembersAddMember.mockResolvedValue({
+			error: { detail: 'nope' },
+			response: { status: 400 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Add as member' })).toBeEnabled()
+		);
+		await user.click(screen.getByRole('button', { name: 'Add as member' }));
+		await waitFor(() => expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(2));
+		expect(screen.getByRole('button', { name: 'Add as member' })).toBeDisabled();
+		resolveSecond(found());
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Add as member' })).toBeEnabled()
+		);
+	});
+
+	it('keeps the 429 lockout across close and reopen', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue({
+			error: { detail: 'throttled' },
+			response: { status: 429, headers: new Headers({ 'Retry-After': '1200' }) }
+		});
+		const { user, view } = setup();
+		await lookup(user);
+		await screen.findByRole('alert');
+		view.unmount();
+		const second = setup();
+		expect(screen.getByRole('button', { name: 'Find account' })).toBeDisabled();
+		second.view.unmount();
+	});
+
+	it('explains a missing standard tier and offers Go to Tiers', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		const { user } = setup([]);
+		await lookup(user);
+		expect(await screen.findByTestId('by-account-no-tiers')).toHaveTextContent(
+			'Create a standard membership tier first'
+		);
+		expect(screen.queryByRole('button', { name: 'Add as member' })).toBeNull();
+		await user.click(screen.getByRole('button', { name: 'Go to Tiers' }));
+		expect(cb.onClose).toHaveBeenCalled();
+		expect(cb.onOpenTiers).toHaveBeenCalledOnce();
 	});
 });

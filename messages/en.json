@@ -11251,5 +11251,7 @@
 	"memberPeople.byAccount.addMember": "Add as member",
 	"memberPeople.byAccount.added": "{name} was added as a member.",
 	"memberPeople.byAccount.throttledIn": "Too many lookups. Try again in {time}.",
-	"memberPeople.byAccount.throttled": "Too many lookups. Try again in a little while."
+	"memberPeople.byAccount.throttled": "Too many lookups. Try again in a little while.",
+	"memberPeople.byAccount.noTiers": "Create a standard membership tier first to add members.",
+	"memberPeople.byAccount.goToTiers": "Go to Tiers"
 }

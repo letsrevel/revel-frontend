@@ -11251,5 +11251,7 @@
 	"memberPeople.byAccount.addMember": "Als Mitglied hinzufügen",
 	"memberPeople.byAccount.added": "{name} wurde als Mitglied hinzugefügt.",
 	"memberPeople.byAccount.throttledIn": "Zu viele Suchanfragen. Versuche es in {time} erneut.",
-	"memberPeople.byAccount.throttled": "Zu viele Suchanfragen. Versuche es in Kürze erneut."
+	"memberPeople.byAccount.throttled": "Zu viele Suchanfragen. Versuche es in Kürze erneut.",
+	"memberPeople.byAccount.noTiers": "Lege zuerst eine Standard-Mitgliedschaftsstufe an, um Mitglieder hinzuzufügen.",
+	"memberPeople.byAccount.goToTiers": "Zu den Stufen"
 }

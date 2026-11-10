@@ -14,8 +14,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
-	import { invalidateRegister } from '$lib/member-register/api';
-	import { memberAccessPrefix } from '$lib/member-register/member-access';
+	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
 
 	/**
@@ -41,17 +40,7 @@
 	const queryClient = useQueryClient();
 
 	function refreshAll(): void {
-		void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'members'] });
-		// A cancel, ban, removal or tier move closes (and may reopen) the linked open
-		// entry, which is what account-less entries are paired against.
-		void invalidateRegister(queryClient, slug, true);
-		// The person sheet's single-member lookup sits OUTSIDE the list prefix (a note
-		// save must not refetch it), so a member mutation refreshes it explicitly.
-		void queryClient.invalidateQueries({ queryKey: memberAccessPrefix(slug) });
-		// Losing membership, a ban or a tier move acts on the member's subscription
-		// (billing is stopped / moved server-side), so the Subscriptions tab and its
-		// metrics (nested under this prefix) are stale the moment this resolves.
-		void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'subscriptions'] });
+		void invalidateAfterMemberWrite(queryClient, slug);
 	}
 
 	function userIdOf(target: OrganizationMemberSchema): string {

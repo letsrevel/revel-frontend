@@ -21,11 +21,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MemberStatusBadge from '$lib/components/members/MemberStatusBadge.svelte';
-	import {
-		addMemberByAccount,
-		invalidateRegister,
-		RegisterApiError
-	} from '$lib/member-register/api';
+	import { addMemberByAccount, RegisterApiError } from '$lib/member-register/api';
 	import {
 		classifyLookup,
 		lookupDisplayName,
@@ -35,7 +31,8 @@
 		validateLookupEmail,
 		type AccountLookupOutcome
 	} from '$lib/member-register/account-lookup';
-	import { memberAccessPrefix } from '$lib/member-register/member-access';
+	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
+	import { lookupThrottleRemaining, setLookupThrottle } from '$lib/member-register/lookup-throttle';
 	import { describeRegisterError, type DescribedError } from '$lib/member-register/errors';
 	import { SELECT_CLASS } from '$lib/member-register/ui';
 	import RegisterErrorAlert from './RegisterErrorAlert.svelte';
@@ -51,6 +48,8 @@
 		onOpenPerson: (seed: MembershipRecordSchema) => void;
 		onOpenApplications: () => void;
 		onCreateInviteLink: () => void;
+		/** Switch to the Tiers tab (offered when there is no standard tier to add to). */
+		onOpenTiers?: () => void;
 	}
 
 	const {
@@ -61,7 +60,8 @@
 		onClose,
 		onOpenPerson,
 		onOpenApplications,
-		onCreateInviteLink
+		onCreateInviteLink,
+		onOpenTiers
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
@@ -72,7 +72,8 @@
 	let queriedEmail = $state('');
 	let outcome = $state<AccountLookupOutcome | null>(null);
 	let failure = $state<DescribedError | null>(null);
-	let throttled = $state(false);
+	// Bumped whenever the lockout starts or ends, so `throttled` re-evaluates.
+	let throttleTick = $state(0);
 	let tierId = $state('');
 	// Set when an add was refused with 400: the re-lookup must explain why, and an
 	// answer that still says "addable" means the refusal was something else.
@@ -85,7 +86,6 @@
 		queriedEmail = '';
 		outcome = null;
 		failure = null;
-		throttled = false;
 		tierId = '';
 		refusedAdd = null;
 	}
@@ -95,13 +95,29 @@
 	});
 
 	// A throttled lookup keeps the submit disabled for the advised wait.
+	// The lockout is a per-organization deadline that outlives this dialog's open
+	// state, so closing and reopening (or remounting) cannot dodge it.
+	const throttled = $derived.by(() => {
+		void throttleTick;
+		return lookupThrottleRemaining(slug) > 0;
+	});
 	let throttleTimer: ReturnType<typeof setTimeout> | undefined;
-	function startThrottle(seconds: number | null) {
-		throttled = true;
+	function armThrottleTimer() {
 		clearTimeout(throttleTimer);
-		throttleTimer = setTimeout(() => (throttled = false), (seconds ?? 60) * 1000);
+		const remaining = lookupThrottleRemaining(slug);
+		if (remaining <= 0) return;
+		throttleTimer = setTimeout(() => throttleTick++, remaining + 20);
 	}
-	$effect(() => () => clearTimeout(throttleTimer));
+	function startThrottle(seconds: number | null) {
+		setLookupThrottle(slug, seconds);
+		throttleTick++;
+		armThrottleTimer();
+	}
+	$effect(() => {
+		void slug;
+		untrack(armThrottleTimer);
+		return () => clearTimeout(throttleTimer);
+	});
 
 	const selectableTiers = $derived(tiers.filter((t) => !!t.id));
 	// The only tier is preselected; with several, the admin must choose.
@@ -124,6 +140,7 @@
 	function showFailure(error: unknown, typed: string) {
 		if (email.trim() !== typed) return;
 		outcome = null;
+		refusedAdd = null;
 		failure = describeRegisterError(error, 'lookup');
 		if (failure.throttled) {
 			startThrottle(error instanceof RegisterApiError ? error.retryAfterSeconds : null);
@@ -143,6 +160,7 @@
 		if (emailError) return;
 		outcome = null;
 		failure = null;
+		refusedAdd = null;
 		lookup.mutate(email.trim());
 	}
 
@@ -158,22 +176,14 @@
 	const kind = $derived(found ? classifyLookup(found.user) : null);
 	const name = $derived(found ? lookupDisplayName(found.user, queriedEmail) : '');
 
-	function refreshMembers(): Promise<unknown> {
-		return Promise.all([
-			queryClient.invalidateQueries({ queryKey: ['organization', slug, 'members'] }),
-			invalidateRegister(queryClient, slug, true),
-			// The person sheet's single-member lookup sits outside the list prefix.
-			queryClient.invalidateQueries({ queryKey: memberAccessPrefix(slug) })
-		]);
-	}
-
 	const add = createMutation(() => ({
 		mutationFn: async (user: OrgUserLookupSchema) => {
 			await addMemberByAccount(slug, accessToken, user.user_id, tierId);
 			// The member exists from here on: a failed refresh or seed lookup must not
 			// report the add as failed (a retry would be refused), it only skips the sheet.
+			// Refresh in the background; the seed lookup does not wait for it.
+			invalidateAfterMemberWrite(queryClient, slug).catch(() => undefined);
 			try {
-				await refreshMembers();
 				return await resolveSeed(user, seedDeps(slug, accessToken));
 			} catch {
 				return null;
@@ -207,7 +217,7 @@
 		action();
 	}
 
-	const canAdd = $derived(!!tierId && !add.isPending);
+	const canAdd = $derived(!!tierId && !add.isPending && !lookup.isPending);
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
@@ -303,21 +313,37 @@
 					<p class="text-sm font-medium" data-testid="by-account-found">
 						{m['memberPeople.byAccount.found']({ name })}
 					</p>
-					<div class="space-y-2">
-						<Label for="aba-tier">{m['memberPeople.byAccount.tierLabel']()}</Label>
-						<select id="aba-tier" class={SELECT_CLASS} bind:value={tierId} disabled={add.isPending}>
-							<option value="" disabled>{m['memberRegister.tierPlaceholder']()}</option>
-							{#each selectableTiers as tier (tier.id)}
-								<option value={tier.id}>{tier.name}</option>
-							{/each}
-						</select>
-					</div>
-					<Button type="button" disabled={!canAdd} onclick={() => add.mutate(user)}>
-						{#if add.isPending}
-							<Loader2 class="animate-spin" aria-hidden="true" />
+					{#if selectableTiers.length === 0}
+						<p class="text-sm" data-testid="by-account-no-tiers">
+							{m['memberPeople.byAccount.noTiers']()}
+						</p>
+						{#if onOpenTiers}
+							<Button type="button" variant="outline" onclick={() => closeThen(onOpenTiers)}>
+								{m['memberPeople.byAccount.goToTiers']()}
+							</Button>
 						{/if}
-						{m['memberPeople.byAccount.addMember']()}
-					</Button>
+					{:else}
+						<div class="space-y-2">
+							<Label for="aba-tier">{m['memberPeople.byAccount.tierLabel']()}</Label>
+							<select
+								id="aba-tier"
+								class={SELECT_CLASS}
+								bind:value={tierId}
+								disabled={add.isPending}
+							>
+								<option value="" disabled>{m['memberRegister.tierPlaceholder']()}</option>
+								{#each selectableTiers as tier (tier.id)}
+									<option value={tier.id}>{tier.name}</option>
+								{/each}
+							</select>
+						</div>
+						<Button type="button" disabled={!canAdd} onclick={() => add.mutate(user)}>
+							{#if add.isPending}
+								<Loader2 class="animate-spin" aria-hidden="true" />
+							{/if}
+							{m['memberPeople.byAccount.addMember']()}
+						</Button>
+					{/if}
 				</div>
 			{/if}
 		</div>

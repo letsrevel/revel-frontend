@@ -1,5 +1,6 @@
 import type { MembershipRecordSchema, OrgUserLookupSchema } from '$lib/api/generated/types.gen';
 import { getRecord, listPersonPeriods, lookupAccount } from './api';
+import { EMAIL_RE } from './form-values';
 import { pickCurrentEntry } from './person-target';
 
 /**
@@ -22,13 +23,11 @@ export function lookupDisplayName(user: OrgUserLookupSchema, typedEmail: string)
 	return user.display_name.trim() || typedEmail.trim();
 }
 
-const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /** Client-side check for an empty or obviously malformed value only; the server decides the rest. */
 export function validateLookupEmail(raw: string): 'required' | 'invalid' | null {
 	const email = raw.trim();
 	if (!email) return 'required';
-	return EMAIL_SHAPE.test(email) ? null : 'invalid';
+	return EMAIL_RE.test(email) ? null : 'invalid';
 }
 
 export interface SeedDeps {
@@ -77,9 +76,14 @@ export async function lookupWithSeed(
 ): Promise<AccountLookupOutcome> {
 	const user = await lookupAccount(slug, accessToken, email.trim());
 	if (!user) return { kind: 'not-found' };
-	const seed =
-		classifyLookup(user) === 'has-membership'
-			? await resolveSeed(user, seedDeps(slug, accessToken))
-			: null;
+	let seed: MembershipRecordSchema | null = null;
+	if (classifyLookup(user) === 'has-membership') {
+		try {
+			seed = await resolveSeed(user, seedDeps(slug, accessToken));
+		} catch {
+			// The account IS a member either way: a failed seed only hides the Open button.
+			seed = null;
+		}
+	}
 	return { kind: 'found', user, seed };
 }

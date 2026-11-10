@@ -84,6 +84,8 @@
 		onCreateInviteLink: () => void;
 		/** Open the Payments tab (shown to staff holding `manage_subscriptions`). */
 		onOpenPayments?: () => void;
+		/** Open the Tiers tab (the "Add by account" dialog offers it when no standard tier exists). */
+		onOpenTiers?: () => void;
 		/** Users who are staff: the member actions offer "make staff" only to the rest. */
 		staffUserIds: Set<string>;
 		/**
@@ -101,6 +103,7 @@
 		onOpenApplications,
 		onCreateInviteLink,
 		onOpenPayments,
+		onOpenTiers,
 		staffUserIds,
 		active = true
 	}: Props = $props();
@@ -526,6 +529,7 @@
 	onOpenPerson={(seed) => (sheet = sheetStateFor(seed))}
 	{onOpenApplications}
 	{onCreateInviteLink}
+	{onOpenTiers}
 />
 <RecordFormDialog
 	open={formOpen}
