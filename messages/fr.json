@@ -4199,7 +4199,8 @@
 					"pending": "En attente",
 					"succeeded": "Réussi",
 					"failed": "Échoué",
-					"refunded": "Remboursé"
+					"refunded": "Remboursé",
+					"voided": "Annulé"
 				},
 				"col": {
 					"member": "Membre",

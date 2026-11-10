@@ -10,7 +10,7 @@
 	import type {
 		OrganizationAdminDetailSchema,
 		OrganizationMembershipPaymentSchema,
-		PaymentStatus,
+		MembershipPaymentStatus,
 		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -40,7 +40,7 @@
 
 	let search = $state('');
 	let debounced = $state('');
-	let statusFilter = $state<PaymentStatus | 'all'>('all');
+	let statusFilter = $state<MembershipPaymentStatus | 'all'>('all');
 	let planFilter = $state<string>('all');
 	let pageNum = $state(1);
 

@@ -4229,7 +4229,8 @@
 					"pending": "Ausstehend",
 					"succeeded": "Erfolgreich",
 					"failed": "Fehlgeschlagen",
-					"refunded": "Erstattet"
+					"refunded": "Erstattet",
+					"voided": "Storniert"
 				},
 				"col": {
 					"member": "Mitglied",
