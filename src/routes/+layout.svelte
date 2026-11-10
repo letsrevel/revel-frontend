@@ -12,6 +12,7 @@
 	import { Toaster, toast } from 'svelte-sonner';
 	import { extractErrorMessage, isAuthError } from '$lib/utils/errors';
 	import { hasAnonymousHolds, releaseAnonymousHolds } from '$lib/utils/seat-holds';
+	import SkipLink from '$lib/components/common/SkipLink.svelte';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
 	import OrgBrandStyle from '$lib/components/brand/OrgBrandStyle.svelte';
@@ -308,6 +309,8 @@
 		turning the injection off changes nothing but the console noise. Keep the two
 		in sync — app.html is now the ONLY anti-FOUC script.
 	-->
+	<!-- First focusable element on every page: must precede the banners. -->
+	<SkipLink />
 	<ModeWatcher disableHeadScriptInjection />
 	<QueryClientProvider client={queryClient}>
 		<Toaster richColors position="top-right" />
