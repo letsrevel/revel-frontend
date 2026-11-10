@@ -164,7 +164,7 @@ describe('org-wide payments tab', () => {
 		await screen.findByRole('table');
 		expect(ledger.mock.calls[0][0]?.query?.include_voided).toBeUndefined();
 
-		await userEvent.click(screen.getByLabelText('Show voided payments'));
+		await userEvent.click(screen.getByLabelText('Include voided payments'));
 		await waitFor(() =>
 			expect(ledger).toHaveBeenLastCalledWith(
 				expect.objectContaining({ query: expect.objectContaining({ include_voided: true }) })
@@ -243,12 +243,12 @@ describe('subscription drawer payments', () => {
 		expect(screen.queryByRole('button', { name: /^Void the payment of/ })).toBeNull();
 	});
 
-	it('adds include_voided: true to the list call when "Show voided" is on', async () => {
+	it('adds include_voided: true to the list call when "Include voided" is on', async () => {
 		arrange([drawerRow()]);
 		await screen.findByRole('table');
 		expect(list.mock.calls[0][0]?.query?.include_voided).toBeUndefined();
 
-		await userEvent.click(screen.getByLabelText('Show voided payments'));
+		await userEvent.click(screen.getByLabelText('Include voided payments'));
 		await waitFor(() =>
 			expect(list).toHaveBeenLastCalledWith(
 				expect.objectContaining({ query: { include_voided: true } })

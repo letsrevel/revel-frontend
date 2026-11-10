@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
-	import { Loader2 } from '@lucide/svelte';
+	import { ChevronDown, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
@@ -14,6 +14,7 @@
 	import { memberRegisterKeys } from '$lib/member-register/api';
 	import {
 		NOTE_MAX_LENGTH,
+		unescapeHtml,
 		deleteNote,
 		fetchNote,
 		membersListKey,
@@ -40,11 +41,24 @@
 		accessToken: string | null | undefined;
 		/** Show the section heading and privacy hint. A host that has its own title (a dialog) hides them. */
 		showHeader?: boolean;
+		/**
+		 * Start collapsed: heading, a 3-line preview and a disclosure button. The editor
+		 * stays mounted (just hidden) while collapsed, so unsaved edits survive. Off for
+		 * hosts that give the note a whole surface (the dialog).
+		 */
+		collapsible?: boolean;
 		/** Called after a save or a delete went through (a dialog host closes itself here). */
 		onChanged?: () => void;
 	}
 
-	const { slug, target, accessToken, showHeader = true, onChanged }: Props = $props();
+	const {
+		slug,
+		target,
+		accessToken,
+		showHeader = true,
+		collapsible = false,
+		onChanged
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 	const confirmation = createConfirm();
@@ -53,6 +67,8 @@
 	// Plain (non-reactive) flag: the draft is seeded exactly once per mount.
 	let seeded = false;
 	let errorMessage = $state<string | null>(null);
+	let expanded = $state(false);
+	const open = $derived(!collapsible || expanded);
 
 	const key = $derived(noteKey(slug, target));
 
@@ -76,6 +92,9 @@
 			errorMessage = null;
 		}
 	});
+
+	// Plain-text preview of the draft (so an unsaved edit shows too).
+	const preview = $derived(unescapeHtml(draft).trim());
 
 	const counter = $derived(noteCounter(draft));
 	const isEmpty = $derived(draft.trim().length === 0);
@@ -184,7 +203,7 @@
 			id="staff-note-heading"
 			level={3}
 			title={m['memberPeople.sheet.noteHeading']()}
-			subtitle={m['userNote.hint']()}
+			subtitle={open ? m['userNote.hint']() : undefined}
 		/>
 	{/if}
 
@@ -196,7 +215,33 @@
 	{:else if noteQuery.isError}
 		<p class="py-2 text-sm text-destructive" role="alert">{m['userNote.loadError']()}</p>
 	{:else}
-		<div class="space-y-3">
+		{#if collapsible}
+			<p
+				class="line-clamp-3 whitespace-pre-line break-words text-sm {preview
+					? ''
+					: 'text-muted-foreground'}"
+				hidden={expanded}
+				data-testid="staff-note-preview"
+			>
+				{preview || m['userNote.noNoteYet']()}
+			</p>
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				class="-ml-3"
+				aria-expanded={expanded}
+				aria-controls="staff-note-panel"
+				onclick={() => (expanded = !expanded)}
+			>
+				<ChevronDown
+					class="mr-1 h-4 w-4 transition-transform {expanded ? 'rotate-180' : ''}"
+					aria-hidden="true"
+				/>
+				{expanded ? m['userNote.hide']() : preview ? m['userNote.show']() : m['userNote.add']()}
+			</Button>
+		{/if}
+		<div id="staff-note-panel" class="space-y-3" hidden={!open}>
 			<MarkdownEditor
 				id="staff-note-body"
 				label={m['userNote.label']()}
