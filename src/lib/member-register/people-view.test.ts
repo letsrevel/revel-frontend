@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_FILTERS } from './filters';
 import {
+	ACTIVE_NOW,
 	PEOPLE_VIEWS,
 	chipToQuery,
 	filtersForView,
@@ -15,54 +16,65 @@ import {
 
 const parse = (qs: string) => parsePeopleFilters(new URLSearchParams(qs));
 
-const TODAY = '2026-11-09';
-
 describe('chip <-> register filter mapping', () => {
 	it('defaults to "Current" when the URL carries no filters', () => {
 		const filters = parse('');
 		expect(viewFromFilters(filters)).toBe('current');
-		expect(peopleQuery(filters, TODAY)).toMatchObject({ active_on: TODAY, kind: 'standard' });
-		expect(peopleQuery(filters, TODAY)).not.toHaveProperty('is_open');
+		expect(peopleQuery(filters)).toMatchObject({ active_at: ACTIVE_NOW, kind: 'standard' });
+		expect(peopleQuery(filters)).not.toHaveProperty('active_on');
+		expect(peopleQuery(filters)).not.toHaveProperty('is_open');
 		expect(parse('tab=people').kind).toBe('standard');
 	});
 
 	it('maps every chip to its backend params (chipToQuery is the only mapping)', () => {
-		expect(chipToQuery('current', TODAY)).toEqual({ active_on: TODAY, kind: 'standard' });
-		expect(chipToQuery('day', TODAY)).toEqual({ kind: 'temporary' });
-		expect(chipToQuery('ended', TODAY)).toEqual({ ended: true });
-		expect(chipToQuery('no-account', TODAY)).toEqual({ has_account: false });
-		expect(chipToQuery('everyone', TODAY)).toEqual({});
+		expect(chipToQuery('current')).toEqual({ active_at: ACTIVE_NOW, kind: 'standard' });
+		expect(chipToQuery('day')).toEqual({ kind: 'temporary' });
+		expect(chipToQuery('ended')).toEqual({ ended: true });
+		expect(chipToQuery('no-account')).toEqual({ has_account: false });
+		expect(chipToQuery('everyone')).toEqual({});
 		// Through the list query: chip params on top of page / page_size, nothing else.
-		const everyone = peopleQuery(filtersForView('everyone', parse('')), TODAY);
+		const everyone = peopleQuery(filtersForView('everyone', parse('')));
 		expect(everyone).toEqual({ page: 1, page_size: 20 });
-		expect(peopleQuery(filtersForView('ended', parse('')), TODAY)).toMatchObject({ ended: true });
+		expect(peopleQuery(filtersForView('ended', parse('')))).toMatchObject({ ended: true });
 	});
 
 	it('keeps search and tier with a chip', () => {
 		const tier = '0b8b3a52-7a54-4f6b-9a1e-6c5d1f7a3c11';
-		const query = peopleQuery(parse(`q=ada&tier=${tier}`), TODAY);
-		expect(query).toMatchObject({ search: 'ada', tier_id: tier, active_on: TODAY });
+		const query = peopleQuery(parse(`q=ada&tier=${tier}`));
+		expect(query).toMatchObject({ search: 'ada', tier_id: tier, active_at: ACTIVE_NOW });
+		expect(query).not.toHaveProperty('active_on');
 	});
 
 	it('drops every chip filter in "As of" mode, keeping only the day', () => {
 		for (const view of PEOPLE_VIEWS) {
 			const filters = { ...filtersForView(view, parse('')), activeOn: '2026-03-12' };
-			const query = peopleQuery(filters, TODAY);
+			const query = peopleQuery(filters);
 			expect(query).toEqual({ page: 1, page_size: 20, active_on: '2026-03-12' });
+			expect(query).not.toHaveProperty('active_at');
 		}
 	});
 
+	it('never sends active_on and active_at together', () => {
+		const asOf = peopleQuery({ ...parse(''), activeOn: '2026-03-12' });
+		expect(asOf).toHaveProperty('active_on', '2026-03-12');
+		expect(asOf).not.toHaveProperty('active_at');
+		const current = peopleQuery(parse(''));
+		expect(current).toHaveProperty('active_at', ACTIVE_NOW);
+		expect(current).not.toHaveProperty('active_on');
+	});
+
 	it('sends the real ended=true filter for Ended (no is_open, no client pass)', () => {
-		const ended = peopleQuery(filtersForView('ended', parse('')), TODAY);
+		const ended = peopleQuery(filtersForView('ended', parse('')));
 		expect(ended).toMatchObject({ ended: true });
 		expect(ended).not.toHaveProperty('is_open');
-		expect(peopleQuery(parse(''), TODAY)).not.toHaveProperty('ended');
+		expect(peopleQuery(parse(''))).not.toHaveProperty('ended');
 	});
 
 	it('keeps the raw filters of a combination no chip covers', () => {
-		const query = peopleQuery(parse('account=with'), TODAY);
+		const query = peopleQuery(parse('account=with'));
 		expect(query).toMatchObject({ has_account: true });
 		expect(query).not.toHaveProperty('active_on');
+		expect(query).not.toHaveProperty('active_at');
 	});
 
 	it('keeps the chip in the URL, omitting only the default', () => {

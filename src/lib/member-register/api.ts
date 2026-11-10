@@ -26,7 +26,7 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { filtersToQuery, type RegisterFilters, type RegisterListQuery } from './filters';
-import type { PeopleQuery } from './people-view';
+import { ACTIVE_NOW, type PeopleQuery } from './people-view';
 import type { EndBody, RecordUpdateBody } from './form-values';
 
 /**
@@ -127,6 +127,16 @@ export async function invalidateRegister(
 	]);
 }
 
+/**
+ * Swap the `ACTIVE_NOW` placeholder for the real instant (an aware ISO datetime)
+ * right before a list request is sent. Every other query passes through untouched.
+ * The query KEY keeps the placeholder, so the cache entry is stable.
+ */
+export function resolveActiveNow(query: RegisterListQuery): RegisterListQuery {
+	if (query.active_at !== ACTIVE_NOW) return query;
+	return { ...query, active_at: new Date().toISOString() };
+}
+
 async function fetchRegisterPage(
 	slug: string,
 	accessToken: string | null | undefined,
@@ -134,7 +144,7 @@ async function fetchRegisterPage(
 ): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
 	const res = await organizationadminmemberregisterListMemberRegister({
 		path: { slug },
-		query,
+		query: resolveActiveNow(query),
 		headers: authHeaders(accessToken)
 	});
 	ensureOk(res);

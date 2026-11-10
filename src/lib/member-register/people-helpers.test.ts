@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 
 const sdk = vi.hoisted(() => ({
@@ -19,8 +19,10 @@ import {
 	listMergedInto,
 	listPeople,
 	listPersonPeriods,
+	resolveActiveNow,
 	startRegisterExport
 } from './api';
+import { ACTIVE_NOW } from './people-view';
 import { makeRecord } from '$lib/components/member-register/person-fixtures';
 
 describe('calendarDayInZone', () => {
@@ -145,6 +147,29 @@ describe('merged_into and export include_merged', () => {
 	});
 });
 
+describe('resolveActiveNow', () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('replaces the placeholder with the exact current ISO instant', () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-11-09T01:30:00.000Z'));
+		expect(resolveActiveNow({ page: 1, page_size: 20, active_at: ACTIVE_NOW })).toEqual({
+			page: 1,
+			page_size: 20,
+			active_at: '2026-11-09T01:30:00.000Z'
+		});
+	});
+
+	it('leaves every other query untouched', () => {
+		const query = { page: 1, page_size: 20, active_on: '2026-03-12', kind: 'standard' as const };
+		expect(resolveActiveNow(query)).toBe(query);
+		const instant = { page: 1, page_size: 20, active_at: '2026-03-12T10:00:00.000Z' };
+		expect(resolveActiveNow(instant)).toBe(instant);
+	});
+});
+
 describe('listPeople / countRegister', () => {
 	const NOW = new Date('2026-11-09T12:00:00Z');
 	const row = (id: string, valid_until: string | null): Partial<MembershipRecordSchema> => ({
@@ -170,6 +195,33 @@ describe('listPeople / countRegister', () => {
 		expect(page.count).toBe(2);
 		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
 		expect(sent).toEqual({ page: 1, page_size: 20, ended: true });
+	});
+
+	it('sends Current as a real ISO instant, never the placeholder', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-11-09T01:30:00.000Z'));
+		try {
+			sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
+				data: { count: 0, next: null, previous: null, results: [] }
+			});
+			await listPeople('org', 'tok', {
+				page: 1,
+				page_size: 20,
+				active_at: ACTIVE_NOW,
+				kind: 'standard'
+			});
+			const sent =
+				sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
+			expect(sent).toEqual({
+				page: 1,
+				page_size: 20,
+				active_at: '2026-11-09T01:30:00.000Z',
+				kind: 'standard'
+			});
+			expect(sent).not.toHaveProperty('active_on');
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it("lists a person's periods with user_id and include_merged", async () => {

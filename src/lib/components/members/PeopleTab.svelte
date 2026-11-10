@@ -73,7 +73,7 @@
 	} from '$lib/member-register/person-target';
 	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
-	import { calendarDayInZone, formatCalendarDay } from '$lib/member-register/calendar-day';
+	import { formatCalendarDay } from '$lib/member-register/calendar-day';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -115,11 +115,9 @@
 	// The URL query is the single source of truth: shareable, and back/forward
 	// restores it. The group chip is `?view=`, absent for the default ("Current").
 	const filters = $derived(parsePeopleFilters($page.url.searchParams));
-	// "Today" on the organization's wall clock: what the Current chip asks for.
-	const today = $derived(calendarDayInZone(timezone));
 	// Chip -> backend params (one mapping). In "As of" mode every chip filter is
 	// dropped: the snapshot is everyone active that day.
-	const listParams = $derived(peopleQuery(filters, today));
+	const listParams = $derived(peopleQuery(filters));
 
 	const navigator = createFilterNavigator({
 		current: () => filters,

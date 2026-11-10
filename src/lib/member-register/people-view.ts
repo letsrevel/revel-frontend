@@ -100,23 +100,32 @@ export function filtersForView(view: PeopleView, current: RegisterFilters): Regi
 /** The People list query: the register's list query (the Ended chip sends `ended`). */
 export type PeopleQuery = RegisterListQuery;
 
-type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_on' | 'has_account' | 'ended'>;
+/**
+ * Placeholder for "the current instant" in a People query KEY. It is replaced by
+ * the real `new Date().toISOString()` when the request is sent (`resolveActiveNow`),
+ * so the query key stays stable while every fetch and refetch uses the actual time.
+ * It is never sent to the backend.
+ */
+export const ACTIVE_NOW = 'now';
+
+type ChipQuery = Pick<RegisterListQuery, 'kind' | 'active_at' | 'has_account' | 'ended'>;
 
 /**
  * THE chip -> query mapping (the only place a chip becomes backend params).
- * `today` is the calendar day in the ORGANIZATION's timezone.
  *
- * - Current: `active_on=<today>` + `kind=standard`. Not `is_open`: that is
- *   `valid_until IS NULL`, which misses a standard entry with a future end and
- *   would include nothing time-aware.
+ * - Current: `active_at=now` + `kind=standard` (`now` is `ACTIVE_NOW`, resolved at
+ *   send time). It is an INSTANT filter, not `active_on`: `active_on` matches
+ *   everyone who overlaps the calendar day, so a period that ended at 01:00 still
+ *   showed as Current until midnight. Not `is_open`: that is `valid_until IS NULL`,
+ *   which misses a standard entry with a future end.
  * - Day members: `kind=temporary`. No account: `has_account=false`.
  * - Ended: `ended=true` (`valid_until <= now` or revoked; the backend decides).
  * - Everyone: nothing.
  */
-export function chipToQuery(view: PeopleView, today: string): ChipQuery {
+export function chipToQuery(view: PeopleView): ChipQuery {
 	switch (view) {
 		case 'current':
-			return { active_on: today, kind: 'standard' };
+			return { active_at: ACTIVE_NOW, kind: 'standard' };
 		case 'day':
 			return { kind: 'temporary' };
 		case 'ended':
@@ -130,14 +139,15 @@ export function chipToQuery(view: PeopleView, today: string): ChipQuery {
 
 /**
  * Filters -> People list query. An "As of" day is a snapshot of everyone active
- * that day, so it drops EVERY chip filter (kind, account, open, ended). A
- * combination no chip covers (a legacy raw link) keeps its raw filters.
+ * that day, so it drops EVERY chip filter (kind, account, open, ended) and sends
+ * `active_on` only, never `active_at`. A combination no chip covers (a legacy raw
+ * link) keeps its raw filters.
  */
-export function peopleQuery(filters: RegisterFilters, today: string): PeopleQuery {
+export function peopleQuery(filters: RegisterFilters): PeopleQuery {
 	const bare = filtersToQuery({ ...filters, ...VIEW_FILTERS.everyone });
 	if (filters.activeOn) return bare;
 	const view = viewFromFilters(filters);
-	return view ? { ...bare, ...chipToQuery(view, today) } : filtersToQuery(filters);
+	return view ? { ...bare, ...chipToQuery(view) } : filtersToQuery(filters);
 }
 
 /** One status per row. Precedence is the order of the checks in `getPersonStatus`. */

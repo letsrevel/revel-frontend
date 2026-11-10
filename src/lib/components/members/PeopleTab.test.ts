@@ -122,12 +122,12 @@ describe('PeopleTab while another tab is showing', () => {
 });
 
 describe('PeopleTab chips and queries', () => {
-	it('asks for today (org timezone) + standard on the default "Current" chip', async () => {
+	it('asks for the instant (active_at now) + standard on the default "Current" chip', async () => {
 		renderTab(true);
 		await waitFor(() => expect(api.listPeople).toHaveBeenCalled());
 		const query = api.listPeople.mock.calls[0][2];
-		expect(query).toMatchObject({ kind: 'standard', page: 1 });
-		expect(query.active_on).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+		expect(query).toMatchObject({ kind: 'standard', page: 1, active_at: 'now' });
+		expect(query).not.toHaveProperty('active_on');
 		expect(query).not.toHaveProperty('is_open');
 	});
 
