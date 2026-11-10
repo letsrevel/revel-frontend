@@ -46,7 +46,9 @@ describe('AddPersonMenu', () => {
 	it('offers adding to the register and creating an invite link', async () => {
 		const onAddToRegister = vi.fn();
 		const onCreateInviteLink = vi.fn();
-		render(AddPersonMenu, { props: { onAddToRegister, onCreateInviteLink } });
+		render(AddPersonMenu, {
+			props: { onAddToRegister, onAddByAccount: vi.fn(), onCreateInviteLink }
+		});
 		screen.getByTestId('add-person').focus();
 		await userEvent.keyboard('{Enter}');
 		await waitFor(() =>
@@ -55,7 +57,7 @@ describe('AddPersonMenu', () => {
 		const items = screen
 			.queryAllByRole('menuitem', { hidden: true })
 			.map((el) => el.textContent?.trim());
-		expect(items).toEqual(['Add to register', 'Create invite link']);
+		expect(items).toEqual(['Add to register', 'Add by account', 'Create invite link']);
 		await userEvent.click(screen.getByTestId('add-to-register'));
 		expect(onAddToRegister).toHaveBeenCalledTimes(1);
 		document.body.style.pointerEvents = '';

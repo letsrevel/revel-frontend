@@ -3076,7 +3076,7 @@
 	},
 	"makeMemberAction": {
 		"button": "Rendi membro",
-		"success": "{name} è stato aggiunto come membro.",
+		"success": "{name} fa ora parte dei membri.",
 		"error": "Impossibile aggiungere il membro. Per favore riprova.",
 		"tiersLoadError": "Impossibile caricare i livelli di iscrizione. Per favore riprova.",
 		"alreadyMember": "Questa persona è già un membro."
@@ -11231,5 +11231,27 @@
 	"memberPeople.sheet.duplicateHint": "Un'altra voce rivendica lo stesso account. Controllala in Possibili duplicati.",
 	"memberPeople.sheet.paymentsHeading": "Pagamenti",
 	"memberPeople.sheet.paymentsHelp": "I pagamenti di iscrizione di questa persona sono nella scheda Pagamenti.",
-	"memberPeople.sheet.openPayments": "Apri la scheda Pagamenti"
+	"memberPeople.sheet.openPayments": "Apri la scheda Pagamenti",
+	"memberPeople.addByAccount": "Aggiungi tramite account",
+	"memberPeople.byAccount.title": "Aggiungi tramite account",
+	"memberPeople.byAccount.description": "Trova chi ha già un account Revel verificato dalla sua email e aggiungi la persona come membro.",
+	"memberPeople.byAccount.emailLabel": "Email dell'account",
+	"memberPeople.byAccount.errRequired": "Inserisci un indirizzo email.",
+	"memberPeople.byAccount.errInvalid": "Inserisci un indirizzo email valido.",
+	"memberPeople.byAccount.find": "Cerca account",
+	"memberPeople.byAccount.finding": "Ricerca in corso...",
+	"memberPeople.byAccount.notFound": "Nessun account verificato usa questa email. Forse non ha ancora creato l'account o non ha confermato l'email.",
+	"memberPeople.byAccount.createInvite": "Crea invece un link di invito",
+	"memberPeople.byAccount.pending": "{name} ha una richiesta di iscrizione in sospeso.",
+	"memberPeople.byAccount.reviewApplication": "Esamina la richiesta",
+	"memberPeople.byAccount.hasMembership": "{name} ha già un'iscrizione qui.",
+	"memberPeople.byAccount.openPerson": "Apri la persona",
+	"memberPeople.byAccount.found": "Account trovato: {name}",
+	"memberPeople.byAccount.tierLabel": "Livello",
+	"memberPeople.byAccount.addMember": "Aggiungi come membro",
+	"memberPeople.byAccount.added": "{name} fa ora parte dei membri.",
+	"memberPeople.byAccount.throttledIn": "Troppe ricerche. Riprova tra {time}.",
+	"memberPeople.byAccount.throttled": "Troppe ricerche. Riprova tra poco.",
+	"memberPeople.byAccount.noTiers": "Crea prima un livello di iscrizione standard per aggiungere iscritti.",
+	"memberPeople.byAccount.goToTiers": "Vai ai livelli"
 }

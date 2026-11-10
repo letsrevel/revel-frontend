@@ -78,7 +78,7 @@ export type FormErrors = Partial<
 >;
 
 // Deliberately loose: the server is the authority (EmailStr); this only catches typos.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateRecordForm(
 	values: RecordFormValues,

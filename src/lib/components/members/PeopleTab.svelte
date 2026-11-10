@@ -42,6 +42,7 @@
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
 	import PeopleChips from '$lib/components/member-register/PeopleChips.svelte';
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
+	import AddByAccountDialog from '$lib/components/member-register/AddByAccountDialog.svelte';
 	import AddPersonMenu from '$lib/components/member-register/AddPersonMenu.svelte';
 	import {
 		countRegister,
@@ -83,6 +84,8 @@
 		onCreateInviteLink: () => void;
 		/** Open the Payments tab (shown to staff holding `manage_subscriptions`). */
 		onOpenPayments?: () => void;
+		/** Open the Tiers tab (the "Add by account" dialog offers it when no standard tier exists). */
+		onOpenTiers?: () => void;
 		/** Users who are staff: the member actions offer "make staff" only to the rest. */
 		staffUserIds: Set<string>;
 		/**
@@ -100,6 +103,7 @@
 		onOpenApplications,
 		onCreateInviteLink,
 		onOpenPayments,
+		onOpenTiers,
 		staffUserIds,
 		active = true
 	}: Props = $props();
@@ -256,6 +260,7 @@
 	let merging = $state<PossibleDuplicateSchema | null>(null);
 	let inviteAllOpen = $state(false);
 	let exportOpen = $state(false);
+	let byAccountOpen = $state(false);
 
 	// Every dialog works on the LIVE row (falling back to the opened snapshot), so a
 	// refetch after a 409/404 updates the lock rules and the future-date checks.
@@ -335,7 +340,11 @@
 				<Download aria-hidden="true" />
 				{m['memberRegister.exportOpen']()}
 			</Button>
-			<AddPersonMenu onAddToRegister={openCreate} {onCreateInviteLink} />
+			<AddPersonMenu
+				onAddToRegister={openCreate}
+				onAddByAccount={() => (byAccountOpen = true)}
+				{onCreateInviteLink}
+			/>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					{#snippet child({ props })}
@@ -510,6 +519,17 @@
 		sheet = null;
 		onOpenPayments?.();
 	}}
+/>
+<AddByAccountDialog
+	open={byAccountOpen}
+	{slug}
+	{accessToken}
+	tiers={formTiers}
+	onClose={() => (byAccountOpen = false)}
+	onOpenPerson={(seed) => (sheet = sheetStateFor(seed))}
+	{onOpenApplications}
+	{onCreateInviteLink}
+	{onOpenTiers}
 />
 <RecordFormDialog
 	open={formOpen}

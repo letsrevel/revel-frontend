@@ -302,6 +302,7 @@
 						activeTab = 'invite-links';
 					}}
 					{staffUserIds}
+					onOpenTiers={() => (activeTab = 'tiers')}
 					onOpenPayments={canManageSubscriptions ? () => (activeTab = 'payments') : undefined}
 				/>
 			</TabsContent>

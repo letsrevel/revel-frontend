@@ -4,7 +4,7 @@ import { backendMessage } from '$lib/utils/api-error-detail';
 import { RegisterApiError } from './api';
 
 export type RegisterAction =
-	'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all' | 'merge' | 'unlink';
+	'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all' | 'merge' | 'unlink' | 'lookup';
 
 export interface DescribedError {
 	/** 409: the entry changed since the page loaded; callers refetch. */
@@ -30,6 +30,11 @@ export function formatWait(seconds: number): string {
 
 function throttledMessage(action: RegisterAction, retryAfter: number | null): string {
 	if (action === 'export') return m['memberRegister.errorExportThrottled']();
+	if (action === 'lookup') {
+		return retryAfter
+			? m['memberPeople.byAccount.throttledIn']({ time: formatWait(retryAfter) })
+			: m['memberPeople.byAccount.throttled']();
+	}
 	if (action === 'invite-all') {
 		// Retry-After tells a burst throttle (seconds) from the rolling 5-per-24h one (hours).
 		return retryAfter
@@ -65,6 +70,11 @@ export function describeRegisterError(error: unknown, action: RegisterAction): D
 				? m['memberRegister.errorDeleteLinked']()
 				: m['memberRegister.errorStale']();
 		return { stale: action !== 'delete', message, detail: server };
+	}
+	if (status === 404 && action === 'lookup') {
+		// A 404 that is not `user_not_found` (that one never reaches here) is a broken
+		// route or org, not a stale register entry.
+		return { stale: false, message: m['memberRegister.errorGeneric'](), detail: null };
 	}
 	if (status === 404) {
 		return { stale: true, message: m['memberRegister.errorNotFound'](), detail: null };
