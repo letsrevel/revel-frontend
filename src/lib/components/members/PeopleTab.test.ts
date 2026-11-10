@@ -184,6 +184,32 @@ describe('PeopleTab refetches when a listed Current row ends', () => {
 		expect(api.listPeople).toHaveBeenCalledTimes(2);
 	});
 
+	it('re-arms after a wake-up whose refetch returns the SAME rows (capped delay)', async () => {
+		// A row ending in 30 days: the timer is capped at 24h. Each wake-up refetches
+		// and gets structurally identical data, so `records` keeps its reference and
+		// the effect would not re-run. The next timer must still be armed.
+		const DAY = 24 * 60 * 60 * 1000;
+		api.listPeople.mockReset().mockResolvedValue({
+			...page,
+			results: [makeRecord({ id: 'r1', valid_until: '2026-12-09T12:00:00.000Z' })]
+		});
+		const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+		try {
+			const listInvalidations = () =>
+				invalidate.mock.calls.filter(([f]) => JSON.stringify(f?.queryKey ?? []).includes('"list"'))
+					.length;
+			renderTab(true);
+			await vi.advanceTimersByTimeAsync(0);
+			expect(listInvalidations()).toBe(0);
+			await vi.advanceTimersByTimeAsync(DAY);
+			expect(listInvalidations()).toBe(1);
+			await vi.advanceTimersByTimeAsync(DAY);
+			expect(listInvalidations()).toBe(2);
+		} finally {
+			invalidate.mockRestore();
+		}
+	});
+
 	it('schedules nothing on the Ended chip (rows there already ended)', async () => {
 		nav.search = '?tab=people&view=ended';
 		renderTab(true);
@@ -196,12 +222,15 @@ describe('PeopleTab refetches when a listed Current row ends', () => {
 		// An unmounted query is inactive, so a leaked timer would not refetch it; the
 		// invalidation itself is what must not happen.
 		const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
-		const { unmount } = renderTab(true);
-		await vi.advanceTimersByTimeAsync(0);
-		unmount();
-		await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
-		expect(invalidate).not.toHaveBeenCalled();
-		invalidate.mockRestore();
+		try {
+			const { unmount } = renderTab(true);
+			await vi.advanceTimersByTimeAsync(0);
+			unmount();
+			await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+			expect(invalidate).not.toHaveBeenCalled();
+		} finally {
+			invalidate.mockRestore();
+		}
 	});
 });
 

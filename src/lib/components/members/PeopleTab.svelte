@@ -202,17 +202,23 @@
 	// answers at fetch time: a row's start (`can_invite` flips) and, on the Current
 	// chip, a listed row's end (it would keep showing as Active). ONE timer, for the
 	// nearer of the two. It re-arms whenever the rows or the chip change; the cleanup
-	// clears it on unmount.
+	// clears it on unmount. A wake-up bumps `wakeTick` so the effect re-runs even when
+	// the refetch returned the same rows (structural sharing keeps `records` as it
+	// was): a capped delay or a late server then still gets its next timer, and a
+	// null delay stops the loop.
 	const queryClient = useQueryClient();
 	const activeNow = $derived(listParams.activeNow === true);
+	let wakeTick = $state(0);
 	$effect(() => {
 		if (!active) return;
+		void wakeTick;
 		const delay = nextListRefetchDelay(records, { activeNow });
 		if (delay === null) return;
 		const handle = setTimeout(() => {
 			void queryClient.invalidateQueries({
 				queryKey: memberRegisterKeys.list(slug, listParams)
 			});
+			wakeTick += 1;
 		}, delay);
 		return () => clearTimeout(handle);
 	});
