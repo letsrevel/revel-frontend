@@ -15,6 +15,7 @@ vi.mock('$lib/api/client', () => ({ client: {} }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), error: vi.fn() }));
 vi.mock('svelte-sonner', () => ({ toast }));
 
+import { isSameName } from '$lib/member-register/reconcile';
 import DuplicatesList from './DuplicatesList.svelte';
 import MergeRecordsDialog from './MergeRecordsDialog.svelte';
 import UnlinkRecordDialog from './UnlinkRecordDialog.svelte';
@@ -78,6 +79,28 @@ describe('DuplicatesList', () => {
 		await userEvent.click(screen.getByTestId('duplicate-merge'));
 		expect(onMerge).toHaveBeenCalledWith(pair);
 	});
+
+	it('labels the merge button by entry kind when both names match', () => {
+		const same = { ...pair, unlinked: record({ id: 'U', full_name: 'Ada Lovelace' }) };
+		renderIn(DuplicatesList, { pairs: [same], onMerge: vi.fn() });
+		expect(
+			screen.getByRole('button', {
+				name: "Merge the entry without an account into Ada Lovelace's record"
+			})
+		).toBeInTheDocument();
+	});
+});
+
+describe('isSameName', () => {
+	it('ignores case, spacing and unicode composition', () => {
+		expect(isSameName(' Ada  Lovelace', 'ada lovelace ')).toBe(true);
+		expect(isSameName('José N', 'José N')).toBe(true);
+		expect(isSameName('Ada L.', 'Ada Lovelace')).toBe(false);
+	});
+	it('never treats two empty names as the same', () => {
+		expect(isSameName('', '')).toBe(false);
+		expect(isSameName('   ', ' ')).toBe(false);
+	});
 });
 
 describe('MergeRecordsDialog', () => {
@@ -105,6 +128,16 @@ describe('MergeRecordsDialog', () => {
 			screen.getByText("Merge the entry without an account into Ada Lovelace's record?")
 		).toBeInTheDocument();
 		expect(screen.queryByText(/Merge .* into Ada Lovelace\?/)).not.toBeInTheDocument();
+	});
+
+	it('words the preview without repeating the name when the names match', () => {
+		renderIn(MergeRecordsDialog, {
+			...props,
+			pair: { ...pair, unlinked: record({ id: 'U', full_name: 'Ada Lovelace' }) }
+		});
+		const text = document.body.textContent ?? '';
+		expect(text).toContain('The entry without an account is marked as merged.');
+		expect(text).not.toContain('Ada Lovelace is marked as merged.');
 	});
 
 	it('says a closed entry is attached to the account', () => {

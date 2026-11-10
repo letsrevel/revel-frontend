@@ -60,6 +60,13 @@ export interface MergePlan {
 	canSwap: false;
 }
 
+/** Names compare NFC-normalised, trimmed, whitespace-collapsed, case-insensitive; empty never matches. */
+export function isSameName(a: string, b: string): boolean {
+	const norm = (s: string): string => s.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+	const na = norm(a);
+	return na !== '' && na === norm(b);
+}
+
 /** The survivor is the linked entry; the account-less one is absorbed. */
 export function planMerge(pair: PossibleDuplicateSchema): MergePlan {
 	const { linked: survivor, unlinked: absorbed } = pair;

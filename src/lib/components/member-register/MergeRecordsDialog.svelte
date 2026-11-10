@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PossibleDuplicateSchema } from '$lib/api/generated/types.gen';
 	import { mergeRecords } from '$lib/member-register/api';
-	import { planMerge } from '$lib/member-register/reconcile';
+	import { isSameName, planMerge } from '$lib/member-register/reconcile';
 	import { formatDate } from '$lib/utils/date';
 	import ConfirmRecordDialog from './ConfirmRecordDialog.svelte';
 
@@ -21,17 +21,21 @@
 	const plan = $derived(pair ? planMerge(pair) : null);
 
 	// Two entries with the same name read as "Merge X into X": name the kinds instead.
-	function normalizeName(name: string): string {
-		return name.trim().replace(/\s+/g, ' ').toLowerCase();
-	}
-	const sameName = $derived(
-		!!plan && normalizeName(plan.absorbed.full_name) === normalizeName(plan.survivor.full_name)
-	);
+	const sameName = $derived(!!plan && isSameName(plan.absorbed.full_name, plan.survivor.full_name));
 
 	const preview = $derived.by(() => {
 		if (!plan) return '';
 		const survivor = plan.survivor.full_name;
 		const absorbed = plan.absorbed.full_name;
+		if (sameName) {
+			return plan.outcome === 'absorb' && plan.earliestStart
+				? m['memberRegister.mergePreviewAbsorbSameName']({
+						date: formatDate(plan.earliestStart),
+						survivor,
+						tier: plan.survivor.tier_name || '-'
+					})
+				: m['memberRegister.mergePreviewAttachSameName']({ survivor });
+		}
 		return plan.outcome === 'absorb' && plan.earliestStart
 			? m['memberRegister.mergePreviewAbsorb']({
 					date: formatDate(plan.earliestStart),

@@ -59,7 +59,7 @@
 
 	// Sync form state with member prop
 	$effect(() => {
-		if (member) {
+		if (member && open) {
 			selectedStatus = member.status;
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
@@ -202,12 +202,13 @@
 	const isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
 
 	// Handle dialog open/close changes
-	// Close / Escape / overlay click with unsaved tier or status edits asks first
-	// (in-app confirm, never window.confirm); a clean dialog closes immediately.
+	// Close / Escape / overlay click / the corner X with unsaved tier or status edits
+	// asks first (in-app confirm, never window.confirm); a clean dialog closes at once.
+	// Every route funnels into requestClose through the Dialog's function binding below,
+	// which never writes the new value back, so a guarded close keeps the dialog open.
 	let showDiscardConfirm = $state(false);
 
-	function handleOpenChange(isOpen: boolean) {
-		if (isOpen) return;
+	function requestClose(): void {
 		if (hasChanges && !isProcessing) {
 			showDiscardConfirm = true;
 			return;
@@ -215,12 +216,12 @@
 		onClose();
 	}
 
-	function handleKeepEditing() {
+	function handleDiscard(): void {
 		showDiscardConfirm = false;
-	}
-
-	function handleDiscard() {
-		showDiscardConfirm = false;
+		if (member) {
+			selectedStatus = member.status;
+			selectedTierId = member.tier?.id || null;
+		}
 		onClose();
 	}
 </script>
@@ -253,7 +254,14 @@
 	{/if}
 {/snippet}
 
-<Dialog {open} onOpenChange={handleOpenChange}>
+<Dialog
+	bind:open={
+		() => open,
+		(next) => {
+			if (!next) requestClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		{#if member}
 			<DialogHeader>
@@ -576,7 +584,7 @@
 
 			<!-- Close Button -->
 			<div class="flex justify-end border-t border-border pt-4">
-				<Button variant="ghost" onclick={() => handleOpenChange(false)} disabled={isProcessing}>
+				<Button variant="ghost" onclick={requestClose} disabled={isProcessing}>
 					{m['manageMemberModal.close']()}
 				</Button>
 			</div>
@@ -592,5 +600,5 @@
 	cancelText={m['manageMemberModal.discardKeep']()}
 	variant="warning"
 	onConfirm={handleDiscard}
-	onCancel={handleKeepEditing}
+	onCancel={() => (showDiscardConfirm = false)}
 />

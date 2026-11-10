@@ -500,7 +500,36 @@ function footerClose(): HTMLElement {
 	return button;
 }
 
+/** The corner X (an icon button with the same accessible name). */
+function cornerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') !== null);
+	if (!button) throw new Error('corner X button not found');
+	return button;
+}
+
 describe('MemberAccessActions unsaved-changes guard', () => {
+	const DISCARD_TITLE = 'Discard unsaved changes?';
+
+	async function stageStatusChange(user: ReturnType<typeof userEvent.setup>) {
+		renderTab();
+		await openManageModal(user);
+		await pickStatus(user, 'Paused');
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
+	/** Keep editing: the confirm goes away, the dialog stays with the staged value. */
+	async function keepEditing(user: ReturnType<typeof userEvent.setup>) {
+		expect(await screen.findByText(DISCARD_TITLE)).toBeInTheDocument();
+		expect(onClose).not.toHaveBeenCalled();
+		await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+		await waitFor(() => expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument());
+		expect(onClose).not.toHaveBeenCalled();
+		expect(screen.getByLabelText('Membership Status')).toBeVisible();
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
 	it('closes immediately when nothing changed', async () => {
 		const user = userEvent.setup();
 		renderTab();
@@ -509,29 +538,75 @@ describe('MemberAccessActions unsaved-changes guard', () => {
 		await user.click(footerClose());
 
 		expect(onClose).toHaveBeenCalledTimes(1);
-		expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument();
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
 	});
 
-	it('asks before discarding a staged change; Keep editing keeps it, Discard closes', async () => {
+	it('closes immediately on Escape when nothing changed', async () => {
 		const user = userEvent.setup();
 		renderTab();
 		await openManageModal(user);
-		await pickStatus(user, 'Paused');
+
+		await user.keyboard('{Escape}');
+
+		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
+	});
+
+	it('footer Close: Keep editing keeps the staged value, Discard resets it and closes', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
 
 		await user.click(footerClose());
-
-		expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
-		expect(onClose).not.toHaveBeenCalled();
-
-		await user.click(screen.getByRole('button', { name: 'Keep editing' }));
-		await waitFor(() =>
-			expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument()
-		);
-		expect(onClose).not.toHaveBeenCalled();
-		expect(screen.getByLabelText('Membership Status')).toBeInTheDocument();
+		await keepEditing(user);
 
 		await user.click(footerClose());
 		await user.click(await screen.findByRole('button', { name: 'Discard' }));
 		expect(onClose).toHaveBeenCalledTimes(1);
+		// The staged edit is gone, so reopening cannot show it.
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Active');
+		expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+	});
+
+	it('Escape with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.keyboard('{Escape}');
+
+		await keepEditing(user);
+	});
+
+	it('the corner X with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.click(cornerClose());
+
+		await keepEditing(user);
+	});
+
+	it('an overlay click with a staged change asks first and the dialog survives', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+		const overlay = document.querySelector('[data-dialog-overlay]');
+		if (!(overlay instanceof HTMLElement)) throw new Error('overlay not found');
+
+		// bits-ui's outside-interaction detection wants the full pointer sequence.
+		// jsdom has no PointerEvent, so build mouse-flavoured ones with the pointer type bits reads.
+		for (const type of ['pointerdown', 'pointerup', 'click']) {
+			// jsdom lays nothing out (content rect is all zeros); negative coordinates
+			// are what makes bits-ui treat the click as truly outside the content.
+			const event = new MouseEvent(type, {
+				bubbles: true,
+				cancelable: true,
+				button: 0,
+				clientX: -1,
+				clientY: -1
+			});
+			Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+			overlay.dispatchEvent(event);
+		}
+
+		await keepEditing(user);
 	});
 });

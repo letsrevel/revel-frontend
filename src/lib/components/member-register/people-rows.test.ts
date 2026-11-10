@@ -77,8 +77,17 @@ describe('RegisterEmail', () => {
 		expect(el.textContent).toBe(LONG);
 		expect(el).toHaveAttribute('title', LONG);
 		expect(screen.getByText(LONG)).toBe(el);
-		const wbr = el.querySelector('wbr');
-		expect(wbr?.previousSibling?.textContent).toMatch(/@$/);
+		expect(el.innerHTML).toMatch(/@<wbr>/);
+	});
+
+	it('also breaks before dots in the local part', () => {
+		const email = 'karen.multiorg.organizer@x.io';
+		render(RegisterEmail, { props: { email } });
+		const el = screen.getByTestId('register-email');
+		expect(el.textContent).toBe(email);
+		const before = [...el.querySelectorAll('wbr')].map((w) => w.nextSibling?.textContent?.[0]);
+		expect(before.filter((c) => c === '.')).toHaveLength(3);
+		expect(el.innerHTML).toMatch(/@<wbr>/);
 	});
 
 	it('is the cell content in the table and the card list', () => {
