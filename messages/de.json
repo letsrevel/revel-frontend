@@ -4096,7 +4096,9 @@
 					"errors": {
 						"userRequired": "Wähle ein Mitglied aus",
 						"planRequired": "Wähle einen Plan aus"
-					}
+					},
+					"occurredAt": "Zahlungsdatum",
+					"occurredAtHint": "Leer lassen, um das heutige Datum zu verwenden. Das ist der Tag, an dem das Mitglied tatsächlich bezahlt hat. Das Startdatum der Mitgliedschaft änderst du separat, im Register-Eintrag."
 				},
 				"empty": "Noch keine Abonnements.",
 				"col": {
@@ -4209,6 +4211,42 @@
 					"error": "Abonnement-Kennzahlen konnten nicht geladen werden.",
 					"statusBreakdown": "Nach Status",
 					"activeIncludesPastDue": "Aktiv + überfällig"
+				},
+				"paymentActions": {
+					"edit": "Bearbeiten",
+					"editFor": "Zahlung über {amount} vom {date} bearbeiten",
+					"void": "Stornieren",
+					"voidFor": "Zahlung über {amount} vom {date} stornieren",
+					"showVoided": "Stornierte Zahlungen anzeigen"
+				},
+				"editPayment": {
+					"title": "Zahlung bearbeiten",
+					"amount": "Betrag",
+					"currency": "Währung",
+					"currencyLocked": "Die Währung lässt sich nicht ändern.",
+					"status": "Status",
+					"occurredAt": "Zahlungsdatum",
+					"notes": "Notizen",
+					"lockedHint": "Nur Datum und Status der letzten Zahlung können geändert werden.",
+					"submit": "Änderungen speichern",
+					"saved": "Zahlung aktualisiert.",
+					"error": "Diese Zahlung konnte nicht aktualisiert werden."
+				},
+				"voidPayment": {
+					"title": "Diese Zahlung stornieren?",
+					"body": "Beim Stornieren verschwindet die Zahlung aus Summen und Listen und der Zeitraum der Mitgliedschaft wird neu berechnet. Sie bleibt im Prüfprotokoll erhalten.",
+					"reason": "Grund (optional)",
+					"submit": "Zahlung stornieren",
+					"keep": "Zahlung behalten",
+					"done": "Zahlung storniert. Der Zeitraum der Mitgliedschaft wurde neu berechnet.",
+					"error": "Diese Zahlung konnte nicht storniert werden."
+				},
+				"paymentRefused": {
+					"payment_online": "Diese Zahlung lief über Stripe und kann hier nicht geändert werden. Verwalte sie im Stripe-Dashboard.",
+					"payment_refunded": "Eine erstattete Zahlung kann nicht geändert werden.",
+					"payment_voided": "Diese Zahlung wurde bereits storniert.",
+					"payment_not_latest": "Nur Datum und Status der letzten Zahlung können geändert werden.",
+					"subscription_terminal": "Dieses Abonnement ist beendet. Datum und Status seiner Zahlungen lassen sich nicht mehr ändern und die Zahlungen können nicht storniert werden."
 				}
 			},
 			"payments": {

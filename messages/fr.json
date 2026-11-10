@@ -4066,7 +4066,9 @@
 					"errors": {
 						"userRequired": "Choisis un membre",
 						"planRequired": "Choisis un forfait"
-					}
+					},
+					"occurredAt": "Date du paiement",
+					"occurredAtHint": "Laisse vide pour utiliser la date actuelle. C'est le jour où le paiement a réellement eu lieu. La date de début d'adhésion se modifie séparément, dans l'entrée du registre."
 				},
 				"empty": "Aucun abonnement pour l'instant.",
 				"col": {
@@ -4179,6 +4181,42 @@
 					"error": "Impossible de charger les statistiques d'abonnement.",
 					"statusBreakdown": "Par statut",
 					"activeIncludesPastDue": "Actifs + en retard de paiement"
+				},
+				"paymentActions": {
+					"edit": "Modifier",
+					"editFor": "Modifier le paiement de {amount} du {date}",
+					"void": "Invalider",
+					"voidFor": "Invalider le paiement de {amount} du {date}",
+					"showVoided": "Afficher les paiements annulés"
+				},
+				"editPayment": {
+					"title": "Modifier le paiement",
+					"amount": "Montant",
+					"currency": "Devise",
+					"currencyLocked": "La devise ne peut pas être modifiée.",
+					"status": "Statut",
+					"occurredAt": "Date du paiement",
+					"notes": "Notes",
+					"lockedHint": "Seuls la date et le statut du dernier paiement peuvent être modifiés.",
+					"submit": "Enregistrer les modifications",
+					"saved": "Paiement mis à jour.",
+					"error": "Impossible de mettre à jour ce paiement."
+				},
+				"voidPayment": {
+					"title": "Invalider ce paiement ?",
+					"body": "Invalider un paiement le retire des totaux et des listes, et recalcule la période d'adhésion. Il reste dans l'historique d'audit.",
+					"reason": "Motif (facultatif)",
+					"submit": "Invalider le paiement",
+					"keep": "Garder le paiement",
+					"done": "Paiement invalidé. La période d'adhésion a été recalculée.",
+					"error": "Impossible d'invalider ce paiement."
+				},
+				"paymentRefused": {
+					"payment_online": "Ce paiement est passé par Stripe et ne peut pas être modifié ici. Gère-le depuis le tableau de bord Stripe.",
+					"payment_refunded": "Un paiement remboursé ne peut pas être modifié.",
+					"payment_voided": "Ce paiement a déjà été annulé.",
+					"payment_not_latest": "Seuls la date et le statut du dernier paiement peuvent être modifiés.",
+					"subscription_terminal": "Cet abonnement est terminé : la date et le statut de ses paiements ne peuvent plus être modifiés et les paiements ne peuvent pas être invalidés."
 				}
 			},
 			"payments": {

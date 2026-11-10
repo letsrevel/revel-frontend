@@ -22,6 +22,10 @@
 	import SubscriptionPaymentsRow from './SubscriptionPaymentsRow.svelte';
 	import SubscriptionPaymentsCard from './SubscriptionPaymentsCard.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
+	import PaymentEditDialog from './PaymentEditDialog.svelte';
+	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
+	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
+	import type { EditablePayment } from './paymentEdit';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -42,6 +46,7 @@
 	let debounced = $state('');
 	let statusFilter = $state<MembershipPaymentStatus | 'all'>('all');
 	let planFilter = $state<string>('all');
+	let showVoided = $state(false);
 	let pageNum = $state(1);
 
 	let timer: ReturnType<typeof setTimeout> | undefined;
@@ -58,6 +63,7 @@
 	$effect(() => {
 		void statusFilter;
 		void planFilter;
+		void showVoided;
 		pageNum = 1;
 	});
 
@@ -84,7 +90,13 @@
 			'organization',
 			organization.slug,
 			'subscription-payments',
-			{ search: debounced, page: pageNum, status: statusFilter, plan: planFilter }
+			{
+				search: debounced,
+				page: pageNum,
+				status: statusFilter,
+				plan: planFilter,
+				includeVoided: showVoided
+			}
 		],
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListOrganizationSubscriptionPayments({
@@ -94,7 +106,9 @@
 					page_size: PAGE_SIZE,
 					search: debounced || undefined,
 					status: statusFilter === 'all' ? undefined : statusFilter,
-					plan_id: planFilter === 'all' ? undefined : planFilter
+					plan_id: planFilter === 'all' ? undefined : planFilter,
+					// Voided rows are hidden by default; off means "omit", not "false".
+					include_voided: showVoided ? true : undefined
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -118,6 +132,8 @@
 	);
 
 	let refundTarget = $state<OrganizationMembershipPaymentSchema | null>(null);
+	let editTarget = $state<EditablePayment | null>(null);
+	let voidTarget = $state<EditablePayment | null>(null);
 
 	const refundMut = createMutation(() => ({
 		mutationFn: async ({ paymentId, notes }: { paymentId: string; notes: string }) => {
@@ -191,6 +207,12 @@
 				<option value="refunded">{m['orgAdmin.members.payments.status.refunded']()}</option>
 			</select>
 		</div>
+
+		<ShowVoidedToggle
+			id="payments-show-voided"
+			checked={showVoided}
+			onChange={(c) => (showVoided = c)}
+		/>
 
 		{#if plans.length > 0}
 			<div>
@@ -281,7 +303,12 @@
 				</thead>
 				<tbody>
 					{#each payments as payment (payment.id)}
-						<SubscriptionPaymentsRow {payment} onRefund={(p) => (refundTarget = p)} />
+						<SubscriptionPaymentsRow
+							{payment}
+							onRefund={(p) => (refundTarget = p)}
+							onEdit={(p) => (editTarget = p)}
+							onVoid={(p) => (voidTarget = p)}
+						/>
 					{/each}
 				</tbody>
 			</table>
@@ -292,7 +319,12 @@
 		     visible (`hidden md:block` / `md:hidden`). -->
 		<ul class="grid gap-2 md:hidden" aria-label={m['orgAdmin.members.payments.tableCaption']()}>
 			{#each payments as payment (payment.id)}
-				<SubscriptionPaymentsCard {payment} onRefund={(p) => (refundTarget = p)} />
+				<SubscriptionPaymentsCard
+					{payment}
+					onRefund={(p) => (refundTarget = p)}
+					onEdit={(p) => (editTarget = p)}
+					onVoid={(p) => (voidTarget = p)}
+				/>
 			{/each}
 		</ul>
 
@@ -339,5 +371,17 @@
 			}
 		}}
 		isSubmitting={refundMut.isPending}
+	/>
+	<PaymentEditDialog
+		slug={organization.slug}
+		payment={editTarget}
+		open={!!editTarget}
+		onClose={() => (editTarget = null)}
+	/>
+	<PaymentVoidDialog
+		slug={organization.slug}
+		payment={voidTarget}
+		open={!!voidTarget}
+		onClose={() => (voidTarget = null)}
 	/>
 </div>

@@ -4096,7 +4096,9 @@
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"
-					}
+					},
+					"occurredAt": "Payment date",
+					"occurredAtHint": "Leave empty to use the current date. This is when the member actually paid. The membership start date is edited separately, in the register entry."
 				},
 				"empty": "No subscriptions yet.",
 				"col": {
@@ -4209,6 +4211,42 @@
 					"error": "Couldn't load subscription metrics.",
 					"statusBreakdown": "By status",
 					"activeIncludesPastDue": "Active + past due"
+				},
+				"paymentActions": {
+					"edit": "Edit",
+					"editFor": "Edit the payment of {amount} from {date}",
+					"void": "Void",
+					"voidFor": "Void the payment of {amount} from {date}",
+					"showVoided": "Show voided payments"
+				},
+				"editPayment": {
+					"title": "Edit payment",
+					"amount": "Amount",
+					"currency": "Currency",
+					"currencyLocked": "The currency can't be changed.",
+					"status": "Status",
+					"occurredAt": "Payment date",
+					"notes": "Notes",
+					"lockedHint": "Only the latest payment's date and status can be changed.",
+					"submit": "Save changes",
+					"saved": "Payment updated.",
+					"error": "Couldn't update this payment."
+				},
+				"voidPayment": {
+					"title": "Void this payment?",
+					"body": "Voiding removes this payment from totals and lists and recalculates the membership period. It stays in the audit history.",
+					"reason": "Reason (optional)",
+					"submit": "Void payment",
+					"keep": "Keep payment",
+					"done": "Payment voided. The membership period was recalculated.",
+					"error": "Couldn't void this payment."
+				},
+				"paymentRefused": {
+					"payment_online": "This payment went through Stripe, so it can't be changed here. Manage it in the Stripe Dashboard.",
+					"payment_refunded": "A refunded payment can't be changed.",
+					"payment_voided": "This payment has already been voided.",
+					"payment_not_latest": "Only the latest payment's date and status can be changed.",
+					"subscription_terminal": "This subscription has ended, so the date and status of its payments can no longer be changed and its payments can't be voided."
 				}
 			},
 			"payments": {

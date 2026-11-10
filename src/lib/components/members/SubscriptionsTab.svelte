@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListSubscriptions,
@@ -45,6 +44,8 @@
 	let statusFilter = $state<SubscriptionStatus | 'all'>('all');
 	let pageNum = $state(1);
 	let createOpen = $state(false);
+	// The backend's refusal of the last create, shown inside the dialog that stays open.
+	let createError = $state<string | null>(null);
 	let drawerSubId = $state<string | null>(null);
 	let drawerOpenTimer: ReturnType<typeof setTimeout> | undefined;
 	onDestroy(() => clearTimeout(drawerOpenTimer));
@@ -122,7 +123,7 @@
 				drawerSubId = id;
 			}, DIALOG_CLOSE_MS);
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error) => (createError = err.message)
 	}));
 </script>
 
@@ -234,8 +235,15 @@
 <SubscriptionCreateModal
 	{organization}
 	open={createOpen}
-	onClose={() => (createOpen = false)}
-	onSubmit={(p) => createMut.mutate(p)}
+	onClose={() => {
+		createOpen = false;
+		createError = null;
+	}}
+	onSubmit={(p) => {
+		createError = null;
+		createMut.mutate(p);
+	}}
+	submitError={createError}
 	isSubmitting={createMut.isPending}
 />
 

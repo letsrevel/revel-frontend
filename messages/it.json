@@ -4096,7 +4096,9 @@
 					"errors": {
 						"userRequired": "Scegli un membro",
 						"planRequired": "Scegli un piano"
-					}
+					},
+					"occurredAt": "Data del pagamento",
+					"occurredAtHint": "Lascia vuoto per usare la data odierna. È il giorno in cui la persona ha effettivamente pagato. La data di inizio dell'iscrizione si modifica a parte, nella voce del registro."
 				},
 				"empty": "Ancora nessun abbonamento.",
 				"col": {
@@ -4209,6 +4211,42 @@
 					"error": "Impossibile caricare le metriche degli abbonamenti.",
 					"statusBreakdown": "Per stato",
 					"activeIncludesPastDue": "Attivi + in ritardo di pagamento"
+				},
+				"paymentActions": {
+					"edit": "Modifica",
+					"editFor": "Modifica il pagamento di {amount} del {date}",
+					"void": "Storna",
+					"voidFor": "Storna il pagamento di {amount} del {date}",
+					"showVoided": "Mostra i pagamenti annullati"
+				},
+				"editPayment": {
+					"title": "Modifica pagamento",
+					"amount": "Importo",
+					"currency": "Valuta",
+					"currencyLocked": "La valuta non può essere modificata.",
+					"status": "Stato",
+					"occurredAt": "Data del pagamento",
+					"notes": "Note",
+					"lockedHint": "Solo la data e lo stato dell'ultimo pagamento possono essere modificati.",
+					"submit": "Salva modifiche",
+					"saved": "Pagamento aggiornato.",
+					"error": "Impossibile aggiornare questo pagamento."
+				},
+				"voidPayment": {
+					"title": "Stornare questo pagamento?",
+					"body": "Lo storno rimuove il pagamento da totali ed elenchi e ricalcola il periodo dell'iscrizione. Resta nello storico di audit.",
+					"reason": "Motivo (facoltativo)",
+					"submit": "Storna pagamento",
+					"keep": "Mantieni il pagamento",
+					"done": "Pagamento stornato. Il periodo dell'iscrizione è stato ricalcolato.",
+					"error": "Impossibile stornare questo pagamento."
+				},
+				"paymentRefused": {
+					"payment_online": "Questo pagamento è passato da Stripe e non si può modificare da qui. Gestiscilo dalla dashboard Stripe.",
+					"payment_refunded": "Un pagamento rimborsato non si può modificare.",
+					"payment_voided": "Questo pagamento è già stato annullato.",
+					"payment_not_latest": "Solo la data e lo stato dell'ultimo pagamento possono essere modificati.",
+					"subscription_terminal": "Questo abbonamento è terminato: data e stato dei suoi pagamenti non si possono più modificare e i pagamenti non si possono stornare."
 				}
 			},
 			"payments": {
