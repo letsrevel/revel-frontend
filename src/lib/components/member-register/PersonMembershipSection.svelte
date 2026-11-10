@@ -2,11 +2,16 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarX, Loader2, Mail, Pencil, Trash2, UserCog } from '@lucide/svelte';
-	import type { MembershipRecordSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipRecordSchema,
+		MembershipTierSchema,
+		OrganizationAdminDetailSchema
+	} from '$lib/api/generated/types.gen';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import MemberAccessActions from '$lib/components/members/MemberAccessActions.svelte';
+	import PersonSubscriptionActions from './PersonSubscriptionActions.svelte';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel } from '$lib/member-register/badges';
 	import { getEditability } from '$lib/member-register/editability';
@@ -20,6 +25,10 @@
 		tiers: MembershipTierSchema[];
 		isStaff: boolean;
 		isOwner: boolean;
+		/** Needed for the subscription drawer and create modal. */
+		organization?: OrganizationAdminDetailSchema | null;
+		/** The viewer holds `manage_subscriptions`. */
+		canManageSubscriptions?: boolean;
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
@@ -33,6 +42,8 @@
 		tiers,
 		isStaff,
 		isOwner,
+		organization = null,
+		canManageSubscriptions = false,
 		onEdit,
 		onEnd,
 		onDelete,
@@ -64,6 +75,11 @@
 	);
 
 	let manageOpen = $state(false);
+	let subscriptionActions = $state<{ openManage: () => void } | null>(null);
+	// Account-less register entries have no member row, hence no subscription.
+	const showSubscription = $derived(
+		canManageSubscriptions && !!organization && !!record.user_id && !!member
+	);
 
 	const canEnd = $derived(getEditability(record).canEnd);
 	const unlinkedHint = $derived(
@@ -120,18 +136,32 @@
 					{m['memberPeople.sheet.memberLoadError']()}
 				</p>
 			{/if}
-			<Button
-				onclick={() => (manageOpen = true)}
-				disabled={!member}
-				data-testid="person-manage-membership"
-			>
-				{#if memberQuery.isPending}
-					<Loader2 class="animate-spin" aria-hidden="true" />
-				{:else}
-					<UserCog aria-hidden="true" />
+			<div class="flex flex-wrap gap-2">
+				<Button
+					onclick={() => (manageOpen = true)}
+					disabled={!member}
+					data-testid="person-manage-membership"
+				>
+					{#if memberQuery.isPending}
+						<Loader2 class="animate-spin" aria-hidden="true" />
+					{:else}
+						<UserCog aria-hidden="true" />
+					{/if}
+					{m['memberPeople.sheet.manage']()}
+				</Button>
+				{#if showSubscription && organization && member}
+					<!-- Keyed per person: a pending delayed open and the drawer id never
+					     outlive the person they were started for. -->
+					{#key member.user.id}
+						<PersonSubscriptionActions
+							bind:this={subscriptionActions}
+							{organization}
+							{accessToken}
+							{member}
+						/>
+					{/key}
 				{/if}
-				{m['memberPeople.sheet.manage']()}
-			</Button>
+			</div>
 		</div>
 		<MemberAccessActions
 			{slug}
@@ -141,6 +171,7 @@
 			{isStaff}
 			open={manageOpen}
 			onClose={() => (manageOpen = false)}
+			onManageSubscription={showSubscription ? () => subscriptionActions?.openManage() : undefined}
 		/>
 	{/if}
 	{#if showRegisterActions}

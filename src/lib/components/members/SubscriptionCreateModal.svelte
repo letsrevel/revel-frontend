@@ -19,6 +19,8 @@
 	import MemberCombobox from './MemberCombobox.svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { groupPlansByTier } from '$lib/utils/plan-change';
+	import { getUserDisplayName } from '$lib/utils/user-display';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -33,6 +35,11 @@
 		 * value can be corrected without the dialog closing.
 		 */
 		submitError?: string | null;
+		/**
+		 * Opened from one member's sheet: the member is fixed, so the picker is
+		 * replaced by their name and cannot be changed.
+		 */
+		fixedMember?: OrganizationMemberSchema | null;
 	}
 
 	const {
@@ -41,11 +48,16 @@
 		onClose,
 		onSubmit,
 		isSubmitting = false,
-		submitError = null
+		submitError = null,
+		fixedMember = null
 	}: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
-	let selectedMember = $state<OrganizationMemberSchema | null>(null);
+	let pickedMember = $state<OrganizationMemberSchema | null>(null);
+	const selectedMember = $derived(fixedMember ?? pickedMember);
+	const fixedName = $derived(
+		fixedMember ? getUserDisplayName(fixedMember.user, m['manageMemberModal.unknownUser']()) : ''
+	);
 	let planId = $state<string>('');
 	let recordInitial = $state(false);
 	let amount = $state('0.00');
@@ -80,19 +92,7 @@
 	);
 
 	// Group plans by tier (preserves backend order: tier asc, plan asc).
-	const plansByTier = $derived.by(() => {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this $derived.by computation, never stored
-		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
-		for (const p of selectablePlans) {
-			let g = groups.get(p.tier_id);
-			if (!g) {
-				g = { tierName: p.tier_name, plans: [] };
-				groups.set(p.tier_id, g);
-			}
-			g.plans.push(p);
-		}
-		return Array.from(groups, ([tierId, g]) => ({ tierId, ...g }));
-	});
+	const plansByTier = $derived(groupPlansByTier(selectablePlans));
 
 	// Sync currency to selected plan's currency
 	$effect(() => {
@@ -103,7 +103,7 @@
 	// Reset on close
 	$effect(() => {
 		if (!open) {
-			selectedMember = null;
+			pickedMember = null;
 			planId = '';
 			recordInitial = false;
 			amount = '0.00';
@@ -166,11 +166,15 @@
 		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="space-y-1">
 				<Label>{m['orgAdmin.members.subscriptions.create.user']()}</Label>
-				<MemberCombobox
-					{organization}
-					value={selectedMember}
-					onSelect={(member) => (selectedMember = member)}
-				/>
+				{#if fixedMember}
+					<p class="text-sm font-medium" data-testid="subscription-fixed-member">{fixedName}</p>
+				{:else}
+					<MemberCombobox
+						{organization}
+						value={selectedMember}
+						onSelect={(member) => (pickedMember = member)}
+					/>
+				{/if}
 				{#if errors.user}<p class="text-sm text-destructive">{errors.user}</p>{/if}
 			</div>
 

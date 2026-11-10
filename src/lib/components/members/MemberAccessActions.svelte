@@ -14,6 +14,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { planChangeRefusalCode } from '$lib/utils/plan-change';
 	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
 
@@ -33,14 +34,43 @@
 		isStaff: boolean;
 		open: boolean;
 		onClose: () => void;
+		/** Hand over to the member's subscription (only for viewers who manage them). */
+		onManageSubscription?: () => void;
 	}
 
-	const { slug, accessToken, member, tiers, isStaff, open, onClose }: Props = $props();
+	const { slug, accessToken, member, tiers, isStaff, open, onClose, onManageSubscription }: Props =
+		$props();
 
 	const queryClient = useQueryClient();
 
 	function refreshAll(): void {
 		void invalidateAfterMemberWrite(queryClient, slug);
+	}
+
+	/** The 409 `tier_follows_subscription`: the tier belongs to a live subscription. */
+	class TierLockedError extends Error {}
+	let tierLockDetail = $state<string | null>(null);
+
+	// A 409 lock belongs to one editing session of one person: drop it whenever the
+	// dialog is closed (by ANY path, including a successful save) or the member
+	// changes. Keyed on the user id, so a refreshed object for the same member keeps it.
+	$effect(() => {
+		void member?.user.id;
+		if (!open) tierLockDetail = null;
+	});
+	let lockedFor: string | null | undefined;
+	$effect(() => {
+		const id = member?.user.id;
+		if (id !== lockedFor) {
+			lockedFor = id;
+			tierLockDetail = null;
+		}
+	});
+
+	/** Every way out of the dialog resets the session lock. */
+	function finish(): void {
+		tierLockDetail = null;
+		onClose();
 	}
 
 	function userIdOf(target: OrganizationMemberSchema): string {
@@ -62,7 +92,7 @@
 		},
 		onSuccess: () => {
 			refreshAll();
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
 			toast.error(m['membersTab.removeMemberFailed']({ error: error.message }));
@@ -85,15 +115,27 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
+				if (planChangeRefusalCode(response.error) === 'tier_follows_subscription') {
+					throw new TierLockedError(
+						backendMessage(response.error) || m['manageMemberModal.tierLockedReason']()
+					);
+				}
 				throw new Error(backendMessage(response.error) || 'Failed to update member');
 			}
 			return response.data;
 		},
 		onSuccess: () => {
 			refreshAll();
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
+			if (error instanceof TierLockedError) {
+				// Not a failure to report: the form locks and says why. Refresh so the
+				// member row carries the flag from now on.
+				tierLockDetail = error.message;
+				refreshAll();
+				return;
+			}
 			toast.error(m['membersTab.updateMemberFailed']({ error: error.message }));
 		}
 	}));
@@ -113,7 +155,7 @@
 		onSuccess: () => {
 			refreshAll();
 			void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'staff'] });
-			onClose();
+			finish();
 		},
 		onError: (error: Error) => {
 			toast.error(m['membersTab.promoteStaffFailed']({ error: error.message }));
@@ -134,7 +176,7 @@
 			refreshAll();
 			void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'blacklist'] });
 			toast.success(m['membersTab.memberBlacklisted']());
-			onClose();
+			finish();
 		},
 		onError: () => {
 			toast.error(m['membersTab.blacklistFailed']());
@@ -149,7 +191,8 @@
 	);
 
 	function handleClose(): void {
-		if (!pending) onClose();
+		if (pending) return;
+		finish();
 	}
 </script>
 
@@ -159,6 +202,8 @@
 	{isStaff}
 	{open}
 	onClose={handleClose}
+	{onManageSubscription}
+	{tierLockDetail}
 	onUpdateStatus={(status) => member && updateMutation.mutate({ target: member, status })}
 	onUpdateTier={(tierId) => member && updateMutation.mutate({ target: member, tierId })}
 	onMakeStaff={() => member && promoteMutation.mutate(member)}

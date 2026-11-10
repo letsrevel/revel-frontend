@@ -304,6 +304,7 @@
 					{staffUserIds}
 					onOpenTiers={() => (activeTab = 'tiers')}
 					onOpenPayments={canManageSubscriptions ? () => (activeTab = 'payments') : undefined}
+					{canManageSubscriptions}
 				/>
 			</TabsContent>
 
