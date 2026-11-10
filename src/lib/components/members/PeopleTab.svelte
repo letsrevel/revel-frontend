@@ -520,6 +520,8 @@
 	{staffUserIds}
 	{isOwner}
 	canOpenPayments={!!onOpenPayments}
+	{organization}
+	canManageSubscriptions={!!onOpenPayments}
 	onClose={() => (sheet = null)}
 	onOpenRecord={(r) => (sheet = sheetStateForRecord(r))}
 	onEdit={openEdit}

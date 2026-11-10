@@ -2,7 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Receipt } from '@lucide/svelte';
-	import type { MembershipRecordSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipRecordSchema,
+		MembershipTierSchema,
+		OrganizationAdminDetailSchema
+	} from '$lib/api/generated/types.gen';
 	import {
 		Sheet,
 		SheetContent,
@@ -33,6 +37,10 @@
 		isOwner: boolean;
 		/** The Payments tab exists for this viewer (`manage_subscriptions`). */
 		canOpenPayments: boolean;
+		/** For the subscription drawer / create modal of the member actions. */
+		organization?: OrganizationAdminDetailSchema | null;
+		/** The viewer holds `manage_subscriptions`: Manage / Add subscription show. */
+		canManageSubscriptions?: boolean;
 		onClose: () => void;
 		/** Open one merged entry read-only (from the periods list). */
 		onOpenRecord: (record: MembershipRecordSchema) => void;
@@ -53,6 +61,8 @@
 		staffUserIds,
 		isOwner,
 		canOpenPayments,
+		organization = null,
+		canManageSubscriptions = false,
 		onClose,
 		onOpenRecord,
 		onEdit,
@@ -142,6 +152,8 @@
 				{accessToken}
 				{tiers}
 				{isOwner}
+				{organization}
+				{canManageSubscriptions}
 				isStaff={!!record.user_id && staffUserIds.has(record.user_id)}
 				{onEdit}
 				{onEnd}

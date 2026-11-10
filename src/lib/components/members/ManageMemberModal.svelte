@@ -12,7 +12,7 @@
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
-	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
+	import { Loader2, UserCog, UserX, AlertTriangle, Ban, CreditCard } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 
@@ -27,6 +27,13 @@
 		onMakeStaff: () => void;
 		onRemove: () => void;
 		onBlacklist?: (reason: string) => void;
+		/**
+		 * Close this dialog (through its unsaved-changes guard) and open the member's
+		 * subscription. Absent when the viewer cannot manage subscriptions.
+		 */
+		onManageSubscription?: () => void;
+		/** The backend's refusal of a tier change (409 `tier_follows_subscription`). */
+		tierLockDetail?: string | null;
 		isUpdating?: boolean;
 		isPromoting?: boolean;
 		isRemoving?: boolean;
@@ -44,6 +51,8 @@
 		onMakeStaff,
 		onRemove,
 		onBlacklist,
+		onManageSubscription,
+		tierLockDetail = null,
 		isUpdating = false,
 		isPromoting = false,
 		isRemoving = false,
@@ -59,6 +68,9 @@
 	let blacklistReason = $state('');
 
 	let showDiscardConfirm = $state(false);
+	// Set while the discard prompt was raised by "Manage subscription": a confirmed
+	// discard then carries on to the subscription instead of just closing.
+	let discardThenSubscription = $state(false);
 
 	// Re-initialise the form only when an editing session begins (closed -> open, or a
 	// different member). A refreshed object for the SAME member (window-focus refetch,
@@ -94,9 +106,26 @@
 			: ''
 	);
 
+	// "Tier follows the plan": a live subscription owns the tier, so staff change
+	// the plan instead. A 409 from a race (the subscription appeared after this
+	// dialog loaded) locks it too.
+	const tierLocked = $derived(!!member?.tier_locked_by_subscription || !!tierLockDetail);
+	const tierLockReason = $derived(
+		tierLockDetail ??
+			(onManageSubscription
+				? m['manageMemberModal.tierLockedReason']()
+				: m['manageMemberModal.tierLockedReasonNoAction']())
+	);
+	// A locked tier is never staged, so it can never count as an unsaved change.
+	$effect(() => {
+		if (tierLocked && member) selectedTierId = member.tier?.id || null;
+	});
+
 	// Check if changes were made
 	const hasStatusChanged = $derived(member && selectedStatus !== member.status);
-	const hasTierChanged = $derived(member && selectedTierId !== (member.tier?.id || null));
+	const hasTierChanged = $derived(
+		member && !tierLocked && selectedTierId !== (member.tier?.id || null)
+	);
 	const hasChanges = $derived(hasStatusChanged || hasTierChanged);
 
 	// Statuses
@@ -235,6 +264,19 @@
 			selectedTierId = member.tier?.id || null;
 		}
 		onClose();
+		if (discardThenSubscription) onManageSubscription?.();
+		discardThenSubscription = false;
+	}
+
+	// Same guard as every other way out of the dialog, then on to the subscription.
+	function goToSubscription(): void {
+		if (hasChanges && !isProcessing) {
+			discardThenSubscription = true;
+			showDiscardConfirm = true;
+			return;
+		}
+		onClose();
+		onManageSubscription?.();
 	}
 </script>
 
@@ -374,9 +416,13 @@
 						onValueChange={(value) => {
 							selectedTierId = value === 'none' ? null : value;
 						}}
-						disabled={isProcessing}
+						disabled={isProcessing || tierLocked}
 					>
-						<SelectTrigger id="tier" aria-label={m['manageMemberModal.tierLabel']()}>
+						<SelectTrigger
+							id="tier"
+							aria-label={m['manageMemberModal.tierLabel']()}
+							aria-describedby={tierLocked ? 'member-tier-lock-reason' : undefined}
+						>
 							{selectedTierId
 								? tiers.find((t) => t.id === selectedTierId)?.name ||
 									m['manageMemberModal.noTier']()
@@ -391,6 +437,25 @@
 							{/each}
 						</SelectContent>
 					</Select>
+					{#if tierLocked}
+						<div class="space-y-2" data-testid="member-tier-lock">
+							<p id="member-tier-lock-reason" class="text-sm text-muted-foreground">
+								{tierLockReason}
+							</p>
+							{#if onManageSubscription}
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={goToSubscription}
+									disabled={isProcessing}
+									data-testid="member-tier-lock-manage-subscription"
+								>
+									<CreditCard class="mr-2 h-4 w-4" aria-hidden="true" />
+									{m['memberPeople.sheet.manageSubscription']()}
+								</Button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Save Changes Button / Ban Confirmation -->
@@ -612,5 +677,8 @@
 	cancelText={m['manageMemberModal.discardKeep']()}
 	variant="warning"
 	onConfirm={handleDiscard}
-	onCancel={() => (showDiscardConfirm = false)}
+	onCancel={() => {
+		showDiscardConfirm = false;
+		discardThenSubscription = false;
+	}}
 />

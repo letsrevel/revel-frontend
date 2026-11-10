@@ -33,6 +33,11 @@
 		 * value can be corrected without the dialog closing.
 		 */
 		submitError?: string | null;
+		/**
+		 * Opened from one member's sheet: the member is fixed, so the picker is
+		 * replaced by their name and cannot be changed.
+		 */
+		fixedMember?: OrganizationMemberSchema | null;
 	}
 
 	const {
@@ -41,11 +46,21 @@
 		onClose,
 		onSubmit,
 		isSubmitting = false,
-		submitError = null
+		submitError = null,
+		fixedMember = null
 	}: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
-	let selectedMember = $state<OrganizationMemberSchema | null>(null);
+	let pickedMember = $state<OrganizationMemberSchema | null>(null);
+	const selectedMember = $derived(fixedMember ?? pickedMember);
+	const fixedName = $derived(
+		fixedMember
+			? fixedMember.user.preferred_name ||
+					[fixedMember.user.first_name, fixedMember.user.last_name].filter(Boolean).join(' ') ||
+					fixedMember.user.email ||
+					''
+			: ''
+	);
 	let planId = $state<string>('');
 	let recordInitial = $state(false);
 	let amount = $state('0.00');
@@ -103,7 +118,7 @@
 	// Reset on close
 	$effect(() => {
 		if (!open) {
-			selectedMember = null;
+			pickedMember = null;
 			planId = '';
 			recordInitial = false;
 			amount = '0.00';
@@ -166,11 +181,15 @@
 		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="space-y-1">
 				<Label>{m['orgAdmin.members.subscriptions.create.user']()}</Label>
-				<MemberCombobox
-					{organization}
-					value={selectedMember}
-					onSelect={(member) => (selectedMember = member)}
-				/>
+				{#if fixedMember}
+					<p class="text-sm font-medium" data-testid="subscription-fixed-member">{fixedName}</p>
+				{:else}
+					<MemberCombobox
+						{organization}
+						value={selectedMember}
+						onSelect={(member) => (pickedMember = member)}
+					/>
+				{/if}
 				{#if errors.user}<p class="text-sm text-destructive">{errors.user}</p>{/if}
 			</div>
 

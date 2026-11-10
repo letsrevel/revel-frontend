@@ -31,6 +31,7 @@
 	import StaffReviveModal from './StaffReviveModal.svelte';
 	import PaymentEditDialog from './PaymentEditDialog.svelte';
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
+	import ChangePlanDialog from './ChangePlanDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
 	import type { EditablePayment } from './paymentEdit';
 	import {
@@ -40,6 +41,7 @@
 		isSubscriptionActivationPending
 	} from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { changePlanState } from '$lib/utils/plan-change';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -162,6 +164,9 @@
 	let cancelOpen = $state(false);
 	let pauseConfirmOpen = $state(false);
 	let reviveOpen = $state(false);
+	let changePlanOpen = $state(false);
+	// Terminal rows show nothing: there is no plan left to change.
+	const changePlan = $derived(sub ? changePlanState(sub) : 'terminal');
 	let refundTarget = $state<MembershipPaymentSchema | null>(null);
 	let editTarget = $state<EditablePayment | null>(null);
 	let voidTarget = $state<EditablePayment | null>(null);
@@ -441,6 +446,18 @@
 						{m['orgAdmin.members.subscriptions.drawer.revive']()}
 					</Button>
 				{/if}
+				{#if changePlan === 'allowed' || changePlan === 'paused'}
+					<Button
+						size="sm"
+						variant="outline"
+						onclick={() => (changePlanOpen = true)}
+						disabled={changePlan === 'paused'}
+						aria-describedby={changePlan === 'paused' ? 'change-plan-paused-hint' : undefined}
+						data-testid="subscription-change-plan"
+					>
+						{m['subscriptionChangePlan.button']()}
+					</Button>
+				{/if}
 				{#if sub.stripe_dashboard_url}
 					<Button
 						href={sub.stripe_dashboard_url}
@@ -460,6 +477,16 @@
 			{#if showPauseBlockedNote}
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.subscriptions.drawer.pauseBlockedByCancel']()}
+				</p>
+			{/if}
+
+			{#if changePlan === 'paused'}
+				<p id="change-plan-paused-hint" class="text-xs text-muted-foreground">
+					{m['subscriptionChangePlan.pausedHint']()}
+				</p>
+			{:else if changePlan === 'online' && !!sub && !TERMINAL_STATUSES.includes(sub.status)}
+				<p class="text-xs text-muted-foreground" data-testid="change-plan-online-note">
+					{m['subscriptionChangePlan.onlineNote']()}
 				</p>
 			{/if}
 
@@ -499,6 +526,13 @@
 				onClose={() => (recordOpen = false)}
 				onSubmit={(p) => recordMut.mutate(p)}
 				isSubmitting={recordMut.isPending}
+			/>
+			<ChangePlanDialog
+				{organization}
+				{sub}
+				open={changePlanOpen}
+				onClose={() => (changePlanOpen = false)}
+				onChanged={invalidateAll}
 			/>
 			<StaffReviveModal
 				{sub}

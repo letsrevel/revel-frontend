@@ -14,6 +14,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { planChangeRefusalCode } from '$lib/utils/plan-change';
 	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
 
@@ -33,15 +34,22 @@
 		isStaff: boolean;
 		open: boolean;
 		onClose: () => void;
+		/** Hand over to the member's subscription (only for viewers who manage them). */
+		onManageSubscription?: () => void;
 	}
 
-	const { slug, accessToken, member, tiers, isStaff, open, onClose }: Props = $props();
+	const { slug, accessToken, member, tiers, isStaff, open, onClose, onManageSubscription }: Props =
+		$props();
 
 	const queryClient = useQueryClient();
 
 	function refreshAll(): void {
 		void invalidateAfterMemberWrite(queryClient, slug);
 	}
+
+	/** The 409 `tier_follows_subscription`: the tier belongs to a live subscription. */
+	class TierLockedError extends Error {}
+	let tierLockDetail = $state<string | null>(null);
 
 	function userIdOf(target: OrganizationMemberSchema): string {
 		const id = target.user.id;
@@ -85,6 +93,11 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
+				if (planChangeRefusalCode(response.error) === 'tier_follows_subscription') {
+					throw new TierLockedError(
+						backendMessage(response.error) || m['manageMemberModal.tierLockedReason']()
+					);
+				}
 				throw new Error(backendMessage(response.error) || 'Failed to update member');
 			}
 			return response.data;
@@ -94,6 +107,13 @@
 			onClose();
 		},
 		onError: (error: Error) => {
+			if (error instanceof TierLockedError) {
+				// Not a failure to report: the form locks and says why. Refresh so the
+				// member row carries the flag from now on.
+				tierLockDetail = error.message;
+				refreshAll();
+				return;
+			}
 			toast.error(m['membersTab.updateMemberFailed']({ error: error.message }));
 		}
 	}));
@@ -149,7 +169,9 @@
 	);
 
 	function handleClose(): void {
-		if (!pending) onClose();
+		if (pending) return;
+		tierLockDetail = null;
+		onClose();
 	}
 </script>
 
@@ -159,6 +181,8 @@
 	{isStaff}
 	{open}
 	onClose={handleClose}
+	{onManageSubscription}
+	{tierLockDetail}
 	onUpdateStatus={(status) => member && updateMutation.mutate({ target: member, status })}
 	onUpdateTier={(tierId) => member && updateMutation.mutate({ target: member, tierId })}
 	onMakeStaff={() => member && promoteMutation.mutate(member)}
