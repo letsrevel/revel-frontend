@@ -354,7 +354,8 @@
 					     status badge out of the dialog and makes the whole drawer scroll
 					     sideways on a phone. `shrink-0` keeps the badge legible instead of
 					     being squeezed to a sliver once the email does yield. -->
-					<div class="flex items-start justify-between gap-4">
+					<!-- `pr-8` keeps the badge clear of the dialog's absolutely positioned close X. -->
+					<div class="flex items-start justify-between gap-4 pr-8">
 						<div class="min-w-0">
 							<div class="text-base font-bold">{sub.user_display_name}</div>
 							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
