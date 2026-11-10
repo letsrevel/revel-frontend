@@ -20,7 +20,7 @@
 	<title>{m['impersonatePage.title']()}</title>
 </svelte:head>
 
-<div class="flex min-h-screen items-center justify-center bg-muted/50 p-4">
+<main id="main-content" class="flex min-h-screen items-center justify-center bg-muted/50 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header class="text-center">
 			<ToneTile icon={AlertTriangle} tone="danger" size="lg" class="mx-auto mb-4" />
@@ -63,4 +63,4 @@
 			{/if}
 		</Card.Footer>
 	</Card.Root>
-</div>
+</main>

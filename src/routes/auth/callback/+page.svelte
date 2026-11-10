@@ -4,8 +4,8 @@
 </script>
 
 <!-- Unreachable: the server load always redirects. Kept minimal on purpose. -->
-<div class="container mx-auto max-w-md px-4 py-16 text-center">
+<main id="main-content" class="container mx-auto max-w-md px-4 py-16 text-center">
 	<a href={resolve('/(public)/login', {})} class="text-primary underline-offset-4 hover:underline">
 		{m['login.oidcCallbackFallbackLink']()}
 	</a>
-</div>
+</main>
