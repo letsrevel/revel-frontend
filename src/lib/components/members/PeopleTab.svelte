@@ -336,45 +336,53 @@
 			</p>
 		{/if}
 		<div class="flex flex-wrap items-center gap-2">
-			<Button variant="outline" onclick={() => (exportOpen = true)} data-testid="people-export">
+			<Button
+				variant="outline"
+				class="max-sm:w-10 max-sm:px-0"
+				onclick={() => (exportOpen = true)}
+				data-testid="people-export"
+			>
 				<Download aria-hidden="true" />
-				{m['memberRegister.exportOpen']()}
+				<span class="max-sm:sr-only">{m['memberRegister.exportOpen']()}</span>
 			</Button>
-			<AddPersonMenu
-				onAddToRegister={openCreate}
-				onAddByAccount={() => (byAccountOpen = true)}
-				{onCreateInviteLink}
-			/>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Button
-							{...props}
-							variant="outline"
-							size="icon"
-							aria-label={m['memberPeople.moreActions']()}
-							data-testid="people-more"
+			<!-- Add person and the more menu never separate when the row wraps. -->
+			<div class="inline-flex items-center gap-2">
+				<AddPersonMenu
+					onAddToRegister={openCreate}
+					onAddByAccount={() => (byAccountOpen = true)}
+					{onCreateInviteLink}
+				/>
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="outline"
+								size="icon"
+								aria-label={m['memberPeople.moreActions']()}
+								data-testid="people-more"
+							>
+								<MoreHorizontal aria-hidden="true" />
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end">
+						<DropdownMenu.Item
+							disabled={registerEmpty}
+							data-testid="invite-all-open"
+							onclick={() => (inviteAllOpen = true)}
 						>
-							<MoreHorizontal aria-hidden="true" />
-						</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="end">
-					<DropdownMenu.Item
-						disabled={registerEmpty}
-						data-testid="invite-all-open"
-						onclick={() => (inviteAllOpen = true)}
-					>
-						<Mail aria-hidden="true" />
-						{m['memberRegister.inviteAllOpen']()}
-					</DropdownMenu.Item>
-					{#if registerEmpty}
-						<DropdownMenu.Label class="max-w-64 text-xs font-normal text-muted-foreground">
-							{m['memberRegister.inviteAllEmptyHint']()}
-						</DropdownMenu.Label>
-					{/if}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+							<Mail aria-hidden="true" />
+							{m['memberRegister.inviteAllOpen']()}
+						</DropdownMenu.Item>
+						{#if registerEmpty}
+							<DropdownMenu.Label class="max-w-64 text-xs font-normal text-muted-foreground">
+								{m['memberRegister.inviteAllEmptyHint']()}
+							</DropdownMenu.Label>
+						{/if}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</div>
 		</div>
 	</div>
 

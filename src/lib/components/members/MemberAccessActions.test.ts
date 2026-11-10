@@ -102,28 +102,38 @@ let currentMember: OrganizationMemberSchema = member;
 const onClose = vi.fn();
 
 /** The modal is opened by the caller (the person sheet), so it is open on mount. */
-function renderTab() {
+function renderTab(open = true) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
-	render(QueryClientTestWrapper, {
+	const baseProps = {
+		slug: 'test-org',
+		accessToken: 'test-token',
+		tiers: [] as MembershipTierSchema[],
+		isStaff: false,
+		onClose
+	};
+	const result = render(QueryClientTestWrapper, {
 		props: {
 			client,
 			component: MemberAccessActions,
-			componentProps: {
-				slug: 'test-org',
-				accessToken: 'test-token',
-				member: currentMember,
-				tiers: [] as MembershipTierSchema[],
-				isStaff: false,
-				open: true,
-				onClose
-			}
+			componentProps: { ...baseProps, member: currentMember, open }
 		}
 	});
+	// Re-render with new props (a refetched member object, or a toggled `open`).
+	const rerenderWith = async (next: { member?: OrganizationMemberSchema; open?: boolean }) =>
+		result.rerender({
+			client,
+			component: MemberAccessActions,
+			componentProps: {
+				...baseProps,
+				member: next.member ?? currentMember,
+				open: next.open ?? open
+			}
+		});
 	// Handed back so cache-invalidation assertions can spy on the very client the
 	// component under test is wired to.
-	return { client };
+	return { client, rerenderWith };
 }
 
 /** The manage modal is already open; wait for it. */
@@ -488,5 +498,172 @@ describe('MemberAccessActions failure surfacing', () => {
 			);
 		});
 		expect(alertSpy).not.toHaveBeenCalled();
+	});
+});
+
+/** The footer "Close" text button (the corner X also has the accessible name "Close"). */
+function footerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') === null);
+	if (!button) throw new Error('footer Close button not found');
+	return button;
+}
+
+/** The corner X (an icon button with the same accessible name). */
+function cornerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') !== null);
+	if (!button) throw new Error('corner X button not found');
+	return button;
+}
+
+describe('MemberAccessActions unsaved-changes guard', () => {
+	const DISCARD_TITLE = 'Discard unsaved changes?';
+
+	async function stageStatusChange(user: ReturnType<typeof userEvent.setup>) {
+		renderTab();
+		await openManageModal(user);
+		await pickStatus(user, 'Paused');
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
+	/** Keep editing: the confirm goes away, the dialog stays with the staged value. */
+	async function keepEditing(user: ReturnType<typeof userEvent.setup>) {
+		expect(await screen.findByText(DISCARD_TITLE)).toBeInTheDocument();
+		expect(onClose).not.toHaveBeenCalled();
+		await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+		await waitFor(() => expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument());
+		expect(onClose).not.toHaveBeenCalled();
+		expect(screen.getByLabelText('Membership Status')).toBeVisible();
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
+	it('closes immediately when nothing changed', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+
+		await user.click(footerClose());
+
+		expect(onClose).toHaveBeenCalledTimes(1);
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
+	});
+
+	it('closes immediately on Escape when nothing changed', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+
+		await user.keyboard('{Escape}');
+
+		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
+	});
+
+	it('footer Close: Keep editing keeps the staged value, Discard resets it and closes', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.click(footerClose());
+		await keepEditing(user);
+
+		await user.click(footerClose());
+		await user.click(await screen.findByRole('button', { name: 'Discard' }));
+		expect(onClose).toHaveBeenCalledTimes(1);
+		// The staged edit is gone, so reopening cannot show it.
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Active');
+		expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+	});
+
+	it('Escape with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.keyboard('{Escape}');
+
+		await keepEditing(user);
+	});
+
+	it('the corner X with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.click(cornerClose());
+
+		await keepEditing(user);
+	});
+
+	it('an overlay click with a staged change asks first and the dialog survives', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+		const overlay = document.querySelector('[data-dialog-overlay]');
+		if (!(overlay instanceof HTMLElement)) throw new Error('overlay not found');
+
+		// bits-ui's outside-interaction detection wants the full pointer sequence.
+		// jsdom has no PointerEvent, so build mouse-flavoured ones with the pointer type bits reads.
+		for (const type of ['pointerdown', 'pointerup', 'click']) {
+			// jsdom lays nothing out (content rect is all zeros); negative coordinates
+			// are what makes bits-ui treat the click as truly outside the content.
+			const event = new MouseEvent(type, {
+				bubbles: true,
+				cancelable: true,
+				button: 0,
+				clientX: -1,
+				clientY: -1
+			});
+			Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+			overlay.dispatchEvent(event);
+		}
+
+		await keepEditing(user);
+	});
+
+	describe('when the member prop refreshes', () => {
+		const refreshed = {
+			...member,
+			user: { ...member.user, preferred_name: 'Ada Byron' }
+		} as unknown as OrganizationMemberSchema;
+
+		it('keeps a staged edit for the same member', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ member: refreshed });
+
+			expect(await screen.findByText('Manage Ada Byron')).toBeInTheDocument();
+			expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+			expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+		});
+
+		it('keeps an open discard prompt', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+			await user.click(footerClose());
+			expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+
+			await rerenderWith({ member: refreshed });
+
+			expect(screen.getByText('Discard unsaved changes?')).toBeInTheDocument();
+		});
+
+		it('shows the saved values again after close and reopen', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ open: false });
+			await waitFor(() => expect(screen.queryByLabelText('Membership Status')).toBeNull());
+			await rerenderWith({ open: true });
+
+			expect(await screen.findByLabelText('Membership Status')).toHaveTextContent('Active');
+			expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+		});
 	});
 });

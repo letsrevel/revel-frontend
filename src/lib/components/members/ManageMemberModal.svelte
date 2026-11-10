@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		OrganizationMemberSchema,
@@ -10,6 +11,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
@@ -56,16 +58,30 @@
 	let showBanConfirm = $state(false);
 	let blacklistReason = $state('');
 
-	// Sync form state with member prop
+	let showDiscardConfirm = $state(false);
+
+	// Re-initialise the form only when an editing session begins (closed -> open, or a
+	// different member). A refreshed object for the SAME member (window-focus refetch,
+	// a parallel mutation) must not wipe staged edits or close an open discard prompt.
+	let sessionKey: string | null = null;
 	$effect(() => {
-		if (member) {
+		const key = open && member ? (member.user.id ?? member.user.email ?? '') : null;
+		if (key === null) {
+			sessionKey = null;
+			return;
+		}
+		if (key === sessionKey) return;
+		sessionKey = key;
+		untrack(() => {
+			if (!member) return;
 			selectedStatus = member.status;
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
 			showBlacklistConfirm = false;
 			showBanConfirm = false;
+			showDiscardConfirm = false;
 			blacklistReason = '';
-		}
+		});
 	});
 
 	// Display name
@@ -200,10 +216,25 @@
 	const isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
 
 	// Handle dialog open/close changes
-	function handleOpenChange(isOpen: boolean) {
-		if (!isOpen) {
-			onClose();
+	// Close / Escape / overlay click / the corner X with unsaved tier or status edits
+	// asks first (in-app confirm, never window.confirm); a clean dialog closes at once.
+	// Every route funnels into requestClose through the Dialog's function binding below,
+	// which never writes the new value back, so a guarded close keeps the dialog open.
+	function requestClose(): void {
+		if (hasChanges && !isProcessing) {
+			showDiscardConfirm = true;
+			return;
 		}
+		onClose();
+	}
+
+	function handleDiscard(): void {
+		showDiscardConfirm = false;
+		if (member) {
+			selectedStatus = member.status;
+			selectedTierId = member.tier?.id || null;
+		}
+		onClose();
 	}
 </script>
 
@@ -235,7 +266,14 @@
 	{/if}
 {/snippet}
 
-<Dialog {open} onOpenChange={handleOpenChange}>
+<Dialog
+	bind:open={
+		() => open,
+		(next) => {
+			if (!next) requestClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		{#if member}
 			<DialogHeader>
@@ -558,10 +596,21 @@
 
 			<!-- Close Button -->
 			<div class="flex justify-end border-t border-border pt-4">
-				<Button variant="ghost" onclick={onClose} disabled={isProcessing}>
+				<Button variant="ghost" onclick={requestClose} disabled={isProcessing}>
 					{m['manageMemberModal.close']()}
 				</Button>
 			</div>
 		{/if}
 	</DialogContent>
 </Dialog>
+
+<ConfirmDialog
+	isOpen={showDiscardConfirm}
+	title={m['manageMemberModal.discardTitle']()}
+	message={m['manageMemberModal.discardMessage']()}
+	confirmText={m['manageMemberModal.discardConfirm']()}
+	cancelText={m['manageMemberModal.discardKeep']()}
+	variant="warning"
+	onConfirm={handleDiscard}
+	onCancel={() => (showDiscardConfirm = false)}
+/>

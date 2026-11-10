@@ -3,6 +3,7 @@
 	import { GitMerge } from '@lucide/svelte';
 	import type { PossibleDuplicateSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
+	import { isSameName } from '$lib/member-register/reconcile';
 	import DuplicateEntry from './DuplicateEntry.svelte';
 	import RegisterReasonChips from './RegisterReasonChips.svelte';
 
@@ -34,10 +35,12 @@
 				<Button
 					variant="outline"
 					data-testid="duplicate-merge"
-					aria-label={m['memberRegister.mergeAria']({
-						absorbed: pair.unlinked.full_name,
-						survivor: pair.linked.full_name
-					})}
+					aria-label={isSameName(pair.unlinked.full_name, pair.linked.full_name)
+						? m['memberRegister.mergeAriaSameName']({ survivor: pair.linked.full_name })
+						: m['memberRegister.mergeAria']({
+								absorbed: pair.unlinked.full_name,
+								survivor: pair.linked.full_name
+							})}
 					onclick={() => onMerge(pair)}
 				>
 					<GitMerge aria-hidden="true" />

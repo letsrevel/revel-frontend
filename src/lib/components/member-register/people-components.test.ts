@@ -85,6 +85,16 @@ describe('PeopleChips', () => {
 		expect(PEOPLE_VIEWS).toHaveLength(buttons.length);
 	});
 
+	it('wraps instead of scrolling sideways, so no chip is clipped on a phone', () => {
+		render(PeopleChips, { props: { value: 'current', onChange: vi.fn() } });
+		const group = screen.getByRole('group', { name: 'Show' });
+		expect(group.className).toContain('flex-wrap');
+		expect(group.className).not.toMatch(/overflow-x-(auto|scroll)|overflow-hidden|nowrap/);
+		for (const chip of screen.getAllByRole('button')) {
+			expect(chip.className).not.toContain('shrink-0');
+		}
+	});
+
 	it('presses none when the filters match no chip', () => {
 		render(PeopleChips, { props: { value: null, onChange: vi.fn() } });
 		expect(

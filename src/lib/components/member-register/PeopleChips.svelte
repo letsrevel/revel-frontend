@@ -28,12 +28,12 @@
 	}
 </script>
 
-<!-- Toggle buttons with aria-pressed. The row scrolls sideways on narrow screens
-     (the page itself never does); `-mx-4 px-4` lets the chips bleed to the edge. -->
+<!-- Toggle buttons with aria-pressed. The chips wrap onto extra lines on narrow
+     screens, so nothing is clipped or hidden behind a sideways scroll. -->
 <div
 	role="group"
 	aria-label={m['memberPeople.view.label']()}
-	class="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+	class="flex flex-wrap gap-2"
 	data-testid="people-chips"
 >
 	{#each PEOPLE_VIEWS as view (view)}
@@ -43,7 +43,7 @@
 			aria-pressed={pressed}
 			data-testid="people-chip-{view}"
 			class={cn(
-				'inline-flex min-h-9 shrink-0 items-center rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+				'inline-flex min-h-9 items-center rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
 				pressed
 					? 'border-primary bg-primary text-primary-foreground'
 					: 'border-border bg-card text-foreground hover:bg-muted'
