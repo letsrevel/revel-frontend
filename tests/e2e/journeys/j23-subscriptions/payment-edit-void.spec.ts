@@ -102,7 +102,9 @@ test.describe('J23 edit and void a membership payment @p2', () => {
 		const editButton = drawer.getByRole('button', { name: /^Edit the payment of/ });
 
 		// POSITIVE ANCHORS: the payment exists and shows the BACKDATED day, not today.
-		await expect(drawer.getByText('€15.00').first()).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByText('€15.00', { exact: true }).first()).toBeVisible({
+			timeout: 15_000
+		});
 		await expect(drawer.getByText(shortDate(paidOn)).first()).toBeVisible();
 		await expect(editButton).toBeVisible();
 
@@ -119,9 +121,11 @@ test.describe('J23 edit and void a membership payment @p2', () => {
 		await expect(editDialog).toBeHidden({ timeout: 20_000 });
 		await expect(admin.getByText('Payment updated.')).toBeVisible({ timeout: 15_000 });
 
-		await expect(drawer.getByText('€20.00').first()).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByText('€20.00', { exact: true }).first()).toBeVisible({
+			timeout: 15_000
+		});
 		await expect(drawer.getByText(shortDate(newDate)).first()).toBeVisible();
-		await expect(drawer.getByText('€15.00')).toHaveCount(0);
+		await expect(drawer.getByText('€15.00', { exact: true })).toHaveCount(0);
 
 		// --- Void ----------------------------------------------------------------
 		await drawer.getByRole('button', { name: /^Void the payment of/ }).click();
@@ -139,11 +143,13 @@ test.describe('J23 edit and void a membership payment @p2', () => {
 
 		// It disappears from the default list…
 		await expect(drawer.getByText('No payments yet.')).toBeVisible({ timeout: 15_000 });
-		await expect(drawer.getByText('€20.00')).toHaveCount(0);
+		await expect(drawer.getByText('€20.00', { exact: true })).toHaveCount(0);
 
 		// …and comes back, as Voided and without any action, when asked for.
 		await drawer.getByLabel('Show voided payments').check();
-		await expect(drawer.getByText('€20.00').first()).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByText('€20.00', { exact: true }).first()).toBeVisible({
+			timeout: 15_000
+		});
 		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Voided' })).toBeVisible();
 		await expect(drawer.getByRole('button', { name: /^Edit the payment of/ })).toHaveCount(0);
 		await expect(drawer.getByRole('button', { name: /^Void the payment of/ })).toHaveCount(0);
