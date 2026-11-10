@@ -72,8 +72,8 @@
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
-	// Only merge and unlink can add or remove a possible-duplicate pair.
-	const changesPairs = $derived(action === 'merge' || action === 'unlink');
+	// Merge, unlink and delete can add or remove a possible-duplicate pair.
+	const changesPairs = $derived(action === 'merge' || action === 'unlink' || action === 'delete');
 	let submitError = $state<DescribedError | null>(null);
 
 	$effect(() => {

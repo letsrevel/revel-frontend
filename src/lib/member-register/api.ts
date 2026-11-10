@@ -82,9 +82,10 @@ export const memberRegisterKeys = {
 		['organization', slug, 'member-register', 'list', query] as const,
 	/**
 	 * Deliberately OUTSIDE the `all` prefix: the possible-duplicates scan is the
-	 * expensive call, so an ordinary register write must not refetch it. Callers
-	 * that can change the pairs (merge, unlink, approve-and-link) invalidate it
-	 * explicitly via `invalidateRegister`.
+	 * expensive call, so an ordinary register write (a note, an invite) must not
+	 * refetch it. Callers that can change the pairs (create, edit, end, delete,
+	 * merge, unlink, approve-and-link, a member status or tier change) invalidate
+	 * it explicitly via `invalidateRegister`.
 	 */
 	duplicates: (slug: string) => ['organization', slug, 'register-possible-duplicates'] as const,
 	/** Unfiltered total; inside `all`, so every register write refreshes it. */
@@ -100,7 +101,7 @@ export const memberRegisterKeys = {
 
 /**
  * Invalidate the possible-duplicates scan after a write that can change the
- * pairs (merge, unlink, approve-and-link). `refetchType: 'all'` also refreshes
+ * pairs (see `memberRegisterKeys.duplicates`). `refetchType: 'all'` also refreshes
  * the scan while the Duplicates tab is closed, which keeps the tab badge true.
  */
 export function invalidateDuplicates(queryClient: QueryClient, slug: string): Promise<void> {
