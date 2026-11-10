@@ -21,6 +21,7 @@
 	import {
 		RegisterApiError,
 		createRecord,
+		invalidateRegister,
 		inviteRecord,
 		memberRegisterKeys,
 		updateRecord
@@ -122,7 +123,9 @@
 			return created;
 		},
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+			// A new or edited account-less entry (name, email) can add or drop a
+			// possible-duplicate pair, so the scan is refreshed too.
+			await invalidateRegister(queryClient, slug, true);
 			toast.success(
 				mode === 'edit' ? m['memberRegister.savedEdit']() : m['memberRegister.savedCreate']()
 			);

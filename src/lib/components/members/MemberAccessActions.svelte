@@ -14,7 +14,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
-	import { memberRegisterKeys } from '$lib/member-register/api';
+	import { invalidateRegister } from '$lib/member-register/api';
 	import { memberAccessPrefix } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
 
@@ -42,7 +42,9 @@
 
 	function refreshAll(): void {
 		void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'members'] });
-		void queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+		// A cancel, ban, removal or tier move closes (and may reopen) the linked open
+		// entry, which is what account-less entries are paired against.
+		void invalidateRegister(queryClient, slug, true);
 		// The person sheet's single-member lookup sits OUTSIDE the list prefix (a note
 		// save must not refetch it), so a member mutation refreshes it explicitly.
 		void queryClient.invalidateQueries({ queryKey: memberAccessPrefix(slug) });

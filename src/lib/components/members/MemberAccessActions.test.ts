@@ -231,6 +231,31 @@ describe('MemberAccessActions membership-loss invalidation', () => {
 		expect(onClose).toHaveBeenCalled();
 	});
 
+	it('refreshes the possible-duplicates scan after removing a member', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembersRemoveMember).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+
+		const { client } = renderTab();
+		const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
+
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Remove from Organization' }));
+		await user.click(await screen.findByRole('button', { name: 'Yes, Remove' }));
+
+		// The scan pairs open account-less entries against linked ones, so a removal
+		// can change it. invalidateDuplicates passes refetchType too, hence objectContaining.
+		await waitFor(() => {
+			expect(invalidateSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					queryKey: ['organization', 'test-org', 'register-possible-duplicates']
+				})
+			);
+		});
+	});
+
 	it('invalidates the subscription queries after blacklisting a member', async () => {
 		const user = userEvent.setup();
 		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({

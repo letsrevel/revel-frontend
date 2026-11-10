@@ -71,3 +71,15 @@ describe('AuthLayout skip-link target', () => {
 		expect(container.querySelector('main')).not.toHaveAttribute('id');
 	});
 });
+
+describe('layouts do not render their own skip link', () => {
+	// The single skip link lives in the root layout (SkipLink), ahead of the banners.
+	it.each([
+		['PublicLayout', PublicLayout],
+		['AuthLayout', AuthLayout]
+	])('%s with tenant chrome has no skip link', (_name, Layout) => {
+		setTenant(makeTenant());
+		render(Layout);
+		expect(screen.queryByRole('link', { name: /skip to main content/i })).toBeNull();
+	});
+});

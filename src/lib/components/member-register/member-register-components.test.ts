@@ -53,14 +53,23 @@ const tiers: MembershipTierSchema[] = [
 	{ id: 'tier-2', name: 'Supporter', kind: 'standard' }
 ];
 
-function renderIn(component: unknown, componentProps: Record<string, unknown>) {
+function renderIn(
+	component: unknown,
+	componentProps: Record<string, unknown>,
+	client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+) {
 	render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client,
 			component: component as never,
 			componentProps
 		}
 	});
+}
+
+/** The query keys a spied `invalidateQueries` was called with. */
+function invalidatedKeys(spy: { mock: { calls: unknown[][] } }): unknown[][] {
+	return spy.mock.calls.map((c) => (c[0] as { queryKey: unknown[] }).queryKey);
 }
 
 const noop = vi.fn();
@@ -228,6 +237,49 @@ describe('edit form', () => {
 		expect(await screen.findByText(/enter a name/i)).toBeInTheDocument();
 		expect(sdk.organizationadminmemberregisterCreateMemberRegisterRecord).not.toHaveBeenCalled();
 	});
+
+	it('refreshes the possible-duplicates scan after a successful edit', async () => {
+		sdk.organizationadminmemberregisterUpdateMemberRegisterRecord.mockResolvedValue({
+			data: record({ full_name: 'Ada King' })
+		});
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		renderIn(RecordFormDialog, props(record()), client);
+		const name = screen.getByLabelText(/full name/i);
+		await userEvent.clear(name);
+		await userEvent.type(name, 'Ada King');
+		await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+		await waitFor(() =>
+			expect(invalidatedKeys(spy)).toContainEqual([
+				'organization',
+				'acme',
+				'register-possible-duplicates'
+			])
+		);
+		expect(invalidatedKeys(spy)).toContainEqual(['organization', 'acme', 'member-register']);
+	});
+
+	it('refreshes the possible-duplicates scan after a successful create', async () => {
+		sdk.organizationadminmemberregisterCreateMemberRegisterRecord.mockResolvedValue({
+			data: record()
+		});
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		renderIn(RecordFormDialog, props(null), client);
+		await userEvent.type(screen.getByLabelText(/full name/i), 'Ada Lovelace');
+		await userEvent.selectOptions(screen.getByLabelText(/^tier$/i), 'tier-2');
+		await userEvent.type(screen.getByLabelText(/valid from/i), '2026-01-10T09:30');
+		await userEvent.click(screen.getByRole('button', { name: /^add entry$/i }));
+
+		await waitFor(() =>
+			expect(invalidatedKeys(spy)).toContainEqual([
+				'organization',
+				'acme',
+				'register-possible-duplicates'
+			])
+		);
+	});
 });
 
 describe('end dialog', () => {
@@ -237,6 +289,25 @@ describe('end dialog', () => {
 		slug: 'acme',
 		accessToken: 'tok',
 		onClose: noop
+	});
+
+	it('refreshes the possible-duplicates scan after ending a linked entry', async () => {
+		sdk.organizationadminmemberregisterEndMemberRegisterRecord.mockResolvedValue({
+			data: record({ has_account: true, valid_until: '2026-02-01T10:00:00Z' })
+		});
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		renderIn(EndRecordDialog, props(record({ has_account: true })), client);
+		await userEvent.click(screen.getByRole('button', { name: /end and cancel membership/i }));
+
+		await waitFor(() =>
+			expect(invalidatedKeys(spy)).toContainEqual(['organization', 'acme', 'member-register'])
+		);
+		expect(invalidatedKeys(spy)).toContainEqual([
+			'organization',
+			'acme',
+			'register-possible-duplicates'
+		]);
 	});
 
 	it('warns that ending a linked entry cancels the membership', () => {
