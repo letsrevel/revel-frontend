@@ -357,7 +357,7 @@
 					<!-- `pr-8` keeps the badge clear of the dialog's absolutely positioned close X. -->
 					<div class="flex items-start justify-between gap-4 pr-8">
 						<div class="min-w-0">
-							<div class="text-base font-bold">{sub.user_display_name}</div>
+							<div class="break-words text-base font-bold">{sub.user_display_name}</div>
 							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
 						</div>
 						<SubscriptionStatusBadge status={sub.status} class="shrink-0" />
