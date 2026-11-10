@@ -2,7 +2,10 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import { mesubscriptionsListMySubscriptionPayments } from '$lib/api/generated/sdk.gen';
-	import type { MyMembershipPaymentSchema, PaymentStatus } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipPaymentStatus,
+		MyMembershipPaymentSchema
+	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { backendMessage } from '$lib/utils/api-error-detail';
@@ -96,7 +99,7 @@
 			: m['subscriptions.payments.partiallyRefunded']({ amount });
 	}
 
-	function statusLabel(status: PaymentStatus): string {
+	function statusLabel(status: MembershipPaymentStatus): string {
 		switch (status) {
 			case 'succeeded':
 				return m['subscriptions.payments.status.succeeded']();
@@ -115,7 +118,7 @@
 
 	/** Thin mapper: raw payment status -> StatusBadge tone. Each of the four
 	 * backend statuses gets its own tone. */
-	function statusTone(status: PaymentStatus): Tone {
+	function statusTone(status: MembershipPaymentStatus): Tone {
 		switch (status) {
 			case 'succeeded':
 				return 'success';
