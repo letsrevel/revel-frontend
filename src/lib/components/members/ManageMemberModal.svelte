@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		OrganizationMemberSchema,
@@ -57,9 +58,22 @@
 	let showBanConfirm = $state(false);
 	let blacklistReason = $state('');
 
-	// Sync form state with member prop
+	let showDiscardConfirm = $state(false);
+
+	// Re-initialise the form only when an editing session begins (closed -> open, or a
+	// different member). A refreshed object for the SAME member (window-focus refetch,
+	// a parallel mutation) must not wipe staged edits or close an open discard prompt.
+	let sessionKey: string | null = null;
 	$effect(() => {
-		if (member && open) {
+		const key = open && member ? (member.user.id ?? member.user.email ?? '') : null;
+		if (key === null) {
+			sessionKey = null;
+			return;
+		}
+		if (key === sessionKey) return;
+		sessionKey = key;
+		untrack(() => {
+			if (!member) return;
 			selectedStatus = member.status;
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
@@ -67,7 +81,7 @@
 			showBanConfirm = false;
 			showDiscardConfirm = false;
 			blacklistReason = '';
-		}
+		});
 	});
 
 	// Display name
@@ -206,8 +220,6 @@
 	// asks first (in-app confirm, never window.confirm); a clean dialog closes at once.
 	// Every route funnels into requestClose through the Dialog's function binding below,
 	// which never writes the new value back, so a guarded close keeps the dialog open.
-	let showDiscardConfirm = $state(false);
-
 	function requestClose(): void {
 		if (hasChanges && !isProcessing) {
 			showDiscardConfirm = true;

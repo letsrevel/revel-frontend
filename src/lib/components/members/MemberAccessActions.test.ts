@@ -102,28 +102,38 @@ let currentMember: OrganizationMemberSchema = member;
 const onClose = vi.fn();
 
 /** The modal is opened by the caller (the person sheet), so it is open on mount. */
-function renderTab() {
+function renderTab(open = true) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
-	render(QueryClientTestWrapper, {
+	const baseProps = {
+		slug: 'test-org',
+		accessToken: 'test-token',
+		tiers: [] as MembershipTierSchema[],
+		isStaff: false,
+		onClose
+	};
+	const result = render(QueryClientTestWrapper, {
 		props: {
 			client,
 			component: MemberAccessActions,
-			componentProps: {
-				slug: 'test-org',
-				accessToken: 'test-token',
-				member: currentMember,
-				tiers: [] as MembershipTierSchema[],
-				isStaff: false,
-				open: true,
-				onClose
-			}
+			componentProps: { ...baseProps, member: currentMember, open }
 		}
 	});
+	// Re-render with new props (a refetched member object, or a toggled `open`).
+	const rerenderWith = async (next: { member?: OrganizationMemberSchema; open?: boolean }) =>
+		result.rerender({
+			client,
+			component: MemberAccessActions,
+			componentProps: {
+				...baseProps,
+				member: next.member ?? currentMember,
+				open: next.open ?? open
+			}
+		});
 	// Handed back so cache-invalidation assertions can spy on the very client the
 	// component under test is wired to.
-	return { client };
+	return { client, rerenderWith };
 }
 
 /** The manage modal is already open; wait for it. */
@@ -608,5 +618,52 @@ describe('MemberAccessActions unsaved-changes guard', () => {
 		}
 
 		await keepEditing(user);
+	});
+
+	describe('when the member prop refreshes', () => {
+		const refreshed = {
+			...member,
+			user: { ...member.user, preferred_name: 'Ada Byron' }
+		} as unknown as OrganizationMemberSchema;
+
+		it('keeps a staged edit for the same member', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ member: refreshed });
+
+			expect(await screen.findByText('Manage Ada Byron')).toBeInTheDocument();
+			expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+			expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+		});
+
+		it('keeps an open discard prompt', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+			await user.click(footerClose());
+			expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+
+			await rerenderWith({ member: refreshed });
+
+			expect(screen.getByText('Discard unsaved changes?')).toBeInTheDocument();
+		});
+
+		it('shows the saved values again after close and reopen', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ open: false });
+			await waitFor(() => expect(screen.queryByLabelText('Membership Status')).toBeNull());
+			await rerenderWith({ open: true });
+
+			expect(await screen.findByLabelText('Membership Status')).toHaveTextContent('Active');
+			expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+		});
 	});
 });
