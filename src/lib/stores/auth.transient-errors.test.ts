@@ -71,7 +71,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function loadStore() {
+async function loadStore(): Promise<typeof import('./auth.svelte').authStore> {
 	const { authStore } = await import('./auth.svelte');
 	return authStore;
 }
@@ -158,6 +158,21 @@ describe('authStore transient user/permission fetch failures (#1207)', () => {
 		expect(store.isAuthenticated).toBe(false);
 		await vi.advanceTimersByTimeAsync(120_000);
 		expect(accountMe).toHaveBeenCalledTimes(1); // no retry scheduled
+	});
+
+	it('logs out and clears the token when the refresh endpoint returns 401', async () => {
+		const store = await loadStore();
+		fetchMock.mockResolvedValueOnce(jsonResponse(401, { message: 'x' }));
+		fetchMock.mockResolvedValueOnce(jsonResponse(401, { message: 'x' }));
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, { cleared: true }));
+
+		const refresh = expect(store.refreshAccessToken()).rejects.toThrow('401');
+		await vi.advanceTimersByTimeAsync(500);
+		await refresh;
+
+		expect(store.accessToken).toBeNull();
+		expect(store.isAuthenticated).toBe(false);
+		expect(accountMe).not.toHaveBeenCalled();
 	});
 
 	it('logs out when the refresh response is not OK', async () => {
@@ -333,6 +348,73 @@ describe('authStore transient user/permission fetch failures (#1207)', () => {
 		expect(store.isAuthenticated).toBe(true);
 		await vi.advanceTimersByTimeAsync(2_000);
 		expect(store.user).toEqual(USER);
+		store.logout();
+	});
+
+	it('drops a late user response from a previous session after a new login', async () => {
+		const store = await loadStore();
+		const USER_A = { id: 'A' };
+		const USER_B = { id: 'B' };
+		const PERMS_B = { organization_permissions: { b: true } };
+		let resolveA: (v: never) => void = () => undefined;
+		vi.mocked(accountMe)
+			.mockImplementationOnce(() => new Promise((resolve) => (resolveA = resolve)) as never)
+			.mockResolvedValueOnce({ data: USER_B } as never);
+		vi.mocked(permissionMyPermissions).mockResolvedValue({ data: PERMS_B } as never);
+		vi.mocked(authObtainToken).mockResolvedValueOnce({ data: { access: fakeJwt() } } as never);
+
+		store.setAccessToken(fakeJwt());
+		const initA = store.initialize(); // session A: /me pending
+		await vi.advanceTimersByTimeAsync(0);
+
+		await store.login('b@b.c', 'pw'); // session B must not reuse A's hydration
+		expect(store.user).toEqual(USER_B);
+		expect(store.permissions).toEqual(PERMS_B);
+
+		resolveA({ data: USER_A } as never); // A's response arrives late
+		await initA;
+		await vi.advanceTimersByTimeAsync(0);
+
+		expect(store.user).toEqual(USER_B);
+		expect(store.permissions).toEqual(PERMS_B);
+		store.logout();
+	});
+
+	it('drops an in-flight user response that resolves after logout()', async () => {
+		const store = await loadStore();
+		let resolveMe: (v: never) => void = () => undefined;
+		vi.mocked(accountMe).mockImplementationOnce(
+			() => new Promise((resolve) => (resolveMe = resolve)) as never
+		);
+		store.setAccessToken(fakeJwt());
+		const init = store.initialize();
+		await vi.advanceTimersByTimeAsync(0);
+
+		store.logout();
+		resolveMe(okUser());
+		await init;
+
+		expect(store.user).toBeNull();
+		expect(permissionMyPermissions).not.toHaveBeenCalled();
+	});
+
+	it('does not schedule a retry for a transient failure that lands after logout()', async () => {
+		const store = await loadStore();
+		let resolveMe: (v: never) => void = () => undefined;
+		vi.mocked(accountMe).mockImplementationOnce(
+			() => new Promise((resolve) => (resolveMe = resolve)) as never
+		);
+		store.setAccessToken(fakeJwt());
+		const init = store.initialize();
+		await vi.advanceTimersByTimeAsync(0);
+
+		store.resetForSwap();
+		store.setAccessToken(fakeJwt()); // new identity's token is present
+		resolveMe(failure(503));
+		await init;
+		await vi.advanceTimersByTimeAsync(120_000);
+
+		expect(accountMe).toHaveBeenCalledTimes(1); // no stale retry
 		store.logout();
 	});
 

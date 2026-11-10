@@ -32,6 +32,12 @@ class AuthStore {
 	private _hydrationAttempt = 0;
 	// Single-flight: retry timer, refresh, initialize() and login share one fetch.
 	private _hydratePromise: Promise<void> | null = null;
+	// Session generation: bumped by logout(), resetForSwap() and every new login.
+	// In-flight user/permission fetches capture it and drop their result (no
+	// assignment, no retry, no logout) if it moved while they were awaiting, and
+	// the single-flight promise is only shared within one generation.
+	private _sessionGen = 0;
+	private _hydrateGen = -1;
 	// Shared promise to prevent concurrent refresh attempts
 	private _refreshPromise: Promise<void> | null = null;
 	// True only while `logout()` is running. Used by `_performRefresh` to
@@ -209,7 +215,8 @@ class AuthStore {
 				throw new Error('Invalid response: no access token');
 			}
 
-			// Store access token in memory
+			// Store access token in memory (as a brand-new session)
+			this.beginSession();
 			this._accessToken = data.access;
 			this.dropGuestHoldTokenUnlessReleasing();
 
@@ -219,6 +226,18 @@ class AuthStore {
 		} finally {
 			this._isLoading = false;
 		}
+	}
+
+	/**
+	 * Start a fresh session: invalidate anything in flight for the previous one
+	 * (fetches, retry timer, single-flight promise) and drop its identity data.
+	 */
+	private beginSession(): void {
+		this._sessionGen++;
+		this.clearHydrationTimer();
+		this._hydratePromise = null;
+		this._user = null;
+		this._permissions = null;
 	}
 
 	/**
@@ -249,7 +268,8 @@ class AuthStore {
 				throw new Error('OTP verification failed');
 			}
 
-			// Store access token in memory
+			// Store access token in memory (as a brand-new session)
+			this.beginSession();
 			this._accessToken = data.access;
 			this.dropGuestHoldTokenUnlessReleasing();
 
@@ -272,6 +292,7 @@ class AuthStore {
 		this.clearTokenRefreshTimer();
 		this.clearHydrationTimer();
 		this._hydratePromise = null;
+		this._sessionGen++;
 
 		// Clear any in-progress refresh
 		this._refreshPromise = null;
@@ -393,19 +414,25 @@ class AuthStore {
 	 * definitive failure (e.g. 401) so the caller can end the session.
 	 */
 	private hydrate(): Promise<void> {
-		if (this._hydratePromise) return this._hydratePromise;
+		const gen = this._sessionGen;
+		if (this._hydratePromise && this._hydrateGen === gen) return this._hydratePromise;
 		const run: Promise<void> = (async () => {
 			try {
-				if (!this._user) await this.fetchUserData();
-				if (!this._permissions) await this.fetchPermissions();
+				if (!this._user) await this.fetchUserData(gen);
+				if (gen !== this._sessionGen) return;
+				if (!this._permissions) await this.fetchPermissions(gen);
+				if (gen !== this._sessionGen) return;
 				this._hydrationAttempt = 0;
 			} catch (error) {
+				// The session changed while we were awaiting: this result is stale.
+				if (gen !== this._sessionGen) return;
 				if (!this.deferHydration(error)) throw error;
 			}
 		})().finally(() => {
 			if (this._hydratePromise === run) this._hydratePromise = null;
 		});
 		this._hydratePromise = run;
+		this._hydrateGen = gen;
 		return run;
 	}
 
@@ -450,7 +477,7 @@ class AuthStore {
 	/**
 	 * Fetch current user data
 	 */
-	private async fetchUserData(): Promise<void> {
+	private async fetchUserData(gen: number): Promise<void> {
 		try {
 			const { data, error, response } = await accountMe({
 				headers: this.getAuthHeaders()
@@ -460,6 +487,8 @@ class AuthStore {
 				throw new AuthFetchError('Failed to fetch user data', response, error);
 			}
 
+			// Session changed mid-flight (logout / swap / new login): drop it.
+			if (gen !== this._sessionGen) return;
 			this._user = data;
 
 			// Set user's preferred language if available
@@ -483,7 +512,7 @@ class AuthStore {
 	/**
 	 * Fetch user permissions
 	 */
-	private async fetchPermissions(): Promise<void> {
+	private async fetchPermissions(gen: number): Promise<void> {
 		const { data, error, response } = await permissionMyPermissions({
 			headers: this.getAuthHeaders()
 		});
@@ -493,6 +522,7 @@ class AuthStore {
 			throw new AuthFetchError('Failed to fetch permissions', response, error);
 		}
 
+		if (gen !== this._sessionGen) return;
 		this._permissions = data;
 	}
 
@@ -583,6 +613,7 @@ class AuthStore {
 		this.clearTokenRefreshTimer();
 		this.clearHydrationTimer();
 		this._hydratePromise = null;
+		this._sessionGen++;
 		this._refreshPromise = null;
 		this._user = null;
 		this._accessToken = null;
