@@ -30,7 +30,7 @@ const auth = {
 	impersonated: false
 };
 
-function renderLayout(embed: boolean) {
+function renderLayout(embed: boolean): ReturnType<typeof render> {
 	const children = createRawSnippet(() => ({
 		render: () => '<main id="main-content"><a href="/x">page link</a></main>'
 	}));
