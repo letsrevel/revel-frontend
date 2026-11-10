@@ -3076,7 +3076,7 @@
 	},
 	"makeMemberAction": {
 		"button": "Convertir en miembro",
-		"success": "{name} se ha añadido como miembro.",
+		"success": "{name} ya forma parte de los miembros.",
 		"error": "No se ha podido añadir al miembro. Inténtalo de nuevo.",
 		"tiersLoadError": "No se han podido cargar los niveles de membresía. Inténtalo de nuevo.",
 		"alreadyMember": "Esta persona ya es miembro."
@@ -11231,5 +11231,25 @@
 	"memberPeople.sheet.duplicateHint": "Otra entrada reclama la misma cuenta. Revísala en Posibles duplicados.",
 	"memberPeople.sheet.paymentsHeading": "Pagos",
 	"memberPeople.sheet.paymentsHelp": "Los pagos de membresía de esta persona están en la pestaña Pagos.",
-	"memberPeople.sheet.openPayments": "Abrir la pestaña Pagos"
+	"memberPeople.sheet.openPayments": "Abrir la pestaña Pagos",
+	"memberPeople.addByAccount": "Añadir por cuenta",
+	"memberPeople.byAccount.title": "Añadir por cuenta",
+	"memberPeople.byAccount.description": "Encuentra a quien ya tiene una cuenta de Revel verificada a partir de su correo y añade a la persona como miembro.",
+	"memberPeople.byAccount.emailLabel": "Correo de la cuenta",
+	"memberPeople.byAccount.errRequired": "Introduce un correo electrónico.",
+	"memberPeople.byAccount.errInvalid": "Introduce un correo electrónico válido.",
+	"memberPeople.byAccount.find": "Buscar cuenta",
+	"memberPeople.byAccount.finding": "Buscando...",
+	"memberPeople.byAccount.notFound": "Ninguna cuenta verificada usa este correo. Puede que aún no se haya registrado o no haya confirmado su correo.",
+	"memberPeople.byAccount.createInvite": "Crear un enlace de invitación en su lugar",
+	"memberPeople.byAccount.pending": "{name} tiene una solicitud de membresía pendiente.",
+	"memberPeople.byAccount.reviewApplication": "Revisar la solicitud",
+	"memberPeople.byAccount.hasMembership": "{name} ya tiene una membresía aquí.",
+	"memberPeople.byAccount.openPerson": "Abrir la ficha",
+	"memberPeople.byAccount.found": "Cuenta encontrada: {name}",
+	"memberPeople.byAccount.tierLabel": "Nivel",
+	"memberPeople.byAccount.addMember": "Añadir como miembro",
+	"memberPeople.byAccount.added": "{name} ya forma parte de los miembros.",
+	"memberPeople.byAccount.throttledIn": "Demasiadas búsquedas. Inténtalo de nuevo en {time}.",
+	"memberPeople.byAccount.throttled": "Demasiadas búsquedas. Inténtalo de nuevo en un rato."
 }

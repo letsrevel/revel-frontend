@@ -2939,7 +2939,7 @@
 	},
 	"makeMemberAction": {
 		"button": "Rendre membre",
-		"success": "{name} a été ajouté comme membre.",
+		"success": "{name} fait maintenant partie des membres.",
 		"error": "Échec de l'ajout du membre. Veuillez réessayer.",
 		"tiersLoadError": "Échec du chargement des niveaux d'adhésion. Veuillez réessayer.",
 		"alreadyMember": "Cette personne est déjà membre."
@@ -11231,5 +11231,25 @@
 	"memberPeople.sheet.duplicateHint": "Une autre entrée réclame le même compte. Vérifie-la dans Doublons possibles.",
 	"memberPeople.sheet.paymentsHeading": "Paiements",
 	"memberPeople.sheet.paymentsHelp": "Les paiements d'adhésion de cette personne sont dans l'onglet Paiements.",
-	"memberPeople.sheet.openPayments": "Ouvrir l'onglet Paiements"
+	"memberPeople.sheet.openPayments": "Ouvrir l'onglet Paiements",
+	"memberPeople.addByAccount": "Ajouter par compte",
+	"memberPeople.byAccount.title": "Ajouter par compte",
+	"memberPeople.byAccount.description": "Retrouvez une personne qui a déjà un compte Revel vérifié grâce à son e-mail et ajoutez-la comme membre.",
+	"memberPeople.byAccount.emailLabel": "E-mail du compte",
+	"memberPeople.byAccount.errRequired": "Saisissez une adresse e-mail.",
+	"memberPeople.byAccount.errInvalid": "Saisissez une adresse e-mail valide.",
+	"memberPeople.byAccount.find": "Rechercher le compte",
+	"memberPeople.byAccount.finding": "Recherche en cours...",
+	"memberPeople.byAccount.notFound": "Aucun compte vérifié n'utilise cet e-mail. Il se peut que la personne ne soit pas encore inscrite ou n'ait pas confirmé son e-mail.",
+	"memberPeople.byAccount.createInvite": "Créer plutôt un lien d'invitation",
+	"memberPeople.byAccount.pending": "Une demande d'adhésion de {name} est en attente.",
+	"memberPeople.byAccount.reviewApplication": "Examiner la demande",
+	"memberPeople.byAccount.hasMembership": "{name} a déjà une adhésion ici.",
+	"memberPeople.byAccount.openPerson": "Ouvrir la fiche",
+	"memberPeople.byAccount.found": "Compte trouvé : {name}",
+	"memberPeople.byAccount.tierLabel": "Niveau",
+	"memberPeople.byAccount.addMember": "Ajouter comme membre",
+	"memberPeople.byAccount.added": "{name} fait maintenant partie des membres.",
+	"memberPeople.byAccount.throttledIn": "Trop de recherches. Réessayez dans {time}.",
+	"memberPeople.byAccount.throttled": "Trop de recherches. Réessayez dans un moment."
 }

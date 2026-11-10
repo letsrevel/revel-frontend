@@ -4,6 +4,7 @@ import {
 	organizationadminmemberregisterDeleteMemberRegisterRecord,
 	organizationadminmemberregisterEndMemberRegisterRecord,
 	organizationadminmemberregisterExportMemberRegister,
+	organizationadminmemberregisterGetMemberRegisterRecord,
 	organizationadminmemberregisterListMemberRegister,
 	organizationadminmemberregisterUpdateMemberRegisterRecord,
 	organizationadminmemberregisterlinkingInviteAllMemberRegister,
@@ -11,11 +12,14 @@ import {
 	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches,
 	organizationadminmemberregisterlinkingListPossibleDuplicates,
 	organizationadminmemberregisterlinkingMergeMemberRegisterRecord,
-	organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord
+	organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord,
+	organizationadminmembersAddMember,
+	organizationadminuserlookupLookupUser
 } from '$lib/api';
 import type {
 	MembershipRecordCreateSchema,
 	MembershipRecordSchema,
+	OrgUserLookupSchema,
 	PaginatedResponseSchemaMembershipRecordSchema,
 	PossibleDuplicateSchema,
 	RegisterMatchSchema
@@ -365,4 +369,60 @@ export async function listRegisterMatches(
 	ensureOk(res);
 	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
 	return res.data;
+}
+
+/** One register entry by id. */
+export async function getRecord(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<MembershipRecordSchema> {
+	const res = await organizationadminmemberregisterGetMemberRegisterRecord({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/**
+ * Find a verified account by its exact email (throttled: 429 + Retry-After).
+ * `null` is the backend's single, deliberately uninformative `user_not_found`
+ * answer; it is matched on its `code`, never its text.
+ */
+export async function lookupAccount(
+	slug: string,
+	accessToken: string | null | undefined,
+	email: string
+): Promise<OrgUserLookupSchema | null> {
+	const res = await organizationadminuserlookupLookupUser({
+		path: { slug },
+		query: { email },
+		headers: authHeaders(accessToken)
+	});
+	if (
+		res.response?.status === 404 &&
+		(res.error as { code?: unknown } | undefined)?.code === 'user_not_found'
+	) {
+		return null;
+	}
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Add an existing account to a STANDARD tier. A 400 may mean they already hold a membership row. */
+export async function addMemberByAccount(
+	slug: string,
+	accessToken: string | null | undefined,
+	userId: string,
+	tierId: string
+): Promise<void> {
+	const res = await organizationadminmembersAddMember({
+		path: { slug, user_id: userId },
+		body: { tier_id: tierId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
 }

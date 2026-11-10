@@ -4,7 +4,7 @@ import { backendMessage } from '$lib/utils/api-error-detail';
 import { RegisterApiError } from './api';
 
 export type RegisterAction =
-	'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all' | 'merge' | 'unlink';
+	'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all' | 'merge' | 'unlink' | 'lookup';
 
 export interface DescribedError {
 	/** 409: the entry changed since the page loaded; callers refetch. */
@@ -30,6 +30,11 @@ export function formatWait(seconds: number): string {
 
 function throttledMessage(action: RegisterAction, retryAfter: number | null): string {
 	if (action === 'export') return m['memberRegister.errorExportThrottled']();
+	if (action === 'lookup') {
+		return retryAfter
+			? m['memberPeople.byAccount.throttledIn']({ time: formatWait(retryAfter) })
+			: m['memberPeople.byAccount.throttled']();
+	}
 	if (action === 'invite-all') {
 		// Retry-After tells a burst throttle (seconds) from the rolling 5-per-24h one (hours).
 		return retryAfter
