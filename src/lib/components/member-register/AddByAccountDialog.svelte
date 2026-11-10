@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { z } from 'zod';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -179,11 +180,14 @@
 	const kind = $derived(found ? classifyLookup(found.user) : null);
 	const name = $derived(found ? lookupDisplayName(found.user, queriedEmail) : '');
 
+	// The add-member 400 body is external data: validate it (CLAUDE.md: Zod for API responses).
+	const AlreadyMemberBody = z.object({ code: z.literal('already_member') });
+
 	function isAlreadyMember(error: unknown): boolean {
-		if (!(error instanceof RegisterApiError) || error.status !== 400) return false;
-		const body = error.body;
 		return (
-			typeof body === 'object' && body !== null && 'code' in body && body.code === 'already_member'
+			error instanceof RegisterApiError &&
+			error.status === 400 &&
+			AlreadyMemberBody.safeParse(error.body).success
 		);
 	}
 
