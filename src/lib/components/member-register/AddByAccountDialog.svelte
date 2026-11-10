@@ -74,6 +74,9 @@
 	let failure = $state<DescribedError | null>(null);
 	let throttled = $state(false);
 	let tierId = $state('');
+	// Set when an add was refused with 400: the re-lookup must explain why, and an
+	// answer that still says "addable" means the refusal was something else.
+	let refusedAdd = $state<unknown>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
 	function reset() {
@@ -84,6 +87,7 @@
 		failure = null;
 		throttled = false;
 		tierId = '';
+		refusedAdd = null;
 	}
 
 	$effect(() => {
@@ -110,6 +114,11 @@
 		queriedEmail = typed;
 		outcome = result;
 		failure = null;
+		const refusal = refusedAdd;
+		refusedAdd = null;
+		if (refusal && result.kind === 'found' && classifyLookup(result.user) === 'addable') {
+			failure = describeRegisterError(refusal, 'save');
+		}
 	}
 
 	function showFailure(error: unknown, typed: string) {
@@ -142,6 +151,7 @@
 		outcome = null;
 		failure = null;
 		emailError = null;
+		refusedAdd = null;
 	}
 
 	const found = $derived(outcome?.kind === 'found' ? outcome : null);
@@ -160,9 +170,14 @@
 	const add = createMutation(() => ({
 		mutationFn: async (user: OrgUserLookupSchema) => {
 			await addMemberByAccount(slug, accessToken, user.user_id, tierId);
-			await refreshMembers();
-			// The new entry exists now: seed the sheet from it (null just skips the sheet).
-			return resolveSeed(user, seedDeps(slug, accessToken));
+			// The member exists from here on: a failed refresh or seed lookup must not
+			// report the add as failed (a retry would be refused), it only skips the sheet.
+			try {
+				await refreshMembers();
+				return await resolveSeed(user, seedDeps(slug, accessToken));
+			} catch {
+				return null;
+			}
 		},
 		onSuccess: (seed: MembershipRecordSchema | null, user: OrgUserLookupSchema) => {
 			toast.success(
@@ -175,6 +190,7 @@
 			// 400 is the backend's "already a member" (a race with another admin or
 			// an approval): look again and show what they hold now.
 			if (error instanceof RegisterApiError && error.status === 400 && queriedEmail) {
+				refusedAdd = error;
 				lookup.mutate(queriedEmail);
 				return;
 			}

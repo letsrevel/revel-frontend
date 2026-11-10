@@ -232,6 +232,41 @@ describe('AddByAccountDialog', () => {
 		expect(cb.onOpenPerson).not.toHaveBeenCalled();
 	});
 
+	it('d) a 400 whose re-lookup still says addable shows the refusal', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmembersAddMember.mockResolvedValue({
+			error: { detail: 'Tier is not available.' },
+			response: { status: 400 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Add as member' }));
+		await waitFor(() => expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(2));
+		expect(await screen.findByTestId('register-error')).toBeInTheDocument();
+		expect(cb.onClose).not.toHaveBeenCalled();
+	});
+
+	it('d) a failed refresh after a successful add still reports success', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmembersAddMember.mockResolvedValue({
+			data: {},
+			response: { status: 201 }
+		});
+		sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
+			error: { detail: 'boom' },
+			response: { status: 500 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Add as member' }));
+		await waitFor(() => expect(toast.success).toHaveBeenCalled());
+		expect(cb.onClose).toHaveBeenCalled();
+		expect(cb.onOpenPerson).not.toHaveBeenCalled();
+		expect(screen.queryByTestId('register-error')).toBeNull();
+	});
+
 	it('e) 429 shows the wait and disables the submit', async () => {
 		sdk.organizationadminuserlookupLookupUser.mockResolvedValue({
 			error: { detail: 'throttled' },
