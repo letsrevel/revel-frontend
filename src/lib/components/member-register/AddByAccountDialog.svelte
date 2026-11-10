@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { z } from 'zod';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -179,6 +180,17 @@
 	const kind = $derived(found ? classifyLookup(found.user) : null);
 	const name = $derived(found ? lookupDisplayName(found.user, queriedEmail) : '');
 
+	// The add-member 400 body is external data: validate it (CLAUDE.md: Zod for API responses).
+	const AlreadyMemberBody = z.object({ code: z.literal('already_member') });
+
+	function isAlreadyMember(error: unknown): boolean {
+		return (
+			error instanceof RegisterApiError &&
+			error.status === 400 &&
+			AlreadyMemberBody.safeParse(error.body).success
+		);
+	}
+
 	const add = createMutation(() => ({
 		mutationFn: async (user: OrgUserLookupSchema) => {
 			await addMemberByAccount(slug, accessToken, user.user_id, tierId);
@@ -200,9 +212,10 @@
 			if (seed) onOpenPerson(seed);
 		},
 		onError: (error: unknown) => {
-			// 400 is the backend's "already a member" (a race with another admin or
-			// an approval): look again and show what they hold now.
-			if (error instanceof RegisterApiError && error.status === 400 && queriedEmail) {
+			// `already_member` (backend #1363) means a race with another admin or an
+			// approval: look again and show what they hold now. Any other 400 is a
+			// plain refusal, shown as is, without spending a throttled lookup.
+			if (isAlreadyMember(error) && queriedEmail) {
 				refusedAdd = error;
 				lookup.mutate(queriedEmail);
 				return;
