@@ -4217,7 +4217,7 @@
 					"editFor": "Edit the payment of {amount} from {date}",
 					"void": "Void",
 					"voidFor": "Void the payment of {amount} from {date}",
-					"showVoided": "Show voided payments"
+					"includeVoided": "Include voided payments"
 				},
 				"editPayment": {
 					"title": "Edit payment",
@@ -10984,6 +10984,8 @@
 	"userNote.label": "Note",
 	"userNote.placeholder": "For example: prefers to be called Sam, needs step-free access.",
 	"userNote.noNoteYet": "No note yet.",
+	"userNote.toggle": "Note details",
+	"userNote.unsavedHint": "Save your changes before hiding the note.",
 	"userNote.counter": "{count} / {max} characters",
 	"userNote.counterNear": "{remaining} characters left",
 	"userNote.counterOver": "The note is {over} characters over the limit",

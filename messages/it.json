@@ -4217,7 +4217,7 @@
 					"editFor": "Modifica il pagamento di {amount} del {date}",
 					"void": "Storna",
 					"voidFor": "Storna il pagamento di {amount} del {date}",
-					"showVoided": "Mostra i pagamenti stornati"
+					"includeVoided": "Includi i pagamenti stornati"
 				},
 				"editPayment": {
 					"title": "Modifica pagamento",
@@ -10984,6 +10984,8 @@
 	"userNote.label": "Nota",
 	"userNote.placeholder": "Per esempio: preferisce essere chiamata Sam, ha bisogno di un accesso senza gradini.",
 	"userNote.noNoteYet": "Ancora nessuna nota.",
+	"userNote.toggle": "Dettagli della nota",
+	"userNote.unsavedHint": "Salva le modifiche prima di nascondere la nota.",
 	"userNote.counter": "{count} / {max} caratteri",
 	"userNote.counterNear": "Restano {remaining} caratteri",
 	"userNote.counterOver": "La nota supera il limite di {over} caratteri",

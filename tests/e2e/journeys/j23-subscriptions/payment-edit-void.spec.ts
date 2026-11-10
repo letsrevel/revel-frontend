@@ -21,7 +21,7 @@ import { toDatetimeLocal } from '../../support/member-register';
 // initial payment (so the dialog's new "Payment date" field is part of the
 // journey, not just the API behind it). Act, all inside the subscription
 // drawer: edit the amount and the date, void the payment, then reveal it again
-// with "Show voided payments".
+// with "Include voided payments".
 //
 // Everything is arranged inside the test body on a throwaway org, so a retry
 // never inherits the previous attempt's payment.
@@ -146,7 +146,7 @@ test.describe('J23 edit and void a membership payment @p2', () => {
 		await expect(drawer.getByText('€20.00', { exact: true })).toHaveCount(0);
 
 		// …and comes back, as Voided and without any action, when asked for.
-		await drawer.getByLabel('Show voided payments').check();
+		await drawer.getByLabel('Include voided payments').check();
 		await expect(drawer.getByText('€20.00', { exact: true }).first()).toBeVisible({
 			timeout: 15_000
 		});

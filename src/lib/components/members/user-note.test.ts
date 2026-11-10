@@ -137,3 +137,23 @@ describe('server-mirrored length (html.unescape of the stripped body)', () => {
 		expect(noteCounter(body + '&amp;').state).toBe('over');
 	});
 });
+
+describe('notePreviewText', async () => {
+	const { notePreviewText } = await import('./user-note');
+	it('flattens the Markdown into one readable line', () => {
+		expect(notePreviewText('**Allergic** to nuts\n- carries epipen')).toBe(
+			'Allergic to nuts carries epipen'
+		);
+	});
+	it('drops headings, quotes, numbered lists and keeps link text', () => {
+		expect(
+			notePreviewText('# Title\n> quoted\n1. one\n2) two\n[the site](https://x.y) ~~old~~ `code`')
+		).toBe('Title quoted one two the site old code');
+	});
+	it('keeps underscores inside words and collapses whitespace', () => {
+		expect(notePreviewText('  _hi_  john_doe \n\n\n x ')).toBe('hi john_doe x');
+	});
+	it('returns an empty string for blank input', () => {
+		expect(notePreviewText('  \n ')).toBe('');
+	});
+});

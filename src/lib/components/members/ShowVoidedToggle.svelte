@@ -15,6 +15,6 @@
 <div class="flex items-center gap-2">
 	<Checkbox {id} {checked} onCheckedChange={(c) => onChange(c === true)} />
 	<Label for={id} class="text-sm font-normal">
-		{m['orgAdmin.members.subscriptions.paymentActions.showVoided']()}
+		{m['orgAdmin.members.subscriptions.paymentActions.includeVoided']()}
 	</Label>
 </div>

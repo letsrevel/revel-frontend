@@ -210,7 +210,7 @@
 <Dialog bind:open>
 	<DialogContent class="max-h-[90vh] max-w-2xl overflow-hidden p-0">
 		<DialogHeader class="border-b p-6 pb-4">
-			<div class="flex items-start justify-between">
+			<div class="flex items-start justify-between gap-4 pr-8">
 				<div>
 					<DialogTitle>{m['seriesResourceAssignmentModal.assignResources']()}</DialogTitle>
 					<p class="mt-1 text-sm text-muted-foreground">

@@ -125,7 +125,7 @@
 >
 	<SheetContent class="gap-6" data-testid="person-sheet">
 		{#if record}
-			<SheetHeader class="space-y-2 pr-8 text-left">
+			<SheetHeader class="space-y-2 pr-12 text-left">
 				<SheetTitle class="break-words text-2xl font-extrabold tracking-tight">
 					{record.full_name}
 				</SheetTitle>
@@ -168,6 +168,7 @@
 					<StaffNoteEditor
 						{slug}
 						{accessToken}
+						collapsible
 						target={{ kind: 'record', recordId: noteRecordId }}
 					/>
 				{/key}

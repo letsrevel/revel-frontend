@@ -4217,7 +4217,7 @@
 					"editFor": "Zahlung über {amount} vom {date} bearbeiten",
 					"void": "Stornieren",
 					"voidFor": "Zahlung über {amount} vom {date} stornieren",
-					"showVoided": "Stornierte Zahlungen anzeigen"
+					"includeVoided": "Stornierte Zahlungen einbeziehen"
 				},
 				"editPayment": {
 					"title": "Zahlung bearbeiten",
@@ -10984,6 +10984,8 @@
 	"userNote.label": "Notiz",
 	"userNote.placeholder": "Zum Beispiel: möchte Sam genannt werden, braucht stufenlosen Zugang.",
 	"userNote.noNoteYet": "Noch keine Notiz.",
+	"userNote.toggle": "Notizdetails",
+	"userNote.unsavedHint": "Speichere deine Änderungen, bevor du die Notiz ausblendest.",
 	"userNote.counter": "{count} / {max} Zeichen",
 	"userNote.counterNear": "Noch {remaining} Zeichen übrig",
 	"userNote.counterOver": "Die Notiz ist {over} Zeichen zu lang",

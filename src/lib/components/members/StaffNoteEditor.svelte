@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
-	import { Loader2 } from '@lucide/svelte';
+	import { ChevronDown, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
@@ -14,10 +14,12 @@
 	import { memberRegisterKeys } from '$lib/member-register/api';
 	import {
 		NOTE_MAX_LENGTH,
+		unescapeHtml,
 		deleteNote,
 		fetchNote,
 		membersListKey,
-		noteCounter,
+		noteCounterOfText,
+		notePreviewText,
 		noteKey,
 		saveNote,
 		type NoteTarget
@@ -40,11 +42,31 @@
 		accessToken: string | null | undefined;
 		/** Show the section heading and privacy hint. A host that has its own title (a dialog) hides them. */
 		showHeader?: boolean;
+		/**
+		 * Start collapsed: heading, a 3-line preview and a disclosure button. The editor
+		 * stays mounted (just hidden) while collapsed, so unsaved edits survive. Off for
+		 * hosts that give the note a whole surface (the dialog).
+		 */
+		collapsible?: boolean;
 		/** Called after a save or a delete went through (a dialog host closes itself here). */
 		onChanged?: () => void;
 	}
 
-	const { slug, target, accessToken, showHeader = true, onChanged }: Props = $props();
+	const {
+		slug,
+		target,
+		accessToken,
+		showHeader = true,
+		collapsible = false,
+		onChanged
+	}: Props = $props();
+
+	// Per-instance ids: two editors on one page must not collide.
+	const uid = $props.id();
+	const headingId = `${uid}-heading`;
+	const bodyId = `${uid}-body`;
+	const panelId = `${uid}-panel`;
+	const hintId = `${uid}-hint`;
 
 	const queryClient = useQueryClient();
 	const confirmation = createConfirm();
@@ -53,6 +75,8 @@
 	// Plain (non-reactive) flag: the draft is seeded exactly once per mount.
 	let seeded = false;
 	let errorMessage = $state<string | null>(null);
+	let expanded = $state(false);
+	const open = $derived(!collapsible || expanded);
 
 	const key = $derived(noteKey(slug, target));
 
@@ -77,7 +101,10 @@
 		}
 	});
 
-	const counter = $derived(noteCounter(draft));
+	// Unescape once: the counter and the preview both read it.
+	const plain = $derived(unescapeHtml(draft.trim()));
+	const preview = $derived(notePreviewText(plain));
+	const counter = $derived(noteCounterOfText(plain));
 	const isEmpty = $derived(draft.trim().length === 0);
 
 	/** The backend's `detail` when it sent one; otherwise the localized fallback. Never raw `Error.message`. */
@@ -175,16 +202,16 @@
 </script>
 
 <section
-	aria-labelledby={showHeader ? 'staff-note-heading' : undefined}
+	aria-labelledby={showHeader ? headingId : undefined}
 	class="space-y-3"
 	data-testid="staff-note"
 >
 	{#if showHeader}
 		<SectionHeader
-			id="staff-note-heading"
+			id={headingId}
 			level={3}
 			title={m['memberPeople.sheet.noteHeading']()}
-			subtitle={m['userNote.hint']()}
+			subtitle={open ? m['userNote.hint']() : undefined}
 		/>
 	{/if}
 
@@ -196,9 +223,42 @@
 	{:else if noteQuery.isError}
 		<p class="py-2 text-sm text-destructive" role="alert">{m['userNote.loadError']()}</p>
 	{:else}
-		<div class="space-y-3">
+		{#if collapsible}
+			<!-- Conditionally rendered, not `hidden`: line-clamp sets display:-webkit-box, which beats [hidden]. -->
+			{#if !expanded}
+				<p
+					class="line-clamp-3 break-words text-sm {preview ? '' : 'text-muted-foreground'}"
+					data-testid="staff-note-preview"
+				>
+					{preview || m['userNote.noNoteYet']()}
+				</p>
+			{/if}
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				class="-ml-3"
+				aria-expanded={expanded}
+				aria-controls={panelId}
+				aria-describedby={expanded && dirty ? hintId : undefined}
+				disabled={expanded && dirty}
+				onclick={() => (expanded = !expanded)}
+			>
+				<ChevronDown
+					class="mr-1 h-4 w-4 transition-transform {expanded ? 'rotate-180' : ''}"
+					aria-hidden="true"
+				/>
+				{m['userNote.toggle']()}
+			</Button>
+			{#if expanded && dirty}
+				<p id={hintId} class="text-xs text-muted-foreground" data-testid="staff-note-dirty-hint">
+					{m['userNote.unsavedHint']()}
+				</p>
+			{/if}
+		{/if}
+		<div id={panelId} class="space-y-3" hidden={!open}>
 			<MarkdownEditor
-				id="staff-note-body"
+				id={bodyId}
 				label={m['userNote.label']()}
 				placeholder={m['userNote.placeholder']()}
 				rows={6}
