@@ -237,6 +237,20 @@ describe('DeleteRecordDialog (shared confirm dialog)', () => {
 		expect(onClose).toHaveBeenCalled();
 	});
 
+	it('refreshes the possible-duplicates scan after a successful delete', async () => {
+		sdk.organizationadminmemberregisterDeleteMemberRegisterRecord.mockResolvedValue({
+			response: { status: 204 }
+		});
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		renderIn(DeleteRecordDialog, { ...props, onClose: vi.fn(), record: record() }, client);
+		await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+		await waitFor(() => expect(toast.success).toHaveBeenCalled());
+		const keys = spy.mock.calls.map((c) => (c[0] as { queryKey: unknown[] }).queryKey);
+		expect(keys).toContainEqual(['organization', 'org', 'member-register']);
+		expect(keys).toContainEqual(['organization', 'org', 'register-possible-duplicates']);
+	});
+
 	it('does not refresh on a 400 (stale-on-400 is opt-in per action)', async () => {
 		sdk.organizationadminmemberregisterDeleteMemberRegisterRecord.mockResolvedValue({
 			error: { detail: 'bad' },

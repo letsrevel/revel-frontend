@@ -18,7 +18,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import { endRecord, memberRegisterKeys } from '$lib/member-register/api';
+	import { endRecord, invalidateRegister, memberRegisterKeys } from '$lib/member-register/api';
 	import { getEditability } from '$lib/member-register/editability';
 	import { describeRegisterError, type DescribedError } from '$lib/member-register/errors';
 	import {
@@ -64,7 +64,8 @@
 			return endRecord(slug, accessToken, record.id, buildEndBody(values));
 		},
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+			// Ending a linked open entry removes it from the pairing side of the scan.
+			await invalidateRegister(queryClient, slug, true);
 			toast.success(m['memberRegister.endedToast']());
 			onClose();
 		},
