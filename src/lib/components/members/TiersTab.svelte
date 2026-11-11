@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { membershipTiersKeys } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -27,6 +29,7 @@
 	import PlansList from '$lib/components/members/PlansList.svelte';
 	import { toast } from 'svelte-sonner';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -65,6 +68,7 @@
 			const response = await organizationadminmembersCreateMembershipTier({
 				path: { slug: organization.slug },
 				body: {
+					...(payload.kind ? { kind: payload.kind } : {}),
 					name: payload.name,
 					description: payload.description,
 					membership_questionnaire_id: payload.membership_questionnaire_id,
@@ -85,7 +89,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 		},
 		onError: (error: Error) => {
@@ -115,7 +119,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
@@ -166,7 +170,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
@@ -178,15 +182,11 @@
 	}));
 
 	// --- Tier reordering via up/down buttons ---
-	const tiersQueryKey = $derived(['organization', organization.slug, 'membership-tiers']);
-	// Tiers are also cached under a reversed key by the org admin dashboard and the
-	// announcements audience picker — invalidate both so a reorder doesn't leave those
-	// surfaces showing a stale order.
-	const tiersAltQueryKey = $derived(['membership-tiers', organization.slug]);
+	const tiersQueryKey = $derived(membershipTiersKeys.all(organization.slug));
+	// `all` is a prefix of the standard-only key, so this also refreshes the pickers.
 
 	function invalidateTierQueries() {
 		queryClient.invalidateQueries({ queryKey: tiersQueryKey });
-		queryClient.invalidateQueries({ queryKey: tiersAltQueryKey });
 	}
 
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
@@ -310,6 +310,17 @@
 	</Button>
 </div>
 
+<p class="text-sm">
+	<a
+		class="inline-flex min-h-[44px] items-center rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		href={resolve('/(auth)/org/[slug]/admin/guides/verein-day-membership', {
+			slug: organization.slug
+		})}
+	>
+		{m['verein.guide.tiersLink']()}
+	</a>
+</p>
+
 <!-- Tiers List -->
 {#if isLoading}
 	<div class="flex items-center justify-center py-12">
@@ -335,6 +346,14 @@
 						<h3 class="truncate font-bold text-foreground">
 							{tier.name}
 						</h3>
+						{#if tier.kind === 'temporary'}
+							<StatusBadge
+								tone="info"
+								size="sm"
+								label={m['tierKind.dayMembershipBadge']()}
+								class="mt-1 w-fit"
+							/>
+						{/if}
 						{#if tier.description}
 							<p class="mt-2 text-sm text-muted-foreground">
 								{tier.description}
@@ -389,7 +408,7 @@
 						</Button>
 					</div>
 				</div>
-				{#if canManageSubscriptions}
+				{#if canManageSubscriptions && tier.kind === 'standard'}
 					<div class="mt-3 border-t pt-3">
 						<PlansList {organization} {tier} />
 					</div>

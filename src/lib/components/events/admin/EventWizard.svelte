@@ -661,6 +661,7 @@
 		{@const eventIdValue = eventId}
 		<TicketingStep
 			eventId={eventIdValue}
+			organizationId={organization.id}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			orgVat={orgVatContextFrom(organization)}

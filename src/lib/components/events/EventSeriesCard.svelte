@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onImageError } from '$lib/utils/image-error';
 	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
@@ -156,7 +157,7 @@
 				alt=""
 				class="h-full w-full object-cover transition-transform group-hover:scale-105"
 				loading="lazy"
-				onerror={handleImageError}
+				{@attach onImageError(handleImageError)}
 			/>
 		{:else}
 			<!-- Fallback gradient with logo -->

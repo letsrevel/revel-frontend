@@ -28,7 +28,9 @@ export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
 	'purchase_ticket',
 	'rsvp',
 	'wait_for_event_to_open',
-	'wait_for_open_spot'
+	'wait_for_open_spot',
+	// members_excluded (BE #1316): the guest just picks another tier, no account needed.
+	'choose_another_tier'
 ]);
 
 /**

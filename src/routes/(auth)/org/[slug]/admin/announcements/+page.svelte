@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
+	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		AnnouncementListSchema,
@@ -10,8 +12,7 @@
 		organizationadminannouncementsDeleteAnnouncement,
 		organizationadminannouncementsSendAnnouncement,
 		organizationadminannouncementsUnscheduleAnnouncement,
-		organizationadminannouncementsGetAnnouncement,
-		organizationadminmembersListMembershipTiers
+		organizationadminannouncementsGetAnnouncement
 	} from '$lib/api/generated/sdk.gen';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -82,15 +83,7 @@
 
 	// Fetch tiers for the modal
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['membership-tiers', organizationSlug],
-		queryFn: async () => {
-			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: organizationSlug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) throw response.error;
-			return response.data;
-		},
+		...standardTiersQueryOptions(organizationSlug, accessToken),
 		enabled: !!accessToken
 	}));
 
@@ -166,7 +159,7 @@
 
 	// Derived data
 	const announcements = $derived(announcementsQuery.data?.results ?? []);
-	const tiers = $derived(tiersQuery.data ?? []);
+	const tiers = $derived(standardTiers(tiersQuery.data));
 	const isLoading = $derived(announcementsQuery.isLoading);
 
 	// Handlers

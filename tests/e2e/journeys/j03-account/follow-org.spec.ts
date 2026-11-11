@@ -123,7 +123,7 @@ test.describe('J3 follow org & request membership @p1', () => {
 		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
 		await waitForClientAuth(ownerPage);
 		// Real tabs here (unlike the event invitations page's URL-param buttons).
-		await ownerPage.getByRole('tab', { name: 'Requests' }).click();
+		await ownerPage.getByRole('tab', { name: 'Applications' }).click();
 		await expect(
 			ownerPage.getByRole('button', { name: `Approve request from ${followerName}` })
 		).toBeVisible({ timeout: 15_000 });

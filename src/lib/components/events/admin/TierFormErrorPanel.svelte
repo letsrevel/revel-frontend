@@ -4,6 +4,8 @@
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
 	import { isBillingInfoRequiredError } from './tier-form-helpers';
+	import { isExcludedTiersField } from './tier-membership-links';
+	import { isGrantsField } from './tier-grants';
 
 	interface Props {
 		error: unknown;
@@ -23,7 +25,13 @@
 		exemptionLikelyCause = false
 	}: Props = $props();
 
-	const fieldErrors = $derived(extractFieldErrors(error));
+	const allFieldErrors = $derived(extractFieldErrors(error));
+	// The excluded-tiers and grant messages render beside their pickers (also
+	// role=alert): skip them here so they are not announced twice.
+	const fieldErrors = $derived(
+		allFieldErrors.filter(({ field }) => !isExcludedTiersField(field) && !isGrantsField(field))
+	);
+	const onlyInline = $derived(allFieldErrors.length > 0 && fieldErrors.length === 0);
 	const errorMsg = $derived(extractErrorMessage(error));
 	const isBillingError = $derived(isBillingInfoRequiredError(errorMsg));
 </script>
@@ -47,7 +55,7 @@
 				</li>
 			{/each}
 		</ul>
-	{:else}
+	{:else if !onlyInline}
 		<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
 		{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError && !exemptionLikelyCause}
 			<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>

@@ -78,7 +78,7 @@ test.describe('Org admin members page reflows on narrow screens @p2', () => {
 			// Tiers: the long tier + plan names are rendered, and the page fits.
 			await openTab(page, /Tiers/);
 			await expect(page.getByText(LONG_PLAN, { exact: true })).toBeVisible({ timeout: 15_000 });
-			await expect(page.getByText(LONG_TIER).first()).toBeVisible();
+			await expect(page.getByText(LONG_TIER).filter({ visible: true }).first()).toBeVisible();
 			await expect.poll(() => horizontalOverflow(page)).toBe(0);
 			// …and every plan-row action is reachable inside the viewport.
 			// (Scrolled vertically into view first — the card may sit below the fold;
@@ -88,7 +88,7 @@ test.describe('Org admin members page reflows on narrow screens @p2', () => {
 			await expect(deletePlan).toBeInViewport({ ratio: 1 });
 
 			// Members: the long-named member card.
-			await openTab(page, /^Members/);
+			await openTab(page, /^People/);
 			await expect(page.getByText(memberName).filter({ visible: true }).first()).toBeVisible({
 				timeout: 15_000
 			});
@@ -102,7 +102,7 @@ test.describe('Org admin members page reflows on narrow screens @p2', () => {
 			await expect.poll(() => horizontalOverflow(page)).toBe(0);
 
 			// Requests: a pending request from another long-named user.
-			await openTab(page, /Requests/);
+			await openTab(page, /Applications/);
 			await expect(page.getByText(requesterName).filter({ visible: true }).first()).toBeVisible({
 				timeout: 15_000
 			});

@@ -198,6 +198,13 @@ export class EventCart {
 		this.groups = [];
 	}
 
+	/** Drops every group matching `predicate`; returns the removed groups. */
+	removeWhere(predicate: (group: CartGroup) => boolean): CartGroup[] {
+		const removed = this.groups.filter(predicate);
+		if (removed.length > 0) this.groups = this.groups.filter((g) => !predicate(g));
+		return removed;
+	}
+
 	/**
 	 * True when checkout needs the sheet: any group needs names or a PWYC
 	 * amount, or auto-assigns seats server-side (best_available groups collect

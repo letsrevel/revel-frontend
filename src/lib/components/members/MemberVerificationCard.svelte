@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MemberVerificationSchema } from '$lib/api/generated/types.gen';
 	import MemberStatusBadge from './MemberStatusBadge.svelte';
+	import ScanCallout from '$lib/components/checkin/ScanCallout.svelte';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatDate } from '$lib/utils/date';
@@ -86,6 +87,9 @@
 			<MemberStatusBadge status={member.status} />
 		</div>
 	</div>
+
+	<!-- Private staff note: read-only, door staff see it with the result. -->
+	<ScanCallout title={m['scanNote.label']()} body={member.private_note} />
 
 	{#if warning}
 		<p

@@ -6,6 +6,8 @@
 	import { ExternalLink } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
+	import PaymentEditVoidButtons from './PaymentEditVoidButtons.svelte';
+	import type { EditablePayment } from './paymentEdit';
 	import {
 		canRefundLedgerPayment,
 		partialRefundAmount,
@@ -16,9 +18,13 @@
 		payment: OrganizationMembershipPaymentSchema;
 		/** Opens the refund dialog. The tab owns the mutation and the cache. */
 		onRefund: (payment: OrganizationMembershipPaymentSchema) => void;
+		/** Opens the edit dialog (offered only when `can_edit`). */
+		onEdit: (payment: EditablePayment) => void;
+		/** Opens the void confirm (offered only when `can_void`). */
+		onVoid: (payment: EditablePayment) => void;
 	}
 
-	const { payment, onRefund }: Props = $props();
+	const { payment, onRefund, onEdit, onVoid }: Props = $props();
 
 	// The ledger's human "when": `occurred_at` is the real-world payment date
 	// (staff can backdate it when recording an offline payment); `created_at` is
@@ -31,6 +37,7 @@
 	// Rendered only where `POST …/payments/{id}/refund` would actually succeed.
 	// `payment.id` is nullable on the schema, and the call needs it as a path param.
 	const canRefund = $derived(!!payment.id && canRefundLedgerPayment(payment));
+	const hasEditVoid = $derived(!!payment.id && (payment.can_edit || payment.can_void));
 </script>
 
 <tr class="border-b align-top last:border-0">
@@ -154,7 +161,8 @@
 					{m['orgAdmin.members.payments.refund']()}
 				</Button>
 			{/if}
-			{#if !payment.stripe_dashboard_url && !canRefund}
+			<PaymentEditVoidButtons {payment} {onEdit} {onVoid} />
+			{#if !payment.stripe_dashboard_url && !canRefund && !hasEditVoid}
 				<span class="text-sm text-muted-foreground" aria-hidden="true">—</span>
 				<span class="sr-only">{m['orgAdmin.members.payments.noActions']()}</span>
 			{/if}

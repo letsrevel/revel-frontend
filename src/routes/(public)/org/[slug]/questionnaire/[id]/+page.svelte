@@ -6,7 +6,7 @@
 	import { memembershipquestionnaireSubmitMembershipQuestionnaire } from '$lib/api';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated/types.gen';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
-	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
+	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft, Check } from '@lucide/svelte';
@@ -63,7 +63,7 @@
 		return !result.requires_evaluation;
 	}
 
-	const returnUrl = $derived(membershipReturnUrl());
+	const returnUrl = $derived(safeInternalReturnUrl());
 	const membershipHref = $derived(
 		withReturnUrl(
 			resolve('/(public)/org/[slug]/membership', { slug: data.organization.slug }),

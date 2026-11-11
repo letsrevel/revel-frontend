@@ -7,7 +7,8 @@ import {
 	getReasonCodeMessage,
 	hasAttendingSignal,
 	isEligibilityRefusal,
-	isMembershipTierRefusal
+	isMembershipTierRefusal,
+	isMembersExcludedRefusal
 } from './eligibility';
 import type {
 	EventUserEligibility,
@@ -230,5 +231,36 @@ describe('hasAttendingSignal', () => {
 	it('returns false for a legacy ticket with status "cancelled"', () => {
 		const status = { status: 'cancelled', tier: 'x' } as unknown as EventTicketSchemaActual;
 		expect(hasAttendingSignal(status)).toBe(false);
+	});
+});
+
+describe('isMembersExcludedRefusal (BE #1316)', () => {
+	const body = {
+		allowed: false,
+		event_id: 'evt-1',
+		reason: 'This ticket tier is not available to members.',
+		reason_code: 'members_excluded',
+		next_step: 'choose_another_tier'
+	};
+
+	it('recognises the raw refusal body and the same body as Error.cause', () => {
+		expect(isMembersExcludedRefusal(body)).toBe(true);
+		expect(isMembersExcludedRefusal(new Error('x', { cause: body }))).toBe(true);
+	});
+
+	it('is false for other refusals and for non-refusals', () => {
+		expect(
+			isMembersExcludedRefusal({
+				...body,
+				reason_code: 'membership_tier_required',
+				next_step: 'upgrade_membership'
+			})
+		).toBe(false);
+		expect(isMembersExcludedRefusal({ detail: 'nope' })).toBe(false);
+		expect(isMembersExcludedRefusal(null)).toBe(false);
+	});
+
+	it('localizes the message from the reason code', () => {
+		expect(getEligibilityRefusalMessage(body)).toBe(m['eligibility.reason.members_excluded']());
 	});
 });

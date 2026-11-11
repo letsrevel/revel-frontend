@@ -29,6 +29,11 @@
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 	import StaffReviveModal from './StaffReviveModal.svelte';
+	import PaymentEditDialog from './PaymentEditDialog.svelte';
+	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
+	import ChangePlanDialog from './ChangePlanDialog.svelte';
+	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
+	import type { EditablePayment } from './paymentEdit';
 	import {
 		getAvailableActions,
 		formatPlanPrice,
@@ -36,6 +41,9 @@
 		isSubscriptionActivationPending
 	} from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { changePlanState } from '$lib/utils/plan-change';
+	import { invalidateRegister } from '$lib/member-register/api';
+	import { memberAccessPrefix } from '$lib/member-register/member-access';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -50,6 +58,10 @@
 	const queryClient = useQueryClient();
 
 	const subKey = $derived(['organization', organization.slug, 'subscription', subId]);
+	let showVoided = $state(false);
+	// `includeVoided` is part of the key so the toggle refetches instead of
+	// reusing the default (voided-free) list. The key keeps the `payments` prefix,
+	// so invalidating `paymentsKey`-shaped keys still reaches both variants.
 	const paymentsKey = $derived([
 		'organization',
 		organization.slug,
@@ -57,6 +69,7 @@
 		subId,
 		'payments'
 	]);
+	const paymentsQueryKey = $derived([...paymentsKey, { includeVoided: showVoided }]);
 
 	const subQuery = createQuery(() => ({
 		queryKey: subKey,
@@ -75,10 +88,12 @@
 	}));
 
 	const paymentsQuery = createQuery(() => ({
-		queryKey: paymentsKey,
+		queryKey: paymentsQueryKey,
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptionPayments({
 				path: { slug: organization.slug, sub_id: subId },
+				// Voided rows are hidden by default; off means "omit", not "false".
+				query: { include_voided: showVoided ? true : undefined },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error)
@@ -151,7 +166,12 @@
 	let cancelOpen = $state(false);
 	let pauseConfirmOpen = $state(false);
 	let reviveOpen = $state(false);
+	let changePlanOpen = $state(false);
+	// Terminal rows show nothing: there is no plan left to change.
+	const changePlan = $derived(sub ? changePlanState(sub) : 'terminal');
 	let refundTarget = $state<MembershipPaymentSchema | null>(null);
+	let editTarget = $state<EditablePayment | null>(null);
+	let voidTarget = $state<EditablePayment | null>(null);
 
 	function invalidateAll() {
 		queryClient.invalidateQueries({ queryKey: subKey });
@@ -165,6 +185,14 @@
 		queryClient.invalidateQueries({
 			queryKey: ['organization', organization.slug, 'members']
 		});
+	}
+
+	// A plan change moves the member's tier: the register and the person sheet's
+	// access row change with it, on top of everything invalidateAll refreshes.
+	function invalidateAfterPlanChange() {
+		invalidateAll();
+		void invalidateRegister(queryClient, organization.slug, true);
+		queryClient.invalidateQueries({ queryKey: memberAccessPrefix(organization.slug) });
 	}
 
 	const recordMut = createMutation(() => ({
@@ -341,9 +369,10 @@
 					     status badge out of the dialog and makes the whole drawer scroll
 					     sideways on a phone. `shrink-0` keeps the badge legible instead of
 					     being squeezed to a sliver once the email does yield. -->
-					<div class="flex items-start justify-between gap-4">
+					<!-- `pr-8` keeps the badge clear of the dialog's absolutely positioned close X. -->
+					<div class="flex items-start justify-between gap-4 pr-8">
 						<div class="min-w-0">
-							<div class="text-base font-bold">{sub.user_display_name}</div>
+							<div class="break-words text-base font-bold">{sub.user_display_name}</div>
 							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
 						</div>
 						<SubscriptionStatusBadge status={sub.status} class="shrink-0" />
@@ -428,6 +457,18 @@
 						{m['orgAdmin.members.subscriptions.drawer.revive']()}
 					</Button>
 				{/if}
+				{#if changePlan === 'allowed' || changePlan === 'paused'}
+					<Button
+						size="sm"
+						variant="outline"
+						onclick={() => (changePlanOpen = true)}
+						disabled={changePlan === 'paused'}
+						aria-describedby={changePlan === 'paused' ? 'change-plan-paused-hint' : undefined}
+						data-testid="subscription-change-plan"
+					>
+						{m['subscriptionChangePlan.button']()}
+					</Button>
+				{/if}
 				{#if sub.stripe_dashboard_url}
 					<Button
 						href={sub.stripe_dashboard_url}
@@ -450,20 +491,42 @@
 				</p>
 			{/if}
 
+			{#if changePlan === 'paused'}
+				<p id="change-plan-paused-hint" class="text-xs text-muted-foreground">
+					{m['subscriptionChangePlan.pausedHint']()}
+				</p>
+			{/if}
+
 			{#if showOnlinePaymentsNote}
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.subscriptions.drawer.onlinePayments']()}
+					<span data-testid="change-plan-online-note">
+						{m['subscriptionChangePlan.onlineNote']()}
+					</span>
 				</p>
 			{/if}
 
 			<div class="pt-2">
-				<h4 class="mb-2 text-sm font-bold">
-					{m['orgAdmin.members.subscriptions.drawer.payments']()}
-				</h4>
+				<div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+					<h4 class="text-sm font-bold">
+						{m['orgAdmin.members.subscriptions.drawer.payments']()}
+					</h4>
+					<ShowVoidedToggle
+						id="drawer-show-voided"
+						checked={showVoided}
+						onChange={(c) => (showVoided = c)}
+					/>
+				</div>
 				{#if paymentsQuery.isLoading}
 					<Loader2 class="h-4 w-4 animate-spin" />
 				{:else}
-					<PaymentsTable {payments} {isOnlinePlan} onRefund={(p) => (refundTarget = p)} />
+					<PaymentsTable
+						{payments}
+						{isOnlinePlan}
+						onRefund={(p) => (refundTarget = p)}
+						onEdit={(p) => (editTarget = p)}
+						onVoid={(p) => (voidTarget = p)}
+					/>
 				{/if}
 			</div>
 
@@ -473,6 +536,13 @@
 				onClose={() => (recordOpen = false)}
 				onSubmit={(p) => recordMut.mutate(p)}
 				isSubmitting={recordMut.isPending}
+			/>
+			<ChangePlanDialog
+				{organization}
+				{sub}
+				open={changePlanOpen}
+				onClose={() => (changePlanOpen = false)}
+				onChanged={invalidateAfterPlanChange}
 			/>
 			<StaffReviveModal
 				{sub}
@@ -539,6 +609,19 @@
 					}
 				}}
 				isSubmitting={refundMut.isPending}
+			/>
+			<PaymentEditDialog
+				slug={organization.slug}
+				payment={editTarget}
+				subscriptionStatus={sub.status}
+				open={!!editTarget}
+				onClose={() => (editTarget = null)}
+			/>
+			<PaymentVoidDialog
+				slug={organization.slug}
+				payment={voidTarget}
+				open={!!voidTarget}
+				onClose={() => (voidTarget = null)}
 			/>
 		{/if}
 	</DialogContent>

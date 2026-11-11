@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		dietaryListDietaryRestrictions,
@@ -278,8 +280,16 @@
 		selectedFoodItemId = null; // Clear selection when typing
 	}
 
-	function handleDeleteRestriction(id: string) {
-		if (confirm(m['dietary.restrictions_deleteConfirm']())) {
+	const confirmation = createConfirm();
+
+	async function handleDeleteRestriction(id: string) {
+		if (
+			await confirmation.ask({
+				message: m['dietary.restrictions_deleteConfirm'](),
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
 			deleteRestrictionMutation.mutate(id);
 		}
 	}
@@ -569,3 +579,5 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmDialog {...confirmation.dialogProps} />

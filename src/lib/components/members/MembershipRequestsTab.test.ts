@@ -13,12 +13,14 @@ import type {
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminmembershiprequestsListMembershipRequests: vi.fn(),
 	organizationadminmembershiprequestsApproveMembershipRequest: vi.fn(),
-	organizationadminmembershiprequestsRejectMembershipRequest: vi.fn()
+	organizationadminmembershiprequestsRejectMembershipRequest: vi.fn(),
+	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches: vi.fn()
 }));
 import {
 	organizationadminmembershiprequestsListMembershipRequests,
 	organizationadminmembershiprequestsApproveMembershipRequest,
-	organizationadminmembershiprequestsRejectMembershipRequest
+	organizationadminmembershiprequestsRejectMembershipRequest,
+	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
 } from '$lib/api/generated/sdk.gen';
 
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -29,8 +31,8 @@ vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'test-toke
 const organization = { slug: 'test-org' } as unknown as OrganizationAdminDetailSchema;
 
 const tiers = [
-	{ id: 'tier-1', name: 'Gold' },
-	{ id: 'tier-2', name: 'Silver' }
+	{ id: 'tier-1', name: 'Gold', kind: 'standard' },
+	{ id: 'tier-2', name: 'Silver', kind: 'standard' }
 ] as unknown as MembershipTierSchema[];
 
 const pendingRequest = {
@@ -335,10 +337,18 @@ describe('MembershipRequestsTab reject errors', () => {
 
 describe('MembershipRequestsTab force approve', () => {
 	/** hey-api hands the raw fetch Response through as `response`. */
-	function approveFailure(status: number, detail?: string) {
+	function approveFailure(status: number, detail?: string, error?: Record<string, unknown>) {
 		return {
 			data: undefined,
-			error: detail ? { detail } : {},
+			// A bare 400 here is the forceable refusal (subscription / paused); tests of
+			// the other shapes pass `error` explicitly.
+			error:
+				error ??
+				(detail
+					? status === 400
+						? { detail, code: 'subscription_active', forceable: true }
+						: { detail }
+					: {}),
 			response: { status }
 		} as never;
 	}
@@ -373,6 +383,42 @@ describe('MembershipRequestsTab force approve', () => {
 		// the backend's own detail above it is the single source of the cause.
 		expect(dialog).toHaveTextContent(/Approving anyway overrides the refusal above/i);
 		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('shows localized copy and never offers force for a non-forceable coded refusal', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, undefined, {
+				detail: 'backend sentence that must not be shown',
+				code: 'applicant_has_entry',
+				forceable: false
+			})
+		);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith('This applicant already has an open register entry.')
+		);
+		expect(screen.queryByRole('dialog')).toBeNull();
+		expect(approveCallBodies()).toHaveLength(1);
+	});
+
+	it('shows the detail and never offers force for an uncoded 400', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, undefined, { detail: 'Only pending applications can be approved.' })
+		);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith('Only pending applications can be approved.')
+		);
+		expect(screen.queryByRole('dialog')).toBeNull();
+		expect(approveCallBodies()).toHaveLength(1);
 	});
 
 	it('describes the dialog with both the backend detail and the explainer', async () => {
@@ -602,5 +648,225 @@ describe('MembershipRequestsTab approve tier resolution', () => {
 
 		await screen.findByRole('dialog');
 		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
+	});
+});
+
+describe('MembershipRequestsTab approve and link', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+		vi.mocked(
+			organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
+		).mockResolvedValue({
+			data: [
+				{
+					record: {
+						id: 'rec-9',
+						full_name: 'Ada L.',
+						email: 'ada@example.org',
+						tier_name: 'Gold',
+						valid_from: '2026-03-10T09:30:00Z'
+					},
+					reasons: ['email', 'claim']
+				}
+			],
+			error: undefined
+		} as never);
+	});
+
+	it('shows the hint with reason chips and sends link_record_id', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		expect(await screen.findByText('This may be register entry Ada L.')).toBeTruthy();
+		expect(screen.getByTestId('register-reason-email')).toBeTruthy();
+		expect(screen.getByTestId('register-reason-claim')).toBeTruthy();
+
+		await user.click(screen.getByTestId('approve-and-link'));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: { slug: 'test-org', request_id: 'req-1' },
+					body: { tier_id: 'tier-1', link_record_id: 'rec-9' }
+				})
+			);
+		});
+	});
+
+	function approveCalls() {
+		return vi
+			.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mock.calls.map((call) => (call[0] as { body: Record<string, unknown> }).body);
+	}
+
+	function setMatchRecord(extra: Record<string, unknown>) {
+		vi.mocked(
+			organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
+		).mockResolvedValue({
+			data: [
+				{
+					record: {
+						id: 'rec-9',
+						full_name: 'Ada L.',
+						email: 'ada@example.org',
+						tier_name: 'Gold',
+						valid_from: '2026-03-10T09:30:00Z',
+						...extra
+					},
+					reasons: ['email']
+				}
+			],
+			error: undefined
+		} as never);
+	}
+
+	it('defaults the tier to the register entry tier when several tiers exist', async () => {
+		const user = userEvent.setup();
+		setMatchRecord({ tier_id: 'tier-2' });
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab();
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		await waitFor(() =>
+			expect(approveCalls()).toEqual([{ tier_id: 'tier-2', link_record_id: 'rec-9' }])
+		);
+		// The dialog closes only after the approval resolved.
+		await waitFor(() => expect(screen.queryByTestId('approve-and-link')).toBeNull());
+	});
+
+	it('opens the tier picker when the entry has no tier and several tiers exist', async () => {
+		const user = userEvent.setup();
+		setMatchRecord({ tier_id: null });
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab();
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		const tierTrigger = await screen.findByRole('button', { name: /membership tier/i });
+		expect(approveCalls()).toEqual([]);
+		await fireEvent.keyDown(tierTrigger, { key: 'ArrowDown' });
+		await user.click(await screen.findByText('Silver'));
+		await user.click(screen.getByRole('button', { name: /^approve request$/i }));
+		await waitFor(() =>
+			expect(approveCalls()).toEqual([{ tier_id: 'tier-2', link_record_id: 'rec-9' }])
+		);
+	});
+
+	it('shows the no-tiers error inline when the org has no standard tier', async () => {
+		const user = userEvent.setup();
+		setMatchRecord({ tier_id: null });
+		renderTab([]);
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		expect((await screen.findByTestId('approve-and-link-error')).textContent).toBeTruthy();
+		expect(approveCalls()).toEqual([]);
+	});
+
+	it('shows a non-forceable refusal inline, keeps the dialog open and never offers force', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'This user is banned from the organization.' },
+			response: { status: 403 }
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		const inline = await screen.findByTestId('approve-and-link-error');
+		expect(inline.textContent).toContain('This user is banned from the organization.');
+		expect(toast.error).not.toHaveBeenCalled();
+		expect(screen.queryByText(/approve anyway/i)).toBeNull();
+		// The dialog stays, and plain Approve is still there.
+		expect(screen.getByTestId('approve-and-link')).toBeTruthy();
+		expect(screen.getAllByRole('button', { name: /^approve/i }).length).toBeGreaterThan(0);
+	});
+
+	it('shows localized copy inline for a non-forceable coded link refusal', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'raw backend text', code: 'link_future_dated', forceable: false },
+			response: { status: 400 }
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		const inline = await screen.findByTestId('approve-and-link-error');
+		expect(inline.textContent).toContain('This register entry starts in the future');
+		expect(screen.queryByText(/approve anyway/i)).toBeNull();
+	});
+
+	it('offers force on a 400 for the link path and re-sends it with link_record_id', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce({
+				data: undefined,
+				error: {
+					detail: 'Ada Lovelace holds an active subscription.',
+					code: 'subscription_active',
+					forceable: true
+				},
+				response: { status: 400 }
+			} as never)
+			.mockResolvedValueOnce({ data: undefined, error: undefined } as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		await waitFor(() =>
+			expect(screen.getByRole('dialog')).toHaveTextContent('holds an active subscription')
+		);
+		expect(toast.error).not.toHaveBeenCalled();
+		await user.click(screen.getByRole('button', { name: /approve anyway/i }));
+		await waitFor(() =>
+			expect(approveCalls()[1]).toEqual({
+				tier_id: 'tier-1',
+				link_record_id: 'rec-9',
+				force: true
+			})
+		);
+	});
+
+	it('renders no register hint and fetches no matches for a non-pending request', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([{ ...pendingRequest, status: 'completed' }]) as never
+		);
+		renderTab([tiers[0]]);
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await screen.findByRole('dialog');
+		expect(screen.queryByTestId('approve-and-link')).toBeNull();
+		expect(
+			organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
+		).not.toHaveBeenCalled();
+	});
+
+	it('plain approve stays unchanged (no link_record_id)', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { tier_id: 'tier-1' } })
+			);
+		});
 	});
 });

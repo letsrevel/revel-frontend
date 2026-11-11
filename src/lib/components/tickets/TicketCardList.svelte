@@ -31,13 +31,16 @@
 		Ban,
 		Undo2,
 		Armchair,
-		Pencil
+		Pencil,
+		StickyNote
 	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import DayMemberBadge from './DayMemberBadge.svelte';
+	import { dayMemberBadgeState } from './day-member-badge';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { formatTicketAttributionLine } from '$lib/utils/attribution';
 	import type { AdminTicketSchema } from '$lib/api';
@@ -58,6 +61,8 @@
 		onUnconfirmPayment: (ticket: AdminTicketSchema) => void;
 		/** Move a seated ticket to another seat. Omit to hide the action. */
 		onReseat?: (ticket: AdminTicketSchema) => void;
+		/** Open the private staff-note editor for the holder (`manage_members` only). Omit to hide. */
+		onEditNote?: (ticket: AdminTicketSchema) => void;
 		/** Rename the holder on a ticket. Omit to hide the action. */
 		onRenameHolder?: (ticket: AdminTicketSchema) => void;
 		/** Refund an online payment (full/partial). Omit to hide the action. */
@@ -79,6 +84,7 @@
 		onBlacklist,
 		onUnconfirmPayment,
 		onReseat,
+		onEditNote,
 		onRenameHolder,
 		onRefundTicket
 	}: Props = $props();
@@ -189,6 +195,11 @@
 				{#if ticket.series_pass}
 					<div class="flex justify-end">
 						<SeriesPassBadge seriesPass={ticket.series_pass} />
+					</div>
+				{/if}
+				{#if dayMemberBadgeState(ticket.membership_record) !== 'hidden'}
+					<div class="flex justify-end">
+						<DayMemberBadge record={ticket.membership_record} />
 					</div>
 				{/if}
 				<div class="flex items-center justify-between">
@@ -340,6 +351,12 @@
 							>
 								<ExternalLink class="mr-2 h-4 w-4" aria-hidden="true" />
 								{m['ticketCardList.manageOnStripe']()}
+							</DropdownMenu.Item>
+						{/if}
+						{#if onEditNote && ticket.user?.id}
+							<DropdownMenu.Item onclick={() => onEditNote(ticket)}>
+								<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['userNote.editAction']()}
 							</DropdownMenu.Item>
 						{/if}
 						{#if onRenameHolder && ticket.status !== 'checked_in' && ticket.status !== 'cancelled'}

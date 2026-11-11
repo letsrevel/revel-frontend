@@ -4,7 +4,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { exceedsEventCapacity } from './event-capacity';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import TierFormExcludedTiersSection from './TierFormExcludedTiersSection.svelte';
+	import { extractFieldErrors } from '$lib/utils/errors';
+	import { allowsMembershipRestrictions, excludedTiersError } from './tier-membership-links';
+	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		totalQuantity: string;
@@ -13,15 +16,24 @@
 		salesStartReadback: string;
 		salesEndReadback: string;
 		visibility: 'public' | 'private' | 'members-only' | 'staff-only';
-		purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members';
+		purchasableBy: PurchasableBy;
 		restrictVisibilityToLinkedInvitations: boolean;
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
+		/** `non_members` only: exclude just members of these tiers (empty = all active members). */
+		excludedMembershipTiersIds: string[];
+		/** The last save error; its exclusion-list message is shown next to the picker. */
+		saveError?: unknown;
 		membershipTiers: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error';
+		/** Exclusions already stored on the tier being edited (names for ids no longer listed). */
+		knownExcludedTiers?: MembershipTierSchema[];
 		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
 		salesPaused: boolean;
 		/** Effective event capacity (null = uncapped). */
 		eventCapacity?: number | null;
+		/** A day-membership grant is set: member-only audiences are illegal, so their options are disabled. */
+		grantsMembership?: boolean;
 		isPending: boolean;
 	}
 
@@ -36,9 +48,14 @@
 		restrictVisibilityToLinkedInvitations = $bindable(),
 		restrictPurchaseToLinkedInvitations = $bindable(),
 		restrictedToMembershipTiersIds = $bindable(),
+		excludedMembershipTiersIds = $bindable(),
+		saveError = null,
 		membershipTiers,
+		membershipTiersStatus = 'ready',
+		knownExcludedTiers = [],
 		salesPaused = $bindable(),
 		eventCapacity = null,
+		grantsMembership = false,
 		isPending
 	}: Props = $props();
 
@@ -46,6 +63,36 @@
 	// the value that will be stored. Empty = unlimited (NaN), which never warns.
 	const parsedQuantity = $derived(parseInt(String(totalQuantity ?? '')));
 	const overCapacity = $derived(exceedsEventCapacity(parsedQuantity, eventCapacity));
+
+	// Backend rule: a non-members tier cannot be members-only visible. Disable whichever
+	// option would create the conflict and say why (hint below the purchasable-by select).
+	const nonMembersVisibilityConflict = $derived(
+		purchasableBy === 'non_members' || visibility === 'members-only'
+	);
+	const describedByIds = $derived(
+		[
+			nonMembersVisibilityConflict ? 'purchasable-by-conflict-hint' : '',
+			grantsMembership ? 'purchasable-by-grants-hint' : ''
+		]
+			.filter(Boolean)
+			.join(' ')
+	);
+
+	// Restrictions only exist under members / invited_and_members; drop a stale selection
+	// when the audience changes (TierForm then sends [] so the backend clears the links).
+	$effect(() => {
+		if (!allowsMembershipRestrictions(purchasableBy) && restrictedToMembershipTiersIds.length > 0) {
+			restrictedToMembershipTiersIds = [];
+		}
+	});
+
+	// Exclusions only exist under non_members; drop a stale selection otherwise
+	// (TierForm then sends [] on update so the backend clears the stored list).
+	$effect(() => {
+		if (purchasableBy !== 'non_members' && excludedMembershipTiersIds.length > 0) {
+			excludedMembershipTiersIds = [];
+		}
+	});
 </script>
 
 <!-- Total Quantity -->
@@ -129,7 +176,9 @@
 	>
 		<option value="public">{m['tierForm.public']()}</option>
 		<option value="private">{m['tierForm.private']()}</option>
-		<option value="members-only">{m['tierForm.membersOnly']()}</option>
+		<option value="members-only" disabled={purchasableBy === 'non_members'}
+			>{m['tierForm.membersOnly']()}</option
+		>
 		<option value="staff-only">{m['tierForm.staffOnly']()}</option>
 	</select>
 
@@ -158,13 +207,38 @@
 		id="purchasable-by"
 		bind:value={purchasableBy}
 		disabled={isPending}
+		aria-describedby={describedByIds || undefined}
 		class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 	>
 		<option value="public">{m['tierForm.anyone']()}</option>
-		<option value="members">{m['tierForm.membersOnly']()}</option>
+		<option value="members" disabled={grantsMembership}>{m['tierForm.membersOnly']()}</option>
 		<option value="invited">{m['tierForm.invitedOnly']()}</option>
-		<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
+		<option value="invited_and_members" disabled={grantsMembership}
+			>{m['tierForm.invitedAndMembers']()}</option
+		>
+		<option value="non_members" disabled={visibility === 'members-only'}
+			>{m['tierForm.nonMembersOnly']()}</option
+		>
 	</select>
+	{#if nonMembersVisibilityConflict}
+		<p
+			id="purchasable-by-conflict-hint"
+			class="mt-1 text-xs text-muted-foreground"
+			data-testid="purchasable-by-conflict-hint"
+		>
+			{m['tierForm.nonMembersNeedsVisible']()}
+		</p>
+	{/if}
+
+	{#if grantsMembership}
+		<p
+			id="purchasable-by-grants-hint"
+			class="mt-1 text-xs text-muted-foreground"
+			data-testid="purchasable-by-grants-hint"
+		>
+			{m['tierForm.grants.audienceLocked']()}
+		</p>
+	{/if}
 
 	{#if purchasableBy === 'invited' || purchasableBy === 'invited_and_members'}
 		<label class="mt-2 flex cursor-pointer items-start gap-2">
@@ -183,6 +257,18 @@
 		</label>
 	{/if}
 </div>
+
+<!-- Excluded membership tiers (non_members only) -->
+{#if purchasableBy === 'non_members'}
+	<TierFormExcludedTiersSection
+		{membershipTiers}
+		status={membershipTiersStatus}
+		{knownExcludedTiers}
+		bind:selectedIds={excludedMembershipTiersIds}
+		error={excludedTiersError(extractFieldErrors(saveError))}
+		{isPending}
+	/>
+{/if}
 
 <!-- Restricted to Membership Tiers -->
 {#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}

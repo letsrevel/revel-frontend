@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { loginHrefFor, withReturnUrl } from '$lib/utils/safe-redirect';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import { isMembershipTierRefusal } from '$lib/utils/eligibility';
+	import { isMembershipTierRefusal, isMembersExcludedRefusal } from '$lib/utils/eligibility';
 	import { extractPurchaseErrorMessage } from './purchase-error';
 	import { Button } from '$lib/components/ui/button';
 	import {
@@ -33,9 +33,22 @@
 		 * way out still renders.
 		 */
 		onSplitPurchase?: () => void;
+		/**
+		 * The "choose another tier" CTA for a `members_excluded` refusal (BE #1316):
+		 * the host closes the sheet and brings the tier list into view. Without a
+		 * handler the button is omitted.
+		 */
+		onChooseAnotherTier?: () => void;
 	}
 
-	const { error = null, tier, tiers, organizationSlug = null, onSplitPurchase }: Props = $props();
+	const {
+		error = null,
+		tier,
+		tiers,
+		organizationSlug = null,
+		onSplitPurchase,
+		onChooseAnotherTier
+	}: Props = $props();
 
 	const message = $derived(
 		error ? extractPurchaseErrorMessage(error, m['ticketConfirmationDialog.errorGeneric']()) : ''
@@ -45,6 +58,10 @@
 	// membership tiers the buyer does not hold (BE #807). It is the one purchase
 	// error with somewhere to send the buyer, so it gets a CTA the others don't.
 	const membershipGateRefused = $derived(isMembershipTierRefusal(error));
+
+	// An active member tried a `non_members` tier: the message already says so;
+	// the way out is the other tiers.
+	const membersExcluded = $derived(isMembersExcludedRefusal(error));
 
 	// Which membership tiers would satisfy the gate. The refusal payload names
 	// NONE of them (and cannot say whether the buyer is a non-member or a member
@@ -118,6 +135,17 @@
 				>
 					{m['membershipPlans.viewMembership']()}
 				</a>
+			{/if}
+			{#if membersExcluded && onChooseAnotherTier}
+				<Button
+					variant="outline"
+					size="sm"
+					class="mt-3"
+					onclick={onChooseAnotherTier}
+					data-testid="choose-another-tier"
+				>
+					{m['eligibility.actionButton.choose_another_tier']()}
+				</Button>
 			{/if}
 			{#if requiresAccount}
 				<p class="mt-2">

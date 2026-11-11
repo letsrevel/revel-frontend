@@ -18,6 +18,7 @@ function renderSection(
 			restrictVisibilityToLinkedInvitations: false,
 			restrictPurchaseToLinkedInvitations: false,
 			restrictedToMembershipTiersIds: [],
+			excludedMembershipTiersIds: [],
 			membershipTiers: [],
 			salesPaused: false,
 			eventCapacity,

@@ -6,6 +6,8 @@
 	import { ExternalLink } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
+	import PaymentEditVoidButtons from './PaymentEditVoidButtons.svelte';
+	import type { EditablePayment } from './paymentEdit';
 	import {
 		canRefundLedgerPayment,
 		partialRefundAmount,
@@ -16,9 +18,13 @@
 		payment: OrganizationMembershipPaymentSchema;
 		/** Opens the refund dialog. The tab owns the mutation and the cache. */
 		onRefund: (payment: OrganizationMembershipPaymentSchema) => void;
+		/** Opens the edit dialog (offered only when `can_edit`). */
+		onEdit: (payment: EditablePayment) => void;
+		/** Opens the void confirm (offered only when `can_void`). */
+		onVoid: (payment: EditablePayment) => void;
 	}
 
-	const { payment, onRefund }: Props = $props();
+	const { payment, onRefund, onEdit, onVoid }: Props = $props();
 
 	const when = $derived(formatDate(payment.occurred_at ?? payment.created_at));
 	const refunded = $derived(partialRefundAmount(payment));
@@ -27,6 +33,7 @@
 	const fee = $derived(platformFeeBreakdown(payment));
 	// Same gate as the desktop row, for the same reason.
 	const canRefund = $derived(!!payment.id && canRefundLedgerPayment(payment));
+	const hasEditVoid = $derived(!!payment.id && (payment.can_edit || payment.can_void));
 </script>
 
 <li class="rounded-lg border p-3">
@@ -126,7 +133,7 @@
 	</dl>
 
 	<!-- Full parity with the desktop row: same two controls, same gating. -->
-	{#if payment.stripe_dashboard_url || canRefund}
+	{#if payment.stripe_dashboard_url || canRefund || hasEditVoid}
 		<div class="mt-2 flex flex-wrap items-center gap-2">
 			{#if payment.stripe_dashboard_url}
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- absolute Stripe Dashboard URL built by the backend; it is not an app route, so resolve() cannot express it -->
@@ -156,6 +163,7 @@
 					{m['orgAdmin.members.payments.refund']()}
 				</Button>
 			{/if}
+			<PaymentEditVoidButtons {payment} {onEdit} {onVoid} variant="outline" />
 		</div>
 	{/if}
 </li>

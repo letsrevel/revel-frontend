@@ -12,6 +12,7 @@ import { decodeToken } from './jwt';
 import { requestTokenRefresh } from './auth-refresh';
 import { clearGuestHoldToken } from '$lib/utils/guest-hold';
 import { hasAnonymousHolds } from '$lib/utils/seat-holds';
+import { AuthFetchError, hydrationRetryDelay, isTransientAuthError } from './auth-transient';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -24,6 +25,19 @@ class AuthStore {
 	private _permissions = $state<OrganizationPermissionsSchema | null>(null);
 	private _isLoading = $state<boolean>(false);
 	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
+	// At most one pending retry of the user/permissions fetches (#1207).
+	private _hydrationTimer: ReturnType<typeof setTimeout> | null = null;
+	// Consecutive transient failures; drives the backoff ladder. Reset only by a
+	// successful hydrate() or a session end, never by a new failure.
+	private _hydrationAttempt = 0;
+	// Single-flight: retry timer, refresh, initialize() and login share one fetch.
+	private _hydratePromise: Promise<void> | null = null;
+	// Session generation: bumped by logout(), resetForSwap() and every new login.
+	// In-flight user/permission fetches capture it and drop their result (no
+	// assignment, no retry, no logout) if it moved while they were awaiting, and
+	// the single-flight promise is only shared within one generation.
+	private _sessionGen = 0;
+	private _hydrateGen = -1;
 	// Shared promise to prevent concurrent refresh attempts
 	private _refreshPromise: Promise<void> | null = null;
 	// True only while `logout()` is running. Used by `_performRefresh` to
@@ -156,19 +170,10 @@ class AuthStore {
 
 		this._isLoading = true;
 		try {
-			// Fetch user data if we don't have it
-			if (!this._user) {
-				await this.fetchUserData();
-			}
-
-			// Fetch permissions if we don't have them
-			if (!this._permissions) {
-				await this.fetchPermissions();
-			}
+			await this.hydrate();
 		} catch {
-			// If fetching user data fails, the API interceptor will handle token refresh
-			// If refresh fails, the user will be logged out automatically
-			// Clear auth state on failure
+			// hydrate() already absorbed transient failures (#1207); what reaches
+			// here (401, ...) means the session is gone.
 			this.logout();
 		} finally {
 			this._isLoading = false;
@@ -210,16 +215,29 @@ class AuthStore {
 				throw new Error('Invalid response: no access token');
 			}
 
-			// Store access token in memory
+			// Store access token in memory (as a brand-new session)
+			this.beginSession();
 			this._accessToken = data.access;
 			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
-			await this.fetchUserData();
-			await this.fetchPermissions();
+			// A transient failure here keeps the login (retried in the background).
+			await this.hydrate();
 		} finally {
 			this._isLoading = false;
 		}
+	}
+
+	/**
+	 * Start a fresh session: invalidate anything in flight for the previous one
+	 * (fetches, retry timer, single-flight promise) and drop its identity data.
+	 */
+	private beginSession(): void {
+		this._sessionGen++;
+		this.clearHydrationTimer();
+		this._hydratePromise = null;
+		this._user = null;
+		this._permissions = null;
 	}
 
 	/**
@@ -250,13 +268,13 @@ class AuthStore {
 				throw new Error('OTP verification failed');
 			}
 
-			// Store access token in memory
+			// Store access token in memory (as a brand-new session)
+			this.beginSession();
 			this._accessToken = data.access;
 			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
-			await this.fetchUserData();
-			await this.fetchPermissions();
+			await this.hydrate();
 		} finally {
 			this._isLoading = false;
 		}
@@ -270,8 +288,11 @@ class AuthStore {
 		// result instead of resurrecting the session.
 		this._isLoggingOut = true;
 
-		// Clear the token refresh timer
+		// Clear the token refresh timer and any pending hydration retry
 		this.clearTokenRefreshTimer();
+		this.clearHydrationTimer();
+		this._hydratePromise = null;
+		this._sessionGen++;
 
 		// Clear any in-progress refresh
 		this._refreshPromise = null;
@@ -375,12 +396,9 @@ class AuthStore {
 
 			// Note: We don't need to refetch user data and permissions on every refresh
 			// They should still be valid. Only fetch if we don't have them.
-			if (!this._user) {
-				await this.fetchUserData();
-			}
-			if (!this._permissions) {
-				await this.fetchPermissions();
-			}
+			// The refresh itself succeeded, so a transient failure here (429, 5xx,
+			// network) must not end the session: keep the token and retry (#1207).
+			await this.hydrate();
 		} catch (error) {
 			console.error('[AUTH STORE] Token refresh failed:', error);
 			// Clear auth state on refresh failure
@@ -390,18 +408,87 @@ class AuthStore {
 	}
 
 	/**
+	 * Fetch whichever of user / permissions we don't have yet. Single-flight.
+	 * Resolves on success AND on a transient failure (429, 5xx, network), which
+	 * keeps the session and schedules a retry (#1207); rejects only for a
+	 * definitive failure (e.g. 401) so the caller can end the session.
+	 */
+	private hydrate(): Promise<void> {
+		const gen = this._sessionGen;
+		if (this._hydratePromise && this._hydrateGen === gen) return this._hydratePromise;
+		const run: Promise<void> = (async () => {
+			try {
+				if (!this._user) await this.fetchUserData(gen);
+				if (gen !== this._sessionGen) return;
+				if (!this._permissions) await this.fetchPermissions(gen);
+				if (gen !== this._sessionGen) return;
+				this._hydrationAttempt = 0;
+			} catch (error) {
+				// The session changed while we were awaiting: this result is stale.
+				if (gen !== this._sessionGen) return;
+				if (!this.deferHydration(error)) throw error;
+			}
+		})().finally(() => {
+			if (this._hydratePromise === run) this._hydratePromise = null;
+		});
+		this._hydratePromise = run;
+		this._hydrateGen = gen;
+		return run;
+	}
+
+	/**
+	 * True when the failure is transient (or the store is logging out) and must
+	 * NOT end the session; schedules the next retry on the ladder. Retries go on
+	 * indefinitely (at the max delay once the ladder tops out) while the session
+	 * lives; logout()/resetForSwap() cancel them.
+	 */
+	private deferHydration(error: unknown): boolean {
+		if (this._isLoggingOut) return true;
+		if (!isTransientAuthError(error)) return false;
+		console.warn('[AUTH STORE] Transient failure loading user data, will retry:', error);
+		const retryAfterMs = error instanceof AuthFetchError ? error.retryAfterMs : undefined;
+		this.clearHydrationTimer(true); // never stack: one pending retry at a time
+		this._hydrationTimer = setTimeout(
+			() => void this.runHydrationRetry(),
+			hydrationRetryDelay(this._hydrationAttempt, retryAfterMs)
+		);
+		this._hydrationAttempt++;
+		return true;
+	}
+
+	private async runHydrationRetry(): Promise<void> {
+		this._hydrationTimer = null;
+		if (this._isLoggingOut || !this._accessToken) return;
+		try {
+			await this.hydrate();
+		} catch {
+			if (!this._isLoggingOut) this.logout();
+		}
+	}
+
+	private clearHydrationTimer(keepAttempt = false): void {
+		if (!keepAttempt) this._hydrationAttempt = 0;
+		if (this._hydrationTimer) {
+			clearTimeout(this._hydrationTimer);
+			this._hydrationTimer = null;
+		}
+	}
+
+	/**
 	 * Fetch current user data
 	 */
-	private async fetchUserData(): Promise<void> {
+	private async fetchUserData(gen: number): Promise<void> {
 		try {
-			const { data, error } = await accountMe({
+			const { data, error, response } = await accountMe({
 				headers: this.getAuthHeaders()
 			});
 
 			if (error || !data) {
-				throw new Error('Failed to fetch user data');
+				throw new AuthFetchError('Failed to fetch user data', response, error);
 			}
 
+			// Session changed mid-flight (logout / swap / new login): drop it.
+			if (gen !== this._sessionGen) return;
 			this._user = data;
 
 			// Set user's preferred language if available
@@ -410,7 +497,8 @@ class AuthStore {
 			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)
-			if (err instanceof TypeError && err.message === 'Failed to fetch') {
+			const cause = err instanceof AuthFetchError ? err.cause : err;
+			if (cause instanceof TypeError && cause.message === 'Failed to fetch') {
 				const { API_BASE_URL_DISPLAY } = await import('$lib/config/api');
 				console.error(
 					`⚠️  API request blocked! Please disable your ad blocker for ${API_BASE_URL_DISPLAY}`
@@ -424,16 +512,17 @@ class AuthStore {
 	/**
 	 * Fetch user permissions
 	 */
-	private async fetchPermissions(): Promise<void> {
-		const { data, error } = await permissionMyPermissions({
+	private async fetchPermissions(gen: number): Promise<void> {
+		const { data, error, response } = await permissionMyPermissions({
 			headers: this.getAuthHeaders()
 		});
 
 		if (error || !data) {
 			console.error('[AUTH STORE] Failed to fetch permissions:', error);
-			throw new Error('Failed to fetch permissions');
+			throw new AuthFetchError('Failed to fetch permissions', response, error);
 		}
 
+		if (gen !== this._sessionGen) return;
 		this._permissions = data;
 	}
 
@@ -522,6 +611,9 @@ class AuthStore {
 	 */
 	resetForSwap(): void {
 		this.clearTokenRefreshTimer();
+		this.clearHydrationTimer();
+		this._hydratePromise = null;
+		this._sessionGen++;
 		this._refreshPromise = null;
 		this._user = null;
 		this._accessToken = null;

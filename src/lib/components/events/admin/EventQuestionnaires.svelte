@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -27,15 +28,17 @@
 	let unassigning = $state<string | null>(null);
 
 	// Unassign a questionnaire from this event
-	async function unassignQuestionnaire(questionnaireId: string, questionnaireName: string) {
+	let pendingUnassign = $state<{ id: string; name: string } | null>(null);
+
+	function requestUnassign(questionnaireId: string, questionnaireName: string) {
+		if (!eventId) return;
+		pendingUnassign = { id: questionnaireId, name: questionnaireName };
+	}
+
+	async function unassignQuestionnaire(questionnaireId: string) {
 		if (!eventId) return;
 
-		const confirmed = confirm(
-			m['eventQuestionnaires.confirmUnassign']({ name: questionnaireName })
-		);
-
-		if (!confirmed) return;
-
+		pendingUnassign = null;
 		unassigning = questionnaireId;
 
 		try {
@@ -173,8 +176,7 @@
 					<Button
 						variant="ghost"
 						size="sm"
-						onclick={() =>
-							unassignQuestionnaire(questionnaire.id, questionnaire.questionnaire.name)}
+						onclick={() => requestUnassign(questionnaire.id, questionnaire.questionnaire.name)}
 						disabled={unassigning === questionnaire.id}
 						class="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
 						aria-label={`Remove ${questionnaire.questionnaire.name}`}
@@ -186,3 +188,15 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={pendingUnassign !== null}
+	title={m['confirmDialog.title']()}
+	message={pendingUnassign
+		? m['eventQuestionnaires.confirmUnassign']({ name: pendingUnassign.name })
+		: ''}
+	confirmText={m['confirmDialog.remove']()}
+	variant="danger"
+	onConfirm={() => pendingUnassign && unassignQuestionnaire(pendingUnassign.id)}
+	onCancel={() => (pendingUnassign = null)}
+/>

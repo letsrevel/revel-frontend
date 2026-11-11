@@ -42,10 +42,9 @@
 		Object.values(staff.permissions?.default || {}).filter(Boolean).length
 	);
 
+	// Confirmation is the list owner's job (one dialog for all rows): this only reports intent.
 	function handleRemove() {
-		if (confirm(`Are you sure you want to remove ${displayName} from staff?`)) {
-			onRemove(staff);
-		}
+		onRemove(staff);
 	}
 
 	function handleEditPermissions() {

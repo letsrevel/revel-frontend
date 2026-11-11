@@ -1,4 +1,6 @@
 <script lang="ts" module>
+	import type { MembershipTierKind } from '$lib/api/generated/types.gen';
+
 	/**
 	 * What the tier form hands back to its parent.
 	 *
@@ -7,10 +9,13 @@
 	 * to survive the round trip rather than collapse to a boolean.
 	 */
 	export interface TierFormPayload {
+		/** Create only: the kind is immutable and absent from the update schema. */
+		kind?: MembershipTierKind;
 		name: string;
 		description: string;
-		membership_questionnaire_id: string | null;
-		requires_membership_approval: boolean | null;
+		/** Omitted for a temporary tier, which cannot carry either (the backend rejects them). */
+		membership_questionnaire_id?: string | null;
+		requires_membership_approval?: boolean | null;
 	}
 </script>
 
@@ -55,6 +60,8 @@
 	// back to `null` on submit.
 	let questionnaireId = $state('');
 	let approvalMode = $state<'inherit' | 'require' | 'norequire'>('inherit');
+	// Create only; an existing tier's kind is immutable and read from the tier.
+	let kindChoice = $state<MembershipTierKind>('standard');
 	let errors = $state<{ name?: string }>({});
 
 	// Sync form with tier prop (for editing)
@@ -71,6 +78,7 @@
 			tierName = '';
 			tierDescription = '';
 		}
+		kindChoice = 'standard';
 		questionnaireId = tier?.membership_questionnaire_id ?? '';
 		approvalMode =
 			tier?.requires_membership_approval === true
@@ -106,10 +114,16 @@
 	function handleSubmit() {
 		if (!validate()) return;
 		onSave({
+			...(isEditing ? {} : { kind: kindChoice }),
 			name: tierName.trim(),
 			description: tierDescription.trim(),
-			membership_questionnaire_id: questionnaireId || null,
-			requires_membership_approval: approvalMode === 'inherit' ? null : approvalMode === 'require'
+			...(isTemporary
+				? {}
+				: {
+						membership_questionnaire_id: questionnaireId || null,
+						requires_membership_approval:
+							approvalMode === 'inherit' ? null : approvalMode === 'require'
+					})
 		});
 	}
 
@@ -122,6 +136,8 @@
 
 	// Is editing mode
 	const isEditing = $derived(!!tier);
+	// (On create, follows the kind selector.) Day-membership tiers can't carry a questionnaire or an approval override (backend rejects it).
+	const isTemporary = $derived((tier?.kind ?? kindChoice) === 'temporary');
 </script>
 
 <Dialog
@@ -189,42 +205,90 @@
 				</p>
 			</div>
 
-			<!-- Membership questionnaire override ('' = inherit the org default) -->
-			<div class="space-y-2">
-				<Label for="tier-questionnaire">{m['tierForm.questionnaireLabel']()}</Label>
-				<select
-					id="tier-questionnaire"
-					bind:value={questionnaireId}
-					disabled={isSaving}
-					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="">{m['tierForm.questionnaireInherit']()}</option>
-					{#each membershipQuestionnaires as oq (oq.id)}
-						<option value={oq.id}>{oq.questionnaire.name}</option>
-					{/each}
-				</select>
-				<p class="text-xs text-muted-foreground">{m['tierForm.questionnaireHint']()}</p>
-			</div>
+			<!-- Kind: chosen once at creation (immutable afterwards, so never shown on edit) -->
+			{#if !isEditing}
+				<fieldset class="space-y-2" aria-describedby="tier-kind-help" data-testid="tier-kind">
+					<legend class="text-sm font-medium">{m['tierForm.kindLabel']()}</legend>
+					<label class="flex cursor-pointer items-start gap-2">
+						<input
+							type="radio"
+							name="tier-kind"
+							value="standard"
+							bind:group={kindChoice}
+							disabled={isSaving}
+							class="mt-0.5 h-4 w-4 border-input text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<span>
+							<span class="text-sm font-medium">{m['tierForm.kindStandard']()}</span>
+							<span class="block text-xs text-muted-foreground">
+								{m['tierForm.kindStandardHelp']()}
+							</span>
+						</span>
+					</label>
+					<label class="flex cursor-pointer items-start gap-2">
+						<input
+							type="radio"
+							name="tier-kind"
+							value="temporary"
+							bind:group={kindChoice}
+							disabled={isSaving}
+							class="mt-0.5 h-4 w-4 border-input text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<span>
+							<span class="text-sm font-medium">{m['tierForm.kindTemporary']()}</span>
+							<span class="block text-xs text-muted-foreground">
+								{m['tierForm.kindTemporaryHelp']()}
+							</span>
+						</span>
+					</label>
+					<p id="tier-kind-help" class="text-xs text-muted-foreground">
+						{m['tierForm.kindNoBenefits']()}
+					</p>
+				</fieldset>
+			{/if}
 
-			<!-- Manual-approval override (tri-state: inherit / require / don't require) -->
-			<div class="space-y-2">
-				<Label for="tier-approval">{m['tierForm.approvalLabel']()}</Label>
-				<select
-					id="tier-approval"
-					bind:value={approvalMode}
-					disabled={isSaving}
-					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="inherit">
-						{orgDefaultRequiresApproval
-							? m['tierForm.approvalInheritRequired']()
-							: m['tierForm.approvalInheritNotRequired']()}
-					</option>
-					<option value="require">{m['tierForm.approvalRequire']()}</option>
-					<option value="norequire">{m['tierForm.approvalNoRequire']()}</option>
-				</select>
-				<p class="text-xs text-muted-foreground">{m['tierForm.approvalHint']()}</p>
-			</div>
+			{#if isTemporary}
+				<p class="text-xs text-muted-foreground" data-testid="temporary-tier-no-gating">
+					{m['tierForm.temporaryNoGating']()}
+				</p>
+			{:else}
+				<!-- Membership questionnaire override ('' = inherit the org default) -->
+				<div class="space-y-2">
+					<Label for="tier-questionnaire">{m['tierForm.questionnaireLabel']()}</Label>
+					<select
+						id="tier-questionnaire"
+						bind:value={questionnaireId}
+						disabled={isSaving}
+						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<option value="">{m['tierForm.questionnaireInherit']()}</option>
+						{#each membershipQuestionnaires as oq (oq.id)}
+							<option value={oq.id}>{oq.questionnaire.name}</option>
+						{/each}
+					</select>
+					<p class="text-xs text-muted-foreground">{m['tierForm.questionnaireHint']()}</p>
+				</div>
+
+				<!-- Manual-approval override (tri-state: inherit / require / don't require) -->
+				<div class="space-y-2">
+					<Label for="tier-approval">{m['tierForm.approvalLabel']()}</Label>
+					<select
+						id="tier-approval"
+						bind:value={approvalMode}
+						disabled={isSaving}
+						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<option value="inherit">
+							{orgDefaultRequiresApproval
+								? m['tierForm.approvalInheritRequired']()
+								: m['tierForm.approvalInheritNotRequired']()}
+						</option>
+						<option value="require">{m['tierForm.approvalRequire']()}</option>
+						<option value="norequire">{m['tierForm.approvalNoRequire']()}</option>
+					</select>
+					<p class="text-xs text-muted-foreground">{m['tierForm.approvalHint']()}</p>
+				</div>
+			{/if}
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 pt-4">

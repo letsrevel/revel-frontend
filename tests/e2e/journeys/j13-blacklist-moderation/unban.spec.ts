@@ -9,6 +9,7 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { openPersonSheet, registerEntry, registerPath } from '../../support/member-register';
 
 // J13 (USER_JOURNEYS.md) — unban: removing a hard blacklist entry restores
 // the user's VISIBILITY of the org, but deliberately not their privileges —
@@ -69,16 +70,21 @@ test.describe('J13 unban @p3', () => {
 					timeout: 15_000
 				});
 
-				// Membership lands on CANCELLED — explicitly not reactivated (a member's
-				// status is single-valued, so Cancelled on the card rules out Active).
-				await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
+				// Membership is explicitly not reactivated: the register entry stays ended
+				// (Ended chip, status Ended), and the person is not on the Current list.
+				await gotoHydrated(ownerPage, registerPath(org.slug, 'ended'));
 				await waitForClientAuth(ownerPage);
-				const memberCard = ownerPage
-					.locator('article, li, div')
-					.filter({ hasText: victimName })
-					.filter({ hasText: /Cancelled/ })
-					.first();
-				await expect(memberCard).toBeVisible({ timeout: 15_000 });
+				await expect(
+					registerEntry(ownerPage, victimName).getByTestId('register-status-ended')
+				).toBeVisible({ timeout: 15_000 });
+				const sheet = await openPersonSheet(ownerPage, victimName);
+				await expect(sheet.getByTestId('person-periods')).toContainText('Ended: expelled');
+				// The access row survives as Cancelled, so staff can still reactivate the
+				// member on purpose from "Manage membership" (never automatically).
+				await expect(sheet.getByTestId('person-manage-membership')).toBeVisible({
+					timeout: 15_000
+				});
+				await expect(sheet.getByTestId('person-banned-hint')).toHaveCount(0);
 			} finally {
 				await ownerContext.close();
 			}

@@ -20,7 +20,8 @@
 		ArrowUpCircle,
 		Calendar,
 		ShieldCheck,
-		UserCircle
+		UserCircle,
+		Ticket
 	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateLongMonth } from '$lib/utils/date';
@@ -127,6 +128,7 @@
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,
 			upgrade_membership: ArrowUpCircle,
+			choose_another_tier: Ticket,
 			request_whitelist: ShieldCheck,
 			wait_for_whitelist_approval: Clock,
 			complete_profile: UserCircle

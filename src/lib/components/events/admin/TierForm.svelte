@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { commitTier, type TierChange } from './tier-cache';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminticketsCreateTicketTier,
@@ -20,7 +21,6 @@
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
@@ -31,6 +31,8 @@
 	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
+	import TierFormActions from './TierFormActions.svelte';
+	import TierFormGrantsSection from './TierFormGrantsSection.svelte';
 	import TierFormVatSection from './TierFormVatSection.svelte';
 	import {
 		omitUnchangedZeroRuleFields,
@@ -50,6 +52,8 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { markSilent } from '$lib/utils/errors';
 	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
+	import { linkedTierIds, membershipLinksPayload } from './tier-membership-links';
+	import { grantsError, grantsPayload, hasGrant } from './tier-grants';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -74,6 +78,10 @@
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error'; // org tiers query state
+		/** TEMPORARY tiers of the org: the "Grants membership" picker's options. */
+		temporaryTiers?: MembershipTierSchema[];
+		temporaryTiersStatus?: 'ready' | 'loading' | 'error';
 		eventVenueId?: string | null; // Pre-fill venue from event
 		eventCapacity?: number | null; // Effective event cap (null = uncapped)
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
@@ -96,6 +104,9 @@
 		draft = null,
 		platformFees = null,
 		membershipTiers = [],
+		membershipTiersStatus = 'ready',
+		temporaryTiers = [],
+		temporaryTiersStatus = 'ready',
 		eventVenueId = null,
 		eventCapacity = null,
 		eventContext = { start: '' },
@@ -132,9 +143,8 @@
 	const salesEndReadback = $derived(formatDateTimeReadback(salesEndAt));
 	let visibility = $state(seed.visibility);
 	let purchasableBy = $state(seed.purchasableBy);
-	let restrictedToMembershipTiersIds = $state<string[]>(
-		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
-	);
+	let restrictedToMembershipTiersIds = $state(linkedTierIds(tier?.restricted_to_membership_tiers));
+	let excludedMembershipTiersIds = $state(linkedTierIds(tier?.excluded_membership_tiers));
 	let restrictVisibilityToLinkedInvitations = $state(
 		tier?.restrict_visibility_to_linked_invitations ?? false
 	);
@@ -152,9 +162,8 @@
 	let refundPolicy = $state<RefundPolicy | null>(tier?.refund_policy ?? null);
 	let refundPolicyValid = $state(true);
 
-	// New tiers: until the organizer touches the checkbox, the default follows the
-	// payment method (free -> on, paid -> off) so a paid tier never silently
-	// inherits "on" with no refund policy. Editing keeps the stored value.
+	// New tiers: until touched, the default follows the payment method (free -> on,
+	// paid -> off) so a paid tier never inherits "on" with no refund policy.
 	let cancellationTouched = $state(false);
 	$effect(() => {
 		if (!tier && !cancellationTouched) {
@@ -173,17 +182,15 @@
 		}
 	});
 
-	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
 	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
-	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
-	// Venue is read-only - it always comes from the event
+	// Day-membership grant ('' = none): forces max tickets to 1, bars member-only audiences.
+	let grantsMembershipTierId = $state(seed.grantsMembershipTierId ?? '');
+	// Venue is read-only: the tier's own when editing, else the event's.
 	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
 
-	// Check if event has a venue configured
 	const hasEventVenue = $derived(!!eventVenueId);
 
-	// Seat assignment modes other than 'none' require an event venue
 	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
 
@@ -251,7 +258,6 @@
 		new Set((chartQuery.data?.sectors ?? []).filter((s) => s.kind === 'standing').map((s) => s.id))
 	);
 
-	// Get sectors from the selected venue (minus standing ones once the chart is loaded)
 	const selectedVenueSectors = $derived.by(() => {
 		if (!venueId || !venuesQuery.data) return [];
 		const venue = venuesQuery.data.find((v) => v.id === venueId);
@@ -268,7 +274,6 @@
 		return (venue?.sectors || []).filter((s) => !!s.id && standingSectorIds.has(s.id));
 	});
 
-	// The venue matching the pre-filled venueId (read-only display in the seating section)
 	const selectedVenue = $derived(venuesQuery.data?.find((v) => v.id === venueId));
 
 	// Keep the sector consistent with venue, mode and sector kind: standing
@@ -317,15 +322,16 @@
 
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
-	// The generated client resolves with `{ error }` on HTTP errors instead of
-	// rejecting (ThrowOnError = false), so each mutationFn must throw the error
-	// body itself — otherwise a 400/422 lands in onSuccess and closes the dialog
-	// without ever showing the error panel below. `markSilent` keeps the global
-	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
-	// convention); the body is thrown unwrapped so extractFieldErrors still
-	// sees the pydantic detail array.
+	// mutationFns throw the error body (client resolves `{ error }`) so a 400/422 can't close the
+	// dialog; `markSilent` stops a duplicate toast; unwrapped for extractFieldErrors.
 	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
 	let saveStatus = $state<number | undefined>(undefined);
+
+	// Seed the list cache from the response, close at once (see tier-cache.ts).
+	function afterSave(change: TierChange): void {
+		commitTier(queryClient, eventId, change);
+		onClose();
+	}
 
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: async (data: TicketTierCreateSchema) => {
@@ -337,10 +343,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: (saved) => afterSave({ saved })
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
@@ -354,10 +357,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: (saved) => afterSave({ saved })
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
@@ -369,10 +369,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: () => afterSave({ deletedId: tier?.id })
 	}));
 
 	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
@@ -442,6 +439,7 @@
 			salesStartAt,
 			salesEndAt,
 			maxTicketsPerUser,
+			grantsMembershipTierId,
 			visibility,
 			purchasableBy
 		});
@@ -475,8 +473,12 @@
 			...checkInOffsetsPayload(eventContext.start, checkInPicks, tier),
 			visibility,
 			purchasable_by: purchasableBy,
-			restricted_to_membership_tiers_ids:
-				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
+			...membershipLinksPayload(
+				purchasableBy,
+				restrictedToMembershipTiersIds,
+				!!tier,
+				excludedMembershipTiersIds
+			),
 			restrict_visibility_to_linked_invitations:
 				visibility === 'private' ? restrictVisibilityToLinkedInvitations : false,
 			restrict_purchase_to_linked_invitations:
@@ -494,6 +496,7 @@
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
+			...grantsPayload(grantsMembershipTierId, !!tier),
 			// Per-mode venue/sector nulling mirrors server validation
 			// (see tier-seating-payload.ts).
 			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId),
@@ -540,7 +543,6 @@
 
 	function handleDelete() {
 		if (!tier) return;
-		if (!confirm(m['tierForm.deleteConfirm']({ name: tier.name }))) return;
 		tierDeleteMutation.mutate();
 	}
 
@@ -667,9 +669,24 @@
 				bind:restrictVisibilityToLinkedInvitations
 				bind:restrictPurchaseToLinkedInvitations
 				bind:restrictedToMembershipTiersIds
+				bind:excludedMembershipTiersIds
+				saveError={error}
 				{membershipTiers}
+				{membershipTiersStatus}
+				knownExcludedTiers={tier?.excluded_membership_tiers ?? []}
 				bind:salesPaused
 				{eventCapacity}
+				grantsMembership={hasGrant(grantsMembershipTierId)}
+				{isPending}
+			/>
+
+			<TierFormGrantsSection
+				bind:grantId={grantsMembershipTierId}
+				bind:maxTicketsPerUser
+				{purchasableBy}
+				membershipTiers={temporaryTiers}
+				status={temporaryTiersStatus}
+				error={grantsError(error)}
 				{isPending}
 			/>
 
@@ -683,6 +700,7 @@
 			<TierFormSeatingSection
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
+				maxTicketsLocked={hasGrant(grantsMembershipTierId)}
 				bind:sectorId
 				bind:categoryPrices
 				pricingCategories={sectorPricingCategories}
@@ -702,37 +720,21 @@
 				{isPending}
 			/>
 
-			<!-- Form Actions -->
-			<div class="flex justify-between gap-2 border-t border-border pt-4">
-				<div>
-					{#if tier}
-						<Button type="button" variant="destructive" onclick={handleDelete} disabled={isPending}>
-							{tierDeleteMutation.isPending ? m['tierForm.deleting']() : m['tierForm.deleteTier']()}
-						</Button>
-					{/if}
-				</div>
-				<div class="flex gap-2">
-					<Button type="button" variant="outline" onclick={onClose} disabled={isPending}>
-						{m['tierForm.cancel']()}
-					</Button>
-					<Button
-						type="submit"
-						disabled={isPending ||
-							saveHeld ||
-							!name.trim() ||
-							!sectorValid ||
-							!checkInPicksValid(eventContext.start, checkInPicks) ||
-							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
-						aria-describedby={heldBy || undefined}
-					>
-						{isPending
-							? m['tierForm.saving']()
-							: tier
-								? m['tierForm.saveChanges']()
-								: m['tierForm.createTier']()}
-					</Button>
-				</div>
-			</div>
+			<TierFormActions
+				isEditing={!!tier}
+				tierName={tier?.name ?? ''}
+				{isPending}
+				isDeleting={tierDeleteMutation.isPending}
+				submitDisabled={saveHeld ||
+					!name.trim() ||
+					!sectorValid ||
+					!checkInPicksValid(eventContext.start, checkInPicks) ||
+					(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
+				describedBy={heldBy || undefined}
+				grantInputs={{ grantId: grantsMembershipTierId, purchasableBy, maxTicketsPerUser }}
+				onDelete={handleDelete}
+				{onClose}
+			/>
 
 			{#if error}
 				<TierFormErrorPanel

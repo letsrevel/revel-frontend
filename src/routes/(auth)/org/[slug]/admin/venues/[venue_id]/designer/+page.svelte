@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	/**
 	 * Freeform layout designer route (#659, designer part 2).
 	 *
@@ -162,10 +164,39 @@
 	// --- unsaved-changes guard ------------------------------------------------
 	let dirty = $state(false);
 
+	// `dirty` mirrors the designer controller (via onDirtyChange) and is never
+	// written from here. beforeNavigate must decide synchronously, so an
+	// in-app navigation is cancelled, the user is asked, and on confirmation it
+	// is replayed once with `leaveApproved` set. Tab close / external leave is
+	// covered by the native beforeunload handler below.
+	const confirmation = createConfirm();
+	let leaveApproved = false;
+
 	beforeNavigate((navigation) => {
+		if (leaveApproved) {
+			// The replayed navigation: let it through (self-clearing).
+			leaveApproved = false;
+			return;
+		}
 		if (!dirty) return;
-		const message = m['seatDesigner.unsavedChanges']();
-		if (!confirm(message)) navigation.cancel();
+		if (navigation.willUnload || !navigation.to) return;
+		// Form submissions can't be replayed through goto(); the designer has none.
+		if (navigation.type === 'form') return;
+
+		const { type, delta } = navigation;
+		const target = navigation.to.url;
+		navigation.cancel();
+		void confirmation.ask({ message: m['seatDesigner.unsavedChanges']() }).then((leave) => {
+			if (!leave) return;
+			leaveApproved = true;
+			if (type === 'popstate' && typeof delta === 'number') {
+				// Back/forward: replay the same history step so the stack stays right.
+				history.go(delta);
+			} else {
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- replays the URL SvelteKit already resolved for the cancelled navigation
+				void goto(target);
+			}
+		});
 	});
 
 	function handleBeforeUnload(event: BeforeUnloadEvent) {
@@ -268,3 +299,5 @@
 		{/if}
 	{/if}
 </div>
+
+<ConfirmDialog {...confirmation.dialogProps} />

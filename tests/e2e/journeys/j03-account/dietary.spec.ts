@@ -2,11 +2,12 @@ import { test, expect } from '../../support/fixtures';
 import { createVerifiedUser, uniqueName } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { confirmInApp } from '../../support/ui';
 
 // J3.7 (USER_JOURNEYS.md) — dietary profile on /account/profile: add a
 // preference (private), flip its visibility, add a restriction backed by a
 // NEWLY created food item (unique name — the autocomplete must offer to
-// create it), and remove both. Deletes go through a native confirm().
+// create it), and remove both. Deletes go through the in-app confirm dialog.
 //
 // Throwaway users: dietary rows accumulate per-user, and seeded personas'
 // profiles are off-limits (j08 asserts on their display names).
@@ -50,9 +51,9 @@ test.describe('J03 dietary profile @p2', () => {
 		await page.getByRole('button', { name: 'Private', exact: true }).click();
 		await expect(page.getByRole('button', { name: 'Public', exact: true })).toBeVisible();
 
-		// Remove (native confirm) → back to the empty state.
-		page.once('dialog', (d) => d.accept());
+		// Remove (in-app confirm) → back to the empty state.
 		await page.getByRole('button', { name: `Remove ${chosen}` }).click();
+		await confirmInApp(page);
 		await expect(page.getByText('Dietary preference removed')).toBeVisible();
 		await expect(page.getByText('No dietary preferences added yet')).toBeVisible();
 
@@ -90,8 +91,8 @@ test.describe('J03 dietary profile @p2', () => {
 		await expect(page.getByText(foodName)).toBeVisible();
 		await expect(page.getByText('Allergy', { exact: true })).toBeVisible();
 
-		page.once('dialog', (d) => d.accept());
 		await page.getByRole('button', { name: `Remove ${foodName}` }).click();
+		await confirmInApp(page);
 		await expect(page.getByText('Dietary restriction removed')).toBeVisible();
 		await expect(page.getByText('No dietary restrictions added yet')).toBeVisible();
 

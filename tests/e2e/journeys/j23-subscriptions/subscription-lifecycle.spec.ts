@@ -79,7 +79,9 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Active' })).toBeVisible({
 			timeout: 15_000
 		});
-		await expect(drawer.getByText('Payments')).toBeVisible();
+		// Exact: the drawer also carries a "Include voided payments" toggle, which a
+		// default (substring, case-insensitive) match would count as a second hit.
+		await expect(drawer.getByText('Payments', { exact: true })).toBeVisible();
 		// Currency-formatted since b163f3eb ("€15.00", not the raw "15.00 EUR" the
 		// cell rendered before the platform-fee work reused `formatMoney` here).
 		await expect(drawer.getByText('€15.00').first()).toBeVisible();

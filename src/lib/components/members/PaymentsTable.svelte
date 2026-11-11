@@ -6,6 +6,9 @@
 	import { formatDate } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
 	import { partialRefundAmount, platformFeeBreakdown } from './SubscriptionPaymentsShared';
+	import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
+	import PaymentEditVoidButtons from './PaymentEditVoidButtons.svelte';
+	import type { EditablePayment } from './paymentEdit';
 
 	interface Props {
 		payments: MembershipPaymentSchema[];
@@ -23,9 +26,13 @@
 		 */
 		isOnlinePlan: boolean;
 		onRefund: (p: MembershipPaymentSchema) => void;
+		/** Opens the edit dialog; the row only offers it when `can_edit` is set. */
+		onEdit: (p: EditablePayment) => void;
+		/** Opens the void confirm; the row only offers it when `can_void` is set. */
+		onVoid: (p: EditablePayment) => void;
 	}
 
-	const { payments, isOnlinePlan, onRefund }: Props = $props();
+	const { payments, isOnlinePlan, onRefund, onEdit, onVoid }: Props = $props();
 
 	/**
 	 * The note tells staff to refund from the Stripe dashboard — so it only earns
@@ -151,7 +158,7 @@
 								{/if}
 							{/if}
 						</td>
-						<td class="py-2 capitalize">{p.status}</td>
+						<td class="py-2"><SubscriptionPaymentsStatusBadge status={p.status} /></td>
 						<td class="py-2">
 							<div class="flex flex-wrap items-center justify-end gap-1">
 								{#if p.stripe_dashboard_url}
@@ -171,6 +178,7 @@
 										{m['orgAdmin.members.subscriptions.drawer.refund']()}
 									</Button>
 								{/if}
+								<PaymentEditVoidButtons payment={p} {onEdit} {onVoid} />
 							</div>
 						</td>
 					</tr>

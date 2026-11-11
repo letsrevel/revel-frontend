@@ -256,10 +256,12 @@ describe('PriceCategorySection', () => {
 			const user = userEvent.setup();
 			mockResult(organizationadminvenuesListPriceCategories, { data: [gold] });
 			mockResult(organizationadminvenuesDeletePriceCategory, { data: undefined, status: 204 });
-			vi.spyOn(window, 'confirm').mockReturnValue(true);
 			renderSection();
 
 			await user.click(await screen.findByRole('button', { name: 'Delete price category Gold' }));
+			await user.click(
+				await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Delete' })
+			);
 
 			await waitFor(() => {
 				expect(organizationadminvenuesDeletePriceCategory).toHaveBeenCalledWith(
@@ -282,12 +284,13 @@ describe('PriceCategorySection', () => {
 			const detail = 'Cannot delete: price category is referenced by ticket tier "VIP".';
 			mockResult(organizationadminvenuesListPriceCategories, { data: [gold] });
 			mockResult(organizationadminvenuesDeletePriceCategory, { error: { detail }, status: 400 });
-			vi.spyOn(window, 'confirm').mockReturnValue(true);
 			renderSection();
 
 			await user.click(await screen.findByRole('button', { name: 'Delete price category Gold' }));
+			await user.click(
+				await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Delete' })
+			);
 
-			expect(window.confirm).toHaveBeenCalledOnce();
 			await waitFor(() => {
 				expect(organizationadminvenuesDeletePriceCategory).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -303,10 +306,12 @@ describe('PriceCategorySection', () => {
 		it('does not call the delete op when the confirm dialog is dismissed', async () => {
 			const user = userEvent.setup();
 			mockResult(organizationadminvenuesListPriceCategories, { data: [gold] });
-			vi.spyOn(window, 'confirm').mockReturnValue(false);
 			renderSection();
 
 			await user.click(await screen.findByRole('button', { name: 'Delete price category Gold' }));
+			await user.click(
+				await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Cancel' })
+			);
 			expect(organizationadminvenuesDeletePriceCategory).not.toHaveBeenCalled();
 		});
 	});

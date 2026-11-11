@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onImageError } from '$lib/utils/image-error';
 	import { cn } from '$lib/utils';
 
 	interface Props {
@@ -27,7 +28,7 @@
 		src={logoUrl}
 		alt=""
 		loading="lazy"
-		onerror={() => (failedUrl = logoUrl)}
+		{@attach onImageError(() => (failedUrl = logoUrl))}
 		class={cn('shrink-0 rounded-xl bg-muted object-cover', sizeClasses, className)}
 	/>
 {:else}

@@ -17,6 +17,8 @@
 	import StaffCard from '$lib/components/members/StaffCard.svelte';
 	import PermissionsEditor from '$lib/components/members/PermissionsEditor.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -27,6 +29,28 @@
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
+
+	// One confirm dialog for every row.
+	const confirmation = createConfirm();
+
+	function staffDisplayName(staff: OrganizationStaffSchema): string {
+		return (
+			staff.user.preferred_name ||
+			(staff.user.first_name && staff.user.last_name
+				? `${staff.user.first_name} ${staff.user.last_name}`
+				: staff.user.first_name || staff.user.email || 'Unknown User')
+		);
+	}
+
+	async function handleRemoveStaff(staff: OrganizationStaffSchema): Promise<void> {
+		const confirmed = await confirmation.ask({
+			title: m['staffCard.removeTitle'](),
+			message: m['staffCard.removeConfirm']({ name: staffDisplayName(staff) }),
+			confirmLabel: m['confirmDialog.remove'](),
+			destructive: true
+		});
+		if (confirmed) removeStaffMutation.mutate(staff);
+	}
 
 	// Search state
 	let staffSearch = $state('');
@@ -187,7 +211,7 @@
 				staff={staffMember}
 				canRemove={isOwner}
 				canEditPermissions={isOwner}
-				onRemove={(s) => removeStaffMutation.mutate(s)}
+				onRemove={handleRemoveStaff}
 				onEditPermissions={handleEditPermissions}
 				isRemoving={removeStaffMutation.isPending}
 			/>
@@ -203,3 +227,5 @@
 	onSave={handleSavePermissions}
 	isSaving={updatePermissionsMutation.isPending}
 />
+
+<ConfirmDialog {...confirmation.dialogProps} />

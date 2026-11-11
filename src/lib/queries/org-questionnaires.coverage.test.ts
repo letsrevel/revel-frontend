@@ -39,7 +39,11 @@ const COVERED_ELSEWHERE: Record<string, string> = {
 	// The card deletes and calls `invalidateAll()`, which re-runs the questionnaire
 	// admin list's server load; that route drops the client cache on every (re)load.
 	'src/lib/components/questionnaires/QuestionnaireCard.svelte':
-		'src/routes/(auth)/org/[slug]/admin/questionnaires/+page.svelte'
+		'src/routes/(auth)/org/[slug]/admin/questionnaires/+page.svelte',
+	// Pure runner (no QueryClient); the preset dialog that drives it invalidates in
+	// `refreshCaches` after every run, success or failure.
+	'src/lib/components/events/admin/verein-preset.ts':
+		'src/lib/components/events/admin/VereinPresetDialog.svelte'
 };
 
 const SRC = join(process.cwd(), 'src');
@@ -72,6 +76,7 @@ describe('org-questionnaire mutation sites', () => {
 
 	it('finds the known mutation sites (the scan itself still works)', () => {
 		expect(mutationSites.map((f) => f.path).sort()).toEqual([
+			'src/lib/components/events/admin/verein-preset.ts',
 			'src/lib/components/questionnaires/DuplicateQuestionnaireModal.svelte',
 			'src/lib/components/questionnaires/QuestionnaireCard.svelte',
 			'src/lib/utils/questionnaire-api-sync.ts',

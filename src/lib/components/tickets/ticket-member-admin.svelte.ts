@@ -1,10 +1,10 @@
+import { listStandardTiers } from '$lib/queries/membership-tiers';
 import * as m from '$lib/paraglide/messages.js';
 import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { getUserDisplayName } from '$lib/utils/user-display';
 import {
-	organizationadminmembersListMembershipTiers,
 	organizationadminmembersAddMember,
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api';
@@ -25,6 +25,43 @@ interface Options {
 }
 
 /**
+ * Lazy loader for the standard tiers offered by the "make member" modal.
+ * Shared by every page that opens that modal so there is ONE implementation:
+ * it loads once on demand (tracked by a `loaded` flag, NOT `tiers.length`, so
+ * an org with only temporary tiers is not refetched on every click) and toasts
+ * on failure, leaving `loaded` false so the next open retries.
+ */
+export function createStandardTiersLoader(opts: Options) {
+	let tiers = $state<MembershipTierSchema[]>([]);
+	let loading = $state(false);
+	let loaded = false;
+
+	async function ensureLoaded(): Promise<void> {
+		if (loaded || loading) return;
+		loading = true;
+		try {
+			tiers = await listStandardTiers(opts.getSlug(), opts.getAccessToken());
+			loaded = true;
+		} catch (err) {
+			console.error('Failed to load membership tiers:', err);
+			toast.error(m['makeMemberAction.tiersLoadError']());
+		} finally {
+			loading = false;
+		}
+	}
+
+	return {
+		get tiers() {
+			return tiers;
+		},
+		get loading() {
+			return loading;
+		},
+		ensureLoaded
+	};
+}
+
+/**
  * Membership + blacklist admin actions for the event tickets list.
  *
  * Bundles the two mutations, their dialog state, and the trigger handlers into
@@ -39,8 +76,7 @@ export function createTicketMemberAdmin(opts: Options) {
 	// Make member modal state
 	let showMakeMemberModal = $state(false);
 	let userToMakeMember = $state<MakeMemberUser | null>(null);
-	let membershipTiers = $state<MembershipTierSchema[]>([]);
-	let tiersLoading = $state(false);
+	const tiersLoader = createStandardTiersLoader(opts);
 
 	// Blacklist confirmation state
 	let showBlacklistDialog = $state(false);
@@ -129,27 +165,7 @@ export function createTicketMemberAdmin(opts: Options) {
 			email: user.email ?? undefined
 		};
 
-		// Load membership tiers if not already loaded
-		if (membershipTiers.length === 0) {
-			tiersLoading = true;
-			try {
-				const response = await organizationadminmembersListMembershipTiers({
-					path: { slug: opts.getSlug() },
-					headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
-				});
-				if (response.error) {
-					throw new Error(m['makeMemberAction.tiersLoadError']());
-				}
-				if (response.data) {
-					membershipTiers = response.data;
-				}
-			} catch (err) {
-				console.error('Failed to load membership tiers:', err);
-				toast.error(m['makeMemberAction.tiersLoadError']());
-			} finally {
-				tiersLoading = false;
-			}
-		}
+		await tiersLoader.ensureLoaded();
 
 		showMakeMemberModal = true;
 	}
@@ -204,10 +220,10 @@ export function createTicketMemberAdmin(opts: Options) {
 			userToMakeMember = value;
 		},
 		get membershipTiers() {
-			return membershipTiers;
+			return tiersLoader.tiers;
 		},
 		get tiersLoading() {
-			return tiersLoading;
+			return tiersLoader.loading;
 		},
 		get addMemberPending() {
 			return addMemberMutation.isPending;

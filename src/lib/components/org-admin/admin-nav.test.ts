@@ -30,6 +30,11 @@ describe('buildAdminNav', () => {
 		expect(ids({ canVerifyMembers: true })).toContain('verify-members');
 	});
 
+	it('has one Members entry and no separate member register', () => {
+		expect(ids({})).toContain('members');
+		expect(ids({ canVerifyMembers: true })).not.toContain('member-register');
+	});
+
 	it('flags billing with a warning badge only when needed', () => {
 		const find = (w: boolean) =>
 			allNavItems(buildAdminNav({ ...base, isOwner: true, billingWarning: w })).find(

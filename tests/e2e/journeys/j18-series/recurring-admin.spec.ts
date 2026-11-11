@@ -2,6 +2,7 @@ import { test, expect } from '../../support/fixtures';
 import { createOrganization, uniqueName } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { toDatetimeLocal } from '../../support/member-register';
 
 // J18 (USER_JOURNEYS.md) — recurring-series authoring: the two-step wizard
 // (template event → weekly recurrence), the initial occurrence generation,
@@ -15,15 +16,6 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // no weekday toggling is needed for a weekly rule.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** datetime-local inputs want the browser-local `YYYY-MM-DDTHH:mm` shape. */
-function toDatetimeLocal(date: Date): string {
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return (
-		`${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-		`T${pad(date.getHours())}:${pad(date.getMinutes())}`
-	);
-}
 
 /**
  * Fire a series-dashboard action: the desktop header renders the action row

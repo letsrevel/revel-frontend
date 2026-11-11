@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -107,14 +109,16 @@
 		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));
 	}
 
-	function publishEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.publish']())) {
+	const confirmation = createConfirm();
+
+	async function publishEvent(eventId: string): Promise<void> {
+		if (await confirmation.ask({ message: m['orgAdmin.events.confirmations.publish']() })) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
 	}
 
-	function closeEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.close']())) {
+	async function closeEvent(eventId: string): Promise<void> {
+		if (await confirmation.ask({ message: m['orgAdmin.events.confirmations.close']() })) {
 			updateStatusMutation.mutate({ eventId, status: 'closed' });
 		}
 	}
@@ -124,7 +128,7 @@
 		showCancelEventDialog = true;
 	}
 
-	function deleteEvent(eventId: string): void {
+	async function deleteEvent(eventId: string): Promise<void> {
 		// Stronger confirmation when deleting a cancelled event — attendees
 		// have already been notified and we're now wiping the record.
 		const target = data.events.find((e: EventInListSchema) => e.id === eventId);
@@ -132,13 +136,19 @@
 		const message = isCancelled
 			? m['orgAdmin.events.confirmations.deleteCancelled']()
 			: m['orgAdmin.events.confirmations.delete']();
-		if (confirm(message)) {
+		if (
+			await confirmation.ask({
+				message: message,
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
 			deleteEventMutation.mutate(eventId);
 		}
 	}
 
-	function reopenEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
+	async function reopenEvent(eventId: string): Promise<void> {
+		if (await confirmation.ask({ message: m['orgAdmin.events.confirmations.reopen']() })) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
 	}
@@ -504,3 +514,5 @@
 {#if cancelEventId}
 	<CancelEventDialog bind:open={showCancelEventDialog} eventId={cancelEventId} />
 {/if}
+
+<ConfirmDialog {...confirmation.dialogProps} />

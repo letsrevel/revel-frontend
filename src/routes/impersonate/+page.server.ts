@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { API_BASE_URL } from '$lib/config/api';
 import { getAccessTokenCookieOptions } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
+import { revokeAndClearSession } from '$lib/server/auth-cookies';
 
 /**
  * Impersonation token response from backend
@@ -90,12 +91,12 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 			maxAge: data.expires_in // Use the server-provided expiry time
 		};
 
-		cookies.set('access_token', data.access_token, cookieOptions);
+		// Revoke the admin's own refresh token server-side before dropping it, so
+		// the discarded cookie value is not left valid anywhere, then clear it to
+		// prevent auto-refresh (impersonation sessions cannot be extended).
+		await revokeAndClearSession({ cookies, fetch });
 
-		// Clear any existing refresh token to prevent auto-refresh
-		// This ensures impersonation sessions cannot be extended
-		cookies.delete('refresh_token', { path: '/' });
-		cookies.delete('remember_me', { path: '/' });
+		cookies.set('access_token', data.access_token, cookieOptions);
 
 		log.debug('impersonate_redirecting_to_dashboard');
 

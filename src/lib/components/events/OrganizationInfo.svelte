@@ -18,7 +18,18 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
-		organization: OrganizationRetrieveSchema;
+		/** Only the fields this card renders, so a minimal event-embedded org fits. */
+		organization: Pick<
+			OrganizationRetrieveSchema,
+			| 'slug'
+			| 'name'
+			| 'description'
+			| 'logo'
+			| 'logo_thumbnail_url'
+			| 'accept_membership_requests'
+			| 'contact_method'
+			| 'contact_email'
+		>;
 		isAuthenticated: boolean;
 		isMember: boolean;
 		membershipTier?: MembershipTierSchema | null;

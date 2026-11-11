@@ -1,5 +1,8 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import { stripeSetupState } from '$lib/utils/org-setup-progress';
+	import { canRunVereinPreset } from '$lib/utils/permissions';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -200,11 +203,13 @@
 		}
 	}));
 
+	const confirmation = createConfirm();
+
 	/**
 	 * Publish event (draft → open)
 	 */
-	function publishEvent(): void {
-		if (confirm(m['eventEditPage.publishConfirm']())) {
+	async function publishEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.publishConfirm']() })) {
 			updateStatusMutation.mutate('open');
 		}
 	}
@@ -215,8 +220,8 @@
 	/**
 	 * Close event (open → closed)
 	 */
-	function closeEvent(): void {
-		if (confirm(m['eventEditPage.closeConfirm']())) {
+	async function closeEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.closeConfirm']() })) {
 			updateStatusMutation.mutate('closed');
 		}
 	}
@@ -224,8 +229,8 @@
 	/**
 	 * Mark as draft (open/closed → draft)
 	 */
-	function markAsDraft(): void {
-		if (confirm(m['eventEditPage.draftConfirm']())) {
+	async function markAsDraft(): Promise<void> {
+		if (await confirmation.ask({ message: m['eventEditPage.draftConfirm']() })) {
 			updateStatusMutation.mutate('draft');
 		}
 	}
@@ -235,8 +240,8 @@
 	 * with reopen-specific confirmation copy so admins see the right
 	 * intent when transitioning from closed.
 	 */
-	function reopenEvent(): void {
-		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
+	async function reopenEvent(): Promise<void> {
+		if (await confirmation.ask({ message: m['orgAdmin.events.confirmations.reopen']() })) {
 			updateStatusMutation.mutate('open');
 		}
 	}
@@ -255,12 +260,18 @@
 	 * stronger confirmation that names what just happened (attendees
 	 * notified, record removal on top of that).
 	 */
-	function deleteEvent(): void {
+	async function deleteEvent(): Promise<void> {
 		const message =
 			currentStatus === 'cancelled'
 				? m['orgAdmin.events.confirmations.deleteCancelled']()
 				: m['orgAdmin.events.confirmations.delete']();
-		if (confirm(message)) {
+		if (
+			await confirmation.ask({
+				message: message,
+				destructive: true,
+				confirmLabel: m['confirmDialog.delete']()
+			})
+		) {
 			deleteEventMutation.mutate();
 		}
 	}
@@ -488,6 +499,7 @@
 			eventSeries={data.eventSeries}
 			{initialTab}
 			isOwner={data.isOwner}
+			canUseVereinPreset={canRunVereinPreset(data.permissions, organization.id)}
 			onlinePaymentSetup={stripeSetupState(organization)}
 		/>
 	{/key}
@@ -509,3 +521,5 @@
 	eventId={event.id}
 	retryRefunds={currentStatus === 'cancelled'}
 />
+
+<ConfirmDialog {...confirmation.dialogProps} />

@@ -32,6 +32,7 @@
 		Undo2,
 		Armchair,
 		Pencil,
+		StickyNote,
 		ChevronUp,
 		ChevronDown,
 		ChevronsUpDown
@@ -41,6 +42,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import DayMemberBadge from './DayMemberBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
 	import { formatTicketAttributionLine } from '$lib/utils/attribution';
@@ -66,6 +68,8 @@
 		onUnconfirmPayment: (ticket: AdminTicketSchema) => void;
 		/** Move a seated ticket to another seat. Omit to hide the action. */
 		onReseat?: (ticket: AdminTicketSchema) => void;
+		/** Open the private staff-note editor for the holder (`manage_members` only). Omit to hide. */
+		onEditNote?: (ticket: AdminTicketSchema) => void;
 		/** Rename the holder on a ticket. Omit to hide the action. */
 		onRenameHolder?: (ticket: AdminTicketSchema) => void;
 		/** Refund an online payment (full/partial). Omit to hide the action. */
@@ -89,6 +93,7 @@
 		onBlacklist,
 		onUnconfirmPayment,
 		onReseat,
+		onEditNote,
 		onRenameHolder,
 		onRefundTicket
 	}: Props = $props();
@@ -226,6 +231,7 @@
 						{#if ticket.series_pass}
 							<SeriesPassBadge seriesPass={ticket.series_pass} class="mt-0.5" />
 						{/if}
+						<DayMemberBadge record={ticket.membership_record} class="mt-0.5" />
 					</td>
 					<td
 						class="px-4 py-3"
@@ -357,6 +363,12 @@
 										>
 											<ExternalLink class="mr-2 h-4 w-4" aria-hidden="true" />
 											{m['ticketTable.manageOnStripe']()}
+										</DropdownMenu.Item>
+									{/if}
+									{#if onEditNote && ticket.user?.id}
+										<DropdownMenu.Item onclick={() => onEditNote(ticket)}>
+											<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
+											{m['userNote.editAction']()}
 										</DropdownMenu.Item>
 									{/if}
 									{#if onRenameHolder && ticket.status !== 'checked_in' && ticket.status !== 'cancelled'}

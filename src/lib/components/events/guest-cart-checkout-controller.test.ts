@@ -85,6 +85,20 @@ describe('mapGuestCheckoutError', () => {
 		);
 	});
 
+	it('keeps members_excluded (choose_another_tier) a plain refusal, not an account prompt', () => {
+		const refusal = {
+			allowed: false,
+			event_id: 'evt-1',
+			reason: 'This ticket tier is not available to members.',
+			reason_code: 'members_excluded',
+			next_step: 'choose_another_tier'
+		};
+		const error = mapGuestCheckoutError(refusal, 400);
+		expect(error).not.toBeInstanceOf(GuestAccountRequiredError);
+		expect(error.message).toBe("This ticket tier isn't available to members.");
+		expect(error.cause).toBe(refusal);
+	});
+
 	it('maps a 400 eligibility refusal with a guest-incompatible next_step to GuestAccountRequiredError', () => {
 		const refusal = {
 			allowed: false,

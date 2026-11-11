@@ -12,9 +12,14 @@
 		onExport: () => Promise<string>;
 		accessToken: string | null;
 		disabled?: boolean;
+		/**
+		 * Optional translated message for a failed export (e.g. the 429 throttle).
+		 * Return null to fall back to the generic error toast.
+		 */
+		describeError?: (error: unknown) => string | null;
 	}
 
-	const { label, onExport, accessToken, disabled = false }: Props = $props();
+	const { label, onExport, accessToken, disabled = false, describeError }: Props = $props();
 
 	let isExporting = $state(false);
 
@@ -73,8 +78,8 @@
 			const downloadUrl = await pollExportStatus(exportId);
 			triggerDownload(downloadUrl);
 			toast.success(m['exportButton.exportReady']());
-		} catch {
-			toast.error(m['exportButton.exportError']());
+		} catch (error) {
+			toast.error(describeError?.(error) ?? m['exportButton.exportError']());
 		} finally {
 			isExporting = false;
 		}

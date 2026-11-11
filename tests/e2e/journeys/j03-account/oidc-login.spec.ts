@@ -4,6 +4,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { ssoProvider } from '../../support/skip';
 import { loginAtKeycloak, createKeycloakUser } from '../../support/keycloak';
 import { createVerifiedUser, uniqueEmail } from '../../support/factories';
+import { uiLogin } from '../../support/session';
 import { waitForEmail, extractLink } from '../../support/mailpit';
 import { API_URL } from '../../support/api';
 
@@ -138,7 +139,14 @@ test.describe('J03 OIDC login @p1', () => {
 		await page.getByRole('button', { name: 'Reset password' }).click();
 		await expect(page.getByRole('heading', { name: 'Password reset successful' })).toBeVisible();
 
-		// …and now the identity is no longer the only way in.
+		// A password reset revokes every session of the account (revel-backend
+		// #1357) and the reset action drops this browser's dead cookies, so the
+		// success state's link leads to a real login: sign in with the new password…
+		await page.getByRole('link', { name: 'Sign in to your account' }).click();
+		await page.waitForURL(/\/login(\?|$)/);
+		await uiLogin(page, { email, password: NEW_PASSWORD });
+
+		// …the identity is no longer the only way in.
 		await gotoHydrated(page, '/account/security');
 		await waitForClientAuth(page);
 		await page.getByRole('button', { name: /^Unlink Keycloak/ }).click();

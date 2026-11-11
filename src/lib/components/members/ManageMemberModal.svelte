@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		OrganizationMemberSchema,
@@ -10,7 +11,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { Loader2, UserCog, UserX, AlertTriangle, Ban, CreditCard } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 
@@ -25,6 +27,13 @@
 		onMakeStaff: () => void;
 		onRemove: () => void;
 		onBlacklist?: (reason: string) => void;
+		/**
+		 * Close this dialog (through its unsaved-changes guard) and open the member's
+		 * subscription. Absent when the viewer cannot manage subscriptions.
+		 */
+		onManageSubscription?: () => void;
+		/** The backend's refusal of a tier change (409 `tier_follows_subscription`). */
+		tierLockDetail?: string | null;
 		isUpdating?: boolean;
 		isPromoting?: boolean;
 		isRemoving?: boolean;
@@ -42,6 +51,8 @@
 		onMakeStaff,
 		onRemove,
 		onBlacklist,
+		onManageSubscription,
+		tierLockDetail = null,
 		isUpdating = false,
 		isPromoting = false,
 		isRemoving = false,
@@ -56,16 +67,33 @@
 	let showBanConfirm = $state(false);
 	let blacklistReason = $state('');
 
-	// Sync form state with member prop
+	let showDiscardConfirm = $state(false);
+	// Set while the discard prompt was raised by "Manage subscription": a confirmed
+	// discard then carries on to the subscription instead of just closing.
+	let discardThenSubscription = $state(false);
+
+	// Re-initialise the form only when an editing session begins (closed -> open, or a
+	// different member). A refreshed object for the SAME member (window-focus refetch,
+	// a parallel mutation) must not wipe staged edits or close an open discard prompt.
+	let sessionKey: string | null = null;
 	$effect(() => {
-		if (member) {
+		const key = open && member ? (member.user.id ?? member.user.email ?? '') : null;
+		if (key === null) {
+			sessionKey = null;
+			return;
+		}
+		if (key === sessionKey) return;
+		sessionKey = key;
+		untrack(() => {
+			if (!member) return;
 			selectedStatus = member.status;
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
 			showBlacklistConfirm = false;
 			showBanConfirm = false;
+			showDiscardConfirm = false;
 			blacklistReason = '';
-		}
+		});
 	});
 
 	// Display name
@@ -78,9 +106,30 @@
 			: ''
 	);
 
+	// "Tier follows the plan": a live subscription owns the tier, so staff change
+	// the plan instead. A 409 from a race (the subscription appeared after this
+	// dialog loaded) locks it too.
+	const tierLocked = $derived(!!member?.tier_locked_by_subscription || !!tierLockDetail);
+	// "Manage subscription" is only advertised when there is a subscription to open:
+	// in the 409 race the member row may not carry its id yet (it is refetched), and
+	// a button that closes this dialog and then does nothing is worse than none.
+	const canManageSubscription = $derived(!!onManageSubscription && !!member?.subscription_id);
+	const tierLockReason = $derived(
+		tierLockDetail ??
+			(canManageSubscription
+				? m['manageMemberModal.tierLockedReason']()
+				: m['manageMemberModal.tierLockedReasonNoAction']())
+	);
+	// A locked tier is never staged, so it can never count as an unsaved change.
+	$effect(() => {
+		if (tierLocked && member) selectedTierId = member.tier?.id || null;
+	});
+
 	// Check if changes were made
 	const hasStatusChanged = $derived(member && selectedStatus !== member.status);
-	const hasTierChanged = $derived(member && selectedTierId !== (member.tier?.id || null));
+	const hasTierChanged = $derived(
+		member && !tierLocked && selectedTierId !== (member.tier?.id || null)
+	);
 	const hasChanges = $derived(hasStatusChanged || hasTierChanged);
 
 	// Statuses
@@ -200,10 +249,38 @@
 	const isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
 
 	// Handle dialog open/close changes
-	function handleOpenChange(isOpen: boolean) {
-		if (!isOpen) {
-			onClose();
+	// Close / Escape / overlay click / the corner X with unsaved tier or status edits
+	// asks first (in-app confirm, never window.confirm); a clean dialog closes at once.
+	// Every route funnels into requestClose through the Dialog's function binding below,
+	// which never writes the new value back, so a guarded close keeps the dialog open.
+	function requestClose(): void {
+		if (hasChanges && !isProcessing) {
+			showDiscardConfirm = true;
+			return;
 		}
+		onClose();
+	}
+
+	function handleDiscard(): void {
+		showDiscardConfirm = false;
+		if (member) {
+			selectedStatus = member.status;
+			selectedTierId = member.tier?.id || null;
+		}
+		onClose();
+		if (discardThenSubscription) onManageSubscription?.();
+		discardThenSubscription = false;
+	}
+
+	// Same guard as every other way out of the dialog, then on to the subscription.
+	function goToSubscription(): void {
+		if (hasChanges && !isProcessing) {
+			discardThenSubscription = true;
+			showDiscardConfirm = true;
+			return;
+		}
+		onClose();
+		onManageSubscription?.();
 	}
 </script>
 
@@ -235,7 +312,14 @@
 	{/if}
 {/snippet}
 
-<Dialog {open} onOpenChange={handleOpenChange}>
+<Dialog
+	bind:open={
+		() => open,
+		(next) => {
+			if (!next) requestClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		{#if member}
 			<DialogHeader>
@@ -336,9 +420,13 @@
 						onValueChange={(value) => {
 							selectedTierId = value === 'none' ? null : value;
 						}}
-						disabled={isProcessing}
+						disabled={isProcessing || tierLocked}
 					>
-						<SelectTrigger id="tier" aria-label={m['manageMemberModal.tierLabel']()}>
+						<SelectTrigger
+							id="tier"
+							aria-label={m['manageMemberModal.tierLabel']()}
+							aria-describedby={tierLocked ? 'member-tier-lock-reason' : undefined}
+						>
 							{selectedTierId
 								? tiers.find((t) => t.id === selectedTierId)?.name ||
 									m['manageMemberModal.noTier']()
@@ -353,6 +441,25 @@
 							{/each}
 						</SelectContent>
 					</Select>
+					{#if tierLocked}
+						<div class="space-y-2" data-testid="member-tier-lock">
+							<p id="member-tier-lock-reason" class="text-sm text-muted-foreground">
+								{tierLockReason}
+							</p>
+							{#if canManageSubscription}
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={goToSubscription}
+									disabled={isProcessing}
+									data-testid="member-tier-lock-manage-subscription"
+								>
+									<CreditCard class="mr-2 h-4 w-4" aria-hidden="true" />
+									{m['memberPeople.sheet.manageSubscription']()}
+								</Button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Save Changes Button / Ban Confirmation -->
@@ -558,10 +665,24 @@
 
 			<!-- Close Button -->
 			<div class="flex justify-end border-t border-border pt-4">
-				<Button variant="ghost" onclick={onClose} disabled={isProcessing}>
+				<Button variant="ghost" onclick={requestClose} disabled={isProcessing}>
 					{m['manageMemberModal.close']()}
 				</Button>
 			</div>
 		{/if}
 	</DialogContent>
 </Dialog>
+
+<ConfirmDialog
+	isOpen={showDiscardConfirm}
+	title={m['manageMemberModal.discardTitle']()}
+	message={m['manageMemberModal.discardMessage']()}
+	confirmText={m['manageMemberModal.discardConfirm']()}
+	cancelText={m['manageMemberModal.discardKeep']()}
+	variant="warning"
+	onConfirm={handleDiscard}
+	onCancel={() => {
+		showDiscardConfirm = false;
+		discardThenSubscription = false;
+	}}
+/>

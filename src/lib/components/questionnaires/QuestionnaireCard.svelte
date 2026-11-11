@@ -45,9 +45,12 @@
 		organizationSlug: string;
 		organizationId: string;
 		accessToken: string;
+		/** The list owner's single confirm dialog: resolves true to proceed with the deletion. */
+		confirmDelete: () => Promise<boolean>;
 	}
 
-	const { questionnaire, organizationSlug, organizationId, accessToken }: Props = $props();
+	const { questionnaire, organizationSlug, organizationId, accessToken, confirmDelete }: Props =
+		$props();
 
 	// Delete state
 	let isDeleting = $state(false);
@@ -175,12 +178,7 @@
 
 	// Handle delete
 	async function handleDelete() {
-		const confirmed = confirm(
-			m['questionnaireCard.confirmDelete']({ name: questionnaire.questionnaire.name })
-		);
-
-		if (!confirmed) return;
-
+		if (!(await confirmDelete())) return;
 		isDeleting = true;
 
 		try {

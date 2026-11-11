@@ -360,7 +360,9 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await gotoHydrated(page, membershipPath(org.slug));
 		await waitForClientAuth(page);
 		await expect(
-			planCard(page, plan.name).getByText('Your application is with the organization for review.', {
+			// #1160: the verdict is stated once, on the tier's requirement line, not
+			// repeated under every plan.
+			card.getByText('Your application is with the organization for review.', {
 				exact: false
 			})
 		).toBeVisible({ timeout: 15_000 });

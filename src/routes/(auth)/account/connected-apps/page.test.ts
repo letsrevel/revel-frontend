@@ -184,6 +184,8 @@ describe('Connected apps page', () => {
 			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })
 		);
 		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		// bits-ui releases its body pointer-events lock on a deferred tick.
+		await waitFor(() => expect(document.body.style.pointerEvents).not.toBe('none'));
 		await userEvent.click(screen.getByRole('button', { name: 'Remove Beta' }));
 		expect(await screen.findByRole('dialog')).toHaveTextContent('Disconnect Beta?');
 
@@ -225,6 +227,8 @@ describe('Connected apps page', () => {
 			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })
 		);
 		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		// bits-ui releases its body pointer-events lock on a deferred tick.
+		await waitFor(() => expect(document.body.style.pointerEvents).not.toBe('none'));
 		await userEvent.click(removeB);
 		await userEvent.click(
 			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' })

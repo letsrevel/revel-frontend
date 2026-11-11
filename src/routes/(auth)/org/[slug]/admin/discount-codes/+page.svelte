@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -143,11 +145,13 @@
 		return (code.times_used ?? 0) === 0;
 	}
 
-	function handleDelete(code: DiscountCodeSchema) {
+	const confirmation = createConfirm();
+
+	async function handleDelete(code: DiscountCodeSchema) {
 		const message = willHardDelete(code)
 			? m['discountCodesAdmin.delete.confirmHardDelete']({ code: code.code })
 			: m['discountCodesAdmin.delete.confirmDeactivate']({ code: code.code });
-		if (confirm(message)) {
+		if (await confirmation.ask({ message, destructive: true })) {
 			if (code.id) deleteMutation.mutate(code.id);
 		}
 	}
@@ -595,3 +599,5 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmDialog {...confirmation.dialogProps} />

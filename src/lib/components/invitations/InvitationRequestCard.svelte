@@ -16,9 +16,11 @@
 
 	interface Props {
 		request: EventInvitationRequestSchema;
+		/** The list owner's single confirm dialog: resolves true to proceed with the cancellation. */
+		confirmCancel: () => Promise<boolean>;
 	}
 
-	const { request }: Props = $props();
+	const { request, confirmCancel }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const accessToken = $derived(authStore.accessToken);
@@ -90,10 +92,8 @@
 		}
 	}));
 
-	function handleCancel() {
-		if (confirm(m['invitationRequestCard.cancelConfirm']())) {
-			cancelMutation.mutate();
-		}
+	async function handleCancel() {
+		if (await confirmCancel()) cancelMutation.mutate();
 	}
 </script>
 

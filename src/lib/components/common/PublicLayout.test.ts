@@ -49,3 +49,37 @@ describe.each([
 		expect(screen.getByRole('link', { name: 'Privacy' })).toBeInTheDocument();
 	});
 });
+
+describe('AuthLayout skip-link target', () => {
+	function setRoute(id: string | null) {
+		pageStore.current?.set({
+			url: new URL('http://localhost/'),
+			data: { features: {}, tenant: null },
+			route: { id }
+		});
+	}
+
+	it('owns #main-content on ordinary authenticated routes', () => {
+		setRoute('/(auth)/dashboard');
+		const { container } = render(AuthLayout);
+		expect(container.querySelector('main')).toHaveAttribute('id', 'main-content');
+	});
+
+	it('hands #main-content to the admin content column on admin routes', () => {
+		setRoute('/(auth)/org/[slug]/admin/events');
+		const { container } = render(AuthLayout);
+		expect(container.querySelector('main')).not.toHaveAttribute('id');
+	});
+});
+
+describe('layouts do not render their own skip link', () => {
+	// The single skip link lives in the root layout (SkipLink), ahead of the banners.
+	it.each([
+		['PublicLayout', PublicLayout],
+		['AuthLayout', AuthLayout]
+	])('%s with tenant chrome has no skip link', (_name, Layout) => {
+		setTenant(makeTenant());
+		render(Layout);
+		expect(screen.queryByRole('link', { name: /skip to main content/i })).toBeNull();
+	});
+});

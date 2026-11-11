@@ -3,22 +3,16 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
-import MembersTab from './MembersTab.svelte';
-import type {
-	MembershipTierSchema,
-	OrganizationAdminDetailSchema,
-	OrganizationMemberSchema
-} from '$lib/api/generated/types.gen';
+import MemberAccessActions from './MemberAccessActions.svelte';
+import type { MembershipTierSchema, OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadminmembersListMembers: vi.fn(),
 	organizationadminmembersRemoveMember: vi.fn(),
 	organizationadminmembersUpdateMember: vi.fn(),
 	organizationadminmembersAddStaff: vi.fn(),
 	organizationadminblacklistCreateBlacklistEntry: vi.fn()
 }));
 import {
-	organizationadminmembersListMembers,
 	organizationadminmembersRemoveMember,
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api/generated/sdk.gen';
@@ -27,11 +21,6 @@ vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } })
 import { toast } from 'svelte-sonner';
 
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'test-token' } }));
-
-const organization = {
-	id: 'org-1',
-	slug: 'test-org'
-} as unknown as OrganizationAdminDetailSchema;
 
 const member = {
 	status: 'active',
@@ -109,31 +98,47 @@ const RESTORE_NOTICE =
 /** The prefix that also covers the metrics query (`[..., 'subscriptions', 'metrics']`). */
 const SUBSCRIPTIONS_KEY = ['organization', 'test-org', 'subscriptions'];
 
-function renderTab() {
+let currentMember: OrganizationMemberSchema = member;
+const onClose = vi.fn();
+
+/** The modal is opened by the caller (the person sheet), so it is open on mount. */
+function renderTab(open = true) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
-	render(QueryClientTestWrapper, {
+	const baseProps = {
+		slug: 'test-org',
+		accessToken: 'test-token',
+		tiers: [] as MembershipTierSchema[],
+		isStaff: false,
+		onClose
+	};
+	const result = render(QueryClientTestWrapper, {
 		props: {
 			client,
-			component: MembersTab,
-			componentProps: {
-				organization,
-				isOwner: true,
-				permissions: null,
-				tiers: [] as MembershipTierSchema[],
-				staffUserIds: new Set<string>()
-			}
+			component: MemberAccessActions,
+			componentProps: { ...baseProps, member: currentMember, open }
 		}
 	});
+	// Re-render with new props (a refetched member object, or a toggled `open`).
+	const rerenderWith = async (next: { member?: OrganizationMemberSchema; open?: boolean }) =>
+		result.rerender({
+			client,
+			component: MemberAccessActions,
+			componentProps: {
+				...baseProps,
+				member: next.member ?? currentMember,
+				open: next.open ?? open
+			}
+		});
 	// Handed back so cache-invalidation assertions can spy on the very client the
 	// component under test is wired to.
-	return { client };
+	return { client, rerenderWith };
 }
 
-/** Opens the manage modal for the seeded member. */
-async function openManageModal(user: ReturnType<typeof userEvent.setup>) {
-	await user.click(await screen.findByRole('button', { name: 'Manage Ada' }));
+/** The manage modal is already open; wait for it. */
+async function openManageModal(_user: ReturnType<typeof userEvent.setup>) {
+	await screen.findByLabelText('Membership Status');
 }
 
 /**
@@ -173,12 +178,9 @@ async function pickStatus(user: ReturnType<typeof userEvent.setup>, option: stri
 	await user.click(await screen.findByRole('option', { name: option }));
 }
 
-/** Re-arms the members-list query with a specific set of rows. */
-function seedMembers(...rows: OrganizationMemberSchema[]) {
-	vi.mocked(organizationadminmembersListMembers).mockResolvedValue({
-		data: { results: rows, count: rows.length },
-		error: undefined
-	} as never);
+/** Sets the member the modal is opened on. */
+function seedMembers(row: OrganizationMemberSchema) {
+	currentMember = row;
 }
 
 beforeAll(() => {
@@ -207,7 +209,7 @@ beforeEach(() => {
 	seedMembers(member);
 });
 
-describe('MembersTab membership-loss invalidation', () => {
+describe('MemberAccessActions membership-loss invalidation', () => {
 	// Backend `d4570cf3`: losing membership cancels the member's non-terminal
 	// subscription and stops Stripe billing. Without these invalidations the
 	// Subscriptions tab and the revenue/MRR metrics keep showing the member as an
@@ -231,6 +233,36 @@ describe('MembersTab membership-loss invalidation', () => {
 		});
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: ['organization', 'test-org', 'members']
+		});
+		// The register entry ends with the access row: the People list refetches too.
+		expect(invalidateSpy).toHaveBeenCalledWith({
+			queryKey: ['organization', 'test-org', 'member-register']
+		});
+		expect(onClose).toHaveBeenCalled();
+	});
+
+	it('refreshes the possible-duplicates scan after removing a member', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembersRemoveMember).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+
+		const { client } = renderTab();
+		const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
+
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Remove from Organization' }));
+		await user.click(await screen.findByRole('button', { name: 'Yes, Remove' }));
+
+		// The scan pairs open account-less entries against linked ones, so a removal
+		// can change it. invalidateDuplicates passes refetchType too, hence objectContaining.
+		await waitFor(() => {
+			expect(invalidateSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					queryKey: ['organization', 'test-org', 'register-possible-duplicates']
+				})
+			);
 		});
 	});
 
@@ -257,7 +289,7 @@ describe('MembersTab membership-loss invalidation', () => {
 	});
 });
 
-describe('MembersTab membership-loss billing disclosure', () => {
+describe('MemberAccessActions membership-loss billing disclosure', () => {
 	// Backend `d4570cf3`: remove / ban / blacklist terminalize the member's
 	// non-terminal subscription and stop Stripe billing, with no automatic
 	// refund. The confirmation panels have to say so — an organizer must not
@@ -338,7 +370,7 @@ describe('MembersTab membership-loss billing disclosure', () => {
 	});
 });
 
-describe('MembersTab status-change billing disclosure', () => {
+describe('MemberAccessActions status-change billing disclosure', () => {
 	// Backend `d3773257` (`_mirror_status_to_subscriptions`): staff setting a member
 	// to CANCELLED now terminalizes their subscription and stops Stripe billing, and
 	// PAUSED pauses collection. ACTIVE is deliberately *not* mirrored back. Until
@@ -444,7 +476,7 @@ describe('MembersTab status-change billing disclosure', () => {
 	});
 });
 
-describe('MembersTab failure surfacing', () => {
+describe('MemberAccessActions failure surfacing', () => {
 	it('toasts the backend refusal instead of blocking the page with a native alert', async () => {
 		const user = userEvent.setup();
 		const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
@@ -466,5 +498,172 @@ describe('MembersTab failure surfacing', () => {
 			);
 		});
 		expect(alertSpy).not.toHaveBeenCalled();
+	});
+});
+
+/** The footer "Close" text button (the corner X also has the accessible name "Close"). */
+function footerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') === null);
+	if (!button) throw new Error('footer Close button not found');
+	return button;
+}
+
+/** The corner X (an icon button with the same accessible name). */
+function cornerClose(): HTMLElement {
+	const button = screen
+		.getAllByRole('button', { name: 'Close' })
+		.find((b) => b.querySelector('svg') !== null);
+	if (!button) throw new Error('corner X button not found');
+	return button;
+}
+
+describe('MemberAccessActions unsaved-changes guard', () => {
+	const DISCARD_TITLE = 'Discard unsaved changes?';
+
+	async function stageStatusChange(user: ReturnType<typeof userEvent.setup>) {
+		renderTab();
+		await openManageModal(user);
+		await pickStatus(user, 'Paused');
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
+	/** Keep editing: the confirm goes away, the dialog stays with the staged value. */
+	async function keepEditing(user: ReturnType<typeof userEvent.setup>) {
+		expect(await screen.findByText(DISCARD_TITLE)).toBeInTheDocument();
+		expect(onClose).not.toHaveBeenCalled();
+		await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+		await waitFor(() => expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument());
+		expect(onClose).not.toHaveBeenCalled();
+		expect(screen.getByLabelText('Membership Status')).toBeVisible();
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+	}
+
+	it('closes immediately when nothing changed', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+
+		await user.click(footerClose());
+
+		expect(onClose).toHaveBeenCalledTimes(1);
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
+	});
+
+	it('closes immediately on Escape when nothing changed', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await openManageModal(user);
+
+		await user.keyboard('{Escape}');
+
+		await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+		expect(screen.queryByText(DISCARD_TITLE)).not.toBeInTheDocument();
+	});
+
+	it('footer Close: Keep editing keeps the staged value, Discard resets it and closes', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.click(footerClose());
+		await keepEditing(user);
+
+		await user.click(footerClose());
+		await user.click(await screen.findByRole('button', { name: 'Discard' }));
+		expect(onClose).toHaveBeenCalledTimes(1);
+		// The staged edit is gone, so reopening cannot show it.
+		expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Active');
+		expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+	});
+
+	it('Escape with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.keyboard('{Escape}');
+
+		await keepEditing(user);
+	});
+
+	it('the corner X with a staged change asks first and the dialog survives Keep editing', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+
+		await user.click(cornerClose());
+
+		await keepEditing(user);
+	});
+
+	it('an overlay click with a staged change asks first and the dialog survives', async () => {
+		const user = userEvent.setup();
+		await stageStatusChange(user);
+		const overlay = document.querySelector('[data-dialog-overlay]');
+		if (!(overlay instanceof HTMLElement)) throw new Error('overlay not found');
+
+		// bits-ui's outside-interaction detection wants the full pointer sequence.
+		// jsdom has no PointerEvent, so build mouse-flavoured ones with the pointer type bits reads.
+		for (const type of ['pointerdown', 'pointerup', 'click']) {
+			// jsdom lays nothing out (content rect is all zeros); negative coordinates
+			// are what makes bits-ui treat the click as truly outside the content.
+			const event = new MouseEvent(type, {
+				bubbles: true,
+				cancelable: true,
+				button: 0,
+				clientX: -1,
+				clientY: -1
+			});
+			Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+			overlay.dispatchEvent(event);
+		}
+
+		await keepEditing(user);
+	});
+
+	describe('when the member prop refreshes', () => {
+		const refreshed = {
+			...member,
+			user: { ...member.user, preferred_name: 'Ada Byron' }
+		} as unknown as OrganizationMemberSchema;
+
+		it('keeps a staged edit for the same member', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ member: refreshed });
+
+			expect(await screen.findByText('Manage Ada Byron')).toBeInTheDocument();
+			expect(screen.getByLabelText('Membership Status')).toHaveTextContent('Paused');
+			expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+		});
+
+		it('keeps an open discard prompt', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+			await user.click(footerClose());
+			expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+
+			await rerenderWith({ member: refreshed });
+
+			expect(screen.getByText('Discard unsaved changes?')).toBeInTheDocument();
+		});
+
+		it('shows the saved values again after close and reopen', async () => {
+			const user = userEvent.setup();
+			const { rerenderWith } = renderTab();
+			await openManageModal(user);
+			await pickStatus(user, 'Paused');
+
+			await rerenderWith({ open: false });
+			await waitFor(() => expect(screen.queryByLabelText('Membership Status')).toBeNull());
+			await rerenderWith({ open: true });
+
+			expect(await screen.findByLabelText('Membership Status')).toHaveTextContent('Active');
+			expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+		});
 	});
 });

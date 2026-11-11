@@ -8,6 +8,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
+	import EditableStatusSelect from './EditableStatusSelect.svelte';
+	import type { EditableStatus } from './paymentEdit';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -22,7 +24,7 @@
 
 	let amount = $state('0.00');
 	let currency = $state<string>('EUR');
-	let status = $state<'succeeded' | 'pending' | 'failed'>('succeeded');
+	let status = $state<EditableStatus>('succeeded');
 	let notes = $state('');
 	let occurredAt = $state('');
 
@@ -92,21 +94,7 @@
 
 			<div class="space-y-1">
 				<Label for="rp-status">{m['orgAdmin.members.subscriptions.recordPayment.status']()}</Label>
-				<select
-					id="rp-status"
-					bind:value={status}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<option value="succeeded">
-						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.succeeded']()}
-					</option>
-					<option value="pending">
-						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.pending']()}
-					</option>
-					<option value="failed">
-						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.failed']()}
-					</option>
-				</select>
+				<EditableStatusSelect id="rp-status" bind:value={status} />
 			</div>
 
 			<div class="space-y-1">

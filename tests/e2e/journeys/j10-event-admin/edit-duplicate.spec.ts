@@ -53,6 +53,6 @@ test.describe('J10 edit & duplicate @p2', () => {
 			timeout: 15_000
 		});
 		await expect(page.getByText('Draft', { exact: true })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Publish Event' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Publish Event', exact: true })).toBeVisible();
 	});
 });
