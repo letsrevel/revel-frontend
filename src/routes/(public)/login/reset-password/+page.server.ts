@@ -3,48 +3,11 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import { getApiFailure, isInvalidTokenDetail } from '$lib/server/api-result';
+import { backendMessage } from '$lib/utils/api-error-detail';
+import { extractFieldErrors } from '$lib/utils/errors';
 import { clearAuthCookies } from '$lib/server/auth-cookies';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
-
-/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
-function getResponseStatus(error: unknown): unknown {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'response' in error &&
-		typeof error.response === 'object' &&
-		error.response !== null &&
-		'status' in error.response
-	) {
-		return error.response.status;
-	}
-	return undefined;
-}
-
-/** Read the field-errors object from an error shaped like `{ response: { data: { errors } } }`. */
-function getResponseErrors(error: unknown): object {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'response' in error &&
-		typeof error.response === 'object' &&
-		error.response !== null &&
-		'data' in error.response &&
-		typeof error.response.data === 'object' &&
-		error.response.data !== null &&
-		'errors' in error.response.data &&
-		typeof error.response.data.errors === 'object' &&
-		error.response.data.errors !== null
-	) {
-		return error.response.data.errors;
-	}
-	return {};
-}
-
-/** First element of a string array, if the value is one. */
-function firstString(value: unknown): string | undefined {
-	return Array.isArray(value) && typeof value[0] === 'string' ? value[0] : undefined;
-}
 
 export const actions: Actions = {
 	resetPassword: async ({ request, fetch, cookies }) => {
@@ -75,13 +38,72 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to reset password
-			await accountResetPassword({
+			const response = await accountResetPassword({
 				body: {
 					password1: result.data.password,
 					password2: result.data.confirmPassword,
 					token: result.data.token
-				}
+				},
+				// event.fetch so handleFetch forwards the tenant Origin (#1070)
+				fetch
 			});
+
+			// throwOnError is false: a 4xx/5xx is RETURNED, not thrown. Only a 2xx
+			// may clear the session — otherwise nothing was reset.
+			const failure = getApiFailure(response);
+			if (failure) {
+				log.error('password_reset_error', { status: failure.status, error: failure.body });
+
+				// No response at all: never show the transport error text.
+				if (failure.network) {
+					return fail(500, {
+						errors: { form: m['serverErrors.public.unexpectedErrorRetryLater']() }
+					});
+				}
+
+				if (failure.status === 400) {
+					// Password rejected by the backend's validators: `{ errors: { __all__: [...] } }`
+					// (already localized via Accept-Language).
+					const messages = extractFieldErrors(failure.body).flatMap((e) => e.messages);
+					if (messages.length > 0) {
+						return fail(400, { errors: { password: messages.join(' ') } });
+					}
+
+					// `{ detail }`: an expired token (clean message) or "Invalid token:
+					// <exception text>", which is never shown.
+					const detail = backendMessage(failure.body);
+					if (isInvalidTokenDetail(detail)) {
+						return fail(400, {
+							errors: { form: m['serverErrors.public.resetTokenInvalid']() }
+						});
+					}
+					return fail(400, {
+						errors: { form: detail ?? m['serverErrors.public.resetPasswordUnavailable']() }
+					});
+				}
+
+				// Already-used (blacklisted, 401) or unknown-user (404) token.
+				if (failure.status === 401 || failure.status === 404) {
+					return fail(400, {
+						errors: { form: m['serverErrors.public.resetTokenInvalid']() }
+					});
+				}
+
+				// 403: the account is banned; the backend burned the token and says why.
+				if (failure.status === 403) {
+					return fail(403, {
+						errors: {
+							form:
+								backendMessage(failure.body) ?? m['serverErrors.public.resetPasswordUnavailable']()
+						}
+					});
+				}
+
+				// Generic error
+				return fail(500, {
+					errors: { form: m['serverErrors.public.unexpectedErrorRetryLater']() }
+				});
+			}
 
 			// The backend revoked every session of the account: drop this browser's
 			// now-dead cookies so it is signed out and the success state's sign-in
@@ -95,36 +117,8 @@ export const actions: Actions = {
 				returnTo: await resolveReturnTarget(formData.get('return_host')?.toString(), fetch)
 			};
 		} catch (error) {
+			// Unexpected throw (not a request failure, which is returned above).
 			log.error('password_reset_error', { error });
-
-			// Check for specific error types
-			if (getResponseStatus(error) === 400) {
-				const apiErrors = getResponseErrors(error);
-				const password1 = 'password1' in apiErrors ? apiErrors.password1 : undefined;
-				const password2 = 'password2' in apiErrors ? apiErrors.password2 : undefined;
-
-				// Map backend errors to form errors
-				const errors: Record<string, string> = {};
-
-				if ('token' in apiErrors && apiErrors.token) {
-					errors.form = m['serverErrors.public.resetTokenInvalid']();
-				} else if (password1 || password2) {
-					errors.password =
-						firstString(password1) ||
-						firstString(password2) ||
-						m['serverErrors.public.passwordRequirementsNotMet']();
-				} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
-					errors.form =
-						firstString(apiErrors.non_field_errors) ||
-						m['serverErrors.public.passwordResetFailed']();
-				} else {
-					errors.form = m['serverErrors.public.resetPasswordUnavailable']();
-				}
-
-				return fail(400, { errors });
-			}
-
-			// Generic error
 			return fail(500, {
 				errors: {
 					form: m['serverErrors.public.unexpectedErrorRetryLater']()
