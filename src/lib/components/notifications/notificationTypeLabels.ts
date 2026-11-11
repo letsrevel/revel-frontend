@@ -239,6 +239,7 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 	}
 };
 
+/** Copy entry for a known notification type, or `undefined` for one this build doesn't know. */
 function getCopy(type: string): NotificationTypeCopy | undefined {
 	// hasOwn, not `in`: the API may send a type this build doesn't know yet, and
 	// `in` would also match prototype keys like `toString`.
@@ -260,6 +261,10 @@ export function getNotificationTypeLabel(type: string, locale?: Locale): string 
 	return getCopy(type)?.label(locale) ?? type.replace(/_/g, ' ');
 }
 
+/**
+ * Localized one-line description of a notification type, shown under its label in
+ * the notification settings. `undefined` when the type has none (or is unknown).
+ */
 export function getNotificationTypeDescription(type: string, locale?: Locale): string | undefined {
 	return getCopy(type)?.description?.(locale);
 }
