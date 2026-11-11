@@ -220,7 +220,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.events.documentTitle']({ orgName: organization.name })}</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['orgAdmin.events.pageTitle'](),
+			orgName: organization.name
+		})}</title
+	>
 	<meta
 		name="description"
 		content={m['orgAdmin.events.metaDescription']({ orgName: organization.name })}

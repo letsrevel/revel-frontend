@@ -95,13 +95,9 @@ export function getExpirationDisplay(expiresAt: string | null | undefined): stri
 	const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
 	if (days > 0) {
-		return days === 1
-			? m['tokenExpiry.dayOne']({ count: days })
-			: m['tokenExpiry.dayOther']({ count: days });
+		return m['tokenExpiry.days']({ count: days });
 	} else if (hours > 0) {
-		return hours === 1
-			? m['tokenExpiry.hourOne']({ count: hours })
-			: m['tokenExpiry.hourOther']({ count: hours });
+		return m['tokenExpiry.hours']({ count: hours });
 	} else {
 		return m['tokenExpiry.lessThanHour']();
 	}

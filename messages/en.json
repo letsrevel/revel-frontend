@@ -433,7 +433,8 @@
 	"adminLayout": {
 		"admin": "Admin",
 		"staff": "Staff",
-		"navigation": "Navigation"
+		"navigation": "Navigation",
+		"documentTitle": "{title} · {orgName} Admin | Revel"
 	},
 	"adminPage": {
 		"quickActions": "Quick Actions",
@@ -1159,10 +1160,10 @@
 			"showing": "Showing {count} of {total}",
 			"previousPage": "Previous page",
 			"nextPage": "Next page"
-		}
+		},
+		"pageTitleNoName": "Welcome back!"
 	},
 	"dashboard.createOrganizationButton": "Create Organization",
-	"dashboard.fallbackFirstName": "there",
 	"duration": {
 		"unit": {
 			"minutes": "Minutes",
@@ -1740,7 +1741,8 @@
 			"cancel": "Cancel the event and notify everyone who is attending.",
 			"delete": "Permanently delete this event. This cannot be undone.",
 			"more": "More actions"
-		}
+		},
+		"error_noEventSelected": "No event selected"
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Download calendar event for {eventName}",
@@ -2317,7 +2319,8 @@
 		"typeImage": "Image",
 		"typeVideo": "Video",
 		"typeAudio": "Audio",
-		"typeArchive": "Archive"
+		"typeArchive": "Archive",
+		"typeText": "Text"
 	},
 	"filters": {
 		"search": {
@@ -2403,7 +2406,9 @@
 		"preferencesUpdated": "Preferences updated",
 		"updateError": "Failed to update preferences",
 		"followError": "Failed to follow",
-		"unfollowError": "Failed to unfollow"
+		"unfollowError": "Failed to unfollow",
+		"unknownOrganization": "this organization",
+		"unknownSeries": "this series"
 	},
 	"footer": {
 		"aboutTitle": "Revel",
@@ -2429,7 +2434,8 @@
 		"solutionPrivacy": "Privacy-Focused Events",
 		"solutionCommunity": "Community-First Platform",
 		"solutionClubs": "Club Membership Management",
-		"solutionReferral": "Referral Program"
+		"solutionReferral": "Referral Program",
+		"loadingVersion": "Loading..."
 	},
 	"guest_attendance": {
 		"rsvp_title": "RSVP without an account",
@@ -3611,8 +3617,7 @@
 			"errors": {
 				"limit": "You've reached the limit of apps per account.",
 				"generic": "Something went wrong. Please check the form and try again."
-			},
-			"pageNotFound": "Not found"
+			}
 		}
 	},
 	"orgAdmin": {
@@ -4701,12 +4706,20 @@
 				"linkedInvoice": "Linked Invoice",
 				"grossAmount": "Amount"
 			}
-		}
+		},
+		"attendeeCreditNotes.count": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} credit note",
+					"countPlural=*": "{count} credit notes"
+				}
+			}
+		]
 	},
 	"orgAdmin.billing.loadFailed": "Failed to load billing info",
 	"orgAdmin.billing.attendeeCreditNotes.loadError": "Couldn't load attendee credit notes.",
-	"orgAdmin.billing.attendeeCreditNotes.resultCount.one": "{count} credit note",
-	"orgAdmin.billing.attendeeCreditNotes.resultCount.other": "{count} credit notes",
 	"orgAdmin.billing.attendeeInvoices.loadError": "Failed to load attendee invoices",
 	"orgAdmin.billing.attendeeInvoices.detailLoadError": "Failed to load invoice",
 	"orgAdmin.billing.attendeeInvoices.count": [
@@ -7515,7 +7528,8 @@
 				"partialFailure": "{done}/{total} cancelled; {remaining} left. Retry?",
 				"successToast": "{n} dates cancelled.",
 				"thresholdWarning": "This will cancel {n} dates and refund all associated tickets. The loop runs one date at a time and may take a minute for long lists.",
-				"errorToast": "Couldn't cancel some of the dates. Please try again."
+				"errorToast": "Couldn't cancel some of the dates. Please try again.",
+				"unknownError": "Unknown error"
 			}
 		},
 		"exdates": {
@@ -7654,7 +7668,6 @@
 			},
 			"cancelling": "Cancelling…",
 			"errorToast": "Couldn't cancel this date. Please try again.",
-			"notAuthenticated": "Not authenticated",
 			"noDateSelected": "No occurrence date selected"
 		},
 		"generateNow": {
@@ -8980,7 +8993,6 @@
 	"sectionEditor.freeText": "Free Text",
 	"sectionEditor.fileUpload": "File Upload",
 	"sectionEditor.noQuestionsYet": "No questions yet. Add questions using the buttons above.",
-	"sectionEditor.defaultName": "Section {number}",
 	"statusBreakdownBar.barAriaLabel": "Status breakdown: {approved} approved, {rejected} rejected, {pendingReview} pending review, {notEvaluated} not evaluated",
 	"statusBreakdownBar.noData": "No data",
 	"resourceAssignment.assignDescription": "Select events where this resource should be available",
@@ -9593,7 +9605,6 @@
 	"eventTicketsAdmin.blacklistDialogConfirm": "Blacklist",
 	"eventTicketsAdmin.blacklistDialogCancel": "Cancel",
 	"orgAdmin.waitlist.dismissAriaLabel": "Dismiss",
-	"orgAdmin.waitlist.documentTitle": "{title} - {orgName} Admin | Revel",
 	"orgAdmin.members.inviteMembers": "Invite members",
 	"orgAdmin.members.tabs.membersShort": "Members",
 	"orgAdmin.members.tabs.staffShort": "Staff",
@@ -9857,7 +9868,6 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Refund policy",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Describe your refund terms for paid memberships.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "e.g. Full refund within 14 days of your first payment.",
-	"orgSettingsPage.metaTitle": "Organization Settings - {name} Admin | Revel",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Manage ticket sales across your events",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Discount Codes",
@@ -10324,7 +10334,6 @@
 	"integrations.import.remoteStatus.live": "Live",
 	"integrations.import.remoteStatus.cancelled": "Cancelled",
 	"orgAdmin.events.actions.embed": "Embed on your site",
-	"orgAdmin.events.documentTitle": "Manage Events - {orgName} Admin | Revel",
 	"orgAdminEmbedPage.pageTitle": "Embed - {organizationName}",
 	"orgAdminEmbedPage.title": "Embed on your website",
 	"orgAdminEmbedPage.subtitle": "Show your events on your own site. Configure it, preview it, then copy the snippet.",
@@ -11462,11 +11471,27 @@
 	},
 	"tokenExpiry": {
 		"never": "Never",
-		"dayOne": "{count} day",
-		"dayOther": "{count} days",
-		"hourOne": "{count} hour",
-		"hourOther": "{count} hours",
-		"lessThanHour": "Less than 1 hour"
+		"lessThanHour": "Less than 1 hour",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} day",
+					"countPlural=*": "{count} days"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} hour",
+					"countPlural=*": "{count} hours"
+				}
+			}
+		]
 	},
 	"tokenDuration": {
 		"oneHour": "1 Hour",
@@ -11474,5 +11499,6 @@
 		"sevenDays": "7 Days",
 		"thirtyDays": "30 Days",
 		"minutes": "{minutes} minutes"
-	}
+	},
+	"dashboardTicketsPage.pagination.page": "Page {current} of {total}"
 }

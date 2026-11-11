@@ -102,18 +102,18 @@
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 	}
 
-	// Localised label for a MIME family (`image/*` -> "Image"); other families keep their raw name
-	function mediaFamilyLabel(family: string): string {
-		switch (family) {
-			case 'image':
-				return m['fileUploader.typeImage']();
-			case 'video':
-				return m['fileUploader.typeVideo']();
-			case 'audio':
-				return m['fileUploader.typeAudio']();
-			default:
-				return family.charAt(0).toUpperCase() + family.slice(1);
-		}
+	// Localised label for a MIME type or family prefix (`image/png`, `image/` -> "Image")
+	function getFileTypeLabel(mimeType: string): string {
+		if (mimeType.startsWith('image/')) return m['fileUploader.typeImage']();
+		if (mimeType.startsWith('video/')) return m['fileUploader.typeVideo']();
+		if (mimeType.startsWith('audio/')) return m['fileUploader.typeAudio']();
+		if (mimeType.startsWith('text/')) return m['fileUploader.typeText']();
+		if (mimeType === 'application/pdf') return 'PDF';
+		if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Excel';
+		if (mimeType.includes('word') || mimeType.includes('document')) return 'Word';
+		if (mimeType.includes('zip') || mimeType.includes('archive'))
+			return m['fileUploader.typeArchive']();
+		return m['resourceCard.typeFile']();
 	}
 
 	// Format accepted MIME types for display
@@ -124,7 +124,7 @@
 			.map((type) => {
 				const trimmed = type.trim();
 				if (trimmed.endsWith('/*')) {
-					return mediaFamilyLabel(trimmed.split('/')[0]);
+					return getFileTypeLabel(`${trimmed.split('/')[0]}/`);
 				}
 				const ext = trimmed.split('/')[1];
 				return ext ? ext.toUpperCase() : trimmed;
@@ -309,19 +309,6 @@
 	// Check if file is an image
 	function isImage(mimeType: string): boolean {
 		return mimeType.startsWith('image/');
-	}
-
-	// Get file icon based on MIME type
-	function getFileTypeLabel(mimeType: string): string {
-		if (mimeType.startsWith('image/')) return m['fileUploader.typeImage']();
-		if (mimeType.startsWith('video/')) return m['fileUploader.typeVideo']();
-		if (mimeType.startsWith('audio/')) return m['fileUploader.typeAudio']();
-		if (mimeType === 'application/pdf') return 'PDF';
-		if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Excel';
-		if (mimeType.includes('word') || mimeType.includes('document')) return 'Word';
-		if (mimeType.includes('zip') || mimeType.includes('archive'))
-			return m['fileUploader.typeArchive']();
-		return m['resourceCard.typeFile']();
 	}
 </script>
 

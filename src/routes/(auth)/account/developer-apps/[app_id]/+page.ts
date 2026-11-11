@@ -8,5 +8,5 @@ export const ssr = false;
 export const load: PageLoad = async ({ parent }) => {
 	const { features } = await parent();
 	// Fail-closed flag: every /api/oauth/* route 404s without a signing key.
-	if (!features.oauth_provider) error(404, m['oauth.developer.pageNotFound']());
+	if (!features.oauth_provider) error(404, m['errorPage.notFound']());
 };

@@ -122,7 +122,9 @@
 				} catch (err) {
 					rowStatuses[occurrence.id] = 'error';
 					errorBanner =
-						err instanceof Error ? err.message : m['notificationPreferences.unknownError']();
+						err instanceof Error
+							? err.message
+							: m['recurringEvents.drift.bulkDialog.unknownError']();
 					// Stop on first failure — deterministic partial-failure per
 					// plan §Phase 3 §6. The user can retry; successful cancels
 					// stay `done` so we don't double-refund.
@@ -146,7 +148,7 @@
 			if (typeof first === 'string') return first;
 			if (Array.isArray(first) && typeof first[0] === 'string') return first[0];
 		}
-		return m['notificationPreferences.unknownError']();
+		return m['recurringEvents.drift.bulkDialog.unknownError']();
 	}
 
 	function handleConfirm(): void {

@@ -49,7 +49,7 @@ export function updateTopLevelQuestion(
 export function addSection(sections: QuestionnaireSection[]): QuestionnaireSection[] {
 	const newSection: QuestionnaireSection = {
 		id: crypto.randomUUID(),
-		name: m['sectionEditor.defaultName']({ number: sections.length + 1 }),
+		name: m['questionEditor.defaultSectionName']({ number: sections.length + 1 }),
 		description: '',
 		order: sections.length,
 		questions: []

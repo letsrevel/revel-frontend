@@ -296,7 +296,8 @@
 	"adminLayout": {
 		"admin": "Admin",
 		"staff": "Personnel",
-		"navigation": "Navigation"
+		"navigation": "Navigation",
+		"documentTitle": "{title} · {orgName} Administration | Revel"
 	},
 	"adminPage": {
 		"quickActions": "Actions rapides",
@@ -1022,10 +1023,10 @@
 			"showing": "Affichage de {count} sur {total}",
 			"previousPage": "Page précédente",
 			"nextPage": "Page suivante"
-		}
+		},
+		"pageTitleNoName": "Te revoilà !"
 	},
 	"dashboard.createOrganizationButton": "Créer une organisation",
-	"dashboard.fallbackFirstName": "invité",
 	"duration": {
 		"unit": {
 			"minutes": "Minutes",
@@ -1603,7 +1604,8 @@
 			"cancel": "Annule l'événement et avertis toutes les personnes qui participent.",
 			"delete": "Supprime définitivement cet événement. Cette action est irréversible.",
 			"more": "Plus d'actions"
-		}
+		},
+		"error_noEventSelected": "Aucun événement sélectionné"
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Télécharger l'événement du calendrier pour {eventName}",
@@ -2180,7 +2182,8 @@
 		"typeImage": "Image",
 		"typeVideo": "Vidéo",
 		"typeAudio": "Audio",
-		"typeArchive": "Archive"
+		"typeArchive": "Archive",
+		"typeText": "Texte"
 	},
 	"filters": {
 		"search": {
@@ -2266,7 +2269,9 @@
 		"preferencesUpdated": "Préférences mises à jour",
 		"updateError": "Impossible de mettre à jour les préférences",
 		"followError": "Impossible de suivre",
-		"unfollowError": "Impossible de ne plus suivre"
+		"unfollowError": "Impossible de ne plus suivre",
+		"unknownOrganization": "cette organisation",
+		"unknownSeries": "cette série"
 	},
 	"footer": {
 		"aboutTitle": "Revel",
@@ -2292,7 +2297,8 @@
 		"solutionPrivacy": "Événements axés sur la confidentialité",
 		"solutionCommunity": "Plateforme axée sur la communauté",
 		"solutionClubs": "Gestion des adhésions pour clubs",
-		"solutionReferral": "Programme de parrainage"
+		"solutionReferral": "Programme de parrainage",
+		"loadingVersion": "Chargement..."
 	},
 	"guest_attendance": {
 		"rsvp_title": "S'inscrire sans compte",
@@ -3581,8 +3587,7 @@
 			"errors": {
 				"limit": "Tu as atteint la limite d'applis par compte.",
 				"generic": "Un problème est survenu. Vérifie le formulaire et réessaie."
-			},
-			"pageNotFound": "Introuvable"
+			}
 		}
 	},
 	"orgAdmin": {
@@ -4671,12 +4676,20 @@
 				"linkedInvoice": "Facture liée",
 				"grossAmount": "Montant"
 			}
-		}
+		},
+		"attendeeCreditNotes.count": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} avoir",
+					"countPlural=*": "{count} avoirs"
+				}
+			}
+		]
 	},
 	"orgAdmin.billing.loadFailed": "Échec du chargement des informations de facturation",
 	"orgAdmin.billing.attendeeCreditNotes.loadError": "Impossible de charger les avoirs des participant·es.",
-	"orgAdmin.billing.attendeeCreditNotes.resultCount.one": "{count} avoir",
-	"orgAdmin.billing.attendeeCreditNotes.resultCount.other": "{count} avoirs",
 	"orgAdmin.billing.attendeeInvoices.loadError": "Échec du chargement des factures des participant·es",
 	"orgAdmin.billing.attendeeInvoices.detailLoadError": "Échec du chargement de la facture",
 	"orgAdmin.billing.attendeeInvoices.count": [
@@ -7485,7 +7498,8 @@
 				"partialFailure": "{done}/{total} annulées ; {remaining} restantes. Réessayer ?",
 				"successToast": "{n} dates annulées.",
 				"thresholdWarning": "Cela annulera {n} dates et remboursera tous les billets associés. Le traitement s'effectue une date à la fois et peut prendre une minute pour les longues listes.",
-				"errorToast": "Impossible d'annuler certaines dates. Veuillez réessayer."
+				"errorToast": "Impossible d'annuler certaines dates. Veuillez réessayer.",
+				"unknownError": "Erreur inconnue"
 			}
 		},
 		"exdates": {
@@ -7624,7 +7638,6 @@
 			},
 			"cancelling": "Annulation…",
 			"errorToast": "Impossible d'annuler cette date. Veuillez réessayer.",
-			"notAuthenticated": "Non authentifié",
 			"noDateSelected": "Aucune date sélectionnée"
 		},
 		"generateNow": {
@@ -8950,7 +8963,6 @@
 	"sectionEditor.freeText": "Texte libre",
 	"sectionEditor.fileUpload": "Téléversement de fichier",
 	"sectionEditor.noQuestionsYet": "Pas encore de questions. Ajoute des questions avec les boutons ci-dessus.",
-	"sectionEditor.defaultName": "Section {number}",
 	"statusBreakdownBar.barAriaLabel": "Répartition des statuts : {approved} approuvées, {rejected} rejetées, {pendingReview} en attente de révision, {notEvaluated} non évaluées",
 	"statusBreakdownBar.noData": "Aucune donnée",
 	"resourceAssignment.assignDescription": "Sélectionne les événements où cette ressource doit être disponible",
@@ -9563,7 +9575,6 @@
 	"eventTicketsAdmin.blacklistDialogConfirm": "Liste noire",
 	"eventTicketsAdmin.blacklistDialogCancel": "Annuler",
 	"orgAdmin.waitlist.dismissAriaLabel": "Fermer",
-	"orgAdmin.waitlist.documentTitle": "{title} - {orgName} Administration | Revel",
 	"orgAdmin.members.inviteMembers": "Inviter des membres",
 	"orgAdmin.members.tabs.membersShort": "Membres",
 	"orgAdmin.members.tabs.staffShort": "Équipe",
@@ -9857,7 +9868,6 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Décrivez vos conditions de remboursement pour les adhésions payantes.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex. Remboursement intégral dans les 14 jours suivant le premier paiement.",
-	"orgSettingsPage.metaTitle": "Paramètres de l'organisation - {name} Admin | Revel",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Billets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gérer les ventes de billets de vos événements",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Codes de réduction",
@@ -10324,7 +10334,6 @@
 	"integrations.import.remoteStatus.live": "En ligne",
 	"integrations.import.remoteStatus.cancelled": "Annulé",
 	"orgAdmin.events.actions.embed": "Intégrer sur ton site",
-	"orgAdmin.events.documentTitle": "Gérer les événements - {orgName} Admin | Revel",
 	"orgAdminEmbedPage.pageTitle": "Intégration - {organizationName}",
 	"orgAdminEmbedPage.title": "Intégrer sur ton site",
 	"orgAdminEmbedPage.subtitle": "Affiche tes événements sur ton propre site. Configure, prévisualise, copie le code.",
@@ -11462,11 +11471,27 @@
 	},
 	"tokenExpiry": {
 		"never": "Jamais",
-		"dayOne": "{count} jour",
-		"dayOther": "{count} jours",
-		"hourOne": "{count} heure",
-		"hourOther": "{count} heures",
-		"lessThanHour": "Moins d'une heure"
+		"lessThanHour": "Moins d'une heure",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} jour",
+					"countPlural=*": "{count} jours"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} heure",
+					"countPlural=*": "{count} heures"
+				}
+			}
+		]
 	},
 	"tokenDuration": {
 		"oneHour": "1 heure",
@@ -11474,5 +11499,6 @@
 		"sevenDays": "7 jours",
 		"thirtyDays": "30 jours",
 		"minutes": "{minutes} minutes"
-	}
+	},
+	"dashboardTicketsPage.pagination.page": "Page {current} sur {total}"
 }

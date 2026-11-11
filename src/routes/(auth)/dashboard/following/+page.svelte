@@ -120,7 +120,7 @@
 			const org = organizations.find((o) => o.organization.slug === slug);
 			toast.success(
 				m['follow.unfollowSuccess']({
-					name: org?.organization.name || m['filters.organization.heading']()
+					name: org?.organization.name || m['follow.unknownOrganization']()
 				})
 			);
 		},
@@ -172,7 +172,7 @@
 			const series = eventSeries.find((s) => s.event_series.id === seriesId);
 			toast.success(
 				m['follow.unfollowSuccess']({
-					name: series?.event_series.name || m['eventSeriesCard.series']()
+					name: series?.event_series.name || m['follow.unknownSeries']()
 				})
 			);
 		},

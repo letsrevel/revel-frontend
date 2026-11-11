@@ -56,9 +56,7 @@
 	const features = $derived($page.data.features);
 
 	// Get user's first name or preferred name
-	const firstName = $derived(
-		user?.preferred_name || user?.first_name || m['dashboard.fallbackFirstName']()
-	);
+	const firstName = $derived(user?.preferred_name || user?.first_name || '');
 
 	// Your Events filter state (default to "All")
 	let yourEventsFilters = $state({ ...filterPresets[0].filters });
@@ -426,7 +424,9 @@
 	<section class="bg-secondary text-secondary-foreground">
 		<div class="container mx-auto px-4 pb-20 pt-8 md:pt-10">
 			<PageHeader
-				title={m['dashboard.pageTitle']({ firstName })}
+				title={firstName
+					? m['dashboard.pageTitle']({ firstName })
+					: m['dashboard.pageTitleNoName']()}
 				subtitle={m['dashboard.pageSubtitle']()}
 				kicker={m['userMenu.dashboard']()}
 				volume="poster"

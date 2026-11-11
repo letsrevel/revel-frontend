@@ -348,7 +348,7 @@
 
 <svelte:head>
 	<title>
-		{m['orgAdmin.waitlist.documentTitle']({
+		{m['adminLayout.documentTitle']({
 			title: m['orgAdmin.waitlist.pageTitle'](),
 			orgName: organization.name
 		})}

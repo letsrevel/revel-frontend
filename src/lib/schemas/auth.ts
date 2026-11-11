@@ -3,7 +3,10 @@ import * as m from '$lib/paraglide/messages.js';
 
 // Zod 4 evaluates `error` callbacks when an issue is raised (at parse time), so
 // the message follows the request's locale instead of freezing at import.
-const SPECIAL_CHARACTERS = '!@#$%^&*(),.?":{}|<>-';
+export const SPECIAL_CHARACTERS = '!@#$%^&*(),.?":{}|<>-';
+const SPECIAL_CHARACTER_PATTERN = new RegExp(
+	`[${SPECIAL_CHARACTERS.replace(/[\\\]^-]/g, '\\$&')}]`
+);
 
 /**
  * Password validation schema matching backend requirements:
@@ -19,7 +22,7 @@ const passwordSchema = z
 	.regex(/[A-Z]/, { error: () => m['authValidation.passwordUppercase']() })
 	.regex(/[a-z]/, { error: () => m['authValidation.passwordLowercase']() })
 	.regex(/\d/, { error: () => m['authValidation.passwordDigit']() })
-	.regex(/[!@#$%^&*(),.?":{}|<>-]/, {
+	.regex(SPECIAL_CHARACTER_PATTERN, {
 		error: () => m['authValidation.passwordSpecial']({ characters: SPECIAL_CHARACTERS })
 	});
 

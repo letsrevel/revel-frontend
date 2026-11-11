@@ -46,7 +46,7 @@
 	const publishMutation = createMutation(() => ({
 		mutationFn: async () => {
 			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
-			if (!event) throw new Error('No event selected');
+			if (!event) throw new Error(m['eventEditPage.error_noEventSelected']());
 			const response = await eventadmincoreUpdateEventStatus({
 				path: { event_id: event.id, status: 'open' },
 				headers: { Authorization: `Bearer ${accessToken}` }

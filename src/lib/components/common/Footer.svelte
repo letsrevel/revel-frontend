@@ -50,7 +50,7 @@
 	const hideSolutions = $derived(env.PUBLIC_HIDE_SOLUTIONS_FOOTER?.trim().toLowerCase() === 'true');
 
 	// Get backend version and demo mode from store
-	const backendVersion = $derived(appStore.backendVersion || m['footer.loadingNotes']());
+	const backendVersion = $derived(appStore.backendVersion || m['footer.loadingVersion']());
 	const isDemoMode = $derived(appStore.isDemoMode);
 
 	// Landing page URLs based on current locale
@@ -290,8 +290,7 @@
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span
-									>BE v{backendVersion}{#if isDemoMode}
-										{m['footer.demoMode']()}{/if}</span
+									>BE v{backendVersion}{#if isDemoMode}{` ${m['footer.demoMode']()}`}{/if}</span
 								>
 								<span class="sr-only">{m['footer.backendRepo']()}</span>
 								<Info
