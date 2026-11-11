@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as m from '$lib/paraglide/messages.js';
+import type { accountResetPassword as AccountResetPassword } from '$lib/api/generated';
+
+/** The SDK result contract; `error` is widened because a network failure carries a TypeError. */
+type SdkResult = Awaited<ReturnType<typeof AccountResetPassword>>;
+type MockResult = {
+	data: SdkResult['data'];
+	error: unknown;
+	response: SdkResult['response'] | undefined;
+};
 
 const accountResetPassword = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated', () => ({ accountResetPassword }));
@@ -13,7 +22,7 @@ import { actions } from './+page.server';
 const cookies = { delete: vi.fn(), get: vi.fn(), set: vi.fn() };
 const eventFetch = vi.fn();
 
-function run() {
+function run(): ReturnType<typeof actions.resetPassword> {
 	const body = new FormData();
 	body.set('token', 'tok-123');
 	body.set('password', 'Sup3r-secret-pass!');
@@ -26,12 +35,12 @@ function run() {
 }
 
 /** The generated client RESOLVES (does not throw) on a 4xx/5xx (throwOnError: false). */
-function resolvesWithError(status: number, error: unknown) {
+function resolvesWithError(status: number, error: unknown): void {
 	accountResetPassword.mockResolvedValue({
 		data: undefined,
 		error,
 		response: new Response(null, { status })
-	});
+	} satisfies MockResult);
 }
 
 beforeEach(() => {

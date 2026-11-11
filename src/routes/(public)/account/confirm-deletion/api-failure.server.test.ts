@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as m from '$lib/paraglide/messages.js';
+import type { accountDeleteAccountConfirm as AccountDeleteAccountConfirm } from '$lib/api/generated';
+
+/** The SDK result contract; `error` is widened because a network failure carries a TypeError. */
+type SdkResult = Awaited<ReturnType<typeof AccountDeleteAccountConfirm>>;
+type MockResult = {
+	data: SdkResult['data'];
+	error: unknown;
+	response: SdkResult['response'] | undefined;
+};
 
 const accountDeleteAccountConfirm = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated', () => ({ accountDeleteAccountConfirm }));
@@ -13,7 +22,7 @@ import { actions } from './+page.server';
 const cookies = { delete: vi.fn() };
 const eventFetch = vi.fn();
 
-function run(extra: Record<string, string> = {}) {
+function run(extra: Record<string, string> = {}): ReturnType<typeof actions.confirmDeletion> {
 	const body = new FormData();
 	body.set('token', 'tok-123');
 	for (const [k, v] of Object.entries(extra)) body.set(k, v);
@@ -25,12 +34,12 @@ function run(extra: Record<string, string> = {}) {
 }
 
 /** The generated client RESOLVES (does not throw) on a 4xx/5xx (throwOnError: false). */
-function resolvesWithError(status: number, error: unknown) {
+function resolvesWithError(status: number, error: unknown): void {
 	accountDeleteAccountConfirm.mockResolvedValue({
 		data: undefined,
 		error,
 		response: new Response(null, { status })
-	});
+	} satisfies MockResult);
 }
 
 beforeEach(() => {

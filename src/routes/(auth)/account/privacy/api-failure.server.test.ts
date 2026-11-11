@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as m from '$lib/paraglide/messages.js';
+import type { accountExportData as AccountExportData } from '$lib/api/generated';
+
+/** The SDK result contract; `error` is widened because a network failure carries a TypeError. */
+type SdkResult = Awaited<ReturnType<typeof AccountExportData>>;
+type MockResult = {
+	data: SdkResult['data'];
+	error: unknown;
+	response: SdkResult['response'] | undefined;
+};
 
 const accountExportData = vi.hoisted(() => vi.fn());
 const accountDeleteAccountRequest = vi.hoisted(() => vi.fn());
@@ -11,29 +20,30 @@ import { actions } from './+page.server';
 const cookies = { get: vi.fn().mockReturnValue('access-tok') };
 const eventFetch = vi.fn();
 
-function runExport() {
+function runExport(): ReturnType<typeof actions.exportData> {
 	return actions.exportData({ cookies, fetch: eventFetch } as unknown as Parameters<
 		typeof actions.exportData
 	>[0]);
 }
 
-function runDeletion() {
+function runDeletion(): ReturnType<typeof actions.requestDeletion> {
 	return actions.requestDeletion({ cookies, fetch: eventFetch } as unknown as Parameters<
 		typeof actions.requestDeletion
 	>[0]);
 }
 
 /** The generated client RESOLVES (does not throw) on a 4xx/5xx (throwOnError: false). */
-function errorResult(status: number, error: unknown) {
-	return { data: undefined, error, response: new Response(null, { status }) };
+function errorResult(status: number, error: unknown): MockResult {
+	return { data: undefined, error, response: new Response(null, { status }) } satisfies MockResult;
 }
 
 /** A network failure as the real client reports it: resolved, with no response. */
-const networkResult = () => ({
-	data: undefined,
-	error: new TypeError('fetch failed'),
-	response: undefined
-});
+const networkResult = (): MockResult =>
+	({
+		data: undefined,
+		error: new TypeError('fetch failed'),
+		response: undefined
+	}) satisfies MockResult;
 
 beforeEach(() => {
 	accountExportData.mockReset();
