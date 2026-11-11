@@ -4217,7 +4217,8 @@
 					"editFor": "Editar o pagamento de {amount} de {date}",
 					"void": "Anular",
 					"voidFor": "Anular o pagamento de {amount} de {date}",
-					"includeVoided": "Incluir pagamentos anulados"
+					"includeVoided": "Incluir pagamentos anulados",
+					"voidHint": "Anula um pagamento registado por engano. Continua no histórico, mas deixa de contar, e o período pago é recalculado. Nenhum dinheiro é movimentado: usa Reembolsar para devolver dinheiro."
 				},
 				"editPayment": {
 					"title": "Editar pagamento",

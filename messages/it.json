@@ -4217,7 +4217,8 @@
 					"editFor": "Modifica il pagamento di {amount} del {date}",
 					"void": "Storna",
 					"voidFor": "Storna il pagamento di {amount} del {date}",
-					"includeVoided": "Includi i pagamenti stornati"
+					"includeVoided": "Includi i pagamenti stornati",
+					"voidHint": "Storna un pagamento registrato per errore. Resta nello storico ma non conta più, e il periodo pagato viene ricalcolato. Non si muove denaro: per restituire soldi usa Rimborsa."
 				},
 				"editPayment": {
 					"title": "Modifica pagamento",

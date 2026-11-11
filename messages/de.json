@@ -4217,7 +4217,8 @@
 					"editFor": "Zahlung über {amount} vom {date} bearbeiten",
 					"void": "Stornieren",
 					"voidFor": "Zahlung über {amount} vom {date} stornieren",
-					"includeVoided": "Stornierte Zahlungen einbeziehen"
+					"includeVoided": "Stornierte Zahlungen einbeziehen",
+					"voidHint": "Storniert eine versehentlich erfasste Zahlung. Sie bleibt im Verlauf, zählt aber nicht mehr, und der bezahlte Zeitraum wird neu berechnet. Es wird kein Geld bewegt: Für eine Rückzahlung ist „Erstatten“ die Aktion."
 				},
 				"editPayment": {
 					"title": "Zahlung bearbeiten",

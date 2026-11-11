@@ -4217,7 +4217,8 @@
 					"editFor": "Edit the payment of {amount} from {date}",
 					"void": "Void",
 					"voidFor": "Void the payment of {amount} from {date}",
-					"includeVoided": "Include voided payments"
+					"includeVoided": "Include voided payments",
+					"voidHint": "Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. No money moves: use Refund to return money."
 				},
 				"editPayment": {
 					"title": "Edit payment",

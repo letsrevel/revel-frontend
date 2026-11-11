@@ -4187,7 +4187,8 @@
 					"editFor": "Modifier le paiement de {amount} du {date}",
 					"void": "Invalider",
 					"voidFor": "Invalider le paiement de {amount} du {date}",
-					"includeVoided": "Inclure les paiements invalidés"
+					"includeVoided": "Inclure les paiements invalidés",
+					"voidHint": "Invalide un paiement enregistré par erreur. Il reste dans l'historique mais ne compte plus, et la période payée est recalculée. Aucun argent ne circule : pour rendre de l'argent, utilisez Rembourser."
 				},
 				"editPayment": {
 					"title": "Modifier le paiement",

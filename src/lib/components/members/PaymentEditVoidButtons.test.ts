@@ -67,4 +67,18 @@ describe('PaymentEditVoidButtons', () => {
 		expect(onEdit).toHaveBeenCalledWith(payment);
 		expect(onVoid).toHaveBeenCalledWith(payment);
 	});
+
+	it('describes the Void button with the explanation, and keeps its name', () => {
+		renderButtons(makePayment());
+		const voidButton = screen.getByRole('button', { name: /^Void the payment of/ });
+		expect(voidButton).toHaveAccessibleDescription(
+			'Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. No money moves: use Refund to return money.'
+		);
+	});
+
+	it('does not describe the Edit button with the Void explanation', () => {
+		renderButtons(makePayment());
+		const editButton = screen.getByRole('button', { name: /^Edit the payment of/ });
+		expect(editButton).not.toHaveAccessibleDescription(/recorded by mistake/);
+	});
 });

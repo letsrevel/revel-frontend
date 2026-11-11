@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { paymentContext, type EditablePayment } from './paymentEdit';
 
 	interface Props {
@@ -18,6 +19,7 @@
 	// Eligibility comes from the backend flags; nothing is re-derived here.
 	const showEdit = $derived(!!payment.id && payment.can_edit);
 	const showVoid = $derived(!!payment.id && payment.can_void);
+	const voidHintId = $derived(`void-hint-${payment.id}`);
 </script>
 
 {#if showEdit}
@@ -31,12 +33,32 @@
 	</Button>
 {/if}
 {#if showVoid}
-	<Button
-		size="sm"
-		{variant}
-		aria-label={m['orgAdmin.members.subscriptions.paymentActions.voidFor'](context)}
-		onclick={() => onVoid(payment)}
-	>
-		{m['orgAdmin.members.subscriptions.paymentActions.void']()}
-	</Button>
+	<Tooltip.Provider>
+		<Tooltip.Root>
+			<!-- The Button is the trigger (child snippet): a default Trigger would wrap it in a
+			     <button>, an interactive-inside-interactive violation. The hint is also linked
+			     as the button's accessible description, so screen readers hear it without
+			     having to hover or focus. -->
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						size="sm"
+						{variant}
+						aria-label={m['orgAdmin.members.subscriptions.paymentActions.voidFor'](context)}
+						aria-describedby={voidHintId}
+						onclick={() => onVoid(payment)}
+					>
+						{m['orgAdmin.members.subscriptions.paymentActions.void']()}
+					</Button>
+				{/snippet}
+			</Tooltip.Trigger>
+			<span id={voidHintId} class="sr-only">
+				{m['orgAdmin.members.subscriptions.paymentActions.voidHint']()}
+			</span>
+			<Tooltip.Content class="max-w-xs">
+				<p class="text-xs">{m['orgAdmin.members.subscriptions.paymentActions.voidHint']()}</p>
+			</Tooltip.Content>
+		</Tooltip.Root>
+	</Tooltip.Provider>
 {/if}
