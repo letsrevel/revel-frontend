@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { passwordResetRequestSchema } from '$lib/schemas/auth';
@@ -36,13 +37,24 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to send password reset email
-			await accountResetPasswordRequest({
+			const response = await accountResetPasswordRequest({
 				body: {
 					email: result.data.email
 				},
 				// event.fetch so handleFetch forwards the tenant Origin (#1070)
 				fetch
 			});
+
+			// throwOnError is false: failures are RETURNED. The outcome is hidden on
+			// purpose (user enumeration) with one exception: a 429 throttle says
+			// nothing about the account, so the user is told to wait.
+			if (response.response?.status === 429) {
+				log.error('password_reset_request_throttled', {});
+				return fail(429, {
+					errors: { form: m['serverErrors.public.resetRequestRateLimited']() },
+					email: result.data.email
+				});
+			}
 
 			// Always return success to prevent user enumeration
 			// The backend will only send an email if the account exists
