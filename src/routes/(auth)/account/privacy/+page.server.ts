@@ -3,21 +3,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
-
-/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
-function getResponseStatus(error: unknown): unknown {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'response' in error &&
-		typeof error.response === 'object' &&
-		error.response !== null &&
-		'status' in error.response
-	) {
-		return error.response.status;
-	}
-	return undefined;
-}
+import { getApiFailure } from '$lib/server/api-result';
 
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {
@@ -32,35 +18,45 @@ export const actions: Actions = {
 		}
 
 		try {
-			await accountExportData({
+			const result = await accountExportData({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
 			});
 
-			return {
-				exportSuccess: true
-			};
-		} catch (error) {
-			log.error('data_export_request_failed', { error });
+			// throwOnError is false: a 4xx/5xx is RETURNED, not thrown.
+			const failure = getApiFailure(result);
+			if (failure) {
+				log.error('data_export_request_failed', { status: failure.status, error: failure.body });
 
-			// Check for rate limiting (429 Too Many Requests)
-			if (getResponseStatus(error) === 429) {
-				const errorMessage = extractErrorMessage(
-					error,
-					m['serverErrors.account.exportRateLimited']()
-				);
-				return fail(429, {
+				// Rate limiting (429 Too Many Requests)
+				if (failure.status === 429) {
+					return fail(429, {
+						errors: {
+							exportForm: extractErrorMessage(
+								failure.body,
+								m['serverErrors.account.exportRateLimited']()
+							)
+						}
+					});
+				}
+
+				return fail(500, {
 					errors: {
-						exportForm: errorMessage
+						exportForm: extractErrorMessage(failure.body, m['serverErrors.account.exportFailed']())
 					}
 				});
 			}
 
-			const errorMessage = extractErrorMessage(error, m['serverErrors.account.exportFailed']());
+			return {
+				exportSuccess: true
+			};
+		} catch (error) {
+			// Network failure: the request never produced a response.
+			log.error('data_export_request_failed', { error });
 			return fail(500, {
 				errors: {
-					exportForm: errorMessage
+					exportForm: m['serverErrors.account.exportFailed']()
 				}
 			});
 		}
@@ -79,7 +75,7 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to send deletion confirmation email
-			await accountDeleteAccountRequest({
+			const result = await accountDeleteAccountRequest({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				},
@@ -87,42 +83,55 @@ export const actions: Actions = {
 				fetch
 			});
 
-			return {
-				success: true
-			};
-		} catch (error) {
-			log.error('account_deletion_request_failed', { error });
+			// throwOnError is false: a 4xx/5xx is RETURNED, not thrown.
+			const failure = getApiFailure(result);
+			if (failure) {
+				log.error('account_deletion_request_failed', {
+					status: failure.status,
+					error: failure.body
+				});
 
-			// Check for specific error types
-			const status = getResponseStatus(error);
-			if (status === 400) {
-				const errorMessage = extractErrorMessage(
-					error,
-					m['serverErrors.account.deleteBlockedByOrgs']()
-				);
-				return fail(400, { errors: { form: errorMessage } });
-			}
+				if (failure.status === 400) {
+					return fail(400, {
+						errors: {
+							form: extractErrorMessage(
+								failure.body,
+								m['serverErrors.account.deleteBlockedByOrgs']()
+							)
+						}
+					});
+				}
 
-			if (status === 403) {
-				const errorMessage = extractErrorMessage(
-					error,
-					m['serverErrors.account.deleteForbiddenActiveOrgs']()
-				);
-				return fail(403, {
+				if (failure.status === 403) {
+					return fail(403, {
+						errors: {
+							form: extractErrorMessage(
+								failure.body,
+								m['serverErrors.account.deleteForbiddenActiveOrgs']()
+							)
+						}
+					});
+				}
+
+				return fail(500, {
 					errors: {
-						form: errorMessage
+						form: extractErrorMessage(
+							failure.body,
+							m['serverErrors.account.unexpectedErrorTryLater']()
+						)
 					}
 				});
 			}
 
-			// Generic error
-			const errorMessage = extractErrorMessage(
-				error,
-				m['serverErrors.account.unexpectedErrorTryLater']()
-			);
+			return {
+				success: true
+			};
+		} catch (error) {
+			// Network failure: the request never produced a response.
+			log.error('account_deletion_request_failed', { error });
 			return fail(500, {
 				errors: {
-					form: errorMessage
+					form: m['serverErrors.account.unexpectedErrorTryLater']()
 				}
 			});
 		}

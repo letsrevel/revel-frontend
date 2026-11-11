@@ -3,47 +3,13 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import {
+	firstString,
+	getApiFailure,
+	getDetailMessage,
+	getFieldErrors
+} from '$lib/server/api-result';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
-
-/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
-function getResponseStatus(error: unknown): unknown {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'response' in error &&
-		typeof error.response === 'object' &&
-		error.response !== null &&
-		'status' in error.response
-	) {
-		return error.response.status;
-	}
-	return undefined;
-}
-
-/** Read the field-errors object from an error shaped like `{ response: { data: { errors } } }`. */
-function getResponseErrors(error: unknown): object {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'response' in error &&
-		typeof error.response === 'object' &&
-		error.response !== null &&
-		'data' in error.response &&
-		typeof error.response.data === 'object' &&
-		error.response.data !== null &&
-		'errors' in error.response.data &&
-		typeof error.response.data.errors === 'object' &&
-		error.response.data.errors !== null
-	) {
-		return error.response.data.errors;
-	}
-	return {};
-}
-
-/** First element of a string array, if the value is one. */
-function firstString(value: unknown): string | undefined {
-	return Array.isArray(value) && typeof value[0] === 'string' ? value[0] : undefined;
-}
 
 export const actions: Actions = {
 	confirmDeletion: async ({ request, cookies, fetch }) => {
@@ -68,11 +34,65 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to confirm account deletion
-			await accountDeleteAccountConfirm({
+			const response = await accountDeleteAccountConfirm({
 				body: {
 					token: result.data.token
 				}
 			});
+
+			// throwOnError is false: a 4xx/5xx is RETURNED, not thrown. Only a 2xx
+			// may clear the session — otherwise the account still exists.
+			const failure = getApiFailure(response);
+			if (failure) {
+				log.error('account_deletion_confirm_error', {
+					status: failure.status,
+					error: failure.body
+				});
+
+				if (failure.status === 400) {
+					const apiErrors = getFieldErrors(failure.body);
+
+					// Map backend errors
+					const errors: Record<string, string> = {};
+
+					if ('token' in apiErrors && apiErrors.token) {
+						errors.form = m['serverErrors.public.deletionTokenInvalid']();
+					} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
+						errors.form =
+							firstString(apiErrors.non_field_errors) ||
+							m['serverErrors.public.accountDeletionFailed']();
+					} else {
+						errors.form =
+							getDetailMessage(failure.body) ?? m['serverErrors.public.deleteAccountUnavailable']();
+					}
+
+					return fail(400, { errors });
+				}
+
+				// An expired, malformed or already-used token.
+				if (failure.status === 401 || failure.status === 404) {
+					return fail(400, {
+						errors: {
+							form: m['serverErrors.public.deletionTokenInvalid']()
+						}
+					});
+				}
+
+				if (failure.status === 403) {
+					return fail(403, {
+						errors: {
+							form: m['serverErrors.public.cannotDeleteOwnsOrgs']()
+						}
+					});
+				}
+
+				// Generic error
+				return fail(500, {
+					errors: {
+						form: m['serverErrors.public.unexpectedErrorRetryLater']()
+					}
+				});
+			}
 
 			// Clear all authentication cookies
 			cookies.delete('access_token', { path: '/' });
@@ -86,38 +106,8 @@ export const actions: Actions = {
 				returnTo: await resolveReturnTarget(formData.get('return_host')?.toString(), fetch)
 			};
 		} catch (error) {
+			// Network failure: the request never produced a response.
 			log.error('account_deletion_confirm_error', { error });
-
-			// Check for specific error types
-			const status = getResponseStatus(error);
-			if (status === 400) {
-				const apiErrors = getResponseErrors(error);
-
-				// Map backend errors
-				const errors: Record<string, string> = {};
-
-				if ('token' in apiErrors && apiErrors.token) {
-					errors.form = m['serverErrors.public.deletionTokenInvalid']();
-				} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
-					errors.form =
-						firstString(apiErrors.non_field_errors) ||
-						m['serverErrors.public.accountDeletionFailed']();
-				} else {
-					errors.form = m['serverErrors.public.deleteAccountUnavailable']();
-				}
-
-				return fail(400, { errors });
-			}
-
-			if (status === 403) {
-				return fail(403, {
-					errors: {
-						form: m['serverErrors.public.cannotDeleteOwnsOrgs']()
-					}
-				});
-			}
-
-			// Generic error
 			return fail(500, {
 				errors: {
 					form: m['serverErrors.public.unexpectedErrorRetryLater']()
