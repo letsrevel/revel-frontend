@@ -4,6 +4,7 @@ import type {
 	OrganizationRetrieveSchema,
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 import { LANGS, OG_LOCALE, OG_LOGO_PATH, TWITTER_SITE, type Lang } from './constants';
 import type { SeoConfig } from './types';
 import {
@@ -130,6 +131,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 	/** `twitter:site` is Revel's handle: never advertised on a tenant host. */
 	const twitterSite = tenant ? {} : { site: TWITTER_SITE };
 	const site = siteName(tenant);
+	/** Page copy follows the page's language, not ambient state (request-scoped or not). */
+	const opts = { locale: input.lang };
 	/** Breadcrumb root: the org home on a tenant host, Revel's home otherwise. */
 	const rootCrumb = tenant
 		? {
@@ -140,20 +143,18 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 	switch (input.kind) {
 		case 'home': {
-			const title = 'Revel — Event Management for Communities';
-			const description =
-				'Discover community events, connect with organizers, and create unforgettable experiences. Open-source event management and ticketing platform.';
+			const title = m['seo.home.title']({}, opts);
+			const description = m['seo.home.description']({}, opts);
 			// og:description has a tighter budget than the meta description:
 			// social previews truncate around ~125 chars on mobile (#624).
-			const ogDescription =
-				'Discover community events, connect with organizers, and create unforgettable experiences on Revel, the open-source platform.';
+			const ogDescription = m['seo.home.ogDescription']({}, opts);
 			return {
 				title,
 				description,
 				canonical,
 				og: {
 					type: 'website',
-					title: 'Event Management for Communities',
+					title: m['seo.home.ogTitle']({}, opts),
 					description: ogDescription,
 					url: canonical,
 					...defaultOgImageMeta(origin),
@@ -163,8 +164,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				},
 				twitter: {
 					card: 'summary_large_image',
-					title: 'Event Management for Communities',
-					description: 'Discover community events and create unforgettable experiences',
+					title: m['seo.home.ogTitle']({}, opts),
+					description: m['seo.home.twitterDescription']({}, opts),
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					...twitterSite
@@ -175,9 +176,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 		}
 
 		case 'events-listing': {
-			const title = withSiteName('Browse Events', tenant);
-			const description =
-				'Discover community events happening near you. Find concerts, workshops, meetups, and more on Revel.';
+			const title = withSiteName(m['seo.eventsListing.title']({}, opts), tenant);
+			const description = m['seo.eventsListing.description']({}, opts);
 			return {
 				title,
 				description,
@@ -195,7 +195,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				twitter: {
 					card: 'summary_large_image',
 					title,
-					description: 'Discover community events near you',
+					description: m['seo.eventsListing.twitterDescription']({}, opts),
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					...twitterSite
@@ -211,12 +211,10 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 		}
 
 		case 'orgs-listing': {
-			const title = withSiteName('Discover Organizations', tenant);
-			const description =
-				'Browse and discover community organizations on Revel. Find event organizers, communities, and groups creating amazing experiences.';
+			const title = withSiteName(m['seo.orgsListing.title']({}, opts), tenant);
+			const description = m['seo.orgsListing.description']({}, opts);
 			// Shorter variant for social previews (~125-char budget, #624).
-			const ogDescription =
-				'Browse community organizations on Revel — event organizers, communities, and groups creating amazing experiences.';
+			const ogDescription = m['seo.orgsListing.ogDescription']({}, opts);
 			const ld: object[] = [
 				generateBreadcrumbJsonLd([
 					{ name: 'Home', url: origin },
@@ -243,7 +241,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				twitter: {
 					card: 'summary_large_image',
 					title,
-					description: 'Browse community organizations near you',
+					description: m['seo.orgsListing.twitterDescription']({}, opts),
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					...twitterSite
@@ -259,7 +257,12 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			const truncated = truncate(desc, 155);
 			const image = getEventImage(event);
 			const title = withSiteName(event.name, tenant);
-			const description = truncated || `Join ${event.name} organized by ${event.organization.name}`;
+			const description =
+				truncated ||
+				m['seo.event.fallbackDescription'](
+					{ event: event.name, organization: event.organization.name },
+					opts
+				);
 			return {
 				title,
 				description,
@@ -280,7 +283,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				twitter: {
 					card: 'summary_large_image',
 					title: event.name,
-					description: truncate(desc, 200) || `Join ${event.name}`,
+					description:
+						truncate(desc, 200) || m['seo.event.twitterFallback']({ event: event.name }, opts),
 					image,
 					imageAlt: image ? event.name : undefined,
 					...twitterSite
@@ -315,8 +319,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			const description =
 				truncated ||
 				(tenant
-					? `${org.name} - Community events and experiences`
-					: `${org.name} on Revel - Community events and experiences`);
+					? m['seo.org.fallbackDescriptionTenant']({ organization: org.name }, opts)
+					: m['seo.org.fallbackDescription']({ organization: org.name }, opts));
 			return {
 				title,
 				description,
@@ -340,7 +344,9 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				twitter: {
 					card: 'summary_large_image',
 					title: org.name,
-					description: truncate(desc, 200) || (tenant ? org.name : `${org.name} on Revel`),
+					description:
+						truncate(desc, 200) ||
+						(tenant ? org.name : m['seo.org.twitterFallback']({ organization: org.name }, opts)),
 					image,
 					imageAlt: image ? org.name : undefined,
 					...twitterSite
@@ -371,7 +377,11 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				? withSiteName(series.name, tenant)
 				: `${series.name} | ${series.organization.name} | Revel`;
 			const description =
-				truncated || `${series.name} - Event series by ${series.organization.name}`;
+				truncated ||
+				m['seo.series.fallbackDescription'](
+					{ series: series.name, organization: series.organization.name },
+					opts
+				);
 			return {
 				title,
 				description,
@@ -453,8 +463,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'legal': {
 			const titles: Record<typeof input.doc, string> = {
-				privacy: withSiteName('Privacy Policy', tenant),
-				terms: withSiteName('Terms of Service', tenant)
+				privacy: withSiteName(m['seo.legal.privacyTitle']({}, opts), tenant),
+				terms: withSiteName(m['seo.legal.termsTitle']({}, opts), tenant)
 			};
 			const title = titles[input.doc];
 			return plainPageSeo(plainCtx, { title, description: title });
@@ -466,20 +476,19 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			// flips to 404 is the soft-404 signal `make audit-soft-404` exists to
 			// keep out of the index. `follow`, so its outgoing links still count.
 			return plainPageSeo(plainCtx, {
-				title: withSiteName('Referral program', tenant),
-				description:
-					'Apply to the Revel referral program: bring organizers to Revel and earn 15% of what Revel makes from them, forever.',
+				title: withSiteName(m['seo.referralApply.title']({}, opts), tenant),
+				description: m['seo.referralApply.description']({}, opts),
 				robots: 'noindex,follow'
 			});
 		}
 
 		case 'auth': {
 			const titles: Record<typeof input.page, string> = {
-				login: withSiteName('Log in', tenant),
-				register: withSiteName('Create your account', tenant),
-				'password-reset': withSiteName('Reset your password', tenant),
-				verify: withSiteName('Verify your account', tenant),
-				unsubscribe: withSiteName('Unsubscribe', tenant)
+				login: withSiteName(m['seo.auth.login']({}, opts), tenant),
+				register: withSiteName(m['seo.auth.register']({}, opts), tenant),
+				'password-reset': withSiteName(m['seo.auth.passwordReset']({}, opts), tenant),
+				verify: withSiteName(m['seo.auth.verify']({}, opts), tenant),
+				unsubscribe: withSiteName(m['seo.auth.unsubscribe']({}, opts), tenant)
 			};
 			const title = titles[input.page];
 			return plainPageSeo(plainCtx, { title, description: title, robots: 'noindex,follow' });

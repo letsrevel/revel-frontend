@@ -11500,5 +11500,186 @@
 		"thirtyDays": "30 días",
 		"minutes": "{minutes} minutos"
 	},
-	"dashboardTicketsPage.pagination.page": "Página {current} de {total}"
+	"dashboardTicketsPage.pagination.page": "Página {current} de {total}",
+	"serverErrors": {
+		"common": {
+			"unauthorized": "No autorizado",
+			"notFound": "No encontrado",
+			"mustBeLoggedIn": "Debes iniciar sesión",
+			"eventNotFound": "Evento no encontrado",
+			"organizationNotFound": "Organización no encontrada",
+			"questionnaireNotFound": "Cuestionario no encontrado",
+			"pollNotFound": "Encuesta no encontrada",
+			"seriesNotFound": "Serie de eventos no encontrada",
+			"invitationLinkInvalid": "Este enlace de invitación ya no es válido",
+			"permissionManageEvent": "No tienes permiso para gestionar este evento",
+			"permissionViewEvent": "No tienes permiso para ver este evento",
+			"permissionViewOrganization": "No tienes permiso para ver esta organización",
+			"permissionManageSeries": "No tienes permiso para gestionar esta serie",
+			"eventWrongOrganization": "Este evento no pertenece a esta organización",
+			"loadEventFailed": "No se pudo cargar el evento",
+			"loadEventDetailsFailed": "No se pudieron cargar los detalles del evento",
+			"loadEventsFailed": "No se pudieron cargar los eventos",
+			"loadOrganizationFailed": "No se pudo cargar la organización",
+			"loadPollFailed": "No se pudo cargar la encuesta",
+			"loadSeriesFailed": "No se pudo cargar la serie de eventos",
+			"loadQuestionnaireFailed": "No se pudo cargar el cuestionario",
+			"loadMembershipTiersFailed": "No se pudieron cargar los niveles de membresía"
+		},
+		"account": {
+			"exportLoginRequired": "Debes iniciar sesión para exportar tus datos",
+			"exportRateLimited": "Solo puedes solicitar una exportación de datos una vez cada 24 horas. Inténtalo de nuevo más tarde.",
+			"exportFailed": "No se pudo solicitar la exportación de datos. Inténtalo de nuevo.",
+			"deleteLoginRequired": "Debes iniciar sesión para eliminar tu cuenta",
+			"deleteBlockedByOrgs": "No se puede eliminar la cuenta. Es posible que seas propietario de organizaciones que deben transferirse primero.",
+			"deleteForbiddenActiveOrgs": "No puedes eliminar tu cuenta mientras seas propietario de organizaciones activas. Transfiere primero la propiedad o elimínalas.",
+			"unexpectedErrorTryLater": "Se produjo un error inesperado. Inténtalo de nuevo más tarde.",
+			"profileLoginRequired": "Debes iniciar sesión para actualizar tu perfil",
+			"profileUpdateFailed": "No se pudo actualizar el perfil",
+			"unexpectedError": "Se produjo un error inesperado",
+			"setup2faAlreadyEnabled": "La 2FA ya está activada",
+			"setup2faFailed": "No se pudo configurar la 2FA",
+			"codeMustBe6Digits": "El código debe tener 6 dígitos",
+			"twoFaEnabled": "¡La 2FA se ha activado correctamente!",
+			"invalidCodeTryAgain": "Código no válido. Inténtalo de nuevo.",
+			"verifyCodeFailed": "No se pudo verificar el código",
+			"twoFaDisabled": "La 2FA se ha desactivado correctamente",
+			"disable2faFailed": "No se pudo desactivar la 2FA",
+			"authenticationRequired": "Autenticación requerida",
+			"createOrgAlreadyOwn": "Ya eres propietario de una organización",
+			"createOrgVerifyEmail": "Verifica tu correo electrónico antes de crear una organización",
+			"createOrgFailed": "No se pudo crear la organización. Inténtalo de nuevo.",
+			"unexpectedErrorTryAgain": "Se produjo un error inesperado. Inténtalo de nuevo."
+		},
+		"adminEvents": {
+			"loginToViewEvents": "Debes iniciar sesión para ver los eventos",
+			"loadEventsRetryLater": "No se pudieron cargar los eventos. Inténtalo de nuevo más tarde.",
+			"loginToManageWaitlist": "Debes iniciar sesión para gestionar la lista de espera",
+			"loadWaitlistFailed": "No se pudo cargar la lista de espera",
+			"loginToManageAttendees": "Debes iniciar sesión para gestionar a los asistentes",
+			"loginToManageTickets": "Debes iniciar sesión para gestionar las entradas",
+			"loginToEditEvents": "Debes iniciar sesión para editar eventos",
+			"permissionEditEvent": "No tienes permiso para editar este evento",
+			"loginToManageSeating": "Debes iniciar sesión para gestionar los asientos",
+			"permissionManageEventTickets": "No tienes permiso para gestionar las entradas de este evento",
+			"loginToCreateEvents": "Debes iniciar sesión para crear eventos",
+			"permissionCreateEvents": "No tienes permiso para crear eventos para esta organización",
+			"requestIdRequired": "El ID de la solicitud es obligatorio",
+			"emailsRequired": "Las direcciones de correo electrónico son obligatorias",
+			"atLeastOneEmailRequired": "Se requiere al menos una dirección de correo electrónico",
+			"invitationIdAndTypeRequired": "El ID y el tipo de la invitación son obligatorios",
+			"emailRequired": "La dirección de correo electrónico es obligatoria",
+			"approveRequestFailed": "No se pudo aprobar la solicitud",
+			"rejectRequestFailed": "No se pudo rechazar la solicitud",
+			"createInvitationsFailed": "No se pudieron crear las invitaciones",
+			"deleteInvitationFailed": "No se pudo eliminar la invitación",
+			"updateInvitationFailed": "No se pudo actualizar la invitación",
+			"updateInvitationsFailed": "No se pudieron actualizar las invitaciones",
+			"unexpectedError": "Se produjo un error inesperado"
+		},
+		"admin": {
+			"loginRequiredDashboard": "Debes iniciar sesión para ver el panel",
+			"loginRequiredAccessPage": "Debes iniciar sesión para acceder a esta página",
+			"permissionManageOrganization": "No tienes permiso para gestionar esta organización",
+			"loginRequiredUpdateSettings": "Debes iniciar sesión para actualizar la configuración de la organización",
+			"updateSettingsFailed": "No se pudo actualizar la configuración de la organización",
+			"updateOrganizationUnexpected": "Se produjo un error inesperado al actualizar tu organización",
+			"loginRequiredManageTickets": "Debes iniciar sesión para gestionar las entradas",
+			"loadTicketedEventsFailed": "No se pudieron cargar los eventos con entradas. Inténtalo de nuevo más tarde.",
+			"loadQuestionnairesFailed": "No se pudieron cargar los cuestionarios",
+			"loadSubmissionsFailed": "No se pudieron cargar los envíos",
+			"submissionNotFound": "Envío no encontrado",
+			"loadSubmissionFailed": "No se pudo cargar el envío",
+			"invalidEvaluationStatus": "Estado de evaluación no válido",
+			"scoreOutOfRange": "La puntuación debe estar entre 0 y 100",
+			"submitEvaluationFailed": "No se pudo enviar la evaluación. Inténtalo de nuevo.",
+			"loadSummaryFailed": "No se pudo cargar el resumen",
+			"loginRequiredBuildEmbed": "Debes iniciar sesión para crear un embed",
+			"loadPollsFailed": "No se pudieron cargar las encuestas",
+			"ownerOnlyIntegrations": "Solo quien es propietario de la organización puede gestionar las integraciones.",
+			"loadIntegrationsFailed": "No se pudieron cargar las integraciones",
+			"ownerOnlyCustomDomain": "Solo quien es propietario de la organización puede gestionar el dominio personalizado.",
+			"ownerOnlyBilling": "Solo quien es propietario de la organización puede acceder a la facturación.",
+			"loginRequiredViewSeriesList": "Debes iniciar sesión para ver las series de eventos",
+			"loadSeriesListFailed": "No se pudieron cargar las series de eventos. Inténtalo de nuevo más tarde.",
+			"loginRequiredViewSeries": "Debes iniciar sesión para ver esta serie",
+			"loginRequiredCreateSeries": "Debes iniciar sesión para crear una serie de eventos",
+			"loginRequiredCreateRecurring": "Debes iniciar sesión para crear una serie recurrente",
+			"permissionCreateEvents": "No tienes permiso para crear eventos en esta organización",
+			"permissionManageMembers": "No tienes permiso para gestionar los miembros",
+			"permissionVerifyMembers": "No tienes permiso para verificar los miembros"
+		},
+		"public": {
+			"tokenNotFoundOrExpired": "Token no encontrado o caducado",
+			"verificationFailed": "Error en la verificación",
+			"invalidServerResponse": "Respuesta no válida del servidor",
+			"unexpectedErrorRetry": "Se produjo un error inesperado. Inténtalo de nuevo.",
+			"loginFailed": "Error al iniciar sesión",
+			"registrationFailed": "Error en el registro",
+			"invalidCodeRetry": "Código no válido. Inténtalo de nuevo.",
+			"loadResourcesFailed": "No se pudieron cargar los recursos",
+			"loadPrivacyPolicyFailed": "No se pudo cargar la política de privacidad",
+			"loadTermsFailed": "No se pudieron cargar los términos del servicio",
+			"loadMembershipOptionsFailed": "No se pudieron cargar las opciones de membresía",
+			"accountEmailExists": "Ya existe una cuenta con este correo electrónico",
+			"deleteAccountUnavailable": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
+			"accountDeletionFailed": "Error al eliminar la cuenta",
+			"passwordResetFailed": "Error al restablecer la contraseña",
+			"resetPasswordUnavailable": "No se pudo restablecer la contraseña. Inténtalo de nuevo.",
+			"passwordRequirementsNotMet": "La contraseña no cumple los requisitos",
+			"unexpectedErrorRetryLater": "Se produjo un error inesperado. Inténtalo de nuevo más tarde.",
+			"unexpectedErrorVerification": "Se produjo un error inesperado durante la verificación",
+			"verificationTokenInvalid": "Token de verificación no válido o caducado",
+			"deletionTokenInvalid": "Token de eliminación no válido o caducado. Solicita una nueva eliminación de la cuenta.",
+			"resetTokenInvalid": "Token de restablecimiento no válido o caducado. Solicita un nuevo restablecimiento de la contraseña.",
+			"cannotDeleteOwnsOrgs": "No puedes eliminar tu cuenta mientras seas propietario de organizaciones activas. Transfiere primero la propiedad o elimínalas."
+		}
+	},
+	"seo": {
+		"home": {
+			"title": "Revel: gestión de eventos para comunidades",
+			"description": "Descubre eventos de comunidad, conecta con quienes los organizan y crea experiencias inolvidables. Plataforma de código abierto para la gestión de eventos y la venta de entradas.",
+			"ogTitle": "Gestión de eventos para comunidades",
+			"ogDescription": "Descubre eventos de comunidad, conecta con quienes los organizan y crea experiencias inolvidables en Revel, la plataforma de código abierto.",
+			"twitterDescription": "Descubre eventos de comunidad y crea experiencias inolvidables"
+		},
+		"eventsListing": {
+			"title": "Explorar eventos",
+			"description": "Descubre los eventos de comunidad cerca de ti. Encuentra conciertos, talleres, quedadas y mucho más en Revel.",
+			"twitterDescription": "Descubre los eventos de comunidad cerca de ti"
+		},
+		"orgsListing": {
+			"title": "Descubrir organizaciones",
+			"description": "Explora y descubre organizaciones de comunidad en Revel. Encuentra organizadores de eventos, comunidades y grupos que crean experiencias increíbles.",
+			"ogDescription": "Explora las organizaciones de comunidad en Revel: organizadores de eventos, comunidades y grupos que crean experiencias increíbles.",
+			"twitterDescription": "Descubre las organizaciones de comunidad cerca de ti"
+		},
+		"event": {
+			"fallbackDescription": "Únete a {event}, organizado por {organization}",
+			"twitterFallback": "Únete a {event}"
+		},
+		"org": {
+			"fallbackDescriptionTenant": "{organization}: eventos y experiencias de comunidad",
+			"fallbackDescription": "{organization} en Revel: eventos y experiencias de comunidad",
+			"twitterFallback": "{organization} en Revel"
+		},
+		"series": {
+			"fallbackDescription": "{series}: serie de eventos de {organization}"
+		},
+		"legal": {
+			"privacyTitle": "Política de privacidad",
+			"termsTitle": "Términos del servicio"
+		},
+		"referralApply": {
+			"title": "Programa de referidos",
+			"description": "Solicita unirte al programa de referidos de Revel: trae organizadores a Revel y recibe el 15 % de lo que Revel gane con ellos, para siempre."
+		},
+		"auth": {
+			"login": "Iniciar sesión",
+			"register": "Crea tu cuenta",
+			"passwordReset": "Restablece tu contraseña",
+			"verify": "Verifica tu cuenta",
+			"unsubscribe": "Cancelar suscripción"
+		}
+	}
 }

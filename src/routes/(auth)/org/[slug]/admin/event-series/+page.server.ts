@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to view event series');
+		throw error(401, m['serverErrors.admin.loginRequiredViewSeriesList']());
 	}
 
 	const headers: HeadersInit = {
@@ -31,13 +32,13 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		log.error('event_series_list_failed', { error: seriesResponse.error });
 		const errorMessage = extractErrorMessage(
 			seriesResponse.error,
-			'Failed to load event series. Please try again later.'
+			m['serverErrors.admin.loadSeriesListFailed']()
 		);
 		throw error(500, errorMessage);
 	}
 
 	if (!seriesResponse.data) {
-		throw error(500, 'Failed to load event series');
+		throw error(500, m['serverErrors.common.loadSeriesFailed']());
 	}
 
 	return {

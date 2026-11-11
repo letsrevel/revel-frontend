@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { apiApiLegal } from '$lib/api';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -17,6 +18,6 @@ export const load: PageServerLoad = async ({ url, request, fetch, locals }) => {
 		};
 	} catch (err) {
 		log.error('privacy_policy_load_failed', { error: err });
-		throw error(500, 'Failed to load privacy policy');
+		throw error(500, m['serverErrors.public.loadPrivacyPolicyFailed']());
 	}
 };

@@ -11500,5 +11500,186 @@
 		"thirtyDays": "30 jours",
 		"minutes": "{minutes} minutes"
 	},
-	"dashboardTicketsPage.pagination.page": "Page {current} sur {total}"
+	"dashboardTicketsPage.pagination.page": "Page {current} sur {total}",
+	"serverErrors": {
+		"common": {
+			"unauthorized": "Non autorisé",
+			"notFound": "Introuvable",
+			"mustBeLoggedIn": "Tu dois être connecté·e",
+			"eventNotFound": "Événement introuvable",
+			"organizationNotFound": "Organisation introuvable",
+			"questionnaireNotFound": "Questionnaire introuvable",
+			"pollNotFound": "Sondage introuvable",
+			"seriesNotFound": "Série d'événements introuvable",
+			"invitationLinkInvalid": "Ce lien d'invitation n'est plus valide",
+			"permissionManageEvent": "Tu n'as pas l'autorisation de gérer cet événement",
+			"permissionViewEvent": "Tu n'as pas l'autorisation de voir cet événement",
+			"permissionViewOrganization": "Tu n'as pas l'autorisation de voir cette organisation",
+			"permissionManageSeries": "Tu n'as pas l'autorisation de gérer cette série",
+			"eventWrongOrganization": "Cet événement n'appartient pas à cette organisation",
+			"loadEventFailed": "Impossible de charger l'événement",
+			"loadEventDetailsFailed": "Impossible de charger les détails de l'événement",
+			"loadEventsFailed": "Impossible de charger les événements",
+			"loadOrganizationFailed": "Impossible de charger l'organisation",
+			"loadPollFailed": "Impossible de charger le sondage",
+			"loadSeriesFailed": "Impossible de charger la série d'événements",
+			"loadQuestionnaireFailed": "Impossible de charger le questionnaire",
+			"loadMembershipTiersFailed": "Impossible de charger les niveaux d'adhésion"
+		},
+		"account": {
+			"exportLoginRequired": "Tu dois être connecté·e pour exporter tes données",
+			"exportRateLimited": "Tu ne peux demander un export de données qu'une fois toutes les 24 heures. Réessaie plus tard.",
+			"exportFailed": "Impossible de demander l'export de données. Réessaie.",
+			"deleteLoginRequired": "Tu dois être connecté·e pour supprimer ton compte",
+			"deleteBlockedByOrgs": "Impossible de supprimer le compte. Tu possèdes peut-être des organisations qui doivent d'abord être transférées.",
+			"deleteForbiddenActiveOrgs": "Tu ne peux pas supprimer ton compte tant que tu possèdes des organisations actives. Transfère-en d'abord la propriété ou supprime-les.",
+			"unexpectedErrorTryLater": "Une erreur inattendue s'est produite. Réessaie plus tard.",
+			"profileLoginRequired": "Tu dois être connecté·e pour mettre à jour ton profil",
+			"profileUpdateFailed": "Impossible de mettre à jour le profil",
+			"unexpectedError": "Une erreur inattendue s'est produite",
+			"setup2faAlreadyEnabled": "La 2FA est déjà activée",
+			"setup2faFailed": "Impossible de configurer la 2FA",
+			"codeMustBe6Digits": "Le code doit comporter 6 chiffres",
+			"twoFaEnabled": "La 2FA a été activée avec succès !",
+			"invalidCodeTryAgain": "Code invalide. Réessaie.",
+			"verifyCodeFailed": "Impossible de vérifier le code",
+			"twoFaDisabled": "La 2FA a été désactivée avec succès",
+			"disable2faFailed": "Impossible de désactiver la 2FA",
+			"authenticationRequired": "Authentification requise",
+			"createOrgAlreadyOwn": "Tu possèdes déjà une organisation",
+			"createOrgVerifyEmail": "Vérifie ton e-mail avant de créer une organisation",
+			"createOrgFailed": "Impossible de créer l'organisation. Réessaie.",
+			"unexpectedErrorTryAgain": "Une erreur inattendue s'est produite. Réessaie."
+		},
+		"adminEvents": {
+			"loginToViewEvents": "Tu dois être connecté·e pour voir les événements",
+			"loadEventsRetryLater": "Impossible de charger les événements. Réessaie plus tard.",
+			"loginToManageWaitlist": "Tu dois être connecté·e pour gérer la liste d'attente",
+			"loadWaitlistFailed": "Impossible de charger la liste d'attente",
+			"loginToManageAttendees": "Tu dois être connecté·e pour gérer les participant·e·s",
+			"loginToManageTickets": "Tu dois être connecté·e pour gérer les billets",
+			"loginToEditEvents": "Tu dois être connecté·e pour modifier des événements",
+			"permissionEditEvent": "Tu n'as pas l'autorisation de modifier cet événement",
+			"loginToManageSeating": "Tu dois être connecté·e pour gérer les places assises",
+			"permissionManageEventTickets": "Tu n'as pas l'autorisation de gérer les billets de cet événement",
+			"loginToCreateEvents": "Tu dois être connecté·e pour créer des événements",
+			"permissionCreateEvents": "Tu n'as pas l'autorisation de créer des événements pour cette organisation",
+			"requestIdRequired": "L'identifiant de la demande est requis",
+			"emailsRequired": "Les adresses e-mail sont requises",
+			"atLeastOneEmailRequired": "Au moins une adresse e-mail est requise",
+			"invitationIdAndTypeRequired": "L'identifiant et le type de l'invitation sont requis",
+			"emailRequired": "L'adresse e-mail est requise",
+			"approveRequestFailed": "Impossible d'approuver la demande",
+			"rejectRequestFailed": "Impossible de refuser la demande",
+			"createInvitationsFailed": "Impossible de créer les invitations",
+			"deleteInvitationFailed": "Impossible de supprimer l'invitation",
+			"updateInvitationFailed": "Impossible de mettre à jour l'invitation",
+			"updateInvitationsFailed": "Impossible de mettre à jour les invitations",
+			"unexpectedError": "Une erreur inattendue s'est produite"
+		},
+		"admin": {
+			"loginRequiredDashboard": "Tu dois être connecté·e pour voir le tableau de bord",
+			"loginRequiredAccessPage": "Tu dois être connecté·e pour accéder à cette page",
+			"permissionManageOrganization": "Tu n'as pas l'autorisation de gérer cette organisation",
+			"loginRequiredUpdateSettings": "Tu dois être connecté·e pour modifier les paramètres de l'organisation",
+			"updateSettingsFailed": "Impossible de mettre à jour les paramètres de l'organisation",
+			"updateOrganizationUnexpected": "Une erreur inattendue s'est produite lors de la mise à jour de ton organisation",
+			"loginRequiredManageTickets": "Tu dois être connecté·e pour gérer les billets",
+			"loadTicketedEventsFailed": "Impossible de charger les événements avec billetterie. Réessaie plus tard.",
+			"loadQuestionnairesFailed": "Impossible de charger les questionnaires",
+			"loadSubmissionsFailed": "Impossible de charger les soumissions",
+			"submissionNotFound": "Soumission introuvable",
+			"loadSubmissionFailed": "Impossible de charger la soumission",
+			"invalidEvaluationStatus": "Statut d'évaluation invalide",
+			"scoreOutOfRange": "Le score doit être compris entre 0 et 100",
+			"submitEvaluationFailed": "Impossible d'envoyer l'évaluation. Réessaie.",
+			"loadSummaryFailed": "Impossible de charger le résumé",
+			"loginRequiredBuildEmbed": "Tu dois être connecté·e pour créer un embed",
+			"loadPollsFailed": "Impossible de charger les sondages",
+			"ownerOnlyIntegrations": "Seul·e le ou la propriétaire de l'organisation peut gérer les intégrations.",
+			"loadIntegrationsFailed": "Impossible de charger les intégrations",
+			"ownerOnlyCustomDomain": "Seul·e le ou la propriétaire de l'organisation peut gérer le domaine personnalisé.",
+			"ownerOnlyBilling": "Seul·e le ou la propriétaire de l'organisation peut accéder à la facturation.",
+			"loginRequiredViewSeriesList": "Tu dois être connecté·e pour voir les séries d'événements",
+			"loadSeriesListFailed": "Impossible de charger les séries d'événements. Réessaie plus tard.",
+			"loginRequiredViewSeries": "Tu dois être connecté·e pour voir cette série",
+			"loginRequiredCreateSeries": "Tu dois être connecté·e pour créer une série d'événements",
+			"loginRequiredCreateRecurring": "Tu dois être connecté·e pour créer une série récurrente",
+			"permissionCreateEvents": "Tu n'as pas l'autorisation de créer des événements dans cette organisation",
+			"permissionManageMembers": "Tu n'as pas l'autorisation de gérer les membres",
+			"permissionVerifyMembers": "Tu n'as pas l'autorisation de vérifier les membres"
+		},
+		"public": {
+			"tokenNotFoundOrExpired": "Jeton introuvable ou expiré",
+			"verificationFailed": "La vérification a échoué",
+			"invalidServerResponse": "Réponse invalide du serveur",
+			"unexpectedErrorRetry": "Une erreur inattendue s'est produite. Réessaie, s'il te plaît.",
+			"loginFailed": "La connexion a échoué",
+			"registrationFailed": "L'inscription a échoué",
+			"invalidCodeRetry": "Code invalide. Réessaie, s'il te plaît.",
+			"loadResourcesFailed": "Impossible de charger les ressources",
+			"loadPrivacyPolicyFailed": "Impossible de charger la politique de confidentialité",
+			"loadTermsFailed": "Impossible de charger les conditions d'utilisation",
+			"loadMembershipOptionsFailed": "Impossible de charger les options d'adhésion",
+			"accountEmailExists": "Un compte avec cet e-mail existe déjà",
+			"deleteAccountUnavailable": "Impossible de supprimer le compte. Réessaie, s'il te plaît.",
+			"accountDeletionFailed": "La suppression du compte a échoué",
+			"passwordResetFailed": "La réinitialisation du mot de passe a échoué",
+			"resetPasswordUnavailable": "Impossible de réinitialiser le mot de passe. Réessaie, s'il te plaît.",
+			"passwordRequirementsNotMet": "Le mot de passe ne respecte pas les exigences",
+			"unexpectedErrorRetryLater": "Une erreur inattendue s'est produite. Réessaie plus tard, s'il te plaît.",
+			"unexpectedErrorVerification": "Une erreur inattendue s'est produite pendant la vérification",
+			"verificationTokenInvalid": "Jeton de vérification invalide ou expiré",
+			"deletionTokenInvalid": "Jeton de suppression invalide ou expiré. Demande une nouvelle suppression de compte.",
+			"resetTokenInvalid": "Jeton de réinitialisation invalide ou expiré. Demande une nouvelle réinitialisation du mot de passe.",
+			"cannotDeleteOwnsOrgs": "Tu ne peux pas supprimer ton compte tant que tu possèdes des organisations actives. Transfère d'abord leur propriété ou supprime-les."
+		}
+	},
+	"seo": {
+		"home": {
+			"title": "Revel : la gestion d'événements pour les communautés",
+			"description": "Découvre des événements communautaires, rencontre les organisateurs et organisatrices et crée des moments inoubliables. Plateforme open source de gestion d'événements et de billetterie.",
+			"ogTitle": "La gestion d'événements pour les communautés",
+			"ogDescription": "Découvre des événements communautaires, rencontre les organisateurs et organisatrices et crée des moments inoubliables sur Revel, la plateforme open source.",
+			"twitterDescription": "Découvre des événements communautaires et crée des moments inoubliables"
+		},
+		"eventsListing": {
+			"title": "Parcourir les événements",
+			"description": "Découvre les événements communautaires près de chez toi. Trouve des concerts, des ateliers, des rencontres et bien plus sur Revel.",
+			"twitterDescription": "Découvre les événements communautaires près de chez toi"
+		},
+		"orgsListing": {
+			"title": "Découvrir les organisations",
+			"description": "Parcours et découvre les organisations communautaires sur Revel. Trouve des organisateurs et organisatrices, des communautés et des groupes qui créent des expériences géniales.",
+			"ogDescription": "Parcours les organisations communautaires sur Revel : organisateurs et organisatrices, communautés et groupes qui créent des expériences géniales.",
+			"twitterDescription": "Découvre les organisations communautaires près de chez toi"
+		},
+		"event": {
+			"fallbackDescription": "Rejoins {event}, organisé par {organization}",
+			"twitterFallback": "Rejoins {event}"
+		},
+		"org": {
+			"fallbackDescriptionTenant": "{organization} : événements et expériences communautaires",
+			"fallbackDescription": "{organization} sur Revel : événements et expériences communautaires",
+			"twitterFallback": "{organization} sur Revel"
+		},
+		"series": {
+			"fallbackDescription": "{series} : série d'événements de {organization}"
+		},
+		"legal": {
+			"privacyTitle": "Politique de confidentialité",
+			"termsTitle": "Conditions d'utilisation"
+		},
+		"referralApply": {
+			"title": "Programme de parrainage",
+			"description": "Candidate au programme de parrainage Revel : amène des organisateurs et organisatrices sur Revel et touche 15 % de ce que Revel gagne grâce à eux, pour toujours."
+		},
+		"auth": {
+			"login": "Se connecter",
+			"register": "Crée ton compte",
+			"passwordReset": "Réinitialise ton mot de passe",
+			"verify": "Vérifie ton compte",
+			"unsubscribe": "Se désabonner"
+		}
+	}
 }

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { organizationGetOrganizationTokenDetails } from '$lib/api/generated/sdk.gen';
@@ -26,7 +27,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
 	if (response.error || !response.data) {
 		throwIfTransientUpstream(response.response);
-		const errorMessage = extractErrorMessage(response.error, 'Token not found or expired');
+		const errorMessage = extractErrorMessage(
+			response.error,
+			m['serverErrors.public.tokenNotFoundOrExpired']()
+		);
 		throw error(404, errorMessage);
 	}
 

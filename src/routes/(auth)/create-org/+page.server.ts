@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { redirect, fail, isRedirect, type Actions } from '@sveltejs/kit';
 import { organizationCreateSchema } from '$lib/schemas/organization';
 import { organizationCreateOrganization } from '$lib/api/generated/sdk.gen';
@@ -62,7 +63,7 @@ export const actions: Actions = {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
 			return fail(401, {
-				errors: { form: 'Authentication required' },
+				errors: { form: m['serverErrors.account.authenticationRequired']() },
 				...data
 			});
 		}
@@ -104,7 +105,10 @@ export const actions: Actions = {
 			const status = response?.status;
 
 			if (status === 400) {
-				const errorMessage = extractErrorMessage(error, 'You already own an organization');
+				const errorMessage = extractErrorMessage(
+					error,
+					m['serverErrors.account.createOrgAlreadyOwn']()
+				);
 				return fail(400, {
 					errors: { form: errorMessage },
 					...data
@@ -114,7 +118,7 @@ export const actions: Actions = {
 			if (status === 403) {
 				const errorMessage = extractErrorMessage(
 					error,
-					'Please verify your email before creating an organization'
+					m['serverErrors.account.createOrgVerifyEmail']()
 				);
 				return fail(403, {
 					errors: { form: errorMessage },
@@ -126,10 +130,7 @@ export const actions: Actions = {
 			// no error responses at all, so a runtime 422 (request validation, which
 			// is systemically under-declared per backend #826) is entirely plausible
 			// and must not be reported to the user as a server failure.
-			const errorMessage = extractErrorMessage(
-				error,
-				'Failed to create organization. Please try again.'
-			);
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.createOrgFailed']());
 			return fail(status && status >= 400 && status < 500 ? status : 500, {
 				errors: { form: errorMessage },
 				...data
@@ -142,7 +143,7 @@ export const actions: Actions = {
 
 			const errorMessage = extractErrorMessage(
 				err,
-				'An unexpected error occurred. Please try again.'
+				m['serverErrors.account.unexpectedErrorTryAgain']()
 			);
 			return fail(500, {
 				errors: { form: errorMessage },

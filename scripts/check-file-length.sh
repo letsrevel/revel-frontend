@@ -45,11 +45,15 @@ FAILED=0
 #   the shared relative-time engine (#826): calendar-day counting + unit ladder
 #   behind getRSVPDeadlineRelative/formatRelativeTime, with the DST fall-back
 #   and numeric:'auto' idiom behavior documented in place per the same rule.
+#   invitations/+page.server.ts → 520: eight form actions, each with its own
+#   401/validation/failure copy; every user-facing string now goes through
+#   Paraglide (prettier wraps the m[...]() calls), which pushed it just past 500.
 max_for() {
     case "$1" in
         src/lib/stores/auth.svelte.ts) echo 730 ;;
         src/lib/components/venues/designer/designer-controller.svelte.ts) echo 540 ;;
         src/lib/utils/date.ts) echo 650 ;;
+        'src/routes/(auth)/org/[slug]/admin/events/[event_id]/invitations/+page.server.ts') echo 520 ;;
         *) echo "$2" ;;
     esac
 }

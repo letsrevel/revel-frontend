@@ -3,13 +3,14 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import * as m from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const { organization, canCreateEvent } = await parent();
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to view events');
+		throw error(401, m['serverErrors.adminEvents.loginToViewEvents']());
 	}
 
 	const headers: HeadersInit = {
@@ -33,13 +34,13 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		log.error('admin_events_load_failed', { error: eventsResponse.error, orgId: organization.id });
 		const errorMessage = extractErrorMessage(
 			eventsResponse.error,
-			'Failed to load events. Please try again later.'
+			m['serverErrors.adminEvents.loadEventsRetryLater']()
 		);
 		throw error(500, errorMessage);
 	}
 
 	if (!eventsResponse.data) {
-		throw error(500, 'Failed to load events');
+		throw error(500, m['serverErrors.common.loadEventsFailed']());
 	}
 
 	return {

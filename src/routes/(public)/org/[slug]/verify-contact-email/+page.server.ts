@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { redirect } from '@sveltejs/kit';
 import { organizationadmincoreVerifyContactEmail } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
@@ -49,7 +50,10 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 
 		if (apiError || !data) {
 			// Extract user-friendly error message from API error
-			const errorMessage = extractErrorMessage(apiError, 'Invalid or expired verification token');
+			const errorMessage = extractErrorMessage(
+				apiError,
+				m['serverErrors.public.verificationTokenInvalid']()
+			);
 
 			return {
 				success: false,
@@ -69,10 +73,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 			organizationName: data.name
 		};
 	} catch (err) {
-		const errorMessage = extractErrorMessage(
-			err,
-			'An unexpected error occurred. Please try again.'
-		);
+		const errorMessage = extractErrorMessage(err, m['serverErrors.public.unexpectedErrorRetry']());
 
 		return {
 			success: false,

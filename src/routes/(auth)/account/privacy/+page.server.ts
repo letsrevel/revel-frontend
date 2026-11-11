@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -25,7 +26,7 @@ export const actions: Actions = {
 		if (!accessToken) {
 			return fail(401, {
 				errors: {
-					exportForm: 'You must be logged in to export your data'
+					exportForm: m['serverErrors.account.exportLoginRequired']()
 				}
 			});
 		}
@@ -47,7 +48,7 @@ export const actions: Actions = {
 			if (getResponseStatus(error) === 429) {
 				const errorMessage = extractErrorMessage(
 					error,
-					'You can only request a data export once every 24 hours. Please try again later.'
+					m['serverErrors.account.exportRateLimited']()
 				);
 				return fail(429, {
 					errors: {
@@ -56,10 +57,7 @@ export const actions: Actions = {
 				});
 			}
 
-			const errorMessage = extractErrorMessage(
-				error,
-				'Failed to request data export. Please try again.'
-			);
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.exportFailed']());
 			return fail(500, {
 				errors: {
 					exportForm: errorMessage
@@ -74,7 +72,7 @@ export const actions: Actions = {
 		if (!accessToken) {
 			return fail(401, {
 				errors: {
-					form: 'You must be logged in to delete your account'
+					form: m['serverErrors.account.deleteLoginRequired']()
 				}
 			});
 		}
@@ -100,7 +98,7 @@ export const actions: Actions = {
 			if (status === 400) {
 				const errorMessage = extractErrorMessage(
 					error,
-					'Cannot delete account. You may own organizations that need to be transferred first.'
+					m['serverErrors.account.deleteBlockedByOrgs']()
 				);
 				return fail(400, { errors: { form: errorMessage } });
 			}
@@ -108,7 +106,7 @@ export const actions: Actions = {
 			if (status === 403) {
 				const errorMessage = extractErrorMessage(
 					error,
-					'You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.'
+					m['serverErrors.account.deleteForbiddenActiveOrgs']()
 				);
 				return fail(403, {
 					errors: {
@@ -120,7 +118,7 @@ export const actions: Actions = {
 			// Generic error
 			const errorMessage = extractErrorMessage(
 				error,
-				'An unexpected error occurred. Please try again later.'
+				m['serverErrors.account.unexpectedErrorTryLater']()
 			);
 			return fail(500, {
 				errors: {

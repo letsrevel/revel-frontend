@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import { getSupportEmail } from '$lib/server/features';
 import type { PageServerLoad } from './$types';
@@ -12,7 +13,7 @@ export const load: PageServerLoad = async ({ parent, fetch }) => {
 	const { isOwner, organization } = await parent();
 
 	if (!isOwner) {
-		throw error(403, 'Only the organization owner can manage the custom domain.');
+		throw error(403, m['serverErrors.admin.ownerOnlyCustomDomain']());
 	}
 	if (!organization.custom_domain_enabled) {
 		return { customDomainEnabled: false, supportEmail: await getSupportEmail(fetch) };

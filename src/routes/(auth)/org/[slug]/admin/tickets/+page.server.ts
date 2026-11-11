@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
@@ -10,7 +11,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to manage tickets');
+		throw error(401, m['serverErrors.admin.loginRequiredManageTickets']());
 	}
 
 	const headers: HeadersInit = {
@@ -36,7 +37,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		});
 		const errorMessage = extractErrorMessage(
 			eventsResponse.error,
-			'Failed to load ticketed events. Please try again later.'
+			m['serverErrors.admin.loadTicketedEventsFailed']()
 		);
 		throw error(500, errorMessage);
 	}

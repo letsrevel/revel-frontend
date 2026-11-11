@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
@@ -82,7 +83,10 @@ export const actions = {
 
 			// If we reach here, there was an error
 			if (!response.response?.ok && response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Login failed');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.public.loginFailed']()
+				);
 				return fail(400, {
 					errors: { form: errorMessage },
 					email: data.email
@@ -90,7 +94,7 @@ export const actions = {
 			}
 
 			return fail(400, {
-				errors: { form: 'Invalid response from server' },
+				errors: { form: m['serverErrors.public.invalidServerResponse']() },
 				email: data.email
 			});
 		} catch (error) {
@@ -103,7 +107,7 @@ export const actions = {
 			log.error('login_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
-				'An unexpected error occurred. Please try again.'
+				m['serverErrors.public.unexpectedErrorRetry']()
 			);
 			return fail(500, {
 				errors: { form: errorMessage },
@@ -160,7 +164,10 @@ export const actions = {
 
 			// If we reach here, there was an error
 			if (!response.response?.ok && response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.public.invalidCodeRetry']()
+				);
 				return fail(400, {
 					errors: { code: errorMessage },
 					requires2FA: true,
@@ -169,7 +176,7 @@ export const actions = {
 			}
 
 			return fail(400, {
-				errors: { code: 'Invalid response from server' },
+				errors: { code: m['serverErrors.public.invalidServerResponse']() },
 				requires2FA: true,
 				tempToken: data.tempToken
 			});
@@ -183,7 +190,7 @@ export const actions = {
 			log.error('login_2fa_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
-				'An unexpected error occurred. Please try again.'
+				m['serverErrors.public.unexpectedErrorRetry']()
 			);
 			return fail(500, {
 				errors: { code: errorMessage },

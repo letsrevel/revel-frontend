@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { referralApply } from '$lib/api/generated/sdk.gen';
@@ -59,7 +60,7 @@ export const load: PageServerLoad = async ({ fetch, url, request }) => {
 	if (!features.referral_applications) {
 		// The same answer the backend gives while applications are closed. Not a
 		// redirect: there is nothing at this URL to redirect to.
-		error(404, 'Not found');
+		error(404, m['serverErrors.common.notFound']());
 	}
 
 	const lang = resolveLang(request);
@@ -104,7 +105,7 @@ export const actions = {
 
 		if (status === 404) {
 			// The flag was switched off between rendering the form and this POST.
-			error(404, 'Not found');
+			error(404, m['serverErrors.common.notFound']());
 		}
 
 		if (status === 409) {

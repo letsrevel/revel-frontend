@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
@@ -35,7 +36,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			eventSlug: event_slug
 		});
 		throwIfTransientUpstream(eventResponse);
-		throw error(404, 'Event not found');
+		throw error(404, m['serverErrors.common.eventNotFound']());
 	}
 
 	canonicalTenantRedirect(locals, event.organization, url);
@@ -60,7 +61,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 	if (questionnaireError || !questionnaire) {
 		log.error('questionnaire_fetch_failed', { error: questionnaireError, questionnaireId });
 		throwIfTransientUpstream(questionnaireResponse);
-		throw error(404, 'Questionnaire not found');
+		throw error(404, m['serverErrors.common.questionnaireNotFound']());
 	}
 
 	return {

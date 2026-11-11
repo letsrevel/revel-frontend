@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
@@ -96,11 +97,13 @@ export const actions: Actions = {
 				const errors: Record<string, string> = {};
 
 				if ('token' in apiErrors && apiErrors.token) {
-					errors.form = 'Invalid or expired deletion token. Please request a new account deletion.';
+					errors.form = m['serverErrors.public.deletionTokenInvalid']();
 				} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
-					errors.form = firstString(apiErrors.non_field_errors) || 'Account deletion failed';
+					errors.form =
+						firstString(apiErrors.non_field_errors) ||
+						m['serverErrors.public.accountDeletionFailed']();
 				} else {
-					errors.form = 'Unable to delete account. Please try again.';
+					errors.form = m['serverErrors.public.deleteAccountUnavailable']();
 				}
 
 				return fail(400, { errors });
@@ -109,7 +112,7 @@ export const actions: Actions = {
 			if (status === 403) {
 				return fail(403, {
 					errors: {
-						form: 'You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.'
+						form: m['serverErrors.public.cannotDeleteOwnsOrgs']()
 					}
 				});
 			}
@@ -117,7 +120,7 @@ export const actions: Actions = {
 			// Generic error
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred. Please try again later.'
+					form: m['serverErrors.public.unexpectedErrorRetryLater']()
 				}
 			});
 		}
