@@ -57,8 +57,7 @@ describe('unsubscribe page (#982)', () => {
 
 	it.each([
 		['missing', { status: 'missing' } as const],
-		['malformed', { status: 'invalid' } as const],
-		['expired', { status: 'expired' } as const]
+		['malformed', { status: 'invalid' } as const]
 	])('shows the invalid-link state on load for a %s token', (_label, info) => {
 		renderPage(info);
 		expect(
@@ -69,6 +68,14 @@ describe('unsubscribe page (#982)', () => {
 			expect.stringContaining('returnUrl=%2Faccount%2Fsettings')
 		);
 		expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+	});
+
+	it('says the link has expired on load for a locally decoded expired token', () => {
+		renderPage({ status: 'expired' });
+		expect(
+			screen.getByRole('heading', { level: 1, name: /this link has expired/i })
+		).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /log in to manage preferences/i })).toBeVisible();
 	});
 
 	it('explains which email keeps arriving and defaults silence to off', () => {
@@ -344,5 +351,132 @@ describe('unsubscribe page (#982)', () => {
 		expect(
 			await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
 		).toBeInTheDocument();
+	});
+
+	describe('typed link-token errors (BE #1373)', () => {
+		const optOut: UnsubscribeTokenInfo = {
+			status: 'valid',
+			kind: 'email_opt_out',
+			email: 'guest@example.com',
+			organizationId: null
+		};
+
+		async function rejectOneClick(error: unknown): Promise<void> {
+			const user = userEvent.setup();
+			const { oneclickunsubscribeOneClick } = await import('$lib/api');
+			vi.mocked(oneclickunsubscribeOneClick).mockResolvedValue({
+				data: undefined,
+				error,
+				response: { status: 400 } as Response
+			} as never);
+			renderPage(optOut);
+			await user.click(screen.getByRole('button', { name: /stop invitation emails/i }));
+		}
+
+		it('one-click: token_expired says the link has expired', async () => {
+			await rejectOneClick({ detail: 'Token has expired.', code: 'token_expired' });
+			expect(
+				await screen.findByRole('heading', { level: 1, name: /this link has expired/i })
+			).toBeInTheDocument();
+			expect(screen.getByText(/unsubscribe link has expired/i)).toBeInTheDocument();
+		});
+
+		it('one-click: invalid_token keeps the generic invalid-link copy', async () => {
+			await rejectOneClick({ detail: 'Invalid token.', code: 'invalid_token' });
+			expect(
+				await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+			).toBeInTheDocument();
+			expect(screen.getByText(/no longer matches your account's email/i)).toBeInTheDocument();
+		});
+
+		it('one-click: a code-less 400 shows the backend detail', async () => {
+			await rejectOneClick({ detail: 'Email address has changed.' });
+			expect(
+				await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+			).toBeInTheDocument();
+			expect(screen.getByText('Email address has changed.')).toBeInTheDocument();
+		});
+
+		it.each([401, 404])(
+			'one-click: a %i keeps the generic invalid copy and hides the backend detail',
+			async (status) => {
+				const user = userEvent.setup();
+				const { oneclickunsubscribeOneClick } = await import('$lib/api');
+				vi.mocked(oneclickunsubscribeOneClick).mockResolvedValue({
+					data: undefined,
+					error: { detail: 'Backend secret text', code: 'token_expired' },
+					response: { status } as Response
+				} as never);
+				renderPage(optOut);
+				await user.click(screen.getByRole('button', { name: /stop invitation emails/i }));
+				expect(
+					await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+				).toBeInTheDocument();
+				expect(screen.getByText(/no longer matches your account's email/i)).toBeInTheDocument();
+				expect(screen.queryByText(/backend secret text/i)).toBeNull();
+			}
+		);
+
+		it.each([401, 404])(
+			'preferences form: a %i keeps the generic invalid copy and hides the backend detail',
+			async (status) => {
+				const user = userEvent.setup();
+				const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+				vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+					data: undefined,
+					error: { detail: 'Backend secret text' },
+					response: { status } as Response
+				} as never);
+				renderPage(accountToken());
+				await user.click(screen.getByRole('button', { name: /save changes/i }));
+				expect(
+					await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+				).toBeInTheDocument();
+				expect(screen.queryByText(/backend secret text/i)).toBeNull();
+			}
+		);
+
+		it('preferences form: token_expired says the link has expired', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Token has expired.', code: 'token_expired' },
+				response: { status: 400 } as Response
+			} as never);
+			renderPage(accountToken());
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+			expect(
+				await screen.findByRole('heading', { level: 1, name: /this link has expired/i })
+			).toBeInTheDocument();
+		});
+
+		it('preferences form: invalid_token keeps the generic invalid-link copy', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Invalid token.', code: 'invalid_token' },
+				response: { status: 400 } as Response
+			} as never);
+			renderPage(accountToken());
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+			expect(
+				await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+			).toBeInTheDocument();
+		});
+
+		it('preferences form: a code-less 400 shows the backend detail', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Email address has changed.' },
+				response: { status: 400 } as Response
+			} as never);
+			renderPage(accountToken());
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+			expect(await screen.findByText('Email address has changed.')).toBeInTheDocument();
+		});
 	});
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as m from '$lib/paraglide/messages.js';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	accountVerifyEmail: vi.fn()
@@ -87,5 +88,89 @@ describe('/verify redirect target', () => {
 		} as never);
 		const result = await load(loadArgs('?token=t&returnUrl=%2Fx'));
 		expect(result).toMatchObject({ success: false });
+	});
+});
+
+describe('/verify typed link-token errors (BE #1373)', () => {
+	function rejectWith(error: unknown): void {
+		mockedVerify.mockResolvedValue({
+			data: undefined,
+			error,
+			response: new Response(null, { status: 400 })
+		} as never);
+	}
+
+	it('shows the expired copy for code token_expired', async () => {
+		rejectWith({ detail: 'Token has expired.', code: 'token_expired' });
+		expect(await load(loadArgs('?token=t'))).toMatchObject({
+			success: false,
+			error: m['serverErrors.public.verificationTokenExpired']()
+		});
+	});
+
+	it('shows the invalid copy for code invalid_token', async () => {
+		rejectWith({ detail: 'Invalid token.', code: 'invalid_token' });
+		expect(await load(loadArgs('?token=t'))).toMatchObject({
+			success: false,
+			error: m['serverErrors.public.verificationTokenInvalid']()
+		});
+	});
+
+	it('shows the backend detail for a code-less 400', async () => {
+		rejectWith({ detail: 'Token has been used.' });
+		expect(await load(loadArgs('?token=t'))).toMatchObject({
+			success: false,
+			error: 'Token has been used.'
+		});
+	});
+
+	it.each(['Invalid token: Not enough segments', 'Ungültiger Token: boom'])(
+		'treats the legacy code-less "%s" as invalid, never showing the raw text',
+		async (detail) => {
+			rejectWith({ detail });
+			const result = await load(loadArgs('?token=t'));
+			expect(result).toMatchObject({
+				error: m['serverErrors.public.verificationTokenInvalid']()
+			});
+			expect(JSON.stringify(result)).not.toMatch(/segments|boom/);
+		}
+	);
+
+	it('maps a 429 to the rate-limit copy, never the raw detail', async () => {
+		mockedVerify.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Request was throttled.' },
+			response: new Response(null, { status: 429 })
+		} as never);
+		expect(await load(loadArgs('?token=t'))).toMatchObject({
+			error: m['serverErrors.public.tooManyAttempts']()
+		});
+	});
+
+	it.each([401, 403, 500])(
+		'maps a %i to the generic failure copy, no raw detail',
+		async (status) => {
+			mockedVerify.mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Internal secret detail' },
+				response: new Response(null, { status })
+			} as never);
+			const result = await load(loadArgs('?token=t'));
+			expect(result).toMatchObject({ error: m['serverErrors.public.verificationFailed']() });
+			expect(JSON.stringify(result)).not.toContain('secret');
+		}
+	);
+
+	it('shows a localized message, not the transport error, when the network fails', async () => {
+		mockedVerify.mockResolvedValue({
+			data: undefined,
+			error: new TypeError('fetch failed'),
+			response: undefined
+		} as never);
+		const result = await load(loadArgs('?token=t'));
+		expect(result).toMatchObject({
+			success: false,
+			error: m['serverErrors.public.unexpectedErrorVerification']()
+		});
 	});
 });

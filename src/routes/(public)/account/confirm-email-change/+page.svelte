@@ -31,7 +31,9 @@
 	const formErrorMessage = $derived.by(() => {
 		const key = errors.form;
 		if (!key) return null;
-		if (key === 'expired' || key === 'invalid') return m['confirmEmailChange.error_expired']();
+		if (key === 'invalid') return m['confirmEmailChange.error_invalid']();
+		if (key === 'expired') return m['confirmEmailChange.error_tokenExpired']();
+		if (key === 'detail') return errors.detail || m['confirmEmailChange.error_generic']();
 		if (key === 'emailTaken') return m['confirmEmailChange.error_emailTaken']();
 		if (key === 'throttled') return m['confirmEmailChange.error_throttled']();
 		return m['confirmEmailChange.error_generic']();
@@ -173,7 +175,7 @@
 		{#if formErrorMessage}
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 				<p class="text-sm font-medium text-destructive">{formErrorMessage}</p>
-				{#if errors.form === 'expired' || errors.form === 'invalid' || errors.form === 'emailTaken'}
+				{#if errors.form === 'expired' || errors.form === 'invalid' || errors.form === 'detail' || errors.form === 'emailTaken'}
 					<div class="mt-3">
 						<a
 							href={resolve('/(auth)/account/security', {})}

@@ -35,7 +35,11 @@
 		UpdateNotificationPreferenceSchema
 	} from '$lib/api/generated/types.gen.js';
 	import { disablesStaffAlerts } from './mandatoryNotifications';
-	import { backendMessage } from '$lib/utils/api-error-detail';
+	import {
+		backendMessage,
+		linkTokenRejectionFor,
+		type LinkTokenRejection
+	} from '$lib/utils/api-error-detail';
 
 	// Extract a human-readable message from an unknown API error shape.
 	// `backendMessage` probes detail (string OR the 422 list) → errors → message;
@@ -52,7 +56,7 @@
 		authToken?: string;
 		unsubscribeToken?: string; // Token for unsubscribe mode (unauthenticated)
 		/** Unsubscribe mode: the backend rejected the link (expired, revoked, stale email). */
-		onInvalidToken?: (submittedToken: string) => void;
+		onInvalidToken?: (submittedToken: string, rejection: LinkTokenRejection) => void;
 	}
 
 	const {
@@ -207,7 +211,13 @@
 	// 401 (revoked), 404 (account gone). The page swaps to its invalid-link state.
 	const INVALID_TOKEN_STATUSES = new Set([400, 401, 404]);
 
-	class InvalidUnsubscribeTokenError extends Error {}
+	class InvalidUnsubscribeTokenError extends Error {
+		rejection: LinkTokenRejection;
+		constructor(message: string, rejection: LinkTokenRejection) {
+			super(message);
+			this.rejection = rejection;
+		}
+	}
 
 	// Update preferences mutation
 	const updateMutation = createMutation(() => ({
@@ -235,7 +245,10 @@
 				if (response.error) {
 					const message = extractErrorMessage(response.error);
 					if (INVALID_TOKEN_STATUSES.has(response.response?.status ?? 0)) {
-						throw new InvalidUnsubscribeTokenError(message);
+						throw new InvalidUnsubscribeTokenError(
+							message,
+							linkTokenRejectionFor(response.response?.status, response.error)
+						);
 					}
 					throw new Error(message);
 				}
@@ -272,7 +285,7 @@
 		},
 		onError: (error: Error, { token }) => {
 			if (error instanceof InvalidUnsubscribeTokenError && onInvalidToken && token) {
-				onInvalidToken(token);
+				onInvalidToken(token, error.rejection);
 				return;
 			}
 			toast.error(m['notificationPreferences.saveFailed']({ error: error.message }));

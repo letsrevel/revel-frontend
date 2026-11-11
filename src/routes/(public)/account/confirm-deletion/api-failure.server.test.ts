@@ -58,21 +58,53 @@ describe('confirmDeletion when the API returns an error result (#1226)', () => {
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('never shows the raw exception text of "Invalid token: ..." (400)', async () => {
-		resolvesWithError(400, { detail: 'Invalid token: Signature verification failed' });
+	it('shows the invalid copy for code invalid_token (400)', async () => {
+		resolvesWithError(400, { detail: 'Invalid token.', code: 'invalid_token' });
 		const result = await run();
 		expect(result).toMatchObject({
 			status: 400,
 			data: { errors: { form: m['serverErrors.public.deletionTokenInvalid']() } }
 		});
-		expect(JSON.stringify(result)).not.toContain('Signature');
+		expect(result).toMatchObject({ data: { offerNewLink: true } });
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('recognises the localized "Invalid token" prefix', async () => {
-		resolvesWithError(400, { detail: 'Jeton invalide : boom' });
+	it('shows the expired copy for code token_expired (400)', async () => {
+		resolvesWithError(400, { detail: 'Token has expired.', code: 'token_expired' });
+		const result = await run();
+		expect(result).toMatchObject({
+			status: 400,
+			data: {
+				errors: { form: m['serverErrors.public.deletionTokenExpired']() },
+				offerNewLink: true
+			}
+		});
+		expect(cookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('offers a new link for an already-used token (401)', async () => {
+		resolvesWithError(401, { detail: 'Unauthorized' });
+		expect(await run()).toMatchObject({ status: 400, data: { offerNewLink: true } });
+	});
+
+	it.each(['Invalid token: Signature verification failed', 'Jeton invalide : boom'])(
+		'treats the legacy code-less "%s" as invalid and never shows the raw text',
+		async (detail) => {
+			resolvesWithError(400, { detail });
+			const result = await run();
+			expect(result).toMatchObject({
+				status: 400,
+				data: { errors: { form: m['serverErrors.public.deletionTokenInvalid']() } }
+			});
+			expect(JSON.stringify(result)).not.toMatch(/Signature|boom/);
+		}
+	);
+
+	it('shows the backend detail for a code-less 400 (blacklisted token)', async () => {
+		resolvesWithError(400, { detail: 'Token has been used.' });
 		expect(await run()).toMatchObject({
-			data: { errors: { form: m['serverErrors.public.deletionTokenInvalid']() } }
+			status: 400,
+			data: { errors: { form: 'Token has been used.' }, offerNewLink: false }
 		});
 	});
 
