@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -43,7 +44,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 				seriesSlug: series_slug
 			});
 			throwIfTransientUpstream(seriesResponse.response);
-			throw svelteKitError(404, 'Event series not found');
+			throw svelteKitError(404, m['serverErrors.common.seriesNotFound']());
 		}
 
 		const series = seriesResponse.data;
@@ -150,7 +151,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 			throw err; // Re-throw SvelteKit errors
 		}
 
-		const errorMessage = extractErrorMessage(err, 'Failed to load event series');
+		const errorMessage = extractErrorMessage(err, m['serverErrors.common.loadSeriesFailed']());
 		throw svelteKitError(500, errorMessage);
 	}
 };

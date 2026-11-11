@@ -4,6 +4,7 @@ import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
 import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
+import * as m from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to manage attendees');
+		throw error(401, m['serverErrors.adminEvents.loginToManageAttendees']());
 	}
 
 	const headers: HeadersInit = {
@@ -28,7 +29,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		});
 
 		if (!eventResponse.data) {
-			throw error(404, 'Event not found');
+			throw error(404, m['serverErrors.common.eventNotFound']());
 		}
 
 		event = eventResponse.data;
@@ -37,11 +38,11 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			const status = (err as { status: number }).status;
 
 			if (status === 404) {
-				throw error(404, 'Event not found');
+				throw error(404, m['serverErrors.common.eventNotFound']());
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to manage this event');
+				throw error(403, m['serverErrors.common.permissionManageEvent']());
 			}
 		}
 
@@ -50,12 +51,12 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		}
 
 		log.error('event_load_failed', { error: err, eventId: params.event_id });
-		throw error(500, 'Failed to load event');
+		throw error(500, m['serverErrors.common.loadEventFailed']());
 	}
 
 	// Verify event belongs to this organization
 	if (event.organization?.slug !== organization.slug) {
-		throw error(403, 'Event does not belong to this organization');
+		throw error(403, m['serverErrors.common.eventWrongOrganization']());
 	}
 
 	// Attendees (RSVP) management is only for non-ticketed events. If a stale or

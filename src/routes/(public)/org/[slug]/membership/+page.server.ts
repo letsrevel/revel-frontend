@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, isHttpError, isRedirect } from '@sveltejs/kit';
 import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo, withSiteName } from '$lib/seo';
@@ -45,9 +46,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		if (!orgResponse.data) {
 			throwIfTransientUpstream(orgResponse.response);
 			if (orgResponse.response?.status === 410) {
-				throw error(410, 'This invitation link is no longer valid');
+				throw error(410, m['serverErrors.common.invitationLinkInvalid']());
 			}
-			throw error(404, 'Organization not found');
+			throw error(404, m['serverErrors.common.organizationNotFound']());
 		}
 
 		const organization = orgResponse.data;
@@ -145,11 +146,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;
-			if (status === 404) throw error(404, 'Organization not found');
-			if (status === 403) throw error(403, 'You do not have permission to view this organization');
+			if (status === 404) throw error(404, m['serverErrors.common.organizationNotFound']());
+			if (status === 403) throw error(403, m['serverErrors.common.permissionViewOrganization']());
 		}
 
 		log.error('org_membership_load_error', { error: err, slug });
-		throw error(500, 'Failed to load membership options');
+		throw error(500, m['serverErrors.public.loadMembershipOptionsFailed']());
 	}
 };

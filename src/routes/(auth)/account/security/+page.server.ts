@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -60,7 +61,7 @@ export const actions: Actions = {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'Unauthorized' } });
+			return fail(401, { errors: { form: m['serverErrors.common.unauthorized']() } });
 		}
 
 		try {
@@ -86,7 +87,10 @@ export const actions: Actions = {
 
 			if (response.error) {
 				log.warning('totp_setup_error_response');
-				const errorMessage = extractErrorMessage(response.error, '2FA is already enabled');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.account.setup2faAlreadyEnabled']()
+				);
 				return fail(400, {
 					errors: { form: errorMessage }
 				});
@@ -94,11 +98,11 @@ export const actions: Actions = {
 
 			log.error('totp_setup_empty_response');
 			return fail(500, {
-				errors: { form: 'Failed to setup 2FA' }
+				errors: { form: m['serverErrors.account.setup2faFailed']() }
 			});
 		} catch (error) {
 			log.error('totp_setup_failed', { error });
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.unexpectedError']());
 			return fail(500, {
 				errors: { form: errorMessage }
 			});
@@ -112,14 +116,14 @@ export const actions: Actions = {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'Unauthorized' } });
+			return fail(401, { errors: { form: m['serverErrors.common.unauthorized']() } });
 		}
 
 		const formData = await request.formData();
 		const code = formData.get('code') as string;
 
 		// Validate code
-		const codeSchema = z.string().length(6, 'Code must be 6 digits');
+		const codeSchema = z.string().length(6, m['serverErrors.account.codeMustBe6Digits']());
 		const validation = codeSchema.safeParse(code);
 
 		if (!validation.success) {
@@ -142,23 +146,26 @@ export const actions: Actions = {
 				return {
 					success: true,
 					verified: true,
-					message: '2FA has been successfully enabled!'
+					message: m['serverErrors.account.twoFaEnabled']()
 				};
 			}
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.account.invalidCodeTryAgain']()
+				);
 				return fail(403, {
 					errors: { code: errorMessage }
 				});
 			}
 
 			return fail(500, {
-				errors: { code: 'Failed to verify code' }
+				errors: { code: m['serverErrors.account.verifyCodeFailed']() }
 			});
 		} catch (error) {
 			log.error('totp_verify_failed', { error });
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.unexpectedError']());
 			return fail(500, {
 				errors: { code: errorMessage }
 			});
@@ -172,14 +179,14 @@ export const actions: Actions = {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'Unauthorized' } });
+			return fail(401, { errors: { form: m['serverErrors.common.unauthorized']() } });
 		}
 
 		const formData = await request.formData();
 		const code = formData.get('code') as string;
 
 		// Validate code
-		const codeSchema = z.string().length(6, 'Code must be 6 digits');
+		const codeSchema = z.string().length(6, m['serverErrors.account.codeMustBe6Digits']());
 		const validation = codeSchema.safeParse(code);
 
 		if (!validation.success) {
@@ -202,23 +209,26 @@ export const actions: Actions = {
 				return {
 					success: true,
 					disabled: true,
-					message: '2FA has been successfully disabled'
+					message: m['serverErrors.account.twoFaDisabled']()
 				};
 			}
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.account.invalidCodeTryAgain']()
+				);
 				return fail(403, {
 					errors: { code: errorMessage }
 				});
 			}
 
 			return fail(500, {
-				errors: { code: 'Failed to disable 2FA' }
+				errors: { code: m['serverErrors.account.disable2faFailed']() }
 			});
 		} catch (error) {
 			log.error('totp_disable_failed', { error });
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.unexpectedError']());
 			return fail(500, {
 				errors: { code: errorMessage }
 			});
@@ -236,7 +246,7 @@ export const actions: Actions = {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'Unauthorized' } });
+			return fail(401, { errors: { form: m['serverErrors.common.unauthorized']() } });
 		}
 
 		const formData = await request.formData();

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad, Actions } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import {
@@ -21,7 +22,7 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	// Ensure user is authenticated
 	const user = locals.user;
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	// Prepare headers with authentication
@@ -71,7 +72,12 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 			error: submissionResult.error
 		});
 		const status = loaderErrorStatus(backendStatus);
-		throw error(status, status === 404 ? 'Submission not found' : 'Failed to load submission');
+		throw error(
+			status,
+			status === 404
+				? m['serverErrors.admin.submissionNotFound']()
+				: m['serverErrors.admin.loadSubmissionFailed']()
+		);
 	}
 
 	// Compute Previous/Next neighbors within the loaded, filtered, ordered set.
@@ -126,7 +132,7 @@ export const actions: Actions = {
 		// Ensure user is authenticated
 		const user = locals.user;
 		if (!user) {
-			return fail(401, { error: 'Unauthorized' });
+			return fail(401, { error: m['serverErrors.common.unauthorized']() });
 		}
 
 		// Prepare headers with authentication
@@ -142,7 +148,7 @@ export const actions: Actions = {
 
 		// Validate status
 		if (!status || !['approved', 'rejected', 'pending review'].includes(status)) {
-			return fail(400, { error: 'Invalid evaluation status' });
+			return fail(400, { error: m['serverErrors.admin.invalidEvaluationStatus']() });
 		}
 
 		// Build evaluation payload
@@ -157,7 +163,7 @@ export const actions: Actions = {
 		if (score) {
 			const scoreNum = parseFloat(score);
 			if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
-				return fail(400, { error: 'Score must be between 0 and 100' });
+				return fail(400, { error: m['serverErrors.admin.scoreOutOfRange']() });
 			}
 			evaluationData.score = scoreNum;
 		}
@@ -189,7 +195,7 @@ export const actions: Actions = {
 			// "please try again" threw away. Probe the union, never read it raw.
 			const status = evaluationResponse?.status;
 			return fail(status && status >= 400 && status < 500 ? status : 500, {
-				error: backendMessage(evaluationError) ?? 'Failed to submit evaluation. Please try again.'
+				error: backendMessage(evaluationError) ?? m['serverErrors.admin.submitEvaluationFailed']()
 			});
 		}
 

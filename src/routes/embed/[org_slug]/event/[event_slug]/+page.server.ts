@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEventBySlugs, eventpublicticketsListTiers } from '$lib/api';
@@ -23,7 +24,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
 	const event = eventResponse.data;
 	if (!event) {
-		error(404, 'Event not found');
+		error(404, m['serverErrors.common.eventNotFound']());
 	}
 
 	let priceFrom: EmbedPrice | null = null;

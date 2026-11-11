@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import { loadSetupCounts } from '$lib/server/org-setup';
@@ -13,7 +14,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params }) =>
 
 	const user = locals.user;
 	if (!user?.accessToken) {
-		throw error(401, 'You must be logged in');
+		throw error(401, m['serverErrors.common.mustBeLoggedIn']());
 	}
 
 	const accessToken = user.accessToken;

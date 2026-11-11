@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { organizationintegrationsListIntegrations } from '$lib/api/generated';
@@ -10,11 +11,11 @@ import { log } from '$lib/server/logger';
 export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const { isOwner, organization } = await parent();
 	if (!isOwner) {
-		throw error(403, 'Only the organization owner can manage integrations.');
+		throw error(403, m['serverErrors.admin.ownerOnlyIntegrations']());
 	}
 	const accessToken = locals.user?.accessToken;
 	if (!accessToken) {
-		throw error(401, 'You must be logged in to access this page');
+		throw error(401, m['serverErrors.admin.loginRequiredAccessPage']());
 	}
 
 	// One row per provider this instance has credentials for, connected or not.
@@ -26,7 +27,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	});
 	if (res.error || !res.data) {
 		log.error('org_integrations_list_failed', { slug: organization.slug, error: res.error });
-		throw error(500, 'Failed to load integrations');
+		throw error(500, m['serverErrors.admin.loadIntegrationsFailed']());
 	}
 	const connections: ConnectionSchema[] = res.data;
 	return { connections };

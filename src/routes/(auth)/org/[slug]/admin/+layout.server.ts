@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { organizationadmincoreGetOrganization, permissionMyPermissions } from '$lib/api';
@@ -8,7 +9,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies })
 
 	// Ensure user is authenticated
 	if (!user) {
-		throw error(401, 'You must be logged in to access this page');
+		throw error(401, m['serverErrors.admin.loginRequiredAccessPage']());
 	}
 
 	// Prepare headers with authentication
@@ -25,7 +26,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies })
 		});
 
 		if (!orgResponse.data) {
-			throw error(404, 'Organization not found');
+			throw error(404, m['serverErrors.common.organizationNotFound']());
 		}
 
 		const organization = orgResponse.data;
@@ -46,7 +47,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies })
 		const isStaff = orgPermissions && orgPermissions !== 'owner';
 
 		if (!isOwner && !isStaff) {
-			throw error(403, 'You do not have permission to manage this organization');
+			throw error(403, m['serverErrors.admin.permissionManageOrganization']());
 		}
 
 		// Extract permission flags for UI conditional rendering.
@@ -90,11 +91,11 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies })
 			const status = (err as { status: number }).status;
 
 			if (status === 404) {
-				throw error(404, 'Organization not found');
+				throw error(404, m['serverErrors.common.organizationNotFound']());
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to view this organization');
+				throw error(403, m['serverErrors.common.permissionViewOrganization']());
 			}
 		}
 
@@ -105,6 +106,6 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies })
 
 		// Generic error
 		log.error('org_admin_load_failed', { error: err, slug: params.slug });
-		throw error(500, 'Failed to load organization');
+		throw error(500, m['serverErrors.common.loadOrganizationFailed']());
 	}
 };

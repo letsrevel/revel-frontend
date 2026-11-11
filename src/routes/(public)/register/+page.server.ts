@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
@@ -150,7 +151,10 @@ export const actions = {
 				log.warning('register_error_response', { status: response.response?.status });
 
 				// Extract user-friendly error message from API error
-				const errorMessage = extractErrorMessage(response.error, 'Registration failed');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.public.registrationFailed']()
+				);
 
 				// Check if it's an email-specific error
 				const apiError: unknown = response.error;
@@ -174,7 +178,7 @@ export const actions = {
 					errorMessage.toLowerCase().includes('exist')
 				) {
 					return fail(400, {
-						errors: { email: 'An account with this email already exists' },
+						errors: { email: m['serverErrors.public.accountEmailExists']() },
 						email: data.email
 					});
 				}
@@ -188,7 +192,7 @@ export const actions = {
 
 			// Neither data nor error (shouldn't happen)
 			return fail(500, {
-				errors: { form: 'Invalid response from server' },
+				errors: { form: m['serverErrors.public.invalidServerResponse']() },
 				email: data.email
 			});
 		} catch (error) {
@@ -201,7 +205,7 @@ export const actions = {
 			log.error('register_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
-				'An unexpected error occurred. Please try again.'
+				m['serverErrors.public.unexpectedErrorRetry']()
 			);
 			return fail(500, {
 				errors: { form: errorMessage },

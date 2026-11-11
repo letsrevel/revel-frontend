@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { canPerformAction } from '$lib/utils/permissions';
@@ -29,7 +30,7 @@ export const load: PageServerLoad = async ({ parent, url }) => {
 	// touch the roster still needs this page for the Subscriptions tab. Each tab
 	// is gated on its own flag below.
 	if (!canManageMembers && !canManageSubscriptions) {
-		throw error(403, 'You do not have permission to manage members');
+		throw error(403, m['serverErrors.admin.permissionManageMembers']());
 	}
 
 	return {

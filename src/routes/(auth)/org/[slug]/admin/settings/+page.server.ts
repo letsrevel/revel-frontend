@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -24,7 +25,7 @@ export const load: PageServerLoad = async ({ parent, cookies, fetch, url }) => {
 	const { organization, isOwner } = await parent();
 
 	if (!organization) {
-		throw error(404, 'Organization not found');
+		throw error(404, m['serverErrors.common.organizationNotFound']());
 	}
 
 	// Options for the default-membership-questionnaire picker. Value = the
@@ -79,7 +80,7 @@ export const actions: Actions = {
 		if (!accessToken) {
 			return fail(401, {
 				errors: {
-					form: 'You must be logged in to update organization settings'
+					form: m['serverErrors.admin.loginRequiredUpdateSettings']()
 				}
 			});
 		}
@@ -210,7 +211,7 @@ export const actions: Actions = {
 				// Extract user-friendly error message from API error
 				const errorMessage = extractErrorMessage(
 					apiError,
-					'Failed to update organization settings'
+					m['serverErrors.admin.updateSettingsFailed']()
 				);
 
 				return fail(500, {
@@ -228,7 +229,7 @@ export const actions: Actions = {
 			log.error('organization_update_failed', { slug, error: err });
 			const errorMessage = extractErrorMessage(
 				err,
-				'An unexpected error occurred while updating your organization'
+				m['serverErrors.admin.updateOrganizationUnexpected']()
 			);
 
 			return fail(500, {

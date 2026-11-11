@@ -2,18 +2,14 @@
  * i18n Configuration for SvelteKit
  *
  * This file provides utilities for language detection and management.
+ * Server-only: it imports $lib/server/request-locale, so client code must
+ * import from '$lib/paraglide/runtime.js' directly.
  */
 
-import {
-	setLocale,
-	getLocale,
-	locales,
-	baseLocale,
-	cookieName,
-	type Locale
-} from '$lib/paraglide/runtime.js';
+import { getLocale, locales, baseLocale, cookieName, type Locale } from '$lib/paraglide/runtime.js';
 import type { Handle } from '@sveltejs/kit';
 import { isEmbedPath } from '$lib/embed/constants';
+import { runWithRequestLocale } from '$lib/server/request-locale';
 
 /**
  * Supported languages
@@ -78,8 +74,10 @@ export function i18nHandle(): Handle {
 	return async ({ event, resolve }) => {
 		const lang = detectLanguage(event);
 
-		// Set the locale for this request
-		setLocale(lang);
+		// The locale is request-scoped via AsyncLocalStorage (see
+		// $lib/server/request-locale). We deliberately do NOT call Paraglide's
+		// setLocale() here: on the server it writes a process-global variable
+		// shared by all concurrent requests, which is the race this fixes.
 
 		const cookieOptions = {
 			path: '/',
@@ -97,7 +95,7 @@ export function i18nHandle(): Handle {
 			// Write Paraglide's canonical locale cookie so the client-side runtime
 			// resolves the SAME locale during hydration. Without this the client falls
 			// back to baseLocale and the whole UI flashes to English on first visit
-			// (the server's own setLocale() does not write this cookie). See #505.
+			// (the server never writes this cookie itself). See #505.
 			event.cookies.set(cookieName, lang, cookieOptions);
 
 			// Keep the legacy cookie for backwards compatibility / explicit reads.
@@ -105,15 +103,17 @@ export function i18nHandle(): Handle {
 		}
 
 		// Resolve with lang attribute replacement
-		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%paraglide.lang%', lang).replace('%paraglide.textDirection%', 'ltr'); // All our languages are LTR
-			}
-		});
+		return runWithRequestLocale(lang, event.url.origin, () =>
+			resolve(event, {
+				transformPageChunk: ({ html }) => {
+					return html.replace('%paraglide.lang%', lang).replace('%paraglide.textDirection%', 'ltr'); // All our languages are LTR
+				}
+			})
+		);
 	};
 }
 
 /**
  * Export language utilities
  */
-export { setLocale, getLocale, locales, baseLocale };
+export { getLocale, locales, baseLocale };

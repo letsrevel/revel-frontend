@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
@@ -67,9 +68,9 @@ export const load: PageServerLoad = async ({
 		if (!eventResponse.data) {
 			throwIfTransientUpstream(eventResponse.response);
 			if (eventResponse.response?.status === 410) {
-				throw error(410, 'This invitation link is no longer valid');
+				throw error(410, m['serverErrors.common.invitationLinkInvalid']());
 			}
-			throw error(404, 'Event not found');
+			throw error(404, m['serverErrors.common.eventNotFound']());
 		}
 
 		const event = eventResponse.data;
@@ -295,16 +296,16 @@ export const load: PageServerLoad = async ({
 			const status = (err as { status: number }).status;
 
 			if (status === 404) {
-				throw error(404, 'Event not found');
+				throw error(404, m['serverErrors.common.eventNotFound']());
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to view this event');
+				throw error(403, m['serverErrors.common.permissionViewEvent']());
 			}
 		}
 
 		// Generic error
 		log.error('event_load_error', { error: err, eventId: id });
-		throw error(500, 'Failed to load event details');
+		throw error(500, m['serverErrors.common.loadEventDetailsFailed']());
 	}
 };

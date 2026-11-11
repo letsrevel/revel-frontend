@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import { pollGetPoll } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -34,7 +35,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		// After logging (so throttling/outages stay visible in the structured
 		// logs), a transient upstream failure (429/5xx) becomes a 503 page.
 		throwIfTransientUpstream(res.response);
-		const message = extractErrorMessage(res.error, 'Failed to load poll');
+		const message = extractErrorMessage(res.error, m['serverErrors.common.loadPollFailed']());
 		// 403 is handled above and 429/5xx became a 503 above; preserve any
 		// other upstream client-error status (401/404/410/422). Only a
 		// status-less transport failure still falls back to 500 here.
@@ -42,13 +43,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	}
 
 	if (!res.data) {
-		throw error(500, 'Failed to load poll');
+		throw error(500, m['serverErrors.common.loadPollFailed']());
 	}
 
 	// On a tenant host a poll of another organization must not render under this
 	// domain's chrome (the route only checks the slug, the id is org-agnostic).
 	if (locals.tenant && res.data.organization_id !== locals.tenant.id) {
-		throw error(404, 'Poll not found');
+		throw error(404, m['serverErrors.common.pollNotFound']());
 	}
 
 	return {

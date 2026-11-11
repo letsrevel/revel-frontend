@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import type { CitySchema } from '$lib/api/generated/types.gen';
 import { userpreferencesGetGeneralPreferences, dashboardDashboardEventSeries } from '$lib/api';
 import { log } from '$lib/server/logger';
+import * as m from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -10,11 +11,11 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to create events');
+		throw error(401, m['serverErrors.adminEvents.loginToCreateEvents']());
 	}
 
 	if (!canCreateEvent) {
-		throw error(403, 'You do not have permission to create events for this organization');
+		throw error(403, m['serverErrors.adminEvents.permissionCreateEvents']());
 	}
 
 	const headers: HeadersInit = {

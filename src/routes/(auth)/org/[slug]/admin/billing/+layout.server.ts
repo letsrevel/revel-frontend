@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
@@ -9,7 +10,7 @@ export const load: LayoutServerLoad = async ({ parent }) => {
 	const { isOwner } = await parent();
 
 	if (!isOwner) {
-		throw error(403, 'Only the organization owner can access billing.');
+		throw error(403, m['serverErrors.admin.ownerOnlyBilling']());
 	}
 
 	return {};

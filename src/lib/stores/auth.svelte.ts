@@ -5,6 +5,7 @@ import {
 	accountMe,
 	permissionMyPermissions
 } from '$lib/api/client';
+import { browser } from '$app/environment';
 import { setLocale } from '$lib/paraglide/runtime.js';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '$lib/schemas/profile';
 import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
@@ -491,8 +492,15 @@ class AuthStore {
 			if (gen !== this._sessionGen) return;
 			this._user = data;
 
-			// Set user's preferred language if available
-			if (data.language && (SUPPORTED_LANGUAGES as readonly string[]).includes(data.language)) {
+			// Set user's preferred language if available. Browser only: on the server
+			// setLocale() would write Paraglide's process-global locale and leak this
+			// user's language into concurrent requests (the server locale is
+			// request-scoped, see $lib/server/request-locale).
+			if (
+				browser &&
+				data.language &&
+				(SUPPORTED_LANGUAGES as readonly string[]).includes(data.language)
+			) {
 				setLocale(data.language as SupportedLanguage);
 			}
 		} catch (err) {

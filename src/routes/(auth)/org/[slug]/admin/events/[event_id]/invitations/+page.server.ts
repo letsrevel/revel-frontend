@@ -22,6 +22,7 @@ import type {
 import { extractErrorMessage } from '$lib/utils/errors';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
+import * as m from '$lib/paraglide/messages.js';
 import { computePagination, defaultPagination } from './pagination';
 import { parseInvitationOptions } from './invitation-form';
 
@@ -48,7 +49,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		});
 
 		if (!eventResponse.data) {
-			throw error(404, 'Event not found');
+			throw error(404, m['serverErrors.common.eventNotFound']());
 		}
 
 		event = eventResponse.data;
@@ -57,12 +58,12 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		// Unexpected failures (network, 5xx) are not a missing event — don't mask
 		// outages as 404.
 		log.error('event_load_failed', { error: err, eventId: params.event_id });
-		throw error(500, 'Failed to load event');
+		throw error(500, m['serverErrors.common.loadEventFailed']());
 	}
 
 	// Verify event belongs to this organization
 	if (event.organization?.slug !== organization.slug) {
-		throw error(403, 'Event does not belong to this organization');
+		throw error(403, m['serverErrors.common.eventWrongOrganization']());
 	}
 
 	// Get query parameters. `status` is untrusted external input, so narrow it
@@ -208,14 +209,14 @@ export const actions: Actions = {
 	approveRequest: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
 		const requestId = formData.get('request_id') as string;
 
 		if (!requestId) {
-			return fail(400, { errors: { form: 'Request ID is required' } });
+			return fail(400, { errors: { form: m['serverErrors.adminEvents.requestIdRequired']() } });
 		}
 
 		try {
@@ -226,14 +227,20 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to approve request');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.adminEvents.approveRequestFailed']()
+				);
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'approved' };
 		} catch (err) {
 			log.error('invitation_request_approve_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
@@ -242,14 +249,14 @@ export const actions: Actions = {
 	rejectRequest: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
 		const requestId = formData.get('request_id') as string;
 
 		if (!requestId) {
-			return fail(400, { errors: { form: 'Request ID is required' } });
+			return fail(400, { errors: { form: m['serverErrors.adminEvents.requestIdRequired']() } });
 		}
 
 		try {
@@ -260,14 +267,20 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to reject request');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.adminEvents.rejectRequestFailed']()
+				);
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'rejected' };
 		} catch (err) {
 			log.error('invitation_request_reject_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
@@ -276,7 +289,7 @@ export const actions: Actions = {
 	createInvitations: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
@@ -284,7 +297,7 @@ export const actions: Actions = {
 		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!emailsRaw) {
-			return fail(400, { errors: { form: 'Emails are required' } });
+			return fail(400, { errors: { form: m['serverErrors.adminEvents.emailsRequired']() } });
 		}
 
 		// Parse emails (comma or newline separated)
@@ -294,7 +307,9 @@ export const actions: Actions = {
 			.filter((e) => e.length > 0);
 
 		if (emails.length === 0) {
-			return fail(400, { errors: { form: 'At least one email is required' } });
+			return fail(400, {
+				errors: { form: m['serverErrors.adminEvents.atLeastOneEmailRequired']() }
+			});
 		}
 
 		try {
@@ -316,7 +331,10 @@ export const actions: Actions = {
 				// errors → message, so no union branch is read unnarrowed.
 				const errorMessage =
 					backendMessage(response.error) ??
-					extractErrorMessage(response.error, 'Failed to create invitations');
+					extractErrorMessage(
+						response.error,
+						m['serverErrors.adminEvents.createInvitationsFailed']()
+					);
 				const status = response.response?.status;
 				return fail(status && status >= 400 && status < 500 ? status : 500, {
 					errors: { form: errorMessage }
@@ -326,7 +344,10 @@ export const actions: Actions = {
 			return { success: true, action: 'created', data: response.data };
 		} catch (err) {
 			log.error('invitations_create_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
@@ -335,7 +356,7 @@ export const actions: Actions = {
 	deleteInvitation: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
@@ -343,7 +364,9 @@ export const actions: Actions = {
 		const invitationType = formData.get('invitation_type') as 'registered' | 'pending';
 
 		if (!invitationId || !invitationType) {
-			return fail(400, { errors: { form: 'Invitation ID and type are required' } });
+			return fail(400, {
+				errors: { form: m['serverErrors.adminEvents.invitationIdAndTypeRequired']() }
+			});
 		}
 
 		try {
@@ -358,14 +381,20 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to delete invitation');
+				const errorMessage = extractErrorMessage(
+					response.error,
+					m['serverErrors.adminEvents.deleteInvitationFailed']()
+				);
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'deleted' };
 		} catch (err) {
 			log.error('invitation_delete_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
@@ -374,7 +403,7 @@ export const actions: Actions = {
 	updateInvitation: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
@@ -382,7 +411,7 @@ export const actions: Actions = {
 		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!email) {
-			return fail(400, { errors: { form: 'Email is required' } });
+			return fail(400, { errors: { form: m['serverErrors.adminEvents.emailRequired']() } });
 		}
 
 		try {
@@ -401,7 +430,10 @@ export const actions: Actions = {
 				// (e.g. the org's daily invitation budget, #987) reach the organizer.
 				const errorMessage =
 					backendMessage(response.error) ??
-					extractErrorMessage(response.error, 'Failed to update invitation');
+					extractErrorMessage(
+						response.error,
+						m['serverErrors.adminEvents.updateInvitationFailed']()
+					);
 				const status = response.response?.status;
 				return fail(status && status >= 400 && status < 500 ? status : 500, {
 					errors: { form: errorMessage }
@@ -411,7 +443,10 @@ export const actions: Actions = {
 			return { success: true, action: 'updated' };
 		} catch (err) {
 			log.error('invitation_update_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
@@ -420,7 +455,7 @@ export const actions: Actions = {
 	bulkUpdateInvitations: async ({ request, params, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 		if (!accessToken) {
-			return fail(401, { errors: { form: 'You must be logged in' } });
+			return fail(401, { errors: { form: m['serverErrors.common.mustBeLoggedIn']() } });
 		}
 
 		const formData = await request.formData();
@@ -428,14 +463,16 @@ export const actions: Actions = {
 		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!emailsRaw) {
-			return fail(400, { errors: { form: 'Emails are required' } });
+			return fail(400, { errors: { form: m['serverErrors.adminEvents.emailsRequired']() } });
 		}
 
 		// Parse emails
 		const emails = JSON.parse(emailsRaw) as string[];
 
 		if (emails.length === 0) {
-			return fail(400, { errors: { form: 'At least one email is required' } });
+			return fail(400, {
+				errors: { form: m['serverErrors.adminEvents.atLeastOneEmailRequired']() }
+			});
 		}
 
 		try {
@@ -454,7 +491,10 @@ export const actions: Actions = {
 				// (e.g. the org's daily invitation budget, #987) reach the organizer.
 				const errorMessage =
 					backendMessage(response.error) ??
-					extractErrorMessage(response.error, 'Failed to update invitations');
+					extractErrorMessage(
+						response.error,
+						m['serverErrors.adminEvents.updateInvitationsFailed']()
+					);
 				const status = response.response?.status;
 				return fail(status && status >= 400 && status < 500 ? status : 500, {
 					errors: { form: errorMessage }
@@ -464,7 +504,10 @@ export const actions: Actions = {
 			return { success: true, action: 'bulk_updated', count: emails.length };
 		} catch (err) {
 			log.error('invitations_bulk_update_failed', { error: err, eventId: params.event_id });
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(
+				err,
+				m['serverErrors.adminEvents.unexpectedError']()
+			);
 			return fail(500, { errors: { form: errorMessage } });
 		}
 	}

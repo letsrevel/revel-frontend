@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import { log, type LogFields } from './logger';
 
@@ -13,7 +14,7 @@ import { log, type LogFields } from './logger';
 export function throwIfTransientUpstream(response: Response | undefined): void {
 	const status = response?.status;
 	if (status === 429 || (typeof status === 'number' && status >= 500)) {
-		throw error(503, 'Service temporarily unavailable — please try again in a moment.');
+		throw error(503, m['serverErrors.public.serviceUnavailable']());
 	}
 }
 

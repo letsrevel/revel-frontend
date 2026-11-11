@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import {
 	eventpublicdiscoveryListEvents,
 	organizationadminmembershiprequestsListMembershipRequests
@@ -19,7 +20,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to view the dashboard');
+		throw error(401, m['serverErrors.admin.loginRequiredDashboard']());
 	}
 
 	const accessToken = user.accessToken ?? '';

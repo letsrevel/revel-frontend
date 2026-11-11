@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, isHttpError } from '@sveltejs/kit';
 import { questionnaireGetOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	try {
@@ -26,7 +27,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				status: response.response?.status,
 				error: response.error
 			});
-			const fallback = status === 404 ? 'Questionnaire not found' : 'Failed to load questionnaire';
+			const fallback =
+				status === 404
+					? m['serverErrors.common.questionnaireNotFound']()
+					: m['serverErrors.common.loadQuestionnaireFailed']();
 			throw error(status, extractErrorMessage(response.error, fallback));
 		}
 
@@ -47,6 +51,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		// Unexpected failures (network, 5xx) are not a missing questionnaire —
 		// don't mask outages as 404.
 		log.error('questionnaire_load_failed', { error: err, questionnaireId: params.id });
-		throw error(500, 'Failed to load questionnaire');
+		throw error(500, m['serverErrors.common.loadQuestionnaireFailed']());
 	}
 };

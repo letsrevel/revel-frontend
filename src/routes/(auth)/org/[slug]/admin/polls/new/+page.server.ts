@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { listStandardTiers } from '$lib/queries/membership-tiers';
 import { error } from '@sveltejs/kit';
 import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
@@ -6,7 +7,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	const user = locals.user;
-	if (!user) throw error(401, 'Unauthorized');
+	if (!user) throw error(401, m['serverErrors.common.unauthorized']());
 
 	const { organization } = await parent();
 
@@ -19,7 +20,10 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 			query: { organization: organization.id, page_size: 200 }
 		}),
 		listStandardTiers(organization.slug, user.accessToken, fetch).catch((err: unknown) => {
-			throw error(502, extractErrorMessage(err, 'Failed to load membership tiers'));
+			throw error(
+				502,
+				extractErrorMessage(err, m['serverErrors.common.loadMembershipTiersFailed']())
+			);
 		})
 	]);
 
@@ -27,7 +31,7 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 		const status = eventsRes.response?.status ?? 500;
 		throw error(
 			status >= 500 ? 500 : 502,
-			extractErrorMessage(eventsRes.error, 'Failed to load events')
+			extractErrorMessage(eventsRes.error, m['serverErrors.common.loadEventsFailed']())
 		);
 	}
 
