@@ -6,6 +6,8 @@
  * They are used for building and editing questionnaires before saving.
  */
 
+import * as m from '$lib/paraglide/messages.js';
+
 // ===== Type Definitions =====
 
 /** An option in a multiple-choice question. */
@@ -111,7 +113,7 @@ export function createQuestion(type: QuestionType, order: number): Questionnaire
 export function createSection(existingSectionsCount: number): QuestionnaireSection {
 	return {
 		id: crypto.randomUUID(),
-		name: `Section ${existingSectionsCount + 1}`,
+		name: m['questionnaireFormFields.defaultSectionName']({ n: existingSectionsCount + 1 }),
 		description: '',
 		order: existingSectionsCount,
 		questions: []

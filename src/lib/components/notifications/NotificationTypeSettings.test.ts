@@ -32,7 +32,7 @@ async function renderOpen() {
 		}
 	});
 	await userEvent.setup().click(screen.getByRole('button', { name: /advanced settings/i }));
-	return screen.findByText('payment confirmation');
+	return screen.findByText('Payment confirmation');
 }
 
 describe('NotificationTypeSettings mandatory types', () => {

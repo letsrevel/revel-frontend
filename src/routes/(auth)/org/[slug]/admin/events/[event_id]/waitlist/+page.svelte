@@ -25,6 +25,10 @@
 	import type { WaitlistEntrySchema, WaitlistOfferStatus } from '$lib/api/generated/types.gen';
 	import { toast } from 'svelte-sonner';
 	import { formatDateTime } from '$lib/utils/date';
+	import {
+		humanizeIsoDuration as humanizeIsoDurationHelper,
+		type DurationUnitLabels
+	} from '$lib/utils/iso-duration';
 
 	const { data }: { data: PageData } = $props();
 
@@ -281,18 +285,15 @@
 		});
 	}
 
+	const durationUnitLabels: DurationUnitLabels = {
+		days: (n) => m['countdown.units.days']({ n }),
+		hours: (n) => m['countdown.units.hours']({ n }),
+		minutes: (n) => m['countdown.units.minutes']({ n }),
+		seconds: (n) => m['countdown.units.seconds']({ n })
+	};
+
 	function humanizeIsoDuration(iso: string | null | undefined): string {
-		if (!iso) return '—';
-		const re = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
-		const match = re.exec(iso);
-		if (!match) return iso;
-		const [, d, h, mm, s] = match;
-		const parts: string[] = [];
-		if (d && d !== '0') parts.push(`${d}d`);
-		if (h && h !== '0') parts.push(`${h}h`);
-		if (mm && mm !== '0') parts.push(`${mm}m`);
-		if (s && s !== '0') parts.push(`${s}s`);
-		return parts.length > 0 ? parts.join(' ') : '—';
+		return humanizeIsoDurationHelper(iso, durationUnitLabels);
 	}
 
 	const totalPages = $derived(

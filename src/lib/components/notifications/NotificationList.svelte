@@ -12,6 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import NotificationItem from './NotificationItem.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { getNotificationTypeLabel } from './notificationTypeLabels';
 
 	interface Props {
 		authToken: string;
@@ -67,7 +68,9 @@
 	const hasUnread = $derived(notifications.some((n) => n.read_at === null));
 	const isLoading = $derived(notificationsQuery.isLoading);
 	const isError = $derived(notificationsQuery.isError);
-	const selectedTypeLabel = $derived(notificationType || m['notificationList.allTypes']());
+	const selectedTypeLabel = $derived(
+		notificationType ? getNotificationTypeLabel(notificationType) : m['notificationList.allTypes']()
+	);
 
 	// Mark all as read mutation
 	const markAllReadMutation = createMutation(() => ({
@@ -175,7 +178,7 @@
 						<SelectContent>
 							<SelectItem value="all">{m['notificationList.allTypes']()}</SelectItem>
 							{#each notificationTypes as type (type)}
-								<SelectItem value={type}>{type}</SelectItem>
+								<SelectItem value={type}>{getNotificationTypeLabel(type)}</SelectItem>
 							{/each}
 						</SelectContent>
 					</Select>
