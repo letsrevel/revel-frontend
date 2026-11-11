@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Tooltip as TooltipPrimitive } from 'bits-ui';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import * as Tooltip from '$lib/components/ui/tooltip';
@@ -56,9 +57,13 @@
 			<span id={voidHintId} class="sr-only">
 				{m['orgAdmin.members.subscriptions.paymentActions.voidHint']()}
 			</span>
-			<Tooltip.Content class="max-w-xs">
-				<p class="text-xs">{m['orgAdmin.members.subscriptions.paymentActions.voidHint']()}</p>
-			</Tooltip.Content>
+			<!-- Portalled to <body>: this sits inside the drawer's overflow-y-auto body, which
+			     would clip an in-place popover. z-[60] keeps it above the drawer (z-50). -->
+			<TooltipPrimitive.Portal>
+				<Tooltip.Content class="z-[60] max-w-xs">
+					<p class="text-xs">{m['orgAdmin.members.subscriptions.paymentActions.voidHint']()}</p>
+				</Tooltip.Content>
+			</TooltipPrimitive.Portal>
 		</Tooltip.Root>
 	</Tooltip.Provider>
 {/if}

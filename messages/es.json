@@ -4218,7 +4218,7 @@
 					"void": "Anular",
 					"voidFor": "Anular el pago de {amount} del {date}",
 					"includeVoided": "Incluir pagos anulados",
-					"voidHint": "Anula un pago registrado por error. Sigue en el historial pero ya no cuenta, y el periodo pagado se recalcula. No se mueve dinero: para devolverlo, la acción es Reembolsar."
+					"voidHint": "Anula un pago registrado por error. Sigue en el historial pero ya no cuenta, y el periodo pagado se recalcula. Si el dinero se devolvió de verdad, usa en su lugar la acción Reembolsar."
 				},
 				"editPayment": {
 					"title": "Editar pago",
@@ -4238,7 +4238,7 @@
 				},
 				"voidPayment": {
 					"title": "¿Anular este pago?",
-					"body": "Al anular un pago, deja de contar en los totales y las listas y se recalcula el periodo de la membresía. Se conserva en el historial de auditoría.",
+					"body": "Al anular un pago, deja de contar en los totales y las listas y se recalcula el periodo de la membresía. Se conserva en el historial de auditoría. No se mueve dinero.",
 					"reason": "Motivo (opcional)",
 					"submit": "Anular pago",
 					"keep": "Conservar el pago",

@@ -72,7 +72,7 @@ describe('PaymentEditVoidButtons', () => {
 		renderButtons(makePayment());
 		const voidButton = screen.getByRole('button', { name: /^Void the payment of/ });
 		expect(voidButton).toHaveAccessibleDescription(
-			'Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. No money moves: use Refund to return money.'
+			'Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. If the money was actually paid back, record a Refund instead.'
 		);
 	});
 

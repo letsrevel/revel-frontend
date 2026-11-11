@@ -4218,7 +4218,7 @@
 					"void": "Void",
 					"voidFor": "Void the payment of {amount} from {date}",
 					"includeVoided": "Include voided payments",
-					"voidHint": "Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. No money moves: use Refund to return money."
+					"voidHint": "Cancels a payment that was recorded by mistake. It stays in the history but no longer counts, and the paid period is recalculated. If the money was actually paid back, record a Refund instead."
 				},
 				"editPayment": {
 					"title": "Edit payment",
@@ -4238,7 +4238,7 @@
 				},
 				"voidPayment": {
 					"title": "Void this payment?",
-					"body": "Voiding removes this payment from totals and lists and recalculates the membership period. It stays in the audit history.",
+					"body": "Voiding removes this payment from totals and lists and recalculates the membership period. It stays in the audit history. No money is moved.",
 					"reason": "Reason (optional)",
 					"submit": "Void payment",
 					"keep": "Keep payment",

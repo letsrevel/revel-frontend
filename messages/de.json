@@ -4218,7 +4218,7 @@
 					"void": "Stornieren",
 					"voidFor": "Zahlung über {amount} vom {date} stornieren",
 					"includeVoided": "Stornierte Zahlungen einbeziehen",
-					"voidHint": "Storniert eine versehentlich erfasste Zahlung. Sie bleibt im Verlauf, zählt aber nicht mehr, und der bezahlte Zeitraum wird neu berechnet. Es wird kein Geld bewegt: Für eine Rückzahlung ist „Erstatten“ die Aktion."
+					"voidHint": "Storniert eine versehentlich erfasste Zahlung. Sie bleibt im Verlauf, zählt aber nicht mehr, und der bezahlte Zeitraum wird neu berechnet. Wurde das Geld tatsächlich zurückgezahlt, bitte stattdessen „Erstatten“ verwenden."
 				},
 				"editPayment": {
 					"title": "Zahlung bearbeiten",
@@ -4238,7 +4238,7 @@
 				},
 				"voidPayment": {
 					"title": "Diese Zahlung stornieren?",
-					"body": "Beim Stornieren verschwindet die Zahlung aus Summen und Listen und der Zeitraum der Mitgliedschaft wird neu berechnet. Sie bleibt im Prüfprotokoll erhalten.",
+					"body": "Beim Stornieren verschwindet die Zahlung aus Summen und Listen und der Zeitraum der Mitgliedschaft wird neu berechnet. Sie bleibt im Prüfprotokoll erhalten. Es wird kein Geld bewegt.",
 					"reason": "Grund (optional)",
 					"submit": "Zahlung stornieren",
 					"keep": "Zahlung behalten",
