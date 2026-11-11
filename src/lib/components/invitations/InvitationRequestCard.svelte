@@ -71,7 +71,7 @@
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
 			if (!accessToken || !request.id) {
-				throw new Error('Missing authentication or request ID');
+				throw new Error(m['invitationRequestCard.missingAuth']());
 			}
 			const res = await eventpublicdiscoveryDeleteInvitationRequest({
 				headers: { Authorization: `Bearer ${accessToken}` },

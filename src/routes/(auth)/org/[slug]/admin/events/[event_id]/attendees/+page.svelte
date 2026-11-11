@@ -621,9 +621,9 @@
 	isOpen={showBlacklistDialog}
 	title={m['attendeesAdmin.blacklistDialogTitle']()}
 	message={rsvpToBlacklist
-		? `${m['attendeesAdmin.blacklistDialogMessage']({
+		? m['attendeesAdmin.blacklistDialogMessageWithSubscription']({
 				name: getUserDisplayName(rsvpToBlacklist.user)
-			})} ${m['membershipLoss.subscriptionCancelledIfAny']()}`
+			})
 		: ''}
 	confirmText={m['attendeesAdmin.blacklistDialogConfirm']()}
 	cancelText={m['attendeesAdmin.blacklistDialogCancel']()}

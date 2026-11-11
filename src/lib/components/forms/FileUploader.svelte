@@ -102,6 +102,20 @@
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 	}
 
+	// Localised label for a MIME family (`image/*` -> "Image"); other families keep their raw name
+	function mediaFamilyLabel(family: string): string {
+		switch (family) {
+			case 'image':
+				return m['fileUploader.typeImage']();
+			case 'video':
+				return m['fileUploader.typeVideo']();
+			case 'audio':
+				return m['fileUploader.typeAudio']();
+			default:
+				return family.charAt(0).toUpperCase() + family.slice(1);
+		}
+	}
+
 	// Format accepted MIME types for display
 	function formatAcceptedTypes(acceptStr: string): string {
 		if (acceptStr === '*/*') return m['fileUploader.allFiles']();
@@ -110,7 +124,7 @@
 			.map((type) => {
 				const trimmed = type.trim();
 				if (trimmed.endsWith('/*')) {
-					return trimmed.split('/')[0].charAt(0).toUpperCase() + trimmed.split('/')[0].slice(1);
+					return mediaFamilyLabel(trimmed.split('/')[0]);
 				}
 				const ext = trimmed.split('/')[1];
 				return ext ? ext.toUpperCase() : trimmed;
@@ -183,11 +197,11 @@
 				pendingUploads = pendingUploads.filter((p) => p.file !== file);
 				onUploadComplete?.(response.data);
 			} else {
-				throw new Error('Upload failed');
+				throw new Error(m['fileUploadQuestion.uploadFailed']());
 			}
 		} catch (err) {
 			// Update pending with error
-			const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+			const errorMsg = err instanceof Error ? err.message : m['fileUploadQuestion.uploadFailed']();
 			pendingUploads = pendingUploads.map((p) =>
 				p.file === file ? { ...p, progress: -1, error: errorMsg } : p
 			);
@@ -299,14 +313,15 @@
 
 	// Get file icon based on MIME type
 	function getFileTypeLabel(mimeType: string): string {
-		if (mimeType.startsWith('image/')) return 'Image';
-		if (mimeType.startsWith('video/')) return 'Video';
-		if (mimeType.startsWith('audio/')) return 'Audio';
+		if (mimeType.startsWith('image/')) return m['fileUploader.typeImage']();
+		if (mimeType.startsWith('video/')) return m['fileUploader.typeVideo']();
+		if (mimeType.startsWith('audio/')) return m['fileUploader.typeAudio']();
 		if (mimeType === 'application/pdf') return 'PDF';
 		if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Excel';
 		if (mimeType.includes('word') || mimeType.includes('document')) return 'Word';
-		if (mimeType.includes('zip') || mimeType.includes('archive')) return 'Archive';
-		return 'File';
+		if (mimeType.includes('zip') || mimeType.includes('archive'))
+			return m['fileUploader.typeArchive']();
+		return m['resourceCard.typeFile']();
 	}
 </script>
 
@@ -370,7 +385,9 @@
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-medium">{pending.file.name}</p>
 						{#if pending.progress === -1}
-							<p class="text-xs text-destructive">{pending.error || 'Upload failed'}</p>
+							<p class="text-xs text-destructive">
+								{pending.error || m['fileUploadQuestion.uploadFailed']()}
+							</p>
 						{:else}
 							<p class="text-xs text-muted-foreground">
 								{m['fileUploader.uploading']()}

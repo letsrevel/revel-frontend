@@ -119,7 +119,9 @@
 			queryClient.invalidateQueries({ queryKey: ['followed-organizations'] });
 			const org = organizations.find((o) => o.organization.slug === slug);
 			toast.success(
-				m['follow.unfollowSuccess']({ name: org?.organization.name || 'Organization' })
+				m['follow.unfollowSuccess']({
+					name: org?.organization.name || m['filters.organization.heading']()
+				})
 			);
 		},
 		onError: () => {
@@ -168,7 +170,11 @@
 		onSuccess: (seriesId) => {
 			queryClient.invalidateQueries({ queryKey: ['followed-event-series'] });
 			const series = eventSeries.find((s) => s.event_series.id === seriesId);
-			toast.success(m['follow.unfollowSuccess']({ name: series?.event_series.name || 'Series' }));
+			toast.success(
+				m['follow.unfollowSuccess']({
+					name: series?.event_series.name || m['eventSeriesCard.series']()
+				})
+			);
 		},
 		onError: () => {
 			toast.error(m['follow.unfollowError']());

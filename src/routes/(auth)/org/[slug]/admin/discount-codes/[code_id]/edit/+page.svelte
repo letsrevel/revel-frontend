@@ -75,7 +75,7 @@
 							.join(', ')
 					);
 				}
-				throw new Error('Failed to update discount code');
+				throw new Error(m['discountCodeEditPage.updateError']());
 			}
 			return response.data;
 		},

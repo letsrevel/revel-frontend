@@ -280,7 +280,7 @@
 			const currentSections = newOptions[optionIndex].conditionalSections || [];
 			const newSection: ConditionalSection = {
 				id: crypto.randomUUID(),
-				name: `Section ${currentSections.length + 1}`,
+				name: m['questionEditor.defaultSectionName']({ number: currentSections.length + 1 }),
 				description: '',
 				order: currentSections.length,
 				questions: []

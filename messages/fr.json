@@ -1025,6 +1025,7 @@
 		}
 	},
 	"dashboard.createOrganizationButton": "Créer une organisation",
+	"dashboard.fallbackFirstName": "invité",
 	"duration": {
 		"unit": {
 			"minutes": "Minutes",
@@ -1458,7 +1459,8 @@
 		"goBack": "Retour",
 		"signIn": "Se connecter",
 		"backToHome": "Retour à l'accueil",
-		"debugInfo": "Infos de débogage"
+		"debugInfo": "Infos de débogage",
+		"notFound": "Introuvable"
 	},
 	"errors": {
 		"loadError": "Échec du chargement de l'événement",
@@ -1797,7 +1799,8 @@
 		"status_ready": "Prêt",
 		"status_published": "Publié",
 		"unpublishedWarning": "Un ou plusieurs questionnaires ne sont pas publiés. Les personnes ne devront pas les remplir tant qu'ils ne seront pas publiés.",
-		"notEnforcedTooltip": "Non appliqué - le questionnaire doit être publié"
+		"notEnforcedTooltip": "Non appliqué - le questionnaire doit être publié",
+		"removeAriaLabel": "Retirer {name}"
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Places limitées restantes",
@@ -2173,7 +2176,11 @@
 		"retryUpload": "Réessayer",
 		"required": "requis",
 		"upTo": "jusqu'à {maxSize}",
-		"maxFiles": "Maximum {count} fichiers"
+		"maxFiles": "Maximum {count} fichiers",
+		"typeImage": "Image",
+		"typeVideo": "Vidéo",
+		"typeAudio": "Audio",
+		"typeArchive": "Archive"
 	},
 	"filters": {
 		"search": {
@@ -2222,7 +2229,9 @@
 			"label": "Ordre de tri",
 			"infoLabel": "Informations sur l'ordre de tri",
 			"distanceTooltipTitle": "Tri par distance",
-			"distanceTooltipDescription": "« Les plus proches d'abord » utilise ta position approximative à partir de l'adresse IP ou la ville sélectionnée dans les paramètres de ton compte."
+			"distanceTooltipDescription": "« Les plus proches d'abord » utilise ta position approximative à partir de l'adresse IP ou la ville sélectionnée dans les paramètres de ton compte.",
+			"alphabeticalLabel": "A-Z",
+			"reverseAlphabeticalLabel": "Z-A"
 		},
 		"tags": {
 			"heading": "Tags",
@@ -3572,7 +3581,8 @@
 			"errors": {
 				"limit": "Tu as atteint la limite d'applis par compte.",
 				"generic": "Un problème est survenu. Vérifie le formulaire et réessaie."
-			}
+			},
+			"pageNotFound": "Introuvable"
 		}
 	},
 	"orgAdmin": {
@@ -4663,6 +4673,46 @@
 			}
 		}
 	},
+	"orgAdmin.billing.loadFailed": "Échec du chargement des informations de facturation",
+	"orgAdmin.billing.attendeeCreditNotes.loadError": "Impossible de charger les avoirs des participant·es.",
+	"orgAdmin.billing.attendeeCreditNotes.resultCount.one": "{count} avoir",
+	"orgAdmin.billing.attendeeCreditNotes.resultCount.other": "{count} avoirs",
+	"orgAdmin.billing.attendeeInvoices.loadError": "Échec du chargement des factures des participant·es",
+	"orgAdmin.billing.attendeeInvoices.detailLoadError": "Échec du chargement de la facture",
+	"orgAdmin.billing.attendeeInvoices.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 facture",
+				"countPlural=*": "{count} factures"
+			}
+		}
+	],
+	"orgAdmin.billing.invoices.loadError": "Échec du chargement des factures",
+	"orgAdmin.billing.invoices.detail.loadError": "Échec du chargement de la facture",
+	"orgAdmin.billing.invoices.detail.vatLine": "N° de TVA : {vatId}",
+	"orgAdmin.billing.invoices.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 facture",
+				"countPlural=*": "{count} factures"
+			}
+		}
+	],
+	"orgAdmin.billing.creditNotes.loadError": "Échec du chargement des avoirs",
+	"orgAdmin.billing.creditNotes.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 avoir",
+				"countPlural=*": "{count} avoirs"
+			}
+		}
+	],
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionnaires",
 		"metaDescription": "Gère les formulaires d'admission et les sondages de {orgName}",
@@ -4715,6 +4765,7 @@
 		},
 		"confirmDelete": "Es-tu sûr·e de vouloir supprimer cette ressource ?"
 	},
+	"orgAdmin.resources.deleteError": "Échec de la suppression de la ressource",
 	"orgAdmin.priceCategories.card.delete": "Supprimer la catégorie de prix {name}",
 	"orgAdmin.priceCategories.card.edit": "Modifier la catégorie de prix {name}",
 	"orgAdmin.priceCategories.card.order": "Ordre : {order}",
@@ -4967,6 +5018,8 @@
 	"orgAdmin.venues.toast.created": "Lieu créé avec succès",
 	"orgAdmin.venues.toast.updateError": "Échec de la mise à jour du lieu",
 	"orgAdmin.venues.toast.updated": "Lieu mis à jour avec succès",
+	"orgAdmin.venues.toast.createErrorDetail": "Échec de la création du lieu : {message}",
+	"orgAdmin.venues.toast.updateErrorDetail": "Échec de la mise à jour du lieu : {message}",
 	"orgAdmin.waitlist.actions.remove": "Retirer",
 	"orgAdmin.waitlist.confirmDelete": "Es-tu sûr·e de vouloir retirer {userName} de la liste d'attente ?",
 	"orgAdmin.waitlist.empty.description": "Personne n'est actuellement sur la liste d'attente de cet événement.",
@@ -5065,6 +5118,10 @@
 	"orgCreate.subtitle": "Deux champs et c'est parti. Le logo, l'adresse et la description peuvent attendre que tu en aies besoin.",
 	"orgCreate.title": "Donne un nom à ton organisation",
 	"orgCreate.verifyEmail": "Aller au profil",
+	"orgCreate.validation.nameRequired": "Le nom de l'organisation est obligatoire",
+	"orgCreate.validation.nameTooLong": "Le nom de l'organisation ne doit pas dépasser 150 caractères",
+	"orgCreate.validation.emailRequired": "L'e-mail de contact est obligatoire",
+	"orgCreate.validation.emailInvalid": "Une adresse e-mail valide est requise",
 	"orgResourcesPage": {
 		"pageTitle": "Ressources - {organizationName}",
 		"pageDescription": "Ressources pour {organizationName}",
@@ -7151,7 +7208,8 @@
 			"selfBillingCheckbox": "J'accepte que Revel émette des factures (Gutschrift) en mon nom conformément aux",
 			"termsAndConditions": "conditions générales",
 			"incomplete": "Informations de facturation incomplètes",
-			"incompleteDescription": "Veuillez compléter tous les champs obligatoires."
+			"incompleteDescription": "Veuillez compléter tous les champs obligatoires.",
+			"vatIdCurrentLabel": "Numéro de TVA : {vatId}"
 		}
 	},
 	"myInvoices": {
@@ -7565,7 +7623,9 @@
 				"empty": "Aucune occurrence à venir à annuler."
 			},
 			"cancelling": "Annulation…",
-			"errorToast": "Impossible d'annuler cette date. Veuillez réessayer."
+			"errorToast": "Impossible d'annuler cette date. Veuillez réessayer.",
+			"notAuthenticated": "Non authentifié",
+			"noDateSelected": "Aucune date sélectionnée"
 		},
 		"generateNow": {
 			"untilLabel": "Générer jusqu'au (facultatif)",
@@ -7920,6 +7980,7 @@
 	"waitlistSettings.closeConfirm.body": "Fermer la liste d'attente révoquera {count} offres en attente. Continuer ?",
 	"waitlistSettings.error.missingEventId": "Identifiant d'événement manquant.",
 	"waitlistSettings.error.updateFailed": "Échec de la mise à jour des paramètres de liste d'attente.",
+	"waitlistSettings.error.loadFailed": "Échec du chargement des paramètres de liste d'attente",
 	"ineligibilityMessage.spotsReserved.header": "Des places sont réservées aux personnes en liste d'attente",
 	"ineligibilityMessage.spotsReserved.body": "{count} places sont réservées jusqu'à {time}. Inscris-toi sur la liste d'attente — ce sera ton tour après cette série.",
 	"ineligibilityMessage.waitingForBatch.header": "Tu es sur la liste d'attente",
@@ -7962,6 +8023,13 @@
 	"orgAdmin.waitlist.offer.capacityBanner": "L'événement est complet. Révoque une offre en attente pour faire de la place.",
 	"orgAdmin.waitlist.offer.viewPendingShortcut": "Voir les offres en attente",
 	"orgAdmin.waitlist.offer.seatsHeldHint": "{count} réservées pour la liste d'attente",
+	"orgAdmin.waitlist.offer.issueFailed": "Échec de l'émission de l'offre",
+	"orgAdmin.waitlist.offer.reactivateFailed": "Échec de la réactivation de l'offre",
+	"orgAdmin.waitlist.offer.revokeFailed": "Échec de la révocation de l'offre",
+	"orgAdmin.waitlist.offer.error.loadFailed": "Échec du chargement des offres de liste d'attente",
+	"orgAdmin.waitlist.offer.error.createFailed": "Échec de la création de l'offre de liste d'attente",
+	"orgAdmin.waitlist.offer.error.revokeFailed": "Échec de la révocation de l'offre de liste d'attente",
+	"orgAdmin.waitlist.offer.error.reactivateFailed": "Échec de la réactivation de l'offre de liste d'attente",
 	"joinWaitlist.capacityOpen": "Une place vient de se libérer. Actualise pour t'inscrire directement.",
 	"joinWaitlist.refreshAction": "Actualiser",
 	"notifications.waitlistSpot.title": "Ta place en liste d'attente est prête",
@@ -8232,6 +8300,9 @@
 	"demoCardInfo.otherFieldsValue": "N'importe quelle valeur",
 	"footer.loadingNotes": "Chargement...",
 	"footer.noReleaseNotes": "Aucune note de version",
+	"footer.demoMode": "(démo)",
+	"footer.frontendRepo": "Dépôt du frontend sur GitHub",
+	"footer.backendRepo": "Dépôt du backend sur GitHub",
 	"header.mainNavigation": "Navigation principale",
 	"userAvatar.altText": "Avatar de {displayName}",
 	"userAvatar.viewProfilePicture": "Voir la photo de profil de {displayName}",
@@ -8408,12 +8479,14 @@
 	"claimInvitationButton.claimedSuccessfully": "Invitation réclamée avec succès !",
 	"confirmationResult.confirmationFailed": "Échec de la confirmation",
 	"confirmationResult.confirmationFailedSr": "Échec de la confirmation. {error}",
+	"confirmationResult.invalidResponse": "Nous n'avons pas pu traiter la confirmation. Réessaie.",
 	"dietarySummary.severitySevereAllergy": "Allergie grave",
 	"dietarySummary.severityAllergy": "Allergie",
 	"dietarySummary.severityIntolerant": "Intolérance",
 	"dietarySummary.severityDislike": "N'aime pas",
 	"dietarySummary.loadingDietaryInfo": "Chargement des informations alimentaires...",
 	"dietarySummary.addDietaryPreferencesAriaLabel": "Ajoute tes préférences et restrictions alimentaires",
+	"dietarySummary.severityWithCount": "{count} {label}",
 	"eventActionSidebar.eventActionsAriaLabel": "Actions de l'événement",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Télécharger l'événement du calendrier",
 	"tierForm.whatsIncludedPlaceholder": "Qu'est-ce qui est inclus dans cette catégorie ?",
@@ -8506,6 +8579,7 @@
 	"invitationRequestCard.cancelling": "Annulation...",
 	"invitationRequestCard.cancelRequest": "Annuler la demande",
 	"invitationRequestCard.viewEvent": "Voir l'événement",
+	"invitationRequestCard.missingAuth": "Tu dois être connecté pour annuler cette demande.",
 	"invitationRequestsTab.searchPlaceholder": "Rechercher par nom ou e-mail...",
 	"invitationRequestsTab.showingRange": "Affichage de {from} à {to} sur {total} demandes",
 	"manageMemberModal.unknownUser": "Utilisateur inconnu",
@@ -8564,6 +8638,9 @@
 	"membersTab.promoteStaffFailed": "Échec de la promotion au rang de membre du staff : {error}",
 	"membersTab.memberBlacklisted": "Le membre a été mis sur liste noire",
 	"membersTab.blacklistFailed": "Échec de la mise sur liste noire du membre",
+	"membersTab.removeMemberError": "Échec de la suppression du membre",
+	"membersTab.updateMemberError": "Échec de la mise à jour du membre",
+	"membersTab.promoteStaffError": "Échec de la promotion du membre dans l'équipe",
 	"organizationTokensTab.createSuccess": "Lien d'invitation créé avec succès",
 	"organizationTokensTab.createFailed": "Échec de la création du lien d'invitation",
 	"organizationTokensTab.updateSuccess": "Lien d'invitation mis à jour avec succès",
@@ -8690,6 +8767,7 @@
 	"orgImageUploader.uploadCoverFailed": "Échec du téléversement de l'image de couverture",
 	"orgImageUploader.uploadLogoNoData": "Échec du téléversement du logo - aucune donnée renvoyée",
 	"orgImageUploader.uploadCoverNoData": "Échec du téléversement de l'image de couverture - aucune donnée renvoyée",
+	"orgImageUploader.uploadFailedDetail": "Échec du téléversement : {detail}",
 	"orgTagManager.tagsLabel": "Tags",
 	"orgTagManager.addTagsPlaceholder": "Ajouter des tags...",
 	"orgTagManager.add": "Ajouter",
@@ -8716,6 +8794,7 @@
 	"stripeConnect.aboutIntro": "Stripe Connect te permet d'accepter les paiements en ligne pour les billets d'événements. En connectant ton compte Stripe, tu pourras :",
 	"stripeConnect.aboutFooter": "Revel utilise Stripe Connect pour traiter les paiements en toute sécurité. Ton compte Stripe est distinct de Revel et tu gardes le contrôle total de tes fonds.",
 	"stripeConnect.failedToCreateLink": "Échec de la création du lien Stripe Connect",
+	"stripeConnect.statusConnectedMessageWithEmail": "Ton compte Stripe est entièrement configuré et prêt à accepter les paiements. Connecté avec : {email}",
 	"stripeConnectModal.required": "obligatoire",
 	"mobileOrganizationFilterSheet.closeFilters": "Fermer les filtres",
 	"mobileOrganizationFilterSheet.searchPlaceholder": "Rechercher des organisations...",
@@ -8742,6 +8821,12 @@
 	"autoEvalRecommendation.evaluatedManuallyOn": "Évalué manuellement le {date}",
 	"autoEvalRecommendation.approved": "Approuvé",
 	"autoEvalRecommendation.rejected": "Rejeté",
+	"autoEvalRecommendation.awaitingReview": "En attente de révision",
+	"autoEvalRecommendation.awaitingReviewDescription": "Cette soumission n'a pas encore été évaluée.",
+	"autoEvalRecommendation.recommendApprove": "Recommandation : approuver",
+	"autoEvalRecommendation.approveFallbackDescription": "Cette soumission répond aux exigences.",
+	"autoEvalRecommendation.recommendReject": "Recommandation : rejeter",
+	"autoEvalRecommendation.rejectFallbackDescription": "Cette soumission ne répond pas aux exigences.",
 	"evaluationForm.scoreHelp": "Indique une note numérique entre 0 et 100",
 	"evaluationForm.commentsPlaceholder": "Ajoute des notes d'évaluation ou un retour pour la personne qui a soumis...",
 	"evaluationForm.cancel": "Annuler",
@@ -8771,6 +8856,13 @@
 	"questionEditor.negativeWeight": "Pondération négative",
 	"questionEditor.pointsDeductedForWrong": "Points déduits pour une mauvaise réponse",
 	"questionEditor.fatalQuestion": "Question éliminatoire (mauvaise réponse = rejet automatique)",
+	"questionEditor.defaultSectionName": "Section {number}",
+	"questionEditor.fileTypeImages": "Images (JPEG, PNG, GIF, WebP)",
+	"questionEditor.fileTypeAudio": "Audio (MP3, WAV, OGG, M4A)",
+	"questionEditor.fileTypeDocuments": "Documents (PDF)",
+	"questionEditor.fileTypeSpreadsheets": "Tableurs (Excel)",
+	"questionEditor.fileTypeText": "Fichiers texte (TXT, CSV)",
+	"questionEditor.fileTypeArchives": "Archives (ZIP)",
 	"fileUploadQuestion.removeFile": "Supprimer le fichier",
 	"fileUploadQuestion.cancelUpload": "Annuler le téléversement",
 	"fileUploadQuestion.uploadFile": "Téléverser un fichier",
@@ -8858,6 +8950,7 @@
 	"sectionEditor.freeText": "Texte libre",
 	"sectionEditor.fileUpload": "Téléversement de fichier",
 	"sectionEditor.noQuestionsYet": "Pas encore de questions. Ajoute des questions avec les boutons ci-dessus.",
+	"sectionEditor.defaultName": "Section {number}",
 	"statusBreakdownBar.barAriaLabel": "Répartition des statuts : {approved} approuvées, {rejected} rejetées, {pendingReview} en attente de révision, {notEvaluated} non évaluées",
 	"statusBreakdownBar.noData": "Aucune donnée",
 	"resourceAssignment.assignDescription": "Sélectionne les événements où cette ressource doit être disponible",
@@ -9370,6 +9463,7 @@
 	"discountCodeEditPage.editing": "Modification de",
 	"discountCodeEditPage.loadingAriaLabel": "Chargement du code de réduction",
 	"discountCodeEditPage.loadError": "Impossible de charger le code de réduction. Il a peut-être été supprimé.",
+	"discountCodeEditPage.updateError": "Impossible de mettre à jour le code de réduction",
 	"blacklistAdminPage.metaTitle": "Gestion de la liste noire - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Gère les personnes sur liste noire pour {name}",
 	"blacklistAdminPage.title": "Gestion de la liste noire",
@@ -9423,6 +9517,7 @@
 	"discountCodeNewPage.backAriaLabel": "Retour aux codes de réduction",
 	"discountCodeNewPage.title": "Nouveau code de réduction",
 	"discountCodeNewPage.subtitle": "Crée un code de réduction pour le paiement des billets.",
+	"discountCodeNewPage.createFailed": "Impossible de créer le code de réduction",
 	"seriesAdminPage.occurrenceTabsAriaLabel": "Onglets des occurrences",
 	"seriesAdminPage.noUpcomingOccurrences": "Aucune occurrence à venir pour le moment.",
 	"seriesAdminPage.loadingPastOccurrences": "Chargement des occurrences passées…",
@@ -9442,6 +9537,7 @@
 	"attendeesAdmin.blacklistDialogMessage": "Veux-tu vraiment ajouter {name} à la liste noire ? Cette personne sera bloquée pour tous les événements de cette organisation.",
 	"attendeesAdmin.blacklistDialogConfirm": "Liste noire",
 	"attendeesAdmin.blacklistDialogCancel": "Annuler",
+	"attendeesAdmin.blacklistDialogMessageWithSubscription": "Veux-tu vraiment ajouter {name} à la liste noire ? Cette personne sera bloquée pour tous les événements de cette organisation. Si cette personne a un abonnement d'adhésion auprès de cette organisation, il est annulé immédiatement et la facturation récurrente s'arrête. Aucun remboursement n'est effectué automatiquement.",
 	"eventEditPage.updateStatusAlert": "Échec de la mise à jour du statut : {message}",
 	"eventEditPage.error_deleteFailed": "Échec de la suppression de l'événement",
 	"eventEditPage.deleteAlert": "Échec de la suppression de l'événement : {message}",
@@ -9467,6 +9563,7 @@
 	"eventTicketsAdmin.blacklistDialogConfirm": "Liste noire",
 	"eventTicketsAdmin.blacklistDialogCancel": "Annuler",
 	"orgAdmin.waitlist.dismissAriaLabel": "Fermer",
+	"orgAdmin.waitlist.documentTitle": "{title} - {orgName} Administration | Revel",
 	"orgAdmin.members.inviteMembers": "Inviter des membres",
 	"orgAdmin.members.tabs.membersShort": "Membres",
 	"orgAdmin.members.tabs.staffShort": "Équipe",
@@ -9474,6 +9571,11 @@
 	"orgAdmin.members.tabs.tiersShort": "Niveaux",
 	"orgAdmin.members.tabs.tokens": "Liens d'invitation",
 	"orgAdmin.members.tabs.tokensShort": "Liens",
+	"orgAdmin.members.errors.removeStaff": "Échec de la suppression du membre de l'équipe",
+	"orgAdmin.members.errors.updatePermissions": "Échec de la mise à jour des autorisations",
+	"orgAdmin.members.staffRemoveFailed": "Échec de la suppression du membre de l'équipe : {error}",
+	"orgAdmin.members.staffPermissionsFailed": "Échec de la mise à jour des autorisations : {error}",
+	"orgAdmin.members.subscriptions.create.failed": "Impossible de créer l'abonnement. Réessayez.",
 	"questionnaireEditPage.loading": "Chargement du questionnaire...",
 	"questionnaireEditPage.editModeEnabled": "Mode édition activé",
 	"questionnaireEditPage.editModeDescription": "Tu peux maintenant modifier les questions, les sections et les options. Les modifications seront enregistrées lorsque tu cliqueras sur Enregistrer.",
@@ -9736,6 +9838,7 @@
 	"financials.report.generating": "Génération de votre rapport…",
 	"financials.report.ready": "Votre rapport est prêt.",
 	"financials.report.error": "Impossible de générer le rapport.",
+	"financials.forbidden": "Tu n'as pas l'autorisation de consulter les finances de l'organisation.",
 	"orgSettingsPage.reports.heading": "Rapports financiers",
 	"orgSettingsPage.reports.description": "Programmez l’envoi des rapports de recettes et de TVA à votre adresse de facturation.",
 	"orgSettingsPage.reports.cadenceLabel": "Envoi des rapports",
@@ -9754,6 +9857,7 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Décrivez vos conditions de remboursement pour les adhésions payantes.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex. Remboursement intégral dans les 14 jours suivant le premier paiement.",
+	"orgSettingsPage.metaTitle": "Paramètres de l'organisation - {name} Admin | Revel",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Billets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gérer les ventes de billets de vos événements",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Codes de réduction",
@@ -10220,6 +10324,7 @@
 	"integrations.import.remoteStatus.live": "En ligne",
 	"integrations.import.remoteStatus.cancelled": "Annulé",
 	"orgAdmin.events.actions.embed": "Intégrer sur ton site",
+	"orgAdmin.events.documentTitle": "Gérer les événements - {orgName} Admin | Revel",
 	"orgAdminEmbedPage.pageTitle": "Intégration - {organizationName}",
 	"orgAdminEmbedPage.title": "Intégrer sur ton site",
 	"orgAdminEmbedPage.subtitle": "Affiche tes événements sur ton propre site. Configure, prévisualise, copie le code.",
@@ -11333,5 +11438,41 @@
 	"subscriptionChangePlan.errors.soldOut": "Cette formule est complète.",
 	"subscriptionChangePlan.errors.notFound": "Abonnement ou formule introuvable. Recharge la page et réessaie.",
 	"subscriptionChangePlan.errors.generic": "Impossible de changer la formule.",
-	"subscriptionChangePlan.soldOutSuffix": "(complet)"
+	"subscriptionChangePlan.soldOutSuffix": "(complet)",
+	"authValidation": {
+		"passwordMinLength": "Le mot de passe doit comporter au moins 8 caractères",
+		"passwordUppercase": "Le mot de passe doit contenir au moins une lettre majuscule",
+		"passwordLowercase": "Le mot de passe doit contenir au moins une lettre minuscule",
+		"passwordDigit": "Le mot de passe doit contenir au moins un chiffre",
+		"passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial ({characters})",
+		"invalidEmail": "Adresse e-mail invalide",
+		"termsRequired": "Vous devez accepter les conditions d'utilisation et la politique de confidentialité",
+		"passwordsMismatch": "Les mots de passe ne correspondent pas",
+		"passwordRequired": "Le mot de passe est requis",
+		"otpLength": "Le code doit comporter 6 chiffres",
+		"otpDigitsOnly": "Le code ne doit contenir que des chiffres",
+		"resetTokenRequired": "Le jeton de réinitialisation est requis",
+		"deletionTokenRequired": "Le jeton de suppression est requis",
+		"confirmationTokenRequired": "Le jeton de confirmation est requis"
+	},
+	"questionnaireValidation": {
+		"unknownError": "Une erreur de validation inconnue s'est produite.",
+		"failed": "La validation a échoué. Vérifie ta saisie.",
+		"multipleCorrect": "Une question avec « {allowLabel} » désactivé ne peut pas avoir plusieurs options correctes. Active « {allowLabel} » ou sélectionne une seule option correcte."
+	},
+	"tokenExpiry": {
+		"never": "Jamais",
+		"dayOne": "{count} jour",
+		"dayOther": "{count} jours",
+		"hourOne": "{count} heure",
+		"hourOther": "{count} heures",
+		"lessThanHour": "Moins d'une heure"
+	},
+	"tokenDuration": {
+		"oneHour": "1 heure",
+		"oneDay": "1 jour",
+		"sevenDays": "7 jours",
+		"thirtyDays": "30 jours",
+		"minutes": "{minutes} minutes"
+	}
 }

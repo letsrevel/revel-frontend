@@ -266,7 +266,9 @@
 								<Checkbox
 									checked={selectedIds.has(questionnaire.id)}
 									onCheckedChange={() => toggleQuestionnaire(questionnaire.id)}
-									aria-label={`Select ${questionnaire.questionnaire.name}`}
+									aria-label={m['questionnaireAssignmentModal.selectItem']({
+										name: questionnaire.questionnaire.name
+									})}
 									class="mt-1"
 								/>
 							</div>

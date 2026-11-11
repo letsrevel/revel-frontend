@@ -60,12 +60,13 @@
 			});
 
 			if (response.error) {
-				const errorDetail = extractApiErrorDetail(response.error) ?? 'Failed to update status';
+				const errorDetail =
+					extractApiErrorDetail(response.error) ?? m['eventEditPage.error_updateStatusFailed']();
 				throw new Error(errorDetail);
 			}
 
 			if (!response.data) {
-				throw new Error('Failed to update status');
+				throw new Error(m['eventEditPage.error_updateStatusFailed']());
 			}
 
 			return response.data;
@@ -76,7 +77,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update status: ${error.message}`);
+			alert(m['eventEditPage.updateStatusAlert']({ message: error.message }));
 		}
 	}));
 
@@ -91,7 +92,8 @@
 			});
 
 			if (response.error) {
-				const errorDetail = extractApiErrorDetail(response.error) ?? 'Failed to delete event';
+				const errorDetail =
+					extractApiErrorDetail(response.error) ?? m['eventEditPage.error_deleteFailed']();
 				throw new Error(errorDetail);
 			}
 		},
@@ -101,7 +103,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete event: ${error.message}`);
+			alert(m['eventEditPage.deleteAlert']({ message: error.message }));
 		}
 	}));
 
@@ -218,7 +220,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.events.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<title>{m['orgAdmin.events.documentTitle']({ orgName: organization.name })}</title>
 	<meta
 		name="description"
 		content={m['orgAdmin.events.metaDescription']({ orgName: organization.name })}

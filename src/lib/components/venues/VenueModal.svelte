@@ -104,7 +104,7 @@
 		},
 		onError: (error) => {
 			const message = getErrorMessage(error);
-			toast.error(m['orgAdmin.venues.toast.createError']() + ': ' + message);
+			toast.error(m['orgAdmin.venues.toast.createErrorDetail']({ message }));
 		}
 	}));
 
@@ -134,7 +134,7 @@
 		},
 		onError: (error) => {
 			const message = getErrorMessage(error);
-			toast.error(m['orgAdmin.venues.toast.updateError']() + ': ' + message);
+			toast.error(m['orgAdmin.venues.toast.updateErrorDetail']({ message }));
 		}
 	}));
 

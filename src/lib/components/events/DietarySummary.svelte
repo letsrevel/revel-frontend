@@ -264,7 +264,14 @@
 														class="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium {info.color}"
 													>
 														<SeverityIcon class="h-3 w-3" aria-hidden="true" />
-														<span>{count == null ? info.label : `${count} ${info.label}`}</span>
+														<span
+															>{count == null
+																? info.label
+																: m['dietarySummary.severityWithCount']({
+																		count,
+																		label: info.label
+																	})}</span
+														>
 													</span>
 												{/each}
 											</div>

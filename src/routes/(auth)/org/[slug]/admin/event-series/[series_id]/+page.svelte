@@ -205,7 +205,7 @@
 <svelte:head>
 	<title
 		>{m['recurringEvents.dashboard.title']({ seriesName: series?.name ?? '' })} - {organization.name}
-		Admin | Revel</title
+		{m['adminLayout.admin']()} | Revel</title
 	>
 	<meta
 		name="description"

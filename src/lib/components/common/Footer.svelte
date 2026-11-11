@@ -50,7 +50,7 @@
 	const hideSolutions = $derived(env.PUBLIC_HIDE_SOLUTIONS_FOOTER?.trim().toLowerCase() === 'true');
 
 	// Get backend version and demo mode from store
-	const backendVersion = $derived(appStore.backendVersion || 'Loading...');
+	const backendVersion = $derived(appStore.backendVersion || m['footer.loadingNotes']());
 	const isDemoMode = $derived(appStore.isDemoMode);
 
 	// Landing page URLs based on current locale
@@ -250,7 +250,7 @@
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span>FE v{FRONTEND_VERSION}</span>
-								<span class="sr-only">{m['footer.frontend']()} repository on GitHub</span>
+								<span class="sr-only">{m['footer.frontendRepo']()}</span>
 								<Info
 									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
 									aria-hidden="true"
@@ -289,8 +289,11 @@
 								class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
-								<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
-								<span class="sr-only">{m['footer.backend']()} repository on GitHub</span>
+								<span
+									>BE v{backendVersion}{#if isDemoMode}
+										{m['footer.demoMode']()}{/if}</span
+								>
+								<span class="sr-only">{m['footer.backendRepo']()}</span>
 								<Info
 									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
 									aria-hidden="true"

@@ -1,4 +1,5 @@
 import type { OrganizationTokenSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 import { formatDateTime } from '$lib/utils/date';
 
 /**
@@ -79,7 +80,7 @@ export function formatTokenUsage(uses: number | undefined, maxUses: number | und
  */
 export function getExpirationDisplay(expiresAt: string | null | undefined): string {
 	if (!expiresAt) {
-		return 'Never';
+		return m['tokenExpiry.never']();
 	}
 
 	const now = new Date();
@@ -87,18 +88,22 @@ export function getExpirationDisplay(expiresAt: string | null | undefined): stri
 	const diff = expiry.getTime() - now.getTime();
 
 	if (diff < 0) {
-		return 'Expired';
+		return m['countdown.expired']();
 	}
 
 	const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 	const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
 	if (days > 0) {
-		return `${days} day${days === 1 ? '' : 's'}`;
+		return days === 1
+			? m['tokenExpiry.dayOne']({ count: days })
+			: m['tokenExpiry.dayOther']({ count: days });
 	} else if (hours > 0) {
-		return `${hours} hour${hours === 1 ? '' : 's'}`;
+		return hours === 1
+			? m['tokenExpiry.hourOne']({ count: hours })
+			: m['tokenExpiry.hourOther']({ count: hours });
 	} else {
-		return 'Less than 1 hour';
+		return m['tokenExpiry.lessThanHour']();
 	}
 }
 
@@ -108,7 +113,7 @@ export function getExpirationDisplay(expiresAt: string | null | undefined): stri
  */
 export function getExpirationDate(expiresAt: string | null | undefined): string {
 	if (!expiresAt) {
-		return 'Never';
+		return m['tokenExpiry.never']();
 	}
 	return formatDateTime(expiresAt);
 }
@@ -144,14 +149,41 @@ export function getEventTokenUrl(tokenId: string, orgSlug?: string, eventSlug?: 
 }
 
 /**
- * Get duration options for token creation
+ * Get duration options for token creation.
+ * Labels are getters so they resolve in the active locale on every read,
+ * not once at module load.
  */
 export const durationOptions = [
-	{ label: '1 Hour', value: 60 },
-	{ label: '1 Day', value: 1440 },
-	{ label: '7 Days', value: 10080 },
-	{ label: '30 Days', value: 43200 },
-	{ label: 'Never', value: 0 }
+	{
+		get label() {
+			return m['tokenDuration.oneHour']();
+		},
+		value: 60
+	},
+	{
+		get label() {
+			return m['tokenDuration.oneDay']();
+		},
+		value: 1440
+	},
+	{
+		get label() {
+			return m['tokenDuration.sevenDays']();
+		},
+		value: 10080
+	},
+	{
+		get label() {
+			return m['tokenDuration.thirtyDays']();
+		},
+		value: 43200
+	},
+	{
+		get label() {
+			return m['tokenExpiry.never']();
+		},
+		value: 0
+	}
 ] as const;
 
 /**
@@ -159,5 +191,5 @@ export const durationOptions = [
  */
 export function getDurationLabel(minutes: number): string {
 	const option = durationOptions.find((opt) => opt.value === minutes);
-	return option?.label || `${minutes} minutes`;
+	return option?.label || m['tokenDuration.minutes']({ minutes });
 }

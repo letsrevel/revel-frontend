@@ -38,8 +38,8 @@
 		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {
 				icon: AlertCircle,
-				label: 'Awaiting Review',
-				description: 'This submission has not been evaluated yet.',
+				label: m['autoEvalRecommendation.awaitingReview'](),
+				description: m['autoEvalRecommendation.awaitingReviewDescription'](),
 				bgClass: 'bg-highlight/10',
 				borderClass: 'border-highlight',
 				iconBgClass: 'bg-highlight/20',
@@ -50,8 +50,9 @@
 		if ((evaluation.status as QuestionnaireEvaluationStatus) === 'approved') {
 			return {
 				icon: CheckCircle,
-				label: 'Recommended: Approve',
-				description: evaluation.comments || 'This submission meets the requirements.',
+				label: m['autoEvalRecommendation.recommendApprove'](),
+				description:
+					evaluation.comments || m['autoEvalRecommendation.approveFallbackDescription'](),
 				bgClass: 'bg-success/10',
 				borderClass: 'border-success/50',
 				iconBgClass: 'bg-success/10',
@@ -61,8 +62,8 @@
 
 		return {
 			icon: XCircle,
-			label: 'Recommended: Reject',
-			description: evaluation.comments || 'This submission does not meet the requirements.',
+			label: m['autoEvalRecommendation.recommendReject'](),
+			description: evaluation.comments || m['autoEvalRecommendation.rejectFallbackDescription'](),
 			bgClass: 'bg-destructive/10',
 			borderClass: 'border-destructive/50',
 			iconBgClass: 'bg-destructive/10 dark:bg-destructive/25',

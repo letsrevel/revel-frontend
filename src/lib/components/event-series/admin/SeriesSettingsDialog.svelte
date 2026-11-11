@@ -97,7 +97,7 @@
 
 	const updateDetailsMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminUpdateEventSeries({
 				path: { series_id: series.id },
 				body: {
@@ -121,7 +121,7 @@
 
 	const uploadLogoMutation = createMutation(() => ({
 		mutationFn: async (file: File) => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminUploadLogo({
 				path: { series_id: series.id },
 				body: { logo: file },
@@ -141,7 +141,7 @@
 
 	const deleteLogoMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminDeleteLogo({
 				path: { series_id: series.id },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -160,7 +160,7 @@
 
 	const uploadCoverMutation = createMutation(() => ({
 		mutationFn: async (file: File) => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminUploadCoverArt({
 				path: { series_id: series.id },
 				body: { cover_art: file },
@@ -180,7 +180,7 @@
 
 	const deleteCoverMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminDeleteCoverArt({
 				path: { series_id: series.id },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -199,7 +199,7 @@
 
 	const addTagMutation = createMutation(() => ({
 		mutationFn: async (tag: string) => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminAddTags({
 				path: { series_id: series.id },
 				body: { tags: [tag] },
@@ -219,7 +219,7 @@
 
 	const removeTagMutation = createMutation(() => ({
 		mutationFn: async (tag: string) => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await eventseriesadminRemoveTags({
 				path: { series_id: series.id },
 				body: { tags: [tag] },

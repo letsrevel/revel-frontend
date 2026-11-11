@@ -245,7 +245,7 @@
 						expiryDialogOpen = false;
 						expiryDialogState = null;
 					},
-					onError: (err) => handleMutationError(err, 'Failed to issue offer')
+					onError: (err) => handleMutationError(err, m['orgAdmin.waitlist.offer.issueFailed']())
 				}
 			);
 		} else {
@@ -261,7 +261,8 @@
 						expiryDialogOpen = false;
 						expiryDialogState = null;
 					},
-					onError: (err) => handleMutationError(err, 'Failed to reactivate offer')
+					onError: (err) =>
+						handleMutationError(err, m['orgAdmin.waitlist.offer.reactivateFailed']())
 				}
 			);
 		}
@@ -276,7 +277,7 @@
 			onSuccess: () => {
 				toast.success(m['orgAdmin.waitlist.offer.revoke']());
 			},
-			onError: (err) => handleMutationError(err, 'Failed to revoke offer')
+			onError: (err) => handleMutationError(err, m['orgAdmin.waitlist.offer.revokeFailed']())
 		});
 	}
 
@@ -346,7 +347,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.waitlist.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<title>
+		{m['orgAdmin.waitlist.documentTitle']({
+			title: m['orgAdmin.waitlist.pageTitle'](),
+			orgName: organization.name
+		})}
+	</title>
 	<meta
 		name="description"
 		content={m['orgAdmin.waitlist.metaDescription']({ orgName: organization.name })}

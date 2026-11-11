@@ -47,7 +47,7 @@
 							.join(', ')
 					);
 				}
-				throw new Error('Failed to create discount code');
+				throw new Error(m['discountCodeNewPage.createFailed']());
 			}
 			return response.data;
 		},

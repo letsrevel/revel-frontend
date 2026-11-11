@@ -10,12 +10,12 @@
 	const FILE_TYPE_CATEGORIES = [
 		{
 			id: 'images',
-			label: 'Images (JPEG, PNG, GIF, WebP)',
+			label: () => m['questionEditor.fileTypeImages'](),
 			mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 		},
 		{
 			id: 'audio',
-			label: 'Audio (MP3, WAV, OGG, M4A)',
+			label: () => m['questionEditor.fileTypeAudio'](),
 			// video/webm included because browser MediaRecorder produces video/webm container
 			// even for audio-only recordings (libmagic detects WebM container as video/webm)
 			// audio/mp4 and video/mp4 cover .m4a files (AAC audio in MP4 container)
@@ -31,17 +31,29 @@
 				'video/webm'
 			]
 		},
-		{ id: 'documents', label: 'Documents (PDF)', mimeTypes: ['application/pdf'] },
+		{
+			id: 'documents',
+			label: () => m['questionEditor.fileTypeDocuments'](),
+			mimeTypes: ['application/pdf']
+		},
 		{
 			id: 'spreadsheets',
-			label: 'Spreadsheets (Excel)',
+			label: () => m['questionEditor.fileTypeSpreadsheets'](),
 			mimeTypes: [
 				'application/vnd.ms-excel',
 				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 			]
 		},
-		{ id: 'text', label: 'Text Files (TXT, CSV)', mimeTypes: ['text/plain', 'text/csv'] },
-		{ id: 'archives', label: 'Archives (ZIP)', mimeTypes: ['application/zip'] }
+		{
+			id: 'text',
+			label: () => m['questionEditor.fileTypeText'](),
+			mimeTypes: ['text/plain', 'text/csv']
+		},
+		{
+			id: 'archives',
+			label: () => m['questionEditor.fileTypeArchives'](),
+			mimeTypes: ['application/zip']
+		}
 	];
 
 	// File size options (in bytes)
@@ -107,7 +119,7 @@
 						for="filetype-{questionId}-{category.id}"
 						class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						{category.label}
+						{category.label()}
 					</Label>
 				</div>
 			{/each}

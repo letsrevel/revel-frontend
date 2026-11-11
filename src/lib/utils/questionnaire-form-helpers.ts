@@ -6,6 +6,7 @@
  * list, return a new list, and let the caller assign it back to the `$state`.
  */
 
+import * as m from '$lib/paraglide/messages.js';
 import {
 	createQuestion,
 	type QuestionnaireQuestion,
@@ -48,7 +49,7 @@ export function updateTopLevelQuestion(
 export function addSection(sections: QuestionnaireSection[]): QuestionnaireSection[] {
 	const newSection: QuestionnaireSection = {
 		id: crypto.randomUUID(),
-		name: `Section ${sections.length + 1}`,
+		name: m['sectionEditor.defaultName']({ number: sections.length + 1 }),
 		description: '',
 		order: sections.length,
 		questions: []
@@ -309,7 +310,7 @@ export function fuQuestionToCreateApiFormat(q: QuestionnaireQuestion): Record<st
 /** Parse validation error responses from the API into a user-friendly string. */
 export function parseValidationErrors(errorData: unknown): string {
 	if (!errorData || typeof errorData !== 'object') {
-		return 'An unknown validation error occurred.';
+		return m['questionnaireValidation.unknownError']();
 	}
 
 	const messages: string[] = [];
@@ -351,13 +352,15 @@ export function parseValidationErrors(errorData: unknown): string {
 	}
 
 	if (messages.length === 0) {
-		return 'Validation failed. Please check your input.';
+		return m['questionnaireValidation.failed']();
 	}
 
 	return messages
 		.map((msg) => {
 			if (msg.includes('multiple correct answers')) {
-				return 'A question with "Allow multiple answers" disabled cannot have multiple correct options marked. Please enable "Allow multiple answers" or select only one correct option.';
+				return m['questionnaireValidation.multipleCorrect']({
+					allowLabel: m['questionEditor.allowMultipleAnswers']()
+				});
 			}
 			return msg;
 		})

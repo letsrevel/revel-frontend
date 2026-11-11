@@ -56,7 +56,9 @@
 	const features = $derived($page.data.features);
 
 	// Get user's first name or preferred name
-	const firstName = $derived(user?.preferred_name || user?.first_name || 'there');
+	const firstName = $derived(
+		user?.preferred_name || user?.first_name || m['dashboard.fallbackFirstName']()
+	);
 
 	// Your Events filter state (default to "All")
 	let yourEventsFilters = $state({ ...filterPresets[0].filters });

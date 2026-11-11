@@ -57,7 +57,7 @@
 
 	const generateMutation = createMutation(() => ({
 		mutationFn: async (): Promise<EventDetailSchema[]> => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const body = untilLocal.trim() ? { until: untilLocal } : null;
 			const response = await organizationadminrecurringeventsGenerateEvents({
 				path: { slug: organizationSlug, series_id: series.id },

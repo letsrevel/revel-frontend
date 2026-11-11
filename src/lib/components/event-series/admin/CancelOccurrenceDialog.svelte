@@ -78,8 +78,10 @@
 
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
-			if (!selectedDate) throw new Error('No occurrence date selected');
+			if (!accessToken)
+				throw new Error(m['recurringEvents.cancelOccurrenceDialog.notAuthenticated']());
+			if (!selectedDate)
+				throw new Error(m['recurringEvents.cancelOccurrenceDialog.noDateSelected']());
 			const response = await organizationadminrecurringeventsCancelOccurrence({
 				path: { slug: organizationSlug, series_id: series.id },
 				body: { occurrence_date: selectedDate },

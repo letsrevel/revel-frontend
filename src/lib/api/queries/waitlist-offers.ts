@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/svelte-query';
+import * as m from '$lib/paraglide/messages.js';
 import {
 	eventadminwaitlistoffersGetWaitlistSettings,
 	eventadminwaitlistoffersUpdateWaitlistSettings,
@@ -44,7 +45,7 @@ export function createWaitlistSettingsQueryOptions(eventId: EventId, getAccessTo
 				headers: authHeaders(getAccessToken())
 			});
 			if (response.error || !response.data) {
-				throw new Error('Failed to load waitlist settings');
+				throw new Error(m['waitlistSettings.error.loadFailed']());
 			}
 			return response.data;
 		}
@@ -64,7 +65,7 @@ export function createUpdateWaitlistSettingsMutationOptions(
 				headers: authHeaders(getAccessToken())
 			});
 			if (response.error || !response.data) {
-				throw response.error ?? new Error('Failed to update waitlist settings');
+				throw response.error ?? new Error(m['waitlistSettings.error.updateFailed']());
 			}
 			return response.data;
 		},
@@ -96,7 +97,7 @@ export function createWaitlistOffersQueryOptions(
 					headers: authHeaders(getAccessToken())
 				});
 				if (response.error || !response.data) {
-					throw new Error('Failed to load waitlist offers');
+					throw new Error(m['orgAdmin.waitlist.offer.error.loadFailed']());
 				}
 				return response.data;
 			}
@@ -130,7 +131,7 @@ export function createCreateWaitlistOfferMutationOptions(
 				headers: authHeaders(getAccessToken())
 			});
 			if (response.error || !response.data) {
-				throw response.error ?? new Error('Failed to create waitlist offer');
+				throw response.error ?? new Error(m['orgAdmin.waitlist.offer.error.createFailed']());
 			}
 			return response.data;
 		},
@@ -150,7 +151,7 @@ export function createRevokeWaitlistOfferMutationOptions(
 				headers: authHeaders(getAccessToken())
 			});
 			if (response.error || !response.data) {
-				throw response.error ?? new Error('Failed to revoke waitlist offer');
+				throw response.error ?? new Error(m['orgAdmin.waitlist.offer.error.revokeFailed']());
 			}
 			return response.data;
 		},
@@ -174,7 +175,7 @@ export function createReactivateWaitlistOfferMutationOptions(
 				headers: authHeaders(getAccessToken())
 			});
 			if (response.error || !response.data) {
-				throw response.error ?? new Error('Failed to reactivate waitlist offer');
+				throw response.error ?? new Error(m['orgAdmin.waitlist.offer.error.reactivateFailed']());
 			}
 			return response.data;
 		},

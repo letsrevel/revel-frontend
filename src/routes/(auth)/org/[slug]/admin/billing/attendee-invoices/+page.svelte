@@ -98,7 +98,8 @@
 						},
 						headers
 					});
-					if (response.error || !response.data) throw new Error('Failed to load attendee invoices');
+					if (response.error || !response.data)
+						throw new Error(m['orgAdmin.billing.attendeeInvoices.loadError']());
 					return response.data;
 				},
 				enabled: !!accessToken
@@ -116,7 +117,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers
 					});
-					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					if (response.error || !response.data)
+						throw new Error(m['orgAdmin.billing.attendeeInvoices.detailLoadError']());
 					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
@@ -443,7 +445,9 @@
 
 		{#if totalPages > 1}
 			<div class="flex items-center justify-between">
-				<p class="text-sm text-muted-foreground">{invoicesQuery.data.count} invoices</p>
+				<p class="text-sm text-muted-foreground">
+					{m['orgAdmin.billing.attendeeInvoices.count']({ count: invoicesQuery.data.count })}
+				</p>
 				<div class="flex items-center gap-2">
 					<Button
 						variant="outline"

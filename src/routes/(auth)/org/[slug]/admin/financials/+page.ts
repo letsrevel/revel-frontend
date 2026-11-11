@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import * as m from '$lib/paraglide/messages.js';
 import type { PageLoad } from './$types';
 
 // Hybrid rendering (the default for authenticated admin pages): the shell +
@@ -11,7 +12,7 @@ export const load: PageLoad = async ({ parent }) => {
 	// organization owners hold. Mirror that guard here so staff who deep-link the
 	// page get a clear 403 instead of an empty API error.
 	if (!isOwner) {
-		throw error(403, 'You do not have permission to view organization financials.');
+		throw error(403, m['financials.forbidden']());
 	}
 
 	return { organization };
