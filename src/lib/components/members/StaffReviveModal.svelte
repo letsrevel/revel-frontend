@@ -21,7 +21,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
-	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
+	import { currencyOptions } from '$lib/utils/currencies';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
@@ -43,7 +43,7 @@
 	// Locked to the plan: the revival payment settles the plan's own price.
 	const currency = $derived(sub.plan.currency);
 	const currencyLabel = $derived(
-		CURRENCY_OPTIONS.find((opt) => opt.value === currency)?.label ?? currency
+		currencyOptions().find((opt) => opt.value === currency)?.label ?? currency
 	);
 
 	let amount = $state('0.00');

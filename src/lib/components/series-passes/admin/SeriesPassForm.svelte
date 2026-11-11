@@ -20,11 +20,11 @@
 		DialogDescription
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
+	import { currencyOptions } from '$lib/utils/currencies';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import {
-		SUPPORTED_CURRENCIES,
 		CURRENCY_SYMBOLS,
 		normalizeDecimalInput,
 		toDatetimeLocal,
@@ -305,8 +305,8 @@
 						disabled={isPending || isEdit}
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					>
-						{#each SUPPORTED_CURRENCIES as { code, name } (code)}
-							<option value={code}>{code} — {name}</option>
+						{#each currencyOptions() as opt (opt.value)}
+							<option value={opt.value}>{opt.label}</option>
 						{/each}
 					</select>
 					{#if fieldErrors.currency}

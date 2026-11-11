@@ -7,6 +7,7 @@
 	import { AlertCircle, Loader2 } from '@lucide/svelte';
 	import type { DiscountCodeSchema, DiscountType } from '$lib/api/generated/types.gen';
 	import ScopeAssignment from './ScopeAssignment.svelte';
+	import { currencyOptions } from '$lib/utils/currencies';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface FormData {
@@ -47,38 +48,6 @@
 	let code = $state(existingCode?.code || '');
 	let discountType = $state<DiscountType>(existingCode?.discount_type || 'percentage');
 	let discountValue = $state(existingCode?.discount_value || '');
-	const SUPPORTED_CURRENCIES = [
-		{ code: 'AUD', name: 'Australian Dollar' },
-		{ code: 'BRL', name: 'Brazilian Real' },
-		{ code: 'CAD', name: 'Canadian Dollar' },
-		{ code: 'CHF', name: 'Swiss Franc' },
-		{ code: 'CNY', name: 'Chinese Yuan' },
-		{ code: 'CZK', name: 'Czech Koruna' },
-		{ code: 'DKK', name: 'Danish Krone' },
-		{ code: 'EUR', name: 'Euro' },
-		{ code: 'GBP', name: 'British Pound' },
-		{ code: 'HKD', name: 'Hong Kong Dollar' },
-		{ code: 'HUF', name: 'Hungarian Forint' },
-		{ code: 'IDR', name: 'Indonesian Rupiah' },
-		{ code: 'ILS', name: 'Israeli New Shekel' },
-		{ code: 'INR', name: 'Indian Rupee' },
-		{ code: 'ISK', name: 'Icelandic Króna' },
-		{ code: 'JPY', name: 'Japanese Yen' },
-		{ code: 'KRW', name: 'South Korean Won' },
-		{ code: 'MXN', name: 'Mexican Peso' },
-		{ code: 'MYR', name: 'Malaysian Ringgit' },
-		{ code: 'NOK', name: 'Norwegian Krone' },
-		{ code: 'NZD', name: 'New Zealand Dollar' },
-		{ code: 'PHP', name: 'Philippine Peso' },
-		{ code: 'PLN', name: 'Polish Złoty' },
-		{ code: 'RON', name: 'Romanian Leu' },
-		{ code: 'SEK', name: 'Swedish Krona' },
-		{ code: 'SGD', name: 'Singapore Dollar' },
-		{ code: 'THB', name: 'Thai Baht' },
-		{ code: 'TRY', name: 'Turkish Lira' },
-		{ code: 'USD', name: 'US Dollar' },
-		{ code: 'ZAR', name: 'South African Rand' }
-	];
 	let currency = $state(existingCode?.currency || 'EUR');
 	// `validFrom` / `validUntil` hold ISO 8601 strings (DateTimePicker's value format).
 	let validFrom = $state(existingCode?.valid_from ?? '');
@@ -344,8 +313,8 @@
 					aria-invalid={validationErrors.currency ? 'true' : undefined}
 					aria-describedby={validationErrors.currency ? 'currency-error' : undefined}
 				>
-					{#each SUPPORTED_CURRENCIES as curr (curr.code)}
-						<option value={curr.code}>{curr.code} - {curr.name}</option>
+					{#each currencyOptions() as opt (opt.value)}
+						<option value={opt.value}>{opt.label}</option>
 					{/each}
 				</select>
 				{#if validationErrors.currency}
