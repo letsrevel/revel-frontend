@@ -265,6 +265,7 @@
 		"error_tokenExpired": "Dieser Link ist abgelaufen. Starte die E-Mail-Änderung erneut.",
 		"error_invalid": "Dieser Link ist ungültig. Starte die E-Mail-Änderung erneut.",
 		"error_emailTaken": "Diese E-Mail-Adresse ist nicht mehr verfügbar. Starte erneut mit einer anderen Adresse.",
+		"error_superseded": "Dein Passwort wurde nach deiner Anfrage zurückgesetzt, deshalb wurde die Änderung abgebrochen. Beantrage die E-Mail-Änderung erneut.",
 		"error_throttled": "Zu viele Versuche. Bitte versuche es in ein paar Minuten erneut.",
 		"error_generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
 		"error_cta": "Zu den Sicherheitseinstellungen"

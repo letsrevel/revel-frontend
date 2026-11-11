@@ -265,6 +265,7 @@
 		"error_tokenExpired": "This link has expired. Start the email change again.",
 		"error_invalid": "This link is not valid. Start the email change again.",
 		"error_emailTaken": "This email is no longer available. Start over with a different address.",
+		"error_superseded": "Your password was reset after you requested this change, so it was cancelled. Request the email change again.",
 		"error_throttled": "Too many attempts. Please try again in a few minutes.",
 		"error_generic": "Something went wrong. Please try again.",
 		"error_cta": "Go to security settings"

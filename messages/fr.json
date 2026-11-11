@@ -235,6 +235,7 @@
 		"error_tokenExpired": "Ce lien a expiré. Recommence le changement d'e-mail.",
 		"error_invalid": "Ce lien n'est pas valide. Recommence le changement d'e-mail.",
 		"error_emailTaken": "Cet e-mail n'est plus disponible. Recommence avec une autre adresse.",
+		"error_superseded": "Ton mot de passe a été réinitialisé après ta demande, le changement a donc été annulé. Demande à nouveau le changement d'e-mail.",
 		"error_throttled": "Trop de tentatives. Réessaie dans quelques minutes.",
 		"error_generic": "Une erreur s'est produite. Réessaie.",
 		"error_cta": "Aller aux paramètres de sécurité"

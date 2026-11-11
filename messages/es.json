@@ -265,6 +265,7 @@
 		"error_tokenExpired": "Este enlace ha caducado. Vuelve a iniciar el cambio de correo.",
 		"error_invalid": "Este enlace no es válido. Vuelve a iniciar el cambio de correo.",
 		"error_emailTaken": "Este correo ya no está disponible. Vuelve a empezar con otra dirección.",
+		"error_superseded": "Tu contraseña se restableció después de tu solicitud, así que el cambio se canceló. Vuelve a solicitar el cambio de correo.",
 		"error_throttled": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
 		"error_generic": "Algo ha salido mal. Inténtalo de nuevo.",
 		"error_cta": "Ir a los ajustes de seguridad"
