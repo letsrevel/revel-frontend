@@ -11596,10 +11596,10 @@
 			"loadSummaryFailed": "Zusammenfassung konnte nicht geladen werden",
 			"loginRequiredBuildEmbed": "Du musst angemeldet sein, um ein Embed zu erstellen",
 			"loadPollsFailed": "Umfragen konnten nicht geladen werden",
-			"ownerOnlyIntegrations": "Nur die Inhaber*innen der Organisation können Integrationen verwalten.",
+			"ownerOnlyIntegrations": "Nur die*der Inhaber*in der Organisation kann Integrationen verwalten.",
 			"loadIntegrationsFailed": "Integrationen konnten nicht geladen werden",
-			"ownerOnlyCustomDomain": "Nur die Inhaber*innen der Organisation können die eigene Domain verwalten.",
-			"ownerOnlyBilling": "Nur die Inhaber*innen der Organisation können auf die Abrechnung zugreifen.",
+			"ownerOnlyCustomDomain": "Nur die*der Inhaber*in der Organisation kann die eigene Domain verwalten.",
+			"ownerOnlyBilling": "Nur die*der Inhaber*in der Organisation kann auf die Abrechnung zugreifen.",
 			"loginRequiredViewSeriesList": "Du musst angemeldet sein, um Eventreihen zu sehen",
 			"loadSeriesListFailed": "Eventreihen konnten nicht geladen werden. Bitte versuche es später erneut.",
 			"loginRequiredViewSeries": "Du musst angemeldet sein, um diese Eventreihe zu sehen",
@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Ungültiger oder abgelaufener Verifizierungstoken",
 			"deletionTokenInvalid": "Ungültiger oder abgelaufener Löschtoken. Bitte fordere eine neue Kontolöschung an.",
 			"resetTokenInvalid": "Ungültiger oder abgelaufener Zurücksetzen-Token. Bitte fordere ein neues Zurücksetzen des Passworts an.",
-			"cannotDeleteOwnsOrgs": "Du kannst dein Konto nicht löschen, solange du aktive Organisationen besitzt. Übertrage zuerst die Inhaberschaft oder lösche sie."
+			"cannotDeleteOwnsOrgs": "Du kannst dein Konto nicht löschen, solange du aktive Organisationen besitzt. Übertrage zuerst die Inhaberschaft oder lösche sie.",
+			"loadEventsRetryLater": "Events konnten nicht geladen werden. Bitte versuche es später erneut.",
+			"loadOrganizationsRetryLater": "Organisationen konnten nicht geladen werden. Bitte versuche es später erneut.",
+			"invalidApiResponse": "Ungültige Antwort der API",
+			"verificationTokenMissing": "Das Bestätigungstoken fehlt",
+			"serviceUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte versuche es gleich noch einmal."
 		}
 	},
 	"seo": {

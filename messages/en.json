@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Invalid or expired verification token",
 			"deletionTokenInvalid": "Invalid or expired deletion token. Please request a new account deletion.",
 			"resetTokenInvalid": "Invalid or expired reset token. Please request a new password reset.",
-			"cannotDeleteOwnsOrgs": "You cannot delete your account while you own active organizations. Please transfer ownership or delete them first."
+			"cannotDeleteOwnsOrgs": "You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.",
+			"loadEventsRetryLater": "Failed to load events. Please try again later.",
+			"loadOrganizationsRetryLater": "Failed to load organizations. Please try again later.",
+			"invalidApiResponse": "Invalid API response",
+			"verificationTokenMissing": "Verification token is missing",
+			"serviceUnavailable": "Service temporarily unavailable — please try again in a moment."
 		}
 	},
 	"seo": {

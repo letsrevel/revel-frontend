@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveLang } from '$lib/seo/server';
+import { buildSeo } from '$lib/seo';
+import { runWithRequestLocale } from '$lib/server/request-locale';
 
 describe('resolveLang', () => {
 	it('returns en when Accept-Language has only en', () => {
@@ -49,6 +51,23 @@ describe('resolveLang', () => {
 			headers: { 'accept-language': 'ja,ko;q=0.9' }
 		});
 		expect(resolveLang(req)).toBe('en');
+	});
+
+	it('uses the request UI locale over Accept-Language (de header, en cookie)', () => {
+		const req = new Request('https://x.test/', {
+			headers: { 'accept-language': 'de-DE,de;q=0.9' }
+		});
+		const lang = runWithRequestLocale('en', 'https://x.test', () => resolveLang(req));
+		expect(lang).toBe('en');
+		const cfg = runWithRequestLocale('en', 'https://x.test', () =>
+			buildSeo({
+				kind: 'events-listing',
+				url: new URL('https://x.test/events'),
+				lang: resolveLang(req)
+			})
+		);
+		expect(cfg.title).toBe('Browse Events | Revel');
+		expect(cfg.og.locale).toBe('en_US');
 	});
 
 	it('falls back to en when no header is set', () => {

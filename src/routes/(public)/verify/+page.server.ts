@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 		return {
 			seo,
 			success: false,
-			error: 'Verification token is missing'
+			error: m['serverErrors.public.verificationTokenMissing']()
 		};
 	}
 

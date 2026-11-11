@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Token de verificação inválido ou expirado",
 			"deletionTokenInvalid": "Token de eliminação inválido ou expirado. Pede uma nova eliminação da conta.",
 			"resetTokenInvalid": "Token de reposição inválido ou expirado. Pede uma nova reposição da palavra-passe.",
-			"cannotDeleteOwnsOrgs": "Não podes eliminar a tua conta enquanto fores proprietário de organizações ativas. Transfere primeiro a propriedade ou elimina-as."
+			"cannotDeleteOwnsOrgs": "Não podes eliminar a tua conta enquanto fores proprietário de organizações ativas. Transfere primeiro a propriedade ou elimina-as.",
+			"loadEventsRetryLater": "Não foi possível carregar os eventos. Tenta novamente mais tarde.",
+			"loadOrganizationsRetryLater": "Não foi possível carregar as organizações. Tenta novamente mais tarde.",
+			"invalidApiResponse": "Resposta da API inválida",
+			"verificationTokenMissing": "O token de verificação está em falta",
+			"serviceUnavailable": "Serviço temporariamente indisponível. Tenta novamente daqui a um momento."
 		}
 	},
 	"seo": {

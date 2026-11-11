@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Jeton de vérification invalide ou expiré",
 			"deletionTokenInvalid": "Jeton de suppression invalide ou expiré. Demande une nouvelle suppression de compte.",
 			"resetTokenInvalid": "Jeton de réinitialisation invalide ou expiré. Demande une nouvelle réinitialisation du mot de passe.",
-			"cannotDeleteOwnsOrgs": "Tu ne peux pas supprimer ton compte tant que tu possèdes des organisations actives. Transfère d'abord leur propriété ou supprime-les."
+			"cannotDeleteOwnsOrgs": "Tu ne peux pas supprimer ton compte tant que tu possèdes des organisations actives. Transfère d'abord leur propriété ou supprime-les.",
+			"loadEventsRetryLater": "Impossible de charger les événements. Réessaie plus tard.",
+			"loadOrganizationsRetryLater": "Impossible de charger les organisations. Réessaie plus tard.",
+			"invalidApiResponse": "Réponse de l'API invalide",
+			"verificationTokenMissing": "Le jeton de vérification est manquant",
+			"serviceUnavailable": "Service temporairement indisponible. Réessaie dans un instant."
 		}
 	},
 	"seo": {

@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Token di verifica non valido o scaduto",
 			"deletionTokenInvalid": "Token di eliminazione non valido o scaduto. Richiedi una nuova eliminazione dell'account.",
 			"resetTokenInvalid": "Token di reimpostazione non valido o scaduto. Richiedi una nuova reimpostazione della password.",
-			"cannotDeleteOwnsOrgs": "Non puoi eliminare il tuo account finché possiedi organizzazioni attive. Trasferisci prima la proprietà o eliminale."
+			"cannotDeleteOwnsOrgs": "Non puoi eliminare il tuo account finché possiedi organizzazioni attive. Trasferisci prima la proprietà o eliminale.",
+			"loadEventsRetryLater": "Impossibile caricare gli eventi. Riprova più tardi.",
+			"loadOrganizationsRetryLater": "Impossibile caricare le organizzazioni. Riprova più tardi.",
+			"invalidApiResponse": "Risposta dell'API non valida",
+			"verificationTokenMissing": "Il token di verifica è mancante",
+			"serviceUnavailable": "Servizio temporaneamente non disponibile. Riprova tra un momento."
 		}
 	},
 	"seo": {

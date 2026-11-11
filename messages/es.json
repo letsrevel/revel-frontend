@@ -11632,7 +11632,12 @@
 			"verificationTokenInvalid": "Token de verificación no válido o caducado",
 			"deletionTokenInvalid": "Token de eliminación no válido o caducado. Solicita una nueva eliminación de la cuenta.",
 			"resetTokenInvalid": "Token de restablecimiento no válido o caducado. Solicita un nuevo restablecimiento de la contraseña.",
-			"cannotDeleteOwnsOrgs": "No puedes eliminar tu cuenta mientras seas propietario de organizaciones activas. Transfiere primero la propiedad o elimínalas."
+			"cannotDeleteOwnsOrgs": "No puedes eliminar tu cuenta mientras seas propietario de organizaciones activas. Transfiere primero la propiedad o elimínalas.",
+			"loadEventsRetryLater": "No se pudieron cargar los eventos. Inténtalo de nuevo más tarde.",
+			"loadOrganizationsRetryLater": "No se pudieron cargar las organizaciones. Inténtalo de nuevo más tarde.",
+			"invalidApiResponse": "Respuesta de la API no válida",
+			"verificationTokenMissing": "Falta el token de verificación",
+			"serviceUnavailable": "Servicio temporalmente no disponible. Inténtalo de nuevo en un momento."
 		}
 	},
 	"seo": {

@@ -2,16 +2,11 @@
  * i18n Configuration for SvelteKit
  *
  * This file provides utilities for language detection and management.
+ * Server-only: it imports $lib/server/request-locale, so client code must
+ * import from '$lib/paraglide/runtime.js' directly.
  */
 
-import {
-	setLocale,
-	getLocale,
-	locales,
-	baseLocale,
-	cookieName,
-	type Locale
-} from '$lib/paraglide/runtime.js';
+import { getLocale, locales, baseLocale, cookieName, type Locale } from '$lib/paraglide/runtime.js';
 import type { Handle } from '@sveltejs/kit';
 import { isEmbedPath } from '$lib/embed/constants';
 import { runWithRequestLocale } from '$lib/server/request-locale';
@@ -121,4 +116,4 @@ export function i18nHandle(): Handle {
 /**
  * Export language utilities
  */
-export { setLocale, getLocale, locales, baseLocale };
+export { getLocale, locales, baseLocale };

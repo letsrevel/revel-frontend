@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 	if (!token) {
 		return {
 			success: false,
-			error: 'Verification token is missing',
+			error: m['serverErrors.public.verificationTokenMissing'](),
 			isVerifying: false,
 			organizationSlug: slug,
 			organizationName: null
