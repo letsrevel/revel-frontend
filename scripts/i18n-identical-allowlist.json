@@ -230,6 +230,7 @@
 		"Z-A",
 		"{count} {label}",
 		"Section {number}",
+		"Section {n}",
 		"Images (JPEG, PNG, GIF, WebP)",
 		"Audio (MP3, WAV, OGG, M4A)",
 		"Documents (PDF)",
