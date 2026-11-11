@@ -4217,7 +4217,8 @@
 					"editFor": "Modifica il pagamento di {amount} del {date}",
 					"void": "Storna",
 					"voidFor": "Storna il pagamento di {amount} del {date}",
-					"includeVoided": "Includi i pagamenti stornati"
+					"includeVoided": "Includi i pagamenti stornati",
+					"voidHint": "Storna un pagamento registrato per errore. Resta nello storico ma non conta più, e il periodo pagato viene ricalcolato. Se il denaro è stato davvero restituito, usa invece Rimborsa."
 				},
 				"editPayment": {
 					"title": "Modifica pagamento",
@@ -4237,7 +4238,7 @@
 				},
 				"voidPayment": {
 					"title": "Stornare questo pagamento?",
-					"body": "Lo storno rimuove il pagamento da totali ed elenchi e ricalcola il periodo dell'iscrizione. Resta nello storico di audit.",
+					"body": "Lo storno rimuove il pagamento da totali ed elenchi e ricalcola il periodo dell'iscrizione. Resta nello storico di audit. Non viene spostato denaro.",
 					"reason": "Motivo (facoltativo)",
 					"submit": "Storna pagamento",
 					"keep": "Mantieni il pagamento",

@@ -4187,7 +4187,8 @@
 					"editFor": "Modifier le paiement de {amount} du {date}",
 					"void": "Invalider",
 					"voidFor": "Invalider le paiement de {amount} du {date}",
-					"includeVoided": "Inclure les paiements invalidés"
+					"includeVoided": "Inclure les paiements invalidés",
+					"voidHint": "Invalide un paiement enregistré par erreur. Il reste dans l'historique mais ne compte plus, et la période payée est recalculée. Si l'argent a effectivement été rendu, utilisez plutôt Rembourser."
 				},
 				"editPayment": {
 					"title": "Modifier le paiement",
@@ -4207,7 +4208,7 @@
 				},
 				"voidPayment": {
 					"title": "Invalider ce paiement ?",
-					"body": "Invalider un paiement le retire des totaux et des listes, et recalcule la période d'adhésion. Il reste dans l'historique d'audit.",
+					"body": "Invalider un paiement le retire des totaux et des listes, et recalcule la période d'adhésion. Il reste dans l'historique d'audit. Aucun argent n'est déplacé.",
 					"reason": "Motif (facultatif)",
 					"submit": "Invalider le paiement",
 					"keep": "Garder le paiement",

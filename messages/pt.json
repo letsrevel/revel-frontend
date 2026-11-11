@@ -4217,7 +4217,8 @@
 					"editFor": "Editar o pagamento de {amount} de {date}",
 					"void": "Anular",
 					"voidFor": "Anular o pagamento de {amount} de {date}",
-					"includeVoided": "Incluir pagamentos anulados"
+					"includeVoided": "Incluir pagamentos anulados",
+					"voidHint": "Anula um pagamento registado por engano. Continua no histórico, mas deixa de contar, e o período pago é recalculado. Se o dinheiro foi mesmo devolvido, regista um Reembolso em vez disso."
 				},
 				"editPayment": {
 					"title": "Editar pagamento",
@@ -4237,7 +4238,7 @@
 				},
 				"voidPayment": {
 					"title": "Anular este pagamento?",
-					"body": "Anular remove o pagamento dos totais e das listas e recalcula o período da adesão. Fica no histórico de auditoria.",
+					"body": "Anular remove o pagamento dos totais e das listas e recalcula o período da adesão. Fica no histórico de auditoria. Nenhum dinheiro é movimentado.",
 					"reason": "Motivo (opcional)",
 					"submit": "Anular pagamento",
 					"keep": "Manter o pagamento",
