@@ -121,10 +121,11 @@ function arrange(payments: OrganizationMembershipPaymentSchema[], count = paymen
 	>);
 }
 
-function renderTab() {
-	const client = new QueryClient({
+function renderTab(
+	client = new QueryClient({
 		defaultOptions: { queries: { retry: false, gcTime: 0 } }
-	});
+	})
+) {
 	return render(QueryClientTestWrapper, {
 		props: { client, component: SubscriptionPaymentsTab, componentProps: { organization } }
 	});
@@ -581,5 +582,142 @@ describe('SubscriptionPaymentsTab refund flow', () => {
 			)
 		);
 		expect(toastSuccessMock).not.toHaveBeenCalled();
+	});
+
+	function arrangeRefundFailure(error: Record<string, unknown>, status: number) {
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockResolvedValue({
+			data: undefined,
+			error,
+			response: { ok: false, status } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsRefundPayment>>);
+	}
+
+	// 409 `payment_voided`: the row was voided after the page loaded. The toast
+	// must name the refusal, and the stale row must be refetched so the operator
+	// sees what the payment is now.
+	it('explains a voided payment, closes the dialog and refetches the ledger', async () => {
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false, gcTime: 0 } }
+		});
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefundFailure({ detail: 'x', code: 'payment_voided' }, 409);
+		renderTab(client);
+		await openDialogAndSubmit();
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith('This payment has already been voided.')
+		);
+		await waitFor(() =>
+			expect(invalidate).toHaveBeenCalledWith(
+				expect.objectContaining({ queryKey: ['organization', 'test-org', 'subscription-payments'] })
+			)
+		);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toastSuccessMock).not.toHaveBeenCalled();
+	});
+
+	// A plain refusal keeps the old contract: the backend's own detail, the dialog
+	// stays open for another attempt, and nothing is refetched on the error path.
+	it('keeps the dialog open and does not refetch on an ordinary 400', async () => {
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false, gcTime: 0 } }
+		});
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefundFailure({ detail: 'Nope' }, 400);
+		renderTab(client);
+		await openDialogAndSubmit();
+
+		await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Nope'));
+		expect(invalidate).not.toHaveBeenCalledWith(
+			expect.objectContaining({ queryKey: ['organization', 'test-org', 'subscription-payments'] })
+		);
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionPaymentsTab page clamp', () => {
+	const listMock = vi.mocked(organizationadminsubscriptionsListOrganizationSubscriptionPayments);
+
+	function reply(results: OrganizationMembershipPaymentSchema[], count: number) {
+		return {
+			data: { results, count, next: null, previous: null },
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof listMock>>;
+	}
+
+	// A void hides the row; if it was the only one on the last page the refetch
+	// is empty while `count` now fits one page fewer.
+	it('steps back to the last valid page when the current one empties', async () => {
+		vi.mocked(organizationadminsubscriptionsListOrganizationPlans).mockResolvedValue({
+			data: [plan],
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		} as unknown as Awaited<
+			ReturnType<typeof organizationadminsubscriptionsListOrganizationPlans>
+		>);
+		listMock.mockImplementation(async (opts) =>
+			opts?.query?.page === 2
+				? reply([makePayment({ id: 'pay-21' })], 21)
+				: reply([makePayment({ id: 'pay-1' })], 21)
+		);
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+		renderTab(client);
+		const user = userEvent.setup();
+		await screen.findByRole('table');
+		// The search debounce resets to page 1 once on mount (300ms); let it pass.
+		await new Promise((r) => setTimeout(r, 350));
+		await user.click(screen.getByRole('button', { name: 'Next' }));
+		await waitFor(() =>
+			expect(listMock).toHaveBeenCalledWith(
+				expect.objectContaining({ query: expect.objectContaining({ page: 2 }) })
+			)
+		);
+
+		// The row on page 2 disappears (voided): the refetch is empty, count 20.
+		listMock.mockImplementation(async (opts) =>
+			opts?.query?.page === 2 ? reply([], 20) : reply([makePayment({ id: 'pay-1' })], 20)
+		);
+		listMock.mockClear();
+		await client.invalidateQueries({
+			queryKey: ['organization', 'test-org', 'subscription-payments']
+		});
+
+		// Without the clamp the tab stays on an empty page 2.
+		await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
+		expect(listMock.mock.calls.map((c) => c[0]?.query?.page)).toContain(2);
+		expect(listMock.mock.calls.at(-1)?.[0]?.query?.page).toBe(1);
+	});
+});
+
+describe('SubscriptionPaymentsTab refund dialog while pending', () => {
+	it('disables Cancel and ignores Escape until the request settles', async () => {
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		let settle!: (v: unknown) => void;
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			}) as unknown as ReturnType<typeof organizationadminsubscriptionsRefundPayment>
+		);
+		renderTab();
+		const user = userEvent.setup();
+		const t = await screen.findByRole('table');
+		await user.click(within(t).getByRole('button', { name: 'Refund payment from Ada Lovelace' }));
+		const dialog = await screen.findByRole('dialog');
+		await user.click(within(dialog).getByRole('button', { name: 'Mark refunded' }));
+
+		await waitFor(() => expect(organizationadminsubscriptionsRefundPayment).toHaveBeenCalled());
+		expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+		await user.keyboard('{Escape}');
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		settle({
+			data: makePayment({ status: 'refunded' }),
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 });

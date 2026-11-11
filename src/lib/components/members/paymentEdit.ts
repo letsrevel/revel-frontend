@@ -68,7 +68,7 @@ export function paymentRefusalCode(error: unknown): MembershipPaymentEditRefusal
 	return REFUSAL_CODES.find((c) => c === code) ?? null;
 }
 
-/** A 409 from the edit/void endpoints: the row is not (or no longer) eligible. */
+/** A 409 from the edit/void/refund endpoints: the row is not (or no longer) eligible. */
 export class PaymentRefusedError extends Error {
 	readonly code: MembershipPaymentEditRefusalCode;
 	constructor(code: MembershipPaymentEditRefusalCode) {

@@ -33,7 +33,12 @@
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
 	import ChangePlanDialog from './ChangePlanDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
-	import type { EditablePayment } from './paymentEdit';
+	import {
+		PaymentRefusedError,
+		invalidatePaymentCaches,
+		toPaymentError,
+		type EditablePayment
+	} from './paymentEdit';
 	import {
 		getAvailableActions,
 		formatPlanPrice,
@@ -338,17 +343,26 @@
 				body: { notes },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
+			// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
 			if (res.error)
-				throw new Error(
-					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.refund']()
-				);
+				throw toPaymentError(res.error, m['orgAdmin.members.subscriptions.drawer.errors.refund']());
 			return res.data;
 		},
 		onSuccess: () => {
 			invalidateAll();
 			refundTarget = null;
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error, variables: { paymentId: string; notes: string }) => {
+			toast.error(err.message);
+			// A refusal means the row on screen is stale: show what it is now.
+			if (err instanceof PaymentRefusedError) {
+				// Only close the dialog this request belongs to.
+				if (refundTarget?.id === variables.paymentId) refundTarget = null;
+				// Same reach as the edit/void refusals: the org-wide ledger and the
+				// register/access rows can be stale too (a void recomputes the period).
+				invalidatePaymentCaches(queryClient, organization.slug);
+			}
+		}
 	}));
 
 	function fmtDate(d: string | null | undefined): string {

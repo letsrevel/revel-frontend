@@ -14,7 +14,6 @@
 		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -25,7 +24,12 @@
 	import PaymentEditDialog from './PaymentEditDialog.svelte';
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
-	import type { EditablePayment } from './paymentEdit';
+	import {
+		PaymentRefusedError,
+		invalidatePaymentCaches,
+		toPaymentError,
+		type EditablePayment
+	} from './paymentEdit';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -123,6 +127,18 @@
 	);
 	const totalCount = $derived(paymentsQuery.data?.count ?? 0);
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
+
+	// A void or a refund refusal refetches this page, and the row that vanished
+	// (voided rows are hidden by default) may have been the only one on the last
+	// page: the refetch then comes back empty with a count that fits fewer pages.
+	// Step back to the last valid page. Only ever clamps DOWN, so it cannot loop.
+	$effect(() => {
+		const data = paymentsQuery.data;
+		if (paymentsQuery.isFetching || !data) return;
+		if (data.results.length > 0 || pageNum <= 1) return;
+		const lastPage = Math.max(1, Math.ceil((data.count ?? 0) / PAGE_SIZE));
+		if (lastPage < pageNum) pageNum = lastPage;
+	});
 	const hasFilters = $derived(statusFilter !== 'all' || planFilter !== 'all' || !!debounced);
 
 	// Explains the rows that offer no Refund control. Only worth saying when the
@@ -144,8 +160,8 @@
 			});
 			// 400 is the ONLINE guard, which `canRefundLedgerPayment` already keeps us
 			// away from; 404 is a row that moved. Both carry a translated `detail`.
-			if (res.error)
-				throw new Error(backendMessage(res.error) || m['orgAdmin.members.payments.refundError']());
+			// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
+			if (res.error) throw toPaymentError(res.error, m['orgAdmin.members.payments.refundError']());
 			return res.data;
 		},
 		onSuccess: () => {
@@ -173,7 +189,16 @@
 			// look like the action did nothing.
 			toast.success(m['orgAdmin.members.payments.refundDone']());
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error, variables: { paymentId: string; notes: string }) => {
+			toast.error(err.message);
+			// A refusal means the row on screen is stale: show what it is now.
+			if (err instanceof PaymentRefusedError) {
+				// Only close the dialog this request belongs to (it is not dismissable
+				// while pending, but never trust that to protect a newer target).
+				if (refundTarget?.id === variables.paymentId) refundTarget = null;
+				invalidatePaymentCaches(queryClient, organization.slug);
+			}
+		}
 	}));
 </script>
 

@@ -28,7 +28,17 @@
 	}
 </script>
 
-<Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
+<!-- Controlled getter/setter: while the request is pending nothing (Escape,
+     overlay click, X) may close the dialog, or a stale onError could later
+     close a newer dialog. -->
+<Dialog
+	bind:open={
+		() => open,
+		(v: boolean) => {
+			if (!v && !isSubmitting) onClose();
+		}
+	}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.refund.title']()}</DialogTitle>
