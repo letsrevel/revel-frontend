@@ -636,3 +636,88 @@ describe('SubscriptionPaymentsTab refund flow', () => {
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});
 });
+
+describe('SubscriptionPaymentsTab page clamp', () => {
+	const listMock = vi.mocked(organizationadminsubscriptionsListOrganizationSubscriptionPayments);
+
+	function reply(results: OrganizationMembershipPaymentSchema[], count: number) {
+		return {
+			data: { results, count, next: null, previous: null },
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof listMock>>;
+	}
+
+	// A void hides the row; if it was the only one on the last page the refetch
+	// is empty while `count` now fits one page fewer.
+	it('steps back to the last valid page when the current one empties', async () => {
+		vi.mocked(organizationadminsubscriptionsListOrganizationPlans).mockResolvedValue({
+			data: [plan],
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		} as unknown as Awaited<
+			ReturnType<typeof organizationadminsubscriptionsListOrganizationPlans>
+		>);
+		listMock.mockImplementation(async (opts) =>
+			opts?.query?.page === 2
+				? reply([makePayment({ id: 'pay-21' })], 21)
+				: reply([makePayment({ id: 'pay-1' })], 21)
+		);
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+		renderTab(client);
+		const user = userEvent.setup();
+		await screen.findByRole('table');
+		// The search debounce resets to page 1 once on mount (300ms); let it pass.
+		await new Promise((r) => setTimeout(r, 350));
+		await user.click(screen.getByRole('button', { name: 'Next' }));
+		await waitFor(() =>
+			expect(listMock).toHaveBeenCalledWith(
+				expect.objectContaining({ query: expect.objectContaining({ page: 2 }) })
+			)
+		);
+
+		// The row on page 2 disappears (voided): the refetch is empty, count 20.
+		listMock.mockImplementation(async (opts) =>
+			opts?.query?.page === 2 ? reply([], 20) : reply([makePayment({ id: 'pay-1' })], 20)
+		);
+		listMock.mockClear();
+		await client.invalidateQueries({
+			queryKey: ['organization', 'test-org', 'subscription-payments']
+		});
+
+		// Without the clamp the tab stays on an empty page 2.
+		await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
+		expect(listMock.mock.calls.map((c) => c[0]?.query?.page)).toContain(2);
+		expect(listMock.mock.calls.at(-1)?.[0]?.query?.page).toBe(1);
+	});
+});
+
+describe('SubscriptionPaymentsTab refund dialog while pending', () => {
+	it('disables Cancel and ignores Escape until the request settles', async () => {
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		let settle!: (v: unknown) => void;
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			}) as unknown as ReturnType<typeof organizationadminsubscriptionsRefundPayment>
+		);
+		renderTab();
+		const user = userEvent.setup();
+		const t = await screen.findByRole('table');
+		await user.click(within(t).getByRole('button', { name: 'Refund payment from Ada Lovelace' }));
+		const dialog = await screen.findByRole('dialog');
+		await user.click(within(dialog).getByRole('button', { name: 'Mark refunded' }));
+
+		await waitFor(() => expect(organizationadminsubscriptionsRefundPayment).toHaveBeenCalled());
+		expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+		await user.keyboard('{Escape}');
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		settle({
+			data: makePayment({ status: 'refunded' }),
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	});
+});

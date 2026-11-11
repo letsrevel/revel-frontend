@@ -352,11 +352,12 @@
 			invalidateAll();
 			refundTarget = null;
 		},
-		onError: (err: Error) => {
+		onError: (err: Error, variables: { paymentId: string; notes: string }) => {
 			toast.error(err.message);
 			// A refusal means the row on screen is stale: show what it is now.
 			if (err instanceof PaymentRefusedError) {
-				refundTarget = null;
+				// Only close the dialog this request belongs to.
+				if (refundTarget?.id === variables.paymentId) refundTarget = null;
 				// Same reach as the edit/void refusals: the org-wide ledger and the
 				// register/access rows can be stale too (a void recomputes the period).
 				invalidatePaymentCaches(queryClient, organization.slug);

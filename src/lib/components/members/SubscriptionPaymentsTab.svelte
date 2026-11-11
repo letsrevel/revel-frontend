@@ -127,6 +127,18 @@
 	);
 	const totalCount = $derived(paymentsQuery.data?.count ?? 0);
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
+
+	// A void or a refund refusal refetches this page, and the row that vanished
+	// (voided rows are hidden by default) may have been the only one on the last
+	// page: the refetch then comes back empty with a count that fits fewer pages.
+	// Step back to the last valid page. Only ever clamps DOWN, so it cannot loop.
+	$effect(() => {
+		const data = paymentsQuery.data;
+		if (paymentsQuery.isFetching || !data) return;
+		if (data.results.length > 0 || pageNum <= 1) return;
+		const lastPage = Math.max(1, Math.ceil((data.count ?? 0) / PAGE_SIZE));
+		if (lastPage < pageNum) pageNum = lastPage;
+	});
 	const hasFilters = $derived(statusFilter !== 'all' || planFilter !== 'all' || !!debounced);
 
 	// Explains the rows that offer no Refund control. Only worth saying when the
@@ -177,11 +189,13 @@
 			// look like the action did nothing.
 			toast.success(m['orgAdmin.members.payments.refundDone']());
 		},
-		onError: (err: Error) => {
+		onError: (err: Error, variables: { paymentId: string; notes: string }) => {
 			toast.error(err.message);
 			// A refusal means the row on screen is stale: show what it is now.
 			if (err instanceof PaymentRefusedError) {
-				refundTarget = null;
+				// Only close the dialog this request belongs to (it is not dismissable
+				// while pending, but never trust that to protect a newer target).
+				if (refundTarget?.id === variables.paymentId) refundTarget = null;
 				invalidatePaymentCaches(queryClient, organization.slug);
 			}
 		}
