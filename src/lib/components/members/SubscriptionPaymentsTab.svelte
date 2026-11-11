@@ -14,7 +14,6 @@
 		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -25,8 +24,12 @@
 	import PaymentEditDialog from './PaymentEditDialog.svelte';
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
-	import type { EditablePayment } from './paymentEdit';
-	import { PaymentRefusedError, invalidatePaymentCaches, paymentRefusalCode } from './paymentEdit';
+	import {
+		PaymentRefusedError,
+		invalidatePaymentCaches,
+		toPaymentError,
+		type EditablePayment
+	} from './paymentEdit';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -146,11 +149,7 @@
 			// 400 is the ONLINE guard, which `canRefundLedgerPayment` already keeps us
 			// away from; 404 is a row that moved. Both carry a translated `detail`.
 			// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
-			if (res.error) {
-				const code = paymentRefusalCode(res.error);
-				if (code) throw new PaymentRefusedError(code);
-				throw new Error(backendMessage(res.error) || m['orgAdmin.members.payments.refundError']());
-			}
+			if (res.error) throw toPaymentError(res.error, m['orgAdmin.members.payments.refundError']());
 			return res.data;
 		},
 		onSuccess: () => {

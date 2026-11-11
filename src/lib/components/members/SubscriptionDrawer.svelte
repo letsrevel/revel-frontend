@@ -33,8 +33,12 @@
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
 	import ChangePlanDialog from './ChangePlanDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
-	import type { EditablePayment } from './paymentEdit';
-	import { PaymentRefusedError, paymentRefusalCode } from './paymentEdit';
+	import {
+		PaymentRefusedError,
+		invalidatePaymentCaches,
+		toPaymentError,
+		type EditablePayment
+	} from './paymentEdit';
 	import {
 		getAvailableActions,
 		formatPlanPrice,
@@ -339,14 +343,9 @@
 				body: { notes },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) {
-				// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
-				const code = paymentRefusalCode(res.error);
-				if (code) throw new PaymentRefusedError(code);
-				throw new Error(
-					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.refund']()
-				);
-			}
+			// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
+			if (res.error)
+				throw toPaymentError(res.error, m['orgAdmin.members.subscriptions.drawer.errors.refund']());
 			return res.data;
 		},
 		onSuccess: () => {
@@ -358,7 +357,9 @@
 			// A refusal means the row on screen is stale: show what it is now.
 			if (err instanceof PaymentRefusedError) {
 				refundTarget = null;
-				invalidateAll();
+				// Same reach as the edit/void refusals: the org-wide ledger and the
+				// register/access rows can be stale too (a void recomputes the period).
+				invalidatePaymentCaches(queryClient, organization.slug);
 			}
 		}
 	}));

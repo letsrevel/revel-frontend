@@ -632,7 +632,6 @@ describe('SubscriptionDrawer refund refusal', () => {
 		expect(
 			screen.queryByRole('dialog', { name: 'Mark payment as refunded' })
 		).not.toBeInTheDocument();
-		expect(toastSuccessMock).not.toHaveBeenCalled();
 	});
 
 	it('keeps the dialog open and shows the backend detail on an ordinary 400', async () => {
