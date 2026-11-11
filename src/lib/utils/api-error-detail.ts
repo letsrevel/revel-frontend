@@ -1,4 +1,5 @@
 import type {
+	EmailChangeErrorCode,
 	ErrorDetail,
 	GuestActionErrorCode,
 	GuestActionErrorSchema,
@@ -121,6 +122,26 @@ export function linkTokenErrorCode(body: unknown): LinkTokenErrorCode | undefine
 	const record = asRecord(body);
 	if (record === null) return undefined;
 	return LINK_TOKEN_ERROR_CODES.find((code) => code === record.code);
+}
+
+/**
+ * The values `EmailChangeErrorSchema.code` may carry (backend #1375: the 400 of
+ * `POST /account/email-change-confirm`; `email_taken` covers the pre-check and
+ * the lost race). Typed against the generated union.
+ */
+const EMAIL_CHANGE_ERROR_CODES: readonly EmailChangeErrorCode[] = [
+	'email_taken',
+	'email_change_superseded'
+];
+
+/**
+ * The machine-readable `code` of an email-change-confirm 400, or `undefined`
+ * (link-token codes, code-less details, unknown future codes).
+ */
+export function emailChangeErrorCode(body: unknown): EmailChangeErrorCode | undefined {
+	const record = asRecord(body);
+	if (record === null) return undefined;
+	return EMAIL_CHANGE_ERROR_CODES.find((code) => code === record.code);
 }
 
 /**

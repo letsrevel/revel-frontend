@@ -5,6 +5,7 @@ import {
 	extractValidationErrors,
 	isErrorDetail,
 	isGuestActionError,
+	emailChangeErrorCode,
 	linkTokenErrorCode,
 	linkTokenRejection,
 	linkTokenRejectionFor,
@@ -245,6 +246,23 @@ describe('legacy "Invalid token:" fallback', () => {
 		expect(linkTokenRejection({ detail: 'Invalid token: x', code: 'token_expired' }).code).toBe(
 			'token_expired'
 		);
+	});
+});
+
+describe('emailChangeErrorCode', () => {
+	it.each(['email_taken', 'email_change_superseded'] as const)('returns %s', (code) => {
+		expect(emailChangeErrorCode({ detail: 'x', code })).toBe(code);
+	});
+
+	it.each([
+		['link-token code', { detail: 'x', code: 'token_expired' }],
+		['unknown code', { detail: 'x', code: 'something_new' }],
+		['code-less', { detail: 'x' }],
+		['null', null],
+		['string', 'email_taken'],
+		['array', ['email_taken']]
+	])('returns undefined for %s', (_label, body) => {
+		expect(emailChangeErrorCode(body)).toBeUndefined();
 	});
 });
 

@@ -100,4 +100,20 @@ describe('confirm-email-change typed link-token errors (BE #1373)', () => {
 		expect(screen.getByText(m['confirmEmailChange.error_invalid']())).toBeInTheDocument();
 		expect(screen.queryByText(/boom/)).toBeNull();
 	});
+
+	it('shows the dedicated "email taken" copy and CTA for code email_taken (BE #1375)', async () => {
+		await renderAfter400({ detail: 'Questa email è già in uso.', code: 'email_taken' });
+		expect(screen.getByText(m['confirmEmailChange.error_emailTaken']())).toBeInTheDocument();
+		expect(screen.queryByText('Questa email è già in uso.')).toBeNull();
+		const cta = screen.getByRole('link', { name: m['confirmEmailChange.error_cta']() });
+		expect(cta).toHaveAttribute('href', '/account/security');
+	});
+
+	it('shows the superseded copy and a link to security settings for email_change_superseded', async () => {
+		await renderAfter400({ detail: 'Cancelled.', code: 'email_change_superseded' });
+		expect(screen.getByText(m['confirmEmailChange.error_superseded']())).toBeInTheDocument();
+		expect(screen.queryByText('Cancelled.')).toBeNull();
+		const cta = screen.getByRole('link', { name: m['confirmEmailChange.error_cta']() });
+		expect(cta).toHaveAttribute('href', '/account/security');
+	});
 });

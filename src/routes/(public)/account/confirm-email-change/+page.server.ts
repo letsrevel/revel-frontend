@@ -2,7 +2,11 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountEmailChangeConfirm } from '$lib/api/generated/sdk.gen';
 import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
-import { linkTokenRejection, backendMessage } from '$lib/utils/api-error-detail';
+import {
+	linkTokenRejection,
+	emailChangeErrorCode,
+	backendMessage
+} from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
 import { sessionRememberMe } from '$lib/server/session';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
@@ -63,11 +67,16 @@ export const actions: Actions = {
 				const { code, detail } = linkTokenRejection(response.error);
 				if (code === 'token_expired') return fail(400, { errors: { form: 'expired' } });
 				if (code === 'invalid_token') return fail(400, { errors: { form: 'invalid' } });
-				// Code-less refusal (email taken, superseded by a password reset,
+				// BE #1375: typed email-change refusals, each with its own copy.
+				const changeCode = emailChangeErrorCode(response.error);
+				if (changeCode === 'email_taken') return fail(400, { errors: { form: 'emailTaken' } });
+				if (changeCode === 'email_change_superseded') {
+					return fail(400, { errors: { form: 'superseded' } });
+				}
+				// Code-less refusal (older backend, blacklisted token,
 				// blacklisted token): the backend's own detail. The shared client
 				// interceptor sends the UI locale as Accept-Language, so it is already
-				// in the user's language. There is no machine-readable code for
-				// "email taken", so it can't get dedicated copy (needs a BE code).
+				// in the user's language.
 				return fail(400, { errors: { form: detail ? 'detail' : 'invalid', detail } });
 			}
 

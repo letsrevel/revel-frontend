@@ -265,6 +265,7 @@
 		"error_tokenExpired": "Este link expirou. Recomeça a alteração de e-mail.",
 		"error_invalid": "Este link não é válido. Recomeça a alteração de e-mail.",
 		"error_emailTaken": "Este e-mail já não está disponível. Recomeça com um endereço diferente.",
+		"error_superseded": "A tua palavra-passe foi redefinida depois do teu pedido, por isso a alteração foi cancelada. Pede novamente a alteração de e-mail.",
 		"error_throttled": "Demasiadas tentativas. Tenta novamente dentro de alguns minutos.",
 		"error_generic": "Algo correu mal. Tenta novamente.",
 		"error_cta": "Ir para as definições de segurança"
