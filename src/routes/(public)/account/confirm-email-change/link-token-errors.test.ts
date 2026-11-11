@@ -116,4 +116,10 @@ describe('confirm-email-change typed link-token errors (BE #1373)', () => {
 		const cta = screen.getByRole('link', { name: m['confirmEmailChange.error_cta']() });
 		expect(cta).toHaveAttribute('href', '/account/security');
 	});
+
+	it('classifies by the email-change code even when the detail has the legacy "Invalid token:" prefix', async () => {
+		await renderAfter400({ detail: 'Invalid token: stale', code: 'email_taken' });
+		expect(screen.getByText(m['confirmEmailChange.error_emailTaken']())).toBeInTheDocument();
+		expect(screen.queryByText(m['confirmEmailChange.error_invalid']())).toBeNull();
+	});
 });

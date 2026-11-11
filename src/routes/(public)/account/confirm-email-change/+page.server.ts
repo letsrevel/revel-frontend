@@ -63,20 +63,21 @@ export const actions: Actions = {
 			}
 
 			if (status === 400) {
-				// BE #1373: typed link-token errors, each with its own copy.
-				const { code, detail } = linkTokenRejection(response.error);
-				if (code === 'token_expired') return fail(400, { errors: { form: 'expired' } });
-				if (code === 'invalid_token') return fail(400, { errors: { form: 'invalid' } });
-				// BE #1375: typed email-change refusals, each with its own copy.
+				// BE #1375: typed email-change refusals, each with its own copy. Checked
+				// FIRST: a typed code always wins over linkTokenRejection's legacy
+				// "Invalid token:" detail-prefix fallback, which only applies code-less.
 				const changeCode = emailChangeErrorCode(response.error);
 				if (changeCode === 'email_taken') return fail(400, { errors: { form: 'emailTaken' } });
 				if (changeCode === 'email_change_superseded') {
 					return fail(400, { errors: { form: 'superseded' } });
 				}
+				// BE #1373: typed link-token errors, each with its own copy.
+				const { code, detail } = linkTokenRejection(response.error);
+				if (code === 'token_expired') return fail(400, { errors: { form: 'expired' } });
+				if (code === 'invalid_token') return fail(400, { errors: { form: 'invalid' } });
 				// Code-less refusal (older backend, blacklisted token): the backend's
-				// own detail. The shared client
-				// interceptor sends the UI locale as Accept-Language, so it is already
-				// in the user's language.
+				// own detail. The shared client interceptor sends the UI locale as
+				// Accept-Language, so it is already in the user's language.
 				return fail(400, { errors: { form: detail ? 'detail' : 'invalid', detail } });
 			}
 
