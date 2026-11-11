@@ -123,6 +123,26 @@ export function linkTokenErrorCode(body: unknown): LinkTokenErrorCode | undefine
 	return LINK_TOKEN_ERROR_CODES.find((code) => code === record.code);
 }
 
+/**
+ * Prefixes of the pre-#1373 `"Invalid token: {exception}"` detail in each
+ * locale. A rollback or an older backend still sends it code-less, and the text
+ * after the prefix is a raw exception message that must never reach the user.
+ * Only a fallback: `code` stays the primary signal.
+ */
+const LEGACY_INVALID_TOKEN_PREFIXES = [
+	'Invalid token:',
+	'Ungültiger Token:',
+	'Jeton invalide :',
+	'Token non valido:',
+	'Token no válido:',
+	'Token inválido:'
+];
+
+/** Is this the legacy code-less "Invalid token: <exception text>" detail? */
+export function isLegacyInvalidTokenDetail(detail: string | null): boolean {
+	return detail !== null && LEGACY_INVALID_TOKEN_PREFIXES.some((p) => detail.startsWith(p));
+}
+
 /** Why an emailed link was refused, for UIs that swap to a dead-link state. */
 export interface LinkTokenRejection {
 	/** Typed reason; `undefined` for a code-less refusal. */
@@ -133,7 +153,21 @@ export interface LinkTokenRejection {
 
 /** Read a link-token refusal out of an SDK error body. */
 export function linkTokenRejection(body: unknown): LinkTokenRejection {
-	return { code: linkTokenErrorCode(body), detail: backendMessage(body) };
+	const code = linkTokenErrorCode(body);
+	if (code) return { code, detail: backendMessage(body) };
+	const detail = backendMessage(body);
+	// Older backend / rollback: treat the legacy prefix as invalid_token and drop
+	// the raw exception text.
+	if (isLegacyInvalidTokenDetail(detail)) return { code: 'invalid_token', detail: null };
+	return { code: undefined, detail };
+}
+
+/** Like {@link linkTokenRejection}, but only a 400 is a link-token refusal. */
+export function linkTokenRejectionFor(
+	status: number | undefined,
+	body: unknown
+): LinkTokenRejection {
+	return status === 400 ? linkTokenRejection(body) : { code: undefined, detail: null };
 }
 
 /**

@@ -37,7 +37,7 @@
 	import { disablesStaffAlerts } from './mandatoryNotifications';
 	import {
 		backendMessage,
-		linkTokenRejection,
+		linkTokenRejectionFor,
 		type LinkTokenRejection
 	} from '$lib/utils/api-error-detail';
 
@@ -245,7 +245,10 @@
 				if (response.error) {
 					const message = extractErrorMessage(response.error);
 					if (INVALID_TOKEN_STATUSES.has(response.response?.status ?? 0)) {
-						throw new InvalidUnsubscribeTokenError(message, linkTokenRejection(response.error));
+						throw new InvalidUnsubscribeTokenError(
+							message,
+							linkTokenRejectionFor(response.response?.status, response.error)
+						);
 					}
 					throw new Error(message);
 				}

@@ -2,8 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountEmailChangeConfirm } from '$lib/api/generated/sdk.gen';
 import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
-import { extractErrorMessage } from '$lib/utils/errors';
-import { linkTokenErrorCode, backendMessage } from '$lib/utils/api-error-detail';
+import { linkTokenRejection, backendMessage } from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
 import { sessionRememberMe } from '$lib/server/session';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
@@ -22,7 +21,6 @@ export const actions: Actions = {
 		try {
 			const response = await accountEmailChangeConfirm({
 				body: { token: validation.data.token },
-				headers: { 'Accept-Language': 'en' },
 				fetch
 			});
 
@@ -55,23 +53,28 @@ export const actions: Actions = {
 			}
 
 			const status = response.response?.status;
-			const message = extractErrorMessage(response.error, '').toLowerCase();
 
 			if (status === 429) {
 				return fail(429, { errors: { form: 'throttled' } });
 			}
 
 			if (status === 400) {
-				// BE #1373: typed link-token errors.
-				const code = linkTokenErrorCode(response.error);
+				// BE #1373: typed link-token errors, each with its own copy.
+				const { code, detail } = linkTokenRejection(response.error);
 				if (code === 'token_expired') return fail(400, { errors: { form: 'expired' } });
 				if (code === 'invalid_token') return fail(400, { errors: { form: 'invalid' } });
-				if (message.includes('already in use')) {
-					return fail(400, { errors: { form: 'emailTaken' } });
-				}
-				// Code-less refusal (blacklisted token, ...): the backend's own detail.
-				const detail = backendMessage(response.error);
+				// Code-less refusal (email taken, superseded by a password reset,
+				// blacklisted token): the backend's own detail. The shared client
+				// interceptor sends the UI locale as Accept-Language, so it is already
+				// in the user's language. There is no machine-readable code for
+				// "email taken", so it can't get dedicated copy (needs a BE code).
 				return fail(400, { errors: { form: detail ? 'detail' : 'invalid', detail } });
+			}
+
+			// 403: the new address was banned between request and confirm.
+			if (status === 403) {
+				const detail = backendMessage(response.error);
+				return fail(403, { errors: { form: detail ? 'detail' : 'generic', detail } });
 			}
 
 			return fail(500, { errors: { form: 'generic' } });

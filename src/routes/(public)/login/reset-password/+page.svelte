@@ -36,8 +36,8 @@
 
 	// Error handling
 	// The link's lifetime ran out (typed `token_expired`, BE #1373).
-	const tokenExpired = $derived(
-		form && 'tokenExpired' in form ? form.tokenExpired === true : false
+	const offerNewLink = $derived(
+		form && 'offerNewLink' in form ? form.offerNewLink === true : false
 	);
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 </script>
@@ -119,7 +119,7 @@
 				{#if errors.form}
 					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 						<p class="text-sm font-medium text-destructive">{errors.form}</p>
-						{#if tokenExpired}
+						{#if offerNewLink}
 							<a
 								href={resolve('/(public)/password-reset', {})}
 								class="mt-3 inline-block text-sm font-medium text-destructive underline-offset-4 hover:underline"

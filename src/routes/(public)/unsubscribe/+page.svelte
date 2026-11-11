@@ -6,7 +6,7 @@
 	import { oneclickunsubscribeOneClick } from '$lib/api';
 	import { resolve } from '$app/paths';
 	import { loginHref } from '$lib/utils/safe-redirect';
-	import { linkTokenRejection, type LinkTokenRejection } from '$lib/utils/api-error-detail';
+	import { linkTokenRejectionFor, type LinkTokenRejection } from '$lib/utils/api-error-detail';
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { Bell, MailX, ShieldCheck, Loader2 } from '@lucide/svelte';
@@ -107,7 +107,7 @@
 			const res = await oneclickunsubscribeOneClick({ query: { token } });
 			if (res.error) {
 				if (INVALID_TOKEN_STATUSES.has(res.response?.status ?? 0)) {
-					await showRejected(token, linkTokenRejection(res.error));
+					await showRejected(token, linkTokenRejectionFor(res.response?.status, res.error));
 				} else if (token === data.token) {
 					toast.error(m['unsubscribePage.oneClickFailed']());
 				}

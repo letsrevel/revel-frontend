@@ -4,7 +4,7 @@ import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
 import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
-import { backendMessage, linkTokenErrorCode } from '$lib/utils/api-error-detail';
+import { backendMessage } from '$lib/utils/api-error-detail';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 /** `code` of the backend's 409 asking the user to acknowledge forfeited referral payouts. */
@@ -94,7 +94,8 @@ export const actions: Actions = {
 				// Already-used (401) or unknown-user (404) token.
 				if (failure.status === 401 || failure.status === 404) {
 					return fail(400, {
-						errors: { form: m['serverErrors.public.deletionTokenInvalid']() }
+						errors: { form: m['serverErrors.public.deletionTokenInvalid']() },
+						offerNewLink: true
 					});
 				}
 
@@ -102,16 +103,12 @@ export const actions: Actions = {
 				// `token_expired`), else a refusal with its own message (owns
 				// organizations).
 				if (failure.status === 400) {
-					return fail(400, {
-						errors: {
-							form: linkTokenFailureMessage(failure.body, {
-								invalid: m['serverErrors.public.deletionTokenInvalid'](),
-								expired: m['serverErrors.public.deletionTokenExpired'](),
-								fallback: m['serverErrors.public.deleteAccountUnavailable']()
-							})
-						},
-						tokenExpired: linkTokenErrorCode(failure.body) === 'token_expired'
+					const { message, code } = linkTokenFailureMessage(failure.body, {
+						invalid: m['serverErrors.public.deletionTokenInvalid'](),
+						expired: m['serverErrors.public.deletionTokenExpired'](),
+						fallback: m['serverErrors.public.deleteAccountUnavailable']()
 					});
+					return fail(400, { errors: { form: message }, offerNewLink: code !== undefined });
 				}
 
 				if (failure.status === 403) {

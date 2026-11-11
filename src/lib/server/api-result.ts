@@ -11,7 +11,8 @@
  * `isErrorDetail`, `isValidationErrorResponse`) and `$lib/utils/errors`
  * (`extractFieldErrors`); do not re-implement it here.
  */
-import { backendMessage, linkTokenErrorCode } from '$lib/utils/api-error-detail';
+import { linkTokenRejection } from '$lib/utils/api-error-detail';
+import type { LinkTokenErrorCode } from '$lib/api/generated/types.gen';
 
 /** The subset of an SDK result these helpers read. */
 export interface ApiResultLike {
@@ -46,18 +47,30 @@ export interface LinkTokenFailureCopy {
 	fallback: string;
 }
 
+/** A failed link-token call's message plus the typed reason behind it. */
+export interface LinkTokenFailure {
+	message: string;
+	/** `undefined` for a code-less refusal showing the backend's own detail. */
+	code: LinkTokenErrorCode | undefined;
+}
+
 /**
  * The user-facing message for a 400 from an emailed-link endpoint (backend
- * #1373). Branches on the typed `code`; a code-less `ErrorDetail` (blacklisted
- * token, email changed, org mismatch) shows the backend's own `detail`.
+ * #1373). Branches on the typed `code` (with a legacy "Invalid token:" prefix
+ * fallback for older backends); a code-less `ErrorDetail` (blacklisted token,
+ * email changed, org mismatch) shows the backend's own `detail`.
  */
-export function linkTokenFailureMessage(body: unknown, copy: LinkTokenFailureCopy): string {
-	switch (linkTokenErrorCode(body)) {
+export function linkTokenFailureMessage(
+	body: unknown,
+	copy: LinkTokenFailureCopy
+): LinkTokenFailure {
+	const { code, detail } = linkTokenRejection(body);
+	switch (code) {
 		case 'invalid_token':
-			return copy.invalid;
+			return { message: copy.invalid, code };
 		case 'token_expired':
-			return copy.expired;
+			return { message: copy.expired, code };
 		default:
-			return backendMessage(body) ?? copy.fallback;
+			return { message: detail ?? copy.fallback, code: undefined };
 	}
 }

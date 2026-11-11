@@ -53,17 +53,34 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 		const failure = getApiFailure(result);
 
 		if (failure || !data) {
-			// 400 (BE #1373): typed link-token error, else the backend's own detail
-			// (token issued for another organization). No response at all: never
-			// show the transport error text.
-			const errorMessage =
-				failure && !failure.network
-					? linkTokenFailureMessage(failure.body, {
+			// 400: typed link-token error (BE #1373), else the backend's own detail
+			// (token issued for another organization). Every other status is about
+			// the session or the organization, never the link. No response at all:
+			// never show the transport error text.
+			let errorMessage: string = m['serverErrors.public.unexpectedErrorRetry']();
+			if (failure && !failure.network) {
+				switch (failure.status) {
+					case 400:
+						errorMessage = linkTokenFailureMessage(failure.body, {
 							invalid: m['serverErrors.public.verificationTokenInvalid'](),
 							expired: m['serverErrors.public.verificationTokenExpired'](),
 							fallback: m['serverErrors.public.verificationTokenInvalid']()
-						})
-					: m['serverErrors.public.unexpectedErrorRetry']();
+						}).message;
+						break;
+					case 401:
+						errorMessage = m['serverErrors.common.mustBeLoggedIn']();
+						break;
+					case 403:
+						errorMessage = m['serverErrors.common.organizationForbidden']();
+						break;
+					case 404:
+						errorMessage = m['serverErrors.common.organizationNotFound']();
+						break;
+					case 429:
+						errorMessage = m['serverErrors.public.tooManyAttempts']();
+						break;
+				}
+			}
 
 			return {
 				success: false,

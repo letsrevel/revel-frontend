@@ -64,8 +64,9 @@ describe('confirm-email-change typed link-token errors (BE #1373)', () => {
 
 	it('shows the invalid copy for code invalid_token', async () => {
 		await renderAfter400({ detail: 'Invalid token.', code: 'invalid_token' });
-		expect(screen.getByText(m['confirmEmailChange.error_expired']())).toBeInTheDocument();
+		expect(screen.getByText(m['confirmEmailChange.error_invalid']())).toBeInTheDocument();
 		expect(screen.queryByText(m['confirmEmailChange.error_tokenExpired']())).toBeNull();
+		expect(screen.queryByText(m['confirmEmailChange.error_expired']())).toBeNull();
 	});
 
 	it('shows the backend detail for a code-less 400', async () => {
@@ -73,8 +74,30 @@ describe('confirm-email-change typed link-token errors (BE #1373)', () => {
 		expect(screen.getByText('This token has been used.')).toBeInTheDocument();
 	});
 
-	it('keeps the email-taken copy for the code-less "already in use" refusal', async () => {
-		await renderAfter400({ detail: 'That email is already in use.' });
-		expect(screen.getByText(m['confirmEmailChange.error_emailTaken']())).toBeInTheDocument();
+	it('shows the (already localized) backend detail for "email already in use", in any locale', async () => {
+		await renderAfter400({ detail: 'Questa email è già in uso.' });
+		expect(screen.getByText('Questa email è già in uso.')).toBeInTheDocument();
+	});
+
+	it('does not force an English Accept-Language: the shared client sends the UI locale', async () => {
+		await renderAfter400({ detail: 'x' });
+		expect(confirm.mock.calls[0][0]).not.toHaveProperty('headers');
+	});
+
+	it('shows the backend detail for a 403 (address banned meanwhile)', async () => {
+		confirm.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Questo indirizzo non è consentito.' },
+			response: new Response(null, { status: 403 })
+		});
+		const result = (await run()) as { data: Record<string, unknown> };
+		render(Page, { props: { form: result.data as never } });
+		expect(screen.getByText('Questo indirizzo non è consentito.')).toBeInTheDocument();
+	});
+
+	it('treats the legacy code-less "Invalid token:" detail as invalid, hiding the raw text', async () => {
+		await renderAfter400({ detail: 'Invalid token: boom' });
+		expect(screen.getByText(m['confirmEmailChange.error_invalid']())).toBeInTheDocument();
+		expect(screen.queryByText(/boom/)).toBeNull();
 	});
 });

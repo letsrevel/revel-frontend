@@ -50,6 +50,29 @@ describe('org verify-contact-email typed link-token errors (BE #1373)', () => {
 		});
 	});
 
+	it.each([
+		[401, 'serverErrors.common.mustBeLoggedIn'],
+		[403, 'serverErrors.common.organizationForbidden'],
+		[404, 'serverErrors.common.organizationNotFound'],
+		[429, 'serverErrors.public.tooManyAttempts'],
+		[500, 'serverErrors.public.unexpectedErrorRetry']
+	] as const)('maps a %i to its own copy and never blames the link', async (status, key) => {
+		rejectWith({ detail: 'Backend text' }, status);
+		const result = await run();
+		expect(result).toMatchObject({ success: false, error: m[key]() });
+		expect(JSON.stringify(result)).not.toContain('Backend text');
+		expect(JSON.stringify(result)).not.toContain(
+			m['serverErrors.public.verificationTokenInvalid']()
+		);
+	});
+
+	it('treats the legacy code-less "Invalid token:" detail as invalid', async () => {
+		rejectWith({ detail: 'Invalid token: boom' });
+		const result = await run();
+		expect(result).toMatchObject({ error: m['serverErrors.public.verificationTokenInvalid']() });
+		expect(JSON.stringify(result)).not.toContain('boom');
+	});
+
 	it('shows a localized message, not the transport error, when the network fails', async () => {
 		verify.mockResolvedValue({
 			data: undefined,

@@ -31,7 +31,7 @@
 	const formErrorMessage = $derived.by(() => {
 		const key = errors.form;
 		if (!key) return null;
-		if (key === 'invalid') return m['confirmEmailChange.error_expired']();
+		if (key === 'invalid') return m['confirmEmailChange.error_invalid']();
 		if (key === 'expired') return m['confirmEmailChange.error_tokenExpired']();
 		if (key === 'detail') return errors.detail || m['confirmEmailChange.error_generic']();
 		if (key === 'emailTaken') return m['confirmEmailChange.error_emailTaken']();

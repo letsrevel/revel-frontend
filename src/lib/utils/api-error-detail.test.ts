@@ -7,6 +7,7 @@ import {
 	isGuestActionError,
 	linkTokenErrorCode,
 	linkTokenRejection,
+	linkTokenRejectionFor,
 	isRequestValidationError,
 	isResponseMessage,
 	isValidationErrorResponse
@@ -225,5 +226,34 @@ describe('linkTokenRejection', () => {
 		});
 		expect(linkTokenRejection({ detail: 'Nope' })).toEqual({ code: undefined, detail: 'Nope' });
 		expect(linkTokenRejection(undefined)).toEqual({ code: undefined, detail: null });
+	});
+});
+
+describe('legacy "Invalid token:" fallback', () => {
+	it.each([
+		'Invalid token: x',
+		'Ungültiger Token: x',
+		'Jeton invalide : x',
+		'Token non valido: x',
+		'Token no válido: x',
+		'Token inválido: x'
+	])('maps "%s" to invalid_token without exposing the text', (detail) => {
+		expect(linkTokenRejection({ detail })).toEqual({ code: 'invalid_token', detail: null });
+	});
+
+	it('lets a real code win over the prefix', () => {
+		expect(linkTokenRejection({ detail: 'Invalid token: x', code: 'token_expired' }).code).toBe(
+			'token_expired'
+		);
+	});
+});
+
+describe('linkTokenRejectionFor', () => {
+	it('reads the body only for a 400', () => {
+		const body = { detail: 'Not Found', code: 'invalid_token' };
+		expect(linkTokenRejectionFor(400, body).code).toBe('invalid_token');
+		for (const status of [401, 404, 500, undefined]) {
+			expect(linkTokenRejectionFor(status, body)).toEqual({ code: undefined, detail: null });
+		}
 	});
 });

@@ -397,6 +397,45 @@ describe('unsubscribe page (#982)', () => {
 			expect(screen.getByText('Email address has changed.')).toBeInTheDocument();
 		});
 
+		it.each([401, 404])(
+			'one-click: a %i keeps the generic invalid copy and hides the backend detail',
+			async (status) => {
+				const user = userEvent.setup();
+				const { oneclickunsubscribeOneClick } = await import('$lib/api');
+				vi.mocked(oneclickunsubscribeOneClick).mockResolvedValue({
+					data: undefined,
+					error: { detail: 'Backend secret text', code: 'token_expired' },
+					response: { status } as Response
+				} as never);
+				renderPage(optOut);
+				await user.click(screen.getByRole('button', { name: /stop invitation emails/i }));
+				expect(
+					await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+				).toBeInTheDocument();
+				expect(screen.getByText(/no longer matches your account's email/i)).toBeInTheDocument();
+				expect(screen.queryByText(/backend secret text/i)).toBeNull();
+			}
+		);
+
+		it.each([401, 404])(
+			'preferences form: a %i keeps the generic invalid copy and hides the backend detail',
+			async (status) => {
+				const user = userEvent.setup();
+				const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+				vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+					data: undefined,
+					error: { detail: 'Backend secret text' },
+					response: { status } as Response
+				} as never);
+				renderPage(accountToken());
+				await user.click(screen.getByRole('button', { name: /save changes/i }));
+				expect(
+					await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i })
+				).toBeInTheDocument();
+				expect(screen.queryByText(/backend secret text/i)).toBeNull();
+			}
+		);
+
 		it('preferences form: token_expired says the link has expired', async () => {
 			const user = userEvent.setup();
 			const { notificationpreferenceUnsubscribe } = await import('$lib/api');

@@ -64,7 +64,7 @@ describe('resetPassword when the API returns an error result (#1226)', () => {
 		const result = await run();
 		expect(result).toMatchObject({
 			status: 400,
-			data: { errors: { form: m['serverErrors.public.resetTokenInvalid']() }, tokenExpired: false }
+			data: { errors: { form: m['serverErrors.public.resetTokenInvalid']() }, offerNewLink: true }
 		});
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
@@ -73,15 +73,33 @@ describe('resetPassword when the API returns an error result (#1226)', () => {
 		resolvesWithError(400, { detail: 'Token has expired.', code: 'token_expired' });
 		expect(await run()).toMatchObject({
 			status: 400,
-			data: { errors: { form: m['serverErrors.public.resetTokenExpired']() }, tokenExpired: true }
+			data: { errors: { form: m['serverErrors.public.resetTokenExpired']() }, offerNewLink: true }
 		});
 	});
+
+	it('offers a new link for an already-used token (401)', async () => {
+		resolvesWithError(401, { detail: 'Unauthorized' });
+		expect(await run()).toMatchObject({ status: 400, data: { offerNewLink: true } });
+	});
+
+	it.each(['Invalid token: Not enough segments', 'Token inválido: boom'])(
+		'treats the legacy code-less "%s" as invalid and never shows the raw text',
+		async (detail) => {
+			resolvesWithError(400, { detail });
+			const result = await run();
+			expect(result).toMatchObject({
+				status: 400,
+				data: { errors: { form: m['serverErrors.public.resetTokenInvalid']() } }
+			});
+			expect(JSON.stringify(result)).not.toMatch(/segments|boom/);
+		}
+	);
 
 	it('shows the backend detail for a code-less 400 (blacklisted token)', async () => {
 		resolvesWithError(400, { detail: 'Token has been used.' });
 		expect(await run()).toMatchObject({
 			status: 400,
-			data: { errors: { form: 'Token has been used.' }, tokenExpired: false }
+			data: { errors: { form: 'Token has been used.' }, offerNewLink: false }
 		});
 	});
 

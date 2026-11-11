@@ -559,6 +559,24 @@ describe('NotificationPreferencesForm', () => {
 			}
 		);
 
+		it.each([401, 404])('passes no code or detail to onInvalidToken for a %i', async (status) => {
+			const user = userEvent.setup();
+			const onInvalidToken = vi.fn();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Not Found', code: 'invalid_token' },
+				response: { status } as Response
+			} as never);
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onInvalidToken });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() =>
+				expect(onInvalidToken).toHaveBeenCalledWith('tok', { code: undefined, detail: null })
+			);
+		});
+
 		it('still toasts other failures', async () => {
 			const user = userEvent.setup();
 			const onInvalidToken = vi.fn();

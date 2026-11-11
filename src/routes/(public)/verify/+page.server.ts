@@ -91,15 +91,18 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 					error: m['serverErrors.public.unexpectedErrorVerification']()
 				};
 			}
-			return {
-				seo,
-				success: false,
-				error: linkTokenFailureMessage(failure.body, {
+			// Only a 400 is a link-token refusal; 429 and 5xx never show raw detail.
+			let error: string = m['serverErrors.public.verificationFailed']();
+			if (failure.status === 400) {
+				error = linkTokenFailureMessage(failure.body, {
 					invalid: m['serverErrors.public.verificationTokenInvalid'](),
 					expired: m['serverErrors.public.verificationTokenExpired'](),
 					fallback: m['serverErrors.public.verificationFailed']()
-				})
-			};
+				}).message;
+			} else if (failure.status === 429) {
+				error = m['serverErrors.public.tooManyAttempts']();
+			}
+			return { seo, success: false, error };
 		}
 
 		// Neither data nor error (shouldn't happen)

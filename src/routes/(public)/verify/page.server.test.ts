@@ -124,6 +124,43 @@ describe('/verify typed link-token errors (BE #1373)', () => {
 		});
 	});
 
+	it.each(['Invalid token: Not enough segments', 'Ungültiger Token: boom'])(
+		'treats the legacy code-less "%s" as invalid, never showing the raw text',
+		async (detail) => {
+			rejectWith({ detail });
+			const result = await load(loadArgs('?token=t'));
+			expect(result).toMatchObject({
+				error: m['serverErrors.public.verificationTokenInvalid']()
+			});
+			expect(JSON.stringify(result)).not.toMatch(/segments|boom/);
+		}
+	);
+
+	it('maps a 429 to the rate-limit copy, never the raw detail', async () => {
+		mockedVerify.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Request was throttled.' },
+			response: new Response(null, { status: 429 })
+		} as never);
+		expect(await load(loadArgs('?token=t'))).toMatchObject({
+			error: m['serverErrors.public.tooManyAttempts']()
+		});
+	});
+
+	it.each([401, 403, 500])(
+		'maps a %i to the generic failure copy, no raw detail',
+		async (status) => {
+			mockedVerify.mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Internal secret detail' },
+				response: new Response(null, { status })
+			} as never);
+			const result = await load(loadArgs('?token=t'));
+			expect(result).toMatchObject({ error: m['serverErrors.public.verificationFailed']() });
+			expect(JSON.stringify(result)).not.toContain('secret');
+		}
+	);
+
 	it('shows a localized message, not the transport error, when the network fails', async () => {
 		mockedVerify.mockResolvedValue({
 			data: undefined,
