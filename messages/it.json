@@ -11508,6 +11508,8 @@
 			"mustBeLoggedIn": "Devi aver effettuato l'accesso",
 			"eventNotFound": "Evento non trovato",
 			"organizationNotFound": "Organizzazione non trovata",
+			"organizationForbidden": "Non hai il permesso di visualizzare questa organizzazione",
+			"organizationLoadFailed": "Impossibile caricare i dettagli dell'organizzazione",
 			"questionnaireNotFound": "Questionario non trovato",
 			"pollNotFound": "Sondaggio non trovato",
 			"seriesNotFound": "Serie di eventi non trovata",

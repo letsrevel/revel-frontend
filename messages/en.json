@@ -11508,6 +11508,8 @@
 			"mustBeLoggedIn": "You must be logged in",
 			"eventNotFound": "Event not found",
 			"organizationNotFound": "Organization not found",
+			"organizationForbidden": "You do not have permission to view this organization",
+			"organizationLoadFailed": "Failed to load organization details",
 			"questionnaireNotFound": "Questionnaire not found",
 			"pollNotFound": "Poll not found",
 			"seriesNotFound": "Event series not found",

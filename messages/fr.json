@@ -11508,6 +11508,8 @@
 			"mustBeLoggedIn": "Tu dois être connecté·e",
 			"eventNotFound": "Événement introuvable",
 			"organizationNotFound": "Organisation introuvable",
+			"organizationForbidden": "Tu n'as pas la permission de voir cette organisation",
+			"organizationLoadFailed": "Impossible de charger les détails de l'organisation",
 			"questionnaireNotFound": "Questionnaire introuvable",
 			"pollNotFound": "Sondage introuvable",
 			"seriesNotFound": "Série d'événements introuvable",

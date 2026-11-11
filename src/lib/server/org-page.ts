@@ -194,12 +194,12 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to view this organization');
+				throw error(403, m['serverErrors.common.organizationForbidden']());
 			}
 		}
 
 		// Generic error
 		log.error('org_load_error', { error: err, slug });
-		throw error(500, 'Failed to load organization details');
+		throw error(500, m['serverErrors.common.organizationLoadFailed']());
 	}
 }
