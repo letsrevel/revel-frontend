@@ -3,8 +3,8 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
-import { getApiFailure, isInvalidTokenDetail } from '$lib/server/api-result';
-import { backendMessage } from '$lib/utils/api-error-detail';
+import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
+import { backendMessage, linkTokenErrorCode } from '$lib/utils/api-error-detail';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 /** `code` of the backend's 409 asking the user to acknowledge forfeited referral payouts. */
@@ -91,22 +91,26 @@ export const actions: Actions = {
 
 				const detail = backendMessage(failure.body);
 
-				// Expired/malformed ("Invalid token: <exception text>", never shown),
-				// already-used (401) or unknown-user (404) token.
-				if (
-					failure.status === 401 ||
-					failure.status === 404 ||
-					(failure.status === 400 && isInvalidTokenDetail(detail))
-				) {
+				// Already-used (401) or unknown-user (404) token.
+				if (failure.status === 401 || failure.status === 404) {
 					return fail(400, {
 						errors: { form: m['serverErrors.public.deletionTokenInvalid']() }
 					});
 				}
 
-				// 400: a refusal with its own message (expired token, owns organizations).
+				// 400 (BE #1373): a typed link-token error (`invalid_token` /
+				// `token_expired`), else a refusal with its own message (owns
+				// organizations).
 				if (failure.status === 400) {
 					return fail(400, {
-						errors: { form: detail ?? m['serverErrors.public.deleteAccountUnavailable']() }
+						errors: {
+							form: linkTokenFailureMessage(failure.body, {
+								invalid: m['serverErrors.public.deletionTokenInvalid'](),
+								expired: m['serverErrors.public.deletionTokenExpired'](),
+								fallback: m['serverErrors.public.deleteAccountUnavailable']()
+							})
+						},
+						tokenExpired: linkTokenErrorCode(failure.body) === 'token_expired'
 					});
 				}
 

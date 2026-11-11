@@ -5,6 +5,8 @@ import {
 	extractValidationErrors,
 	isErrorDetail,
 	isGuestActionError,
+	linkTokenErrorCode,
+	linkTokenRejection,
 	isRequestValidationError,
 	isResponseMessage,
 	isValidationErrorResponse
@@ -193,5 +195,35 @@ describe('backendMessage', () => {
 		expect(backendMessage('a string')).toBeNull();
 		expect(backendMessage(null)).toBeNull();
 		expect(backendMessage(undefined)).toBeNull();
+	});
+});
+
+describe('linkTokenErrorCode', () => {
+	it.each(['invalid_token', 'token_expired'] as const)('returns %s', (code) => {
+		expect(linkTokenErrorCode({ detail: 'x', code })).toBe(code);
+	});
+
+	it.each([
+		['a code-less ErrorDetail', { detail: 'Token has been used.' }],
+		['an unknown code', { detail: 'x', code: 'something_new' }],
+		['a guest-flow code', { detail: 'x', code: 'guest_account_exists' }],
+		['a validation body', { errors: { __all__: ['x'] } }],
+		['null', null],
+		['a string', 'token_expired'],
+		['an array', ['token_expired']],
+		['undefined', undefined]
+	])('returns undefined for %s', (_label, body) => {
+		expect(linkTokenErrorCode(body)).toBeUndefined();
+	});
+});
+
+describe('linkTokenRejection', () => {
+	it('pairs the code with the backend detail', () => {
+		expect(linkTokenRejection({ detail: 'Token has expired.', code: 'token_expired' })).toEqual({
+			code: 'token_expired',
+			detail: 'Token has expired.'
+		});
+		expect(linkTokenRejection({ detail: 'Nope' })).toEqual({ code: undefined, detail: 'Nope' });
+		expect(linkTokenRejection(undefined)).toEqual({ code: undefined, detail: null });
 	});
 });

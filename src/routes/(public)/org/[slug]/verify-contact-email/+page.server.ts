@@ -4,6 +4,7 @@ import { organizationadmincoreVerifyContactEmail } from '$lib/api/generated/sdk.
 import type { PageServerLoad } from './$types';
 import { loginHref } from '$lib/utils/safe-redirect';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
 
 export const load: PageServerLoad = async ({ params, url, locals, cookies }) => {
 	const { slug } = params;
@@ -36,7 +37,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 
 	try {
 		// Call the verification endpoint with token in body
-		const { data, error: apiError } = await organizationadmincoreVerifyContactEmail({
+		const result = await organizationadmincoreVerifyContactEmail({
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			},
@@ -48,12 +49,21 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 			}
 		});
 
-		if (apiError || !data) {
-			// Extract user-friendly error message from API error
-			const errorMessage = extractErrorMessage(
-				apiError,
-				m['serverErrors.public.verificationTokenInvalid']()
-			);
+		const { data } = result;
+		const failure = getApiFailure(result);
+
+		if (failure || !data) {
+			// 400 (BE #1373): typed link-token error, else the backend's own detail
+			// (token issued for another organization). No response at all: never
+			// show the transport error text.
+			const errorMessage =
+				failure && !failure.network
+					? linkTokenFailureMessage(failure.body, {
+							invalid: m['serverErrors.public.verificationTokenInvalid'](),
+							expired: m['serverErrors.public.verificationTokenExpired'](),
+							fallback: m['serverErrors.public.verificationTokenInvalid']()
+						})
+					: m['serverErrors.public.unexpectedErrorRetry']();
 
 			return {
 				success: false,

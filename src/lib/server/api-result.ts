@@ -11,6 +11,7 @@
  * `isErrorDetail`, `isValidationErrorResponse`) and `$lib/utils/errors`
  * (`extractFieldErrors`); do not re-implement it here.
  */
+import { backendMessage, linkTokenErrorCode } from '$lib/utils/api-error-detail';
 
 /** The subset of an SDK result these helpers read. */
 export interface ApiResultLike {
@@ -35,23 +36,28 @@ export function getApiFailure(result: ApiResultLike): ApiFailure | null {
 	return { network: false, status: result.response.status, body: result.error };
 }
 
-/**
- * Prefixes of the backend's `"Invalid token: {error}"` detail in each locale
- * (backend `token_to_payload`, `.po` catalogs). The text after the prefix is a
- * raw exception message and must never reach the user. The backend sends no
- * machine-readable code for this case, and the detail is translated per
- * Accept-Language, hence one prefix per supported locale.
- */
-const INVALID_TOKEN_PREFIXES = [
-	'Invalid token:',
-	'Ungültiger Token:',
-	'Jeton invalide :',
-	'Token non valido:',
-	'Token no válido:',
-	'Token inválido:'
-];
+/** Localized copy for a failed link-token call, one string per outcome. */
+export interface LinkTokenFailureCopy {
+	/** `code: 'invalid_token'`: malformed or tampered link. */
+	invalid: string;
+	/** `code: 'token_expired'`: the link's lifetime ran out. */
+	expired: string;
+	/** Shown when a code-less body carries no readable `detail`. */
+	fallback: string;
+}
 
-/** Is this backend `detail` the "Invalid token: <exception text>" refusal? */
-export function isInvalidTokenDetail(detail: string | null): boolean {
-	return detail !== null && INVALID_TOKEN_PREFIXES.some((prefix) => detail.startsWith(prefix));
+/**
+ * The user-facing message for a 400 from an emailed-link endpoint (backend
+ * #1373). Branches on the typed `code`; a code-less `ErrorDetail` (blacklisted
+ * token, email changed, org mismatch) shows the backend's own `detail`.
+ */
+export function linkTokenFailureMessage(body: unknown, copy: LinkTokenFailureCopy): string {
+	switch (linkTokenErrorCode(body)) {
+		case 'invalid_token':
+			return copy.invalid;
+		case 'token_expired':
+			return copy.expired;
+		default:
+			return backendMessage(body) ?? copy.fallback;
+	}
 }

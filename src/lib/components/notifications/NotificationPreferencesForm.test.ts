@@ -531,8 +531,33 @@ describe('NotificationPreferencesForm', () => {
 			await user.click(screen.getByRole('button', { name: /save changes/i }));
 
 			await waitFor(() => expect(onInvalidToken).toHaveBeenCalledOnce());
+			expect(onInvalidToken).toHaveBeenCalledWith('tok', {
+				code: undefined,
+				detail: 'This unsubscribe link is no longer valid.'
+			});
 			expect(toast.error).not.toHaveBeenCalled();
 		});
+
+		it.each(['invalid_token', 'token_expired'] as const)(
+			'passes the typed %s code to onInvalidToken',
+			async (code) => {
+				const user = userEvent.setup();
+				const onInvalidToken = vi.fn();
+				const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+				vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+					data: undefined,
+					error: { detail: 'whatever', code },
+					response: { status: 400 } as Response
+				} as never);
+
+				renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onInvalidToken });
+				await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+				await waitFor(() =>
+					expect(onInvalidToken).toHaveBeenCalledWith('tok', { code, detail: 'whatever' })
+				);
+			}
+		);
 
 		it('still toasts other failures', async () => {
 			const user = userEvent.setup();

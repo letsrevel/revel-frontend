@@ -32,6 +32,11 @@
 
 	// The backend refused with 409: unpaid referral payouts would be forfeited.
 	// The token is still valid, so the same form re-submits it with force=true.
+	// The link's lifetime ran out (typed `token_expired`, BE #1373): point at the
+	// page where a fresh deletion link is requested.
+	const tokenExpired = $derived(
+		form && 'tokenExpired' in form ? form.tokenExpired === true : false
+	);
 	const forfeiture = $derived(form && 'forfeiture' in form ? form.forfeiture : null);
 </script>
 
@@ -150,6 +155,14 @@
 			{#if errors.form}
 				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 					<p class="text-sm font-medium text-destructive">{errors.form}</p>
+					{#if tokenExpired}
+						<a
+							href={resolve('/(auth)/account/privacy', {})}
+							class="mt-3 inline-block text-sm font-medium text-destructive underline-offset-4 hover:underline"
+						>
+							{m['accountDeletion.goToPrivacySettings']()}
+						</a>
+					{/if}
 				</div>
 			{/if}
 

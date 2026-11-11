@@ -6,6 +6,7 @@
 	import { oneclickunsubscribeOneClick } from '$lib/api';
 	import { resolve } from '$app/paths';
 	import { loginHref } from '$lib/utils/safe-redirect';
+	import { linkTokenRejection, type LinkTokenRejection } from '$lib/utils/api-error-detail';
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { Bell, MailX, ShieldCheck, Loader2 } from '@lucide/svelte';
@@ -44,7 +45,7 @@
 	let finished = $state<{ token: string | null; outcome: Outcome } | null>(null);
 	// The backend rejected a token that decoded fine (revoked, email changed,
 	// expired between load and submit).
-	let rejectedToken = $state<string | null>(null);
+	let rejectedLink = $state<{ token: string; rejection: LinkTokenRejection } | null>(null);
 	// The token whose one-click request is in flight (null when idle).
 	let pendingToken = $state<string | null>(null);
 	let invalidHeading = $state<HTMLHeadingElement | null>(null);
@@ -52,8 +53,17 @@
 
 	const oneClickPending = $derived(pendingToken !== null && pendingToken === data.token);
 	const outcome = $derived(finished?.token === data.token ? finished.outcome : null);
-	const rejected = $derived(rejectedToken !== null && rejectedToken === data.token);
 	const tokenInfo = $derived(data.tokenInfo);
+	const rejection = $derived(rejectedLink?.token === data.token ? rejectedLink.rejection : null);
+	const rejected = $derived(rejection !== null);
+	// Typed reason (BE #1373): `token_expired` says so; a code-less refusal (email
+	// changed since the link was issued, ...) shows the backend's own message;
+	// everything else (invalid_token, 401, 404, locally decoded expiry) keeps the
+	// generic invalid-link copy.
+	const expired = $derived(rejection?.code === 'token_expired' || tokenInfo.status === 'expired');
+	const rejectionDetail = $derived(
+		rejection && rejection.code === undefined ? rejection.detail : null
+	);
 	const validToken = $derived(tokenInfo.status === 'valid' && !rejected ? tokenInfo : null);
 	const isOrgAnnouncement = $derived(
 		validToken?.kind === 'unsubscribe' &&
@@ -79,9 +89,9 @@
 		heading?.focus();
 	}
 
-	async function showRejected(submittedToken: string) {
+	async function showRejected(submittedToken: string, reason: LinkTokenRejection) {
 		if (submittedToken !== data.token) return;
-		rejectedToken = submittedToken;
+		rejectedLink = { token: submittedToken, rejection: reason };
 		await tick();
 		// The page swapped under the user's click; move focus to the explanation.
 		invalidHeading?.focus();
@@ -97,7 +107,7 @@
 			const res = await oneclickunsubscribeOneClick({ query: { token } });
 			if (res.error) {
 				if (INVALID_TOKEN_STATUSES.has(res.response?.status ?? 0)) {
-					await showRejected(token);
+					await showRejected(token, linkTokenRejection(res.error));
 				} else if (token === data.token) {
 					toast.error(m['unsubscribePage.oneClickFailed']());
 				}
@@ -157,10 +167,12 @@
 				tabindex="-1"
 				class="text-3xl font-black leading-[1.12] text-destructive focus:outline-none sm:text-4xl"
 			>
-				{m['unsubscribePage.invalidTokenTitle']()}
+				{expired ? m['unsubscribePage.expiredTitle']() : m['unsubscribePage.invalidTokenTitle']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
-				{m['unsubscribePage.invalidTokenDescription']()}
+				{expired
+					? m['unsubscribePage.expiredDescription']()
+					: (rejectionDetail ?? m['unsubscribePage.invalidTokenDescription']())}
 			</p>
 			<div class="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
 				<Button href={loginHref(resolve('/(auth)/account/settings', {}))} class="w-full sm:w-auto">

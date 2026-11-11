@@ -58,21 +58,35 @@ describe('confirmDeletion when the API returns an error result (#1226)', () => {
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('never shows the raw exception text of "Invalid token: ..." (400)', async () => {
-		resolvesWithError(400, { detail: 'Invalid token: Signature verification failed' });
+	it('shows the invalid copy for code invalid_token (400)', async () => {
+		resolvesWithError(400, { detail: 'Invalid token.', code: 'invalid_token' });
 		const result = await run();
 		expect(result).toMatchObject({
 			status: 400,
 			data: { errors: { form: m['serverErrors.public.deletionTokenInvalid']() } }
 		});
-		expect(JSON.stringify(result)).not.toContain('Signature');
+		expect(result).toMatchObject({ data: { tokenExpired: false } });
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('recognises the localized "Invalid token" prefix', async () => {
-		resolvesWithError(400, { detail: 'Jeton invalide : boom' });
+	it('shows the expired copy for code token_expired (400)', async () => {
+		resolvesWithError(400, { detail: 'Token has expired.', code: 'token_expired' });
+		const result = await run();
+		expect(result).toMatchObject({
+			status: 400,
+			data: {
+				errors: { form: m['serverErrors.public.deletionTokenExpired']() },
+				tokenExpired: true
+			}
+		});
+		expect(cookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('shows the backend detail for a code-less 400 (blacklisted token)', async () => {
+		resolvesWithError(400, { detail: 'Token has been used.' });
 		expect(await run()).toMatchObject({
-			data: { errors: { form: m['serverErrors.public.deletionTokenInvalid']() } }
+			status: 400,
+			data: { errors: { form: 'Token has been used.' }, tokenExpired: false }
 		});
 	});
 

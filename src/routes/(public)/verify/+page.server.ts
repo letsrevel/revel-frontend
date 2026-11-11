@@ -4,6 +4,7 @@ import type { PageServerLoad } from './$types';
 import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 import { log } from '$lib/server/logger';
 import { sessionRememberMe } from '$lib/server/session';
@@ -80,15 +81,24 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 		}
 
 		// If response was not ok, handle the error
-		if (!response.response?.ok && response.error) {
-			const errorMessage = extractErrorMessage(
-				response.error,
-				m['serverErrors.public.verificationFailed']()
-			);
+		const failure = getApiFailure(response);
+		if (failure) {
+			// No response at all: never show the transport error text.
+			if (failure.network) {
+				return {
+					seo,
+					success: false,
+					error: m['serverErrors.public.unexpectedErrorVerification']()
+				};
+			}
 			return {
 				seo,
 				success: false,
-				error: errorMessage
+				error: linkTokenFailureMessage(failure.body, {
+					invalid: m['serverErrors.public.verificationTokenInvalid'](),
+					expired: m['serverErrors.public.verificationTokenExpired'](),
+					fallback: m['serverErrors.public.verificationFailed']()
+				})
 			};
 		}
 

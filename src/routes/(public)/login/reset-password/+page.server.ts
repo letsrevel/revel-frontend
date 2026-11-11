@@ -3,8 +3,8 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
-import { getApiFailure, isInvalidTokenDetail } from '$lib/server/api-result';
-import { backendMessage } from '$lib/utils/api-error-detail';
+import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
+import { backendMessage, linkTokenErrorCode } from '$lib/utils/api-error-detail';
 import { extractFieldErrors } from '$lib/utils/errors';
 import { clearAuthCookies } from '$lib/server/auth-cookies';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
@@ -69,16 +69,17 @@ export const actions: Actions = {
 						return fail(400, { errors: { password: messages.join(' ') } });
 					}
 
-					// `{ detail }`: an expired token (clean message) or "Invalid token:
-					// <exception text>", which is never shown.
-					const detail = backendMessage(failure.body);
-					if (isInvalidTokenDetail(detail)) {
-						return fail(400, {
-							errors: { form: m['serverErrors.public.resetTokenInvalid']() }
-						});
-					}
+					// `{ detail, code }` (BE #1373): `invalid_token` / `token_expired`;
+					// a code-less `{ detail }` shows the backend's own message.
 					return fail(400, {
-						errors: { form: detail ?? m['serverErrors.public.resetPasswordUnavailable']() }
+						errors: {
+							form: linkTokenFailureMessage(failure.body, {
+								invalid: m['serverErrors.public.resetTokenInvalid'](),
+								expired: m['serverErrors.public.resetTokenExpired'](),
+								fallback: m['serverErrors.public.resetPasswordUnavailable']()
+							})
+						},
+						tokenExpired: linkTokenErrorCode(failure.body) === 'token_expired'
 					});
 				}
 

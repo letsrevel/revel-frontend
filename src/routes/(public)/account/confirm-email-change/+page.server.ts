@@ -3,6 +3,7 @@ import { accountEmailChangeConfirm } from '$lib/api/generated/sdk.gen';
 import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { linkTokenErrorCode, backendMessage } from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
 import { sessionRememberMe } from '$lib/server/session';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
@@ -61,10 +62,16 @@ export const actions: Actions = {
 			}
 
 			if (status === 400) {
+				// BE #1373: typed link-token errors.
+				const code = linkTokenErrorCode(response.error);
+				if (code === 'token_expired') return fail(400, { errors: { form: 'expired' } });
+				if (code === 'invalid_token') return fail(400, { errors: { form: 'invalid' } });
 				if (message.includes('already in use')) {
 					return fail(400, { errors: { form: 'emailTaken' } });
 				}
-				return fail(400, { errors: { form: 'expired' } });
+				// Code-less refusal (blacklisted token, ...): the backend's own detail.
+				const detail = backendMessage(response.error);
+				return fail(400, { errors: { form: detail ? 'detail' : 'invalid', detail } });
 			}
 
 			return fail(500, { errors: { form: 'generic' } });
