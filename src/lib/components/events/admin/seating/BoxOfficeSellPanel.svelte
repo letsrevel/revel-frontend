@@ -137,9 +137,7 @@
 
 	const selectedTier = $derived(availableTiers.find((tier) => tier.id === selectedTierId) ?? null);
 
-	const compLabel = $derived(
-		m['orgAdmin.seating.boxOffice.amountComp']?.() ?? 'Free / comp — nothing to collect'
-	);
+	const compLabel = $derived(m['orgAdmin.seating.boxOffice.amountComp']());
 
 	/**
 	 * What door staff must collect for the current seat + tier (#958). The
@@ -152,9 +150,7 @@
 		const price = doorSalePrice(selectedTier, seatPriceCategoryId(chart, selectedSeatId));
 		if (price === null) {
 			return {
-				text:
-					m['orgAdmin.seating.boxOffice.amountUnpriced']?.() ??
-					"This tier doesn't price this seat's category, so it can't be sold here.",
+				text: m['orgAdmin.seating.boxOffice.amountUnpriced'](),
 				unpriced: true
 			};
 		}
@@ -195,7 +191,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error !== undefined || !response.data) {
-				throw response.error ?? new Error('Box office sell failed');
+				throw response.error ?? new Error(m['orgAdmin.seating.boxOffice.sellFailedToast']());
 			}
 			return response.data;
 		},
@@ -203,10 +199,10 @@
 			lastResult = ticket;
 			const seatLabel = ticket.seat?.label ?? selectedSeat?.label ?? '';
 			toast.success(
-				m['orgAdmin.seating.boxOffice.sellSuccessToast']?.({
+				m['orgAdmin.seating.boxOffice.sellSuccessToast']({
 					seat: seatLabel,
 					recipient: getUserDisplayName(ticket.user)
-				}) ?? `Ticket issued on seat ${seatLabel}`
+				})
 			);
 			// Reset for the next sale (keep the payment method for repeated door sales).
 			selectedSeatId = null;
@@ -222,10 +218,7 @@
 			// Clear any prior success box so a failed sale can't read as issued.
 			lastResult = null;
 			toast.error(
-				extractPurchaseErrorMessage(
-					err,
-					m['orgAdmin.seating.boxOffice.sellFailedToast']?.() ?? 'Failed to issue the ticket'
-				)
+				extractPurchaseErrorMessage(err, m['orgAdmin.seating.boxOffice.sellFailedToast']())
 			);
 		}
 	}));
@@ -262,8 +255,7 @@
 		</div>
 	{:else}
 		<p class="text-sm text-muted-foreground">
-			{m['orgAdmin.seating.boxOffice.sellIntro']?.() ??
-				'Issue a ticket directly on a seat for a walk-up or comped guest.'}
+			{m['orgAdmin.seating.boxOffice.sellIntro']()}
 		</p>
 
 		{#if lastResult}
@@ -274,18 +266,17 @@
 				role="status"
 			>
 				<h3 class="text-sm font-semibold">
-					{m['orgAdmin.seating.boxOffice.resultHeading']?.() ?? 'Ticket issued'}
+					{m['orgAdmin.seating.boxOffice.resultHeading']()}
 				</h3>
 				<p class="mt-1 text-sm">
-					{m['orgAdmin.seating.boxOffice.resultDetail']?.({
+					{m['orgAdmin.seating.boxOffice.resultDetail']({
 						seat: lastResult.seat?.label ?? '',
 						recipient: getUserDisplayName(lastResult.user)
-					}) ?? `Seat ${lastResult.seat?.label ?? ''} — ${getUserDisplayName(lastResult.user)}`}
+					})}
 				</p>
 				{#if lastResultAmount}
 					<p class="mt-1 text-sm font-semibold" data-testid="box-office-result-amount">
-						{m['orgAdmin.seating.boxOffice.resultAmount']?.({ amount: lastResultAmount }) ??
-							`Recorded: ${lastResultAmount}`}
+						{m['orgAdmin.seating.boxOffice.resultAmount']({ amount: lastResultAmount })}
 					</p>
 				{/if}
 			</div>
@@ -301,7 +292,7 @@
 			<!-- Step 1: seat -->
 			<fieldset class="space-y-2">
 				<legend class="text-sm font-semibold">
-					{m['orgAdmin.seating.boxOffice.stepSeat']?.() ?? '1. Choose a seat'}
+					{m['orgAdmin.seating.boxOffice.stepSeat']()}
 				</legend>
 				<div class="max-h-[45vh] overflow-y-auto rounded-lg border border-border p-4">
 					<BoxOfficeSeatPicker
@@ -317,7 +308,7 @@
 			<!-- Step 2: tier -->
 			<div class="flex flex-col gap-1">
 				<label for="box-office-tier" class="text-sm font-semibold">
-					{m['orgAdmin.seating.boxOffice.stepTier']?.() ?? '2. Ticket tier'}
+					{m['orgAdmin.seating.boxOffice.stepTier']()}
 				</label>
 				<select
 					id="box-office-tier"
@@ -327,7 +318,7 @@
 					onchange={(e) => (selectedTierId = e.currentTarget.value || null)}
 				>
 					<option value="" disabled>
-						{m['orgAdmin.seating.boxOffice.tierPlaceholder']?.() ?? 'Select a tier…'}
+						{m['orgAdmin.seating.boxOffice.tierPlaceholder']()}
 					</option>
 					{#each availableTiers as tier (tier.id)}
 						<option value={tier.id}>{tier.name}</option>
@@ -335,8 +326,7 @@
 				</select>
 				{#if selectedSeatId && availableTiers.length === 0}
 					<p class="text-xs text-destructive">
-						{m['orgAdmin.seating.boxOffice.noTiers']?.() ??
-							'No seated tier is available for this seat.'}
+						{m['orgAdmin.seating.boxOffice.noTiers']()}
 					</p>
 				{/if}
 			</div>
@@ -344,12 +334,11 @@
 			<!-- Step 3: recipient -->
 			<fieldset class="space-y-3">
 				<legend class="text-sm font-semibold">
-					{m['orgAdmin.seating.boxOffice.stepRecipient']?.() ?? '3. Recipient'}
+					{m['orgAdmin.seating.boxOffice.stepRecipient']()}
 				</legend>
 				<div class="flex flex-col gap-1">
 					<label for="box-office-email" class="text-xs font-medium text-muted-foreground">
-						{m['orgAdmin.seating.boxOffice.emailLabel']?.() ??
-							"Recipient email — we'll create a guest account or use their existing one"}
+						{m['orgAdmin.seating.boxOffice.emailLabel']()}
 					</label>
 					<Input
 						id="box-office-email"
@@ -358,14 +347,13 @@
 						autocomplete="off"
 						required
 						disabled={sellMutation.isPending}
-						placeholder={m['orgAdmin.seating.boxOffice.emailPlaceholder']?.() ??
-							'guest@example.com'}
+						placeholder={m['orgAdmin.seating.boxOffice.emailPlaceholder']()}
 					/>
 				</div>
 				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<div class="flex flex-col gap-1">
 						<label for="box-office-first" class="text-xs font-medium text-muted-foreground">
-							{m['orgAdmin.seating.boxOffice.firstNameLabel']?.() ?? 'First name (optional)'}
+							{m['orgAdmin.seating.boxOffice.firstNameLabel']()}
 						</label>
 						<Input
 							id="box-office-first"
@@ -377,7 +365,7 @@
 					</div>
 					<div class="flex flex-col gap-1">
 						<label for="box-office-last" class="text-xs font-medium text-muted-foreground">
-							{m['orgAdmin.seating.boxOffice.lastNameLabel']?.() ?? 'Last name (optional)'}
+							{m['orgAdmin.seating.boxOffice.lastNameLabel']()}
 						</label>
 						<Input
 							id="box-office-last"
@@ -393,7 +381,7 @@
 			<!-- Step 4: payment method -->
 			<fieldset>
 				<legend class="text-sm font-semibold">
-					{m['orgAdmin.seating.boxOffice.stepPayment']?.() ?? '4. Payment'}
+					{m['orgAdmin.seating.boxOffice.stepPayment']()}
 				</legend>
 				<div class="mt-1.5 flex flex-col gap-2 sm:flex-row sm:gap-4">
 					{#each BOX_OFFICE_PAYMENT_METHODS as method (method)}
@@ -424,7 +412,7 @@
 						{:else}
 							<div data-testid="box-office-amount">
 								<p class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-									{m['orgAdmin.seating.boxOffice.amountLabel']?.() ?? 'Amount to collect'}
+									{m['orgAdmin.seating.boxOffice.amountLabel']()}
 								</p>
 								<p class="text-lg font-bold">{amountToCollect.text}</p>
 							</div>
@@ -435,7 +423,7 @@
 					{#if sellMutation.isPending}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}
-					{m['orgAdmin.seating.boxOffice.submit']?.() ?? 'Issue ticket'}
+					{m['orgAdmin.seating.boxOffice.submit']()}
 				</Button>
 			</div>
 		</form>

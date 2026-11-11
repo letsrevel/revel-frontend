@@ -57,7 +57,7 @@
 			const data = response.data;
 
 			if (!data) {
-				throw new Error('No data returned from confirmation');
+				throw new Error(m['confirmationResult.invalidResponse']());
 			}
 
 			// The guest's holds were consumed by this confirmation (#1072).
@@ -95,7 +95,7 @@
 					tierBreakdown: summary.tierBreakdown
 				};
 			} else {
-				throw new Error('Unexpected response format from confirmation');
+				throw new Error(m['confirmationResult.invalidResponse']());
 			}
 		} catch (error) {
 			result = {

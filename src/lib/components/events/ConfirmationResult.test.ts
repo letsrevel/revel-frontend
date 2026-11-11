@@ -70,9 +70,10 @@ describe('ConfirmationResult — backend rejections surface the real error', () 
 		});
 		render(ConfirmationResult, { props: { token: 'tok-empty' } });
 
-		// Appears in both the visible alert and the sr-only live region.
+		// Appears in both the visible alert and the sr-only live region. (The generic
+		// message is now translated: confirmationResult.invalidResponse.)
 		expect(
-			(await screen.findAllByText(/no data returned from confirmation/i)).length
+			(await screen.findAllByText(/couldn't process the confirmation/i)).length
 		).toBeGreaterThan(0);
 	});
 });

@@ -1,37 +1,74 @@
+import { getDateLocale } from '$lib/utils/date';
+
 /**
- * Curated list of currencies the platform supports.
+ * Currencies the platform supports (ISO 4217 codes).
  * Mirrors the backend's `Currencies` whitelist (kept in sync as of 1.50.2).
  * Source of truth lives in revel-backend; if backend changes, update both.
  */
-export const CURRENCY_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-	{ value: 'AUD', label: 'AUD — Australian Dollar' },
-	{ value: 'BRL', label: 'BRL — Brazilian Real' },
-	{ value: 'CAD', label: 'CAD — Canadian Dollar' },
-	{ value: 'CHF', label: 'CHF — Swiss Franc' },
-	{ value: 'CNY', label: 'CNY — Chinese Yuan' },
-	{ value: 'CZK', label: 'CZK — Czech Koruna' },
-	{ value: 'DKK', label: 'DKK — Danish Krone' },
-	{ value: 'EUR', label: 'EUR — Euro' },
-	{ value: 'GBP', label: 'GBP — British Pound' },
-	{ value: 'HKD', label: 'HKD — Hong Kong Dollar' },
-	{ value: 'HUF', label: 'HUF — Hungarian Forint' },
-	{ value: 'IDR', label: 'IDR — Indonesian Rupiah' },
-	{ value: 'ILS', label: 'ILS — Israeli New Shekel' },
-	{ value: 'INR', label: 'INR — Indian Rupee' },
-	{ value: 'ISK', label: 'ISK — Icelandic Króna' },
-	{ value: 'JPY', label: 'JPY — Japanese Yen' },
-	{ value: 'KRW', label: 'KRW — South Korean Won' },
-	{ value: 'MXN', label: 'MXN — Mexican Peso' },
-	{ value: 'MYR', label: 'MYR — Malaysian Ringgit' },
-	{ value: 'NOK', label: 'NOK — Norwegian Krone' },
-	{ value: 'NZD', label: 'NZD — New Zealand Dollar' },
-	{ value: 'PHP', label: 'PHP — Philippine Peso' },
-	{ value: 'PLN', label: 'PLN — Polish Złoty' },
-	{ value: 'RON', label: 'RON — Romanian Leu' },
-	{ value: 'SEK', label: 'SEK — Swedish Krona' },
-	{ value: 'SGD', label: 'SGD — Singapore Dollar' },
-	{ value: 'THB', label: 'THB — Thai Baht' },
-	{ value: 'TRY', label: 'TRY — Turkish Lira' },
-	{ value: 'USD', label: 'USD — US Dollar' },
-	{ value: 'ZAR', label: 'ZAR — South African Rand' }
+export const SUPPORTED_CURRENCY_CODES: readonly string[] = [
+	'AUD',
+	'BRL',
+	'CAD',
+	'CHF',
+	'CNY',
+	'CZK',
+	'DKK',
+	'EUR',
+	'GBP',
+	'HKD',
+	'HUF',
+	'IDR',
+	'ILS',
+	'INR',
+	'ISK',
+	'JPY',
+	'KRW',
+	'MXN',
+	'MYR',
+	'NOK',
+	'NZD',
+	'PHP',
+	'PLN',
+	'RON',
+	'SEK',
+	'SGD',
+	'THB',
+	'TRY',
+	'USD',
+	'ZAR'
 ];
+
+const displayNamesCache = new Map<string, Intl.DisplayNames | null>();
+
+function getDisplayNames(locale: string): Intl.DisplayNames | null {
+	if (displayNamesCache.has(locale)) return displayNamesCache.get(locale) ?? null;
+	let instance: Intl.DisplayNames | null;
+	try {
+		instance = new Intl.DisplayNames([locale], { type: 'currency' });
+	} catch {
+		instance = null;
+	}
+	displayNamesCache.set(locale, instance);
+	return instance;
+}
+
+/**
+ * Localized currency name ("Australian Dollar", "Australischer Dollar", ...)
+ * in the active UI language. Falls back to the code when unavailable.
+ * `locale` is for tests; production callers omit it.
+ */
+export function currencyDisplayName(code: string, locale: string = getDateLocale()): string {
+	try {
+		return getDisplayNames(locale)?.of(code) ?? code;
+	} catch {
+		return code;
+	}
+}
+
+/** Select options like `{ value: 'AUD', label: 'AUD · Australian Dollar' }`, localized. */
+export function currencyOptions(locale?: string): { value: string; label: string }[] {
+	return SUPPORTED_CURRENCY_CODES.map((code) => ({
+		value: code,
+		label: `${code} · ${currencyDisplayName(code, locale)}`
+	}));
+}

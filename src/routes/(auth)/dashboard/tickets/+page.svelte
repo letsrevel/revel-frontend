@@ -314,7 +314,7 @@
 		{#if totalPages > 1}
 			<div class="mt-8 flex items-center justify-between border-t border-border pt-6">
 				<div class="text-sm text-muted-foreground">
-					Page {currentPage} of {totalPages}
+					{m['dashboardTicketsPage.pagination.page']({ current: currentPage, total: totalPages })}
 				</div>
 
 				<div class="flex gap-2">

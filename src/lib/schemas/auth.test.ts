@@ -6,7 +6,8 @@ import {
 	resendVerificationSchema,
 	calculatePasswordStrength,
 	emailChangeRequestSchema,
-	emailChangeConfirmSchema
+	emailChangeConfirmSchema,
+	SPECIAL_CHARACTERS
 } from './auth';
 
 describe('Auth Schemas', () => {
@@ -83,6 +84,33 @@ describe('Auth Schemas', () => {
 			if (!result.success) {
 				const error = result.error.issues.find((e) => e.path[0] === 'password');
 				expect(error?.message).toContain('digit');
+			}
+		});
+
+		it('accepts every listed special character as the special-character rule', () => {
+			for (const ch of SPECIAL_CHARACTERS) {
+				const password = `Abcdefg1${ch}`;
+				const result = registerSchema.safeParse({
+					email: 'test@example.com',
+					password,
+					confirmPassword: password,
+					acceptTerms: true
+				});
+				expect(result.success, `character ${ch}`).toBe(true);
+			}
+		});
+
+		it('lists the accepted special characters in the rejection message', () => {
+			const result = registerSchema.safeParse({
+				email: 'test@example.com',
+				password: 'Abcdefg12',
+				confirmPassword: 'Abcdefg12',
+				acceptTerms: true
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				const issue = result.error.issues.find((i) => i.path[0] === 'password');
+				expect(issue?.message).toContain(SPECIAL_CHARACTERS);
 			}
 		});
 

@@ -20,12 +20,12 @@
 		},
 		{
 			value: 'name' as const,
-			label: 'A-Z',
+			label: m['filters.orderBy.alphabeticalLabel'](),
 			description: m['filters.orderBy.alphabeticalOrderDescription']()
 		},
 		{
 			value: '-name' as const,
-			label: 'Z-A',
+			label: m['filters.orderBy.reverseAlphabeticalLabel'](),
 			description: m['filters.orderBy.reverseAlphabeticalOrderDescription']()
 		}
 	]);

@@ -74,7 +74,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete resource');
+				throw new Error(m['orgAdmin.resources.deleteError']());
 			}
 
 			return response.data;

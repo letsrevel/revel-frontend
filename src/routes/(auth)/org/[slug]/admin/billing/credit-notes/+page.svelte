@@ -43,7 +43,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error || !response.data) throw new Error('Failed to load credit notes');
+					if (response.error || !response.data)
+						throw new Error(m['orgAdmin.billing.creditNotes.loadError']());
 					return response.data;
 				},
 				enabled: !!accessToken
@@ -146,7 +147,7 @@
 		{#if totalPages > 1}
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-muted-foreground">
-					{creditNotesQuery.data.count} credit note{creditNotesQuery.data.count === 1 ? '' : 's'}
+					{m['orgAdmin.billing.creditNotes.count']({ count: creditNotesQuery.data.count })}
 				</p>
 				<div class="flex items-center gap-2">
 					<Button

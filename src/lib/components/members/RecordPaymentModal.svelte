@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
-	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
+	import { currencyOptions } from '$lib/utils/currencies';
 	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import type { EditableStatus } from './paymentEdit';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
@@ -74,7 +74,7 @@
 						bind:value={currency}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						{#each CURRENCY_OPTIONS as opt (opt.value)}
+						{#each currencyOptions() as opt (opt.value)}
 							<option value={opt.value}>{opt.label}</option>
 						{/each}
 					</select>

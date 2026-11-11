@@ -111,7 +111,9 @@
 				// 400 is `ValidationErrorResponse | ErrorDetail` (backend #824): the old
 				// `{detail?: string}` cast silently dropped the `{errors}` branch and
 				// stringified a request-validation 422's `detail` LIST.
-				throw new Error(backendMessage(res.error) ?? 'Failed to create subscription');
+				throw new Error(
+					backendMessage(res.error) ?? m['orgAdmin.members.subscriptions.create.failed']()
+				);
 			}
 			return res.data as SubscriptionSchema;
 		},

@@ -32,6 +32,7 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'billing.form.billingEmail': () => 'Billing Email (optional)',
 	'billing.form.billingEmailPlaceholder': () => 'Falls back to your account email',
 	'billing.form.vatId': () => 'VAT ID',
+	'billing.form.vatIdCurrentLabel': ({ vatId }: { vatId: string }) => `VAT ID: ${vatId}`,
 	'billing.form.vatIdPlaceholder': () => 'e.g. ATU12345678',
 	'billing.form.vatIdDescription': () =>
 		'Optional. Providing a valid EU VAT ID may enable reverse charge.',

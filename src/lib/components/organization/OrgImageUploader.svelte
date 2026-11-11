@@ -62,7 +62,7 @@
 
 			if (response.error) {
 				const errorMsg = backendMessage(response.error) ?? JSON.stringify(response.error);
-				throw new Error(`Upload failed: ${errorMsg}`);
+				throw new Error(m['orgImageUploader.uploadFailedDetail']({ detail: errorMsg }));
 			}
 
 			if (!response.data) {
@@ -93,7 +93,7 @@
 
 			if (response.error) {
 				const errorMsg = backendMessage(response.error) ?? JSON.stringify(response.error);
-				throw new Error(`Upload failed: ${errorMsg}`);
+				throw new Error(m['orgImageUploader.uploadFailedDetail']({ detail: errorMsg }));
 			}
 
 			if (!response.data) {

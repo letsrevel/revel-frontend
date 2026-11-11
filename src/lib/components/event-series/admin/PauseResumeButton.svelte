@@ -58,7 +58,7 @@
 
 	const pauseMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await organizationadminrecurringeventsPauseSeries({
 				path: { slug: organizationSlug, series_id: series.id },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -82,7 +82,7 @@
 
 	const resumeMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await organizationadminrecurringeventsResumeSeries({
 				path: { slug: organizationSlug, series_id: series.id },
 				headers: { Authorization: `Bearer ${accessToken}` }

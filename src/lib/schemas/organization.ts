@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import * as m from '$lib/paraglide/messages.js';
 
 /**
  * Organization creation schema matching backend OrganizationCreateSchema
@@ -16,14 +17,14 @@ export const organizationCreateSchema = z
 		if (!data.name || data.name.trim().length === 0) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'Organization name is required',
+				message: m['orgCreate.validation.nameRequired'](),
 				path: ['name']
 			});
 		}
 		if (data.name.length > 150) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'Organization name must be 150 characters or less',
+				message: m['orgCreate.validation.nameTooLong'](),
 				path: ['name']
 			});
 		}
@@ -32,13 +33,13 @@ export const organizationCreateSchema = z
 		if (!data.contact_email || data.contact_email.trim().length === 0) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'Contact email is required',
+				message: m['orgCreate.validation.emailRequired'](),
 				path: ['contact_email']
 			});
 		} else if (!z.string().email().safeParse(data.contact_email).success) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'Valid email address is required',
+				message: m['orgCreate.validation.emailInvalid'](),
 				path: ['contact_email']
 			});
 		}

@@ -96,7 +96,13 @@
 		"NAV Online Számla",
 		"RO e-Factura",
 		"Verifactu",
-		"WhatsApp"
+		"WhatsApp",
+		"Video",
+		"Audio",
+		"A-Z",
+		"Z-A",
+		"{count} {label}",
+		"Audio (MP3, WAV, OGG, M4A)"
 	],
 	"fr": [
 		"Guide",
@@ -215,7 +221,19 @@
 		"RO e-Factura",
 		"Verifactu",
 		"Document",
-		"WhatsApp"
+		"WhatsApp",
+		"Image",
+		"Audio",
+		"Archive",
+		"A-Z",
+		"Z-A",
+		"{count} {label}",
+		"Section {number}",
+		"Images (JPEG, PNG, GIF, WebP)",
+		"Audio (MP3, WAV, OGG, M4A)",
+		"Documents (PDF)",
+		"Archives (ZIP)",
+		"{minutes} minutes"
 	],
 	"it": [
 		"Standard",
@@ -296,7 +314,14 @@
 		"NAV Online Számla",
 		"RO e-Factura",
 		"Verifactu",
-		"WhatsApp"
+		"WhatsApp",
+		"Video",
+		"Audio",
+		"A-Z",
+		"Z-A",
+		"(demo)",
+		"{count} {label}",
+		"Audio (MP3, WAV, OGG, M4A)"
 	],
 	"es": [
 		"Steuernummer",
@@ -361,7 +386,13 @@
 		"RO e-Factura",
 		"Verifactu",
 		"Ref. {reference}",
-		"WhatsApp"
+		"WhatsApp",
+		"Audio",
+		"A-Z",
+		"Z-A",
+		"(demo)",
+		"{count} {label}",
+		"Audio (MP3, WAV, OGG, M4A)"
 	],
 	"pt": [
 		"Steuernummer",
@@ -424,6 +455,10 @@
 		"→",
 		"Ref. {reference}",
 		"WhatsApp",
-		"Email"
+		"Email",
+		"A-Z",
+		"Z-A",
+		"(demo)",
+		"{count} {label}"
 	]
 }

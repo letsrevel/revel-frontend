@@ -236,7 +236,7 @@
 
 	const updateMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 			const response = await organizationadminrecurringeventsUpdateTemplate({
 				path: { slug: organizationSlug, series_id: series.id },
 				query: { propagate: propagateScope },

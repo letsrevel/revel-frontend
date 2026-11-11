@@ -466,7 +466,10 @@
 		{#if billingProfile?.vat_id}
 			<!-- Existing VAT ID display -->
 			<div class="mt-3 flex flex-wrap items-center gap-3">
-				<span class="font-mono text-sm" aria-label="VAT ID: {billingProfile.vat_id}">
+				<span
+					class="font-mono text-sm"
+					aria-label={m['billing.form.vatIdCurrentLabel']({ vatId: billingProfile.vat_id })}
+				>
 					{billingProfile.vat_id}
 				</span>
 

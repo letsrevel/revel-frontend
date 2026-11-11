@@ -38,7 +38,7 @@
 			staff.user.preferred_name ||
 			(staff.user.first_name && staff.user.last_name
 				? `${staff.user.first_name} ${staff.user.last_name}`
-				: staff.user.first_name || staff.user.email || 'Unknown User')
+				: staff.user.first_name || staff.user.email || m['manageMemberModal.unknownUser']())
 		);
 	}
 
@@ -92,7 +92,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to remove staff');
+				throw new Error(m['orgAdmin.members.errors.removeStaff']());
 			}
 
 			return response.data;
@@ -103,7 +103,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to remove staff: ${error.message}`);
+			alert(m['orgAdmin.members.staffRemoveFailed']({ error: error.message }));
 		}
 	}));
 
@@ -128,7 +128,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update permissions');
+				throw new Error(m['orgAdmin.members.errors.updatePermissions']());
 			}
 
 			return response.data;
@@ -141,7 +141,7 @@
 			selectedStaff = null;
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update permissions: ${error.message}`);
+			alert(m['orgAdmin.members.staffPermissionsFailed']({ error: error.message }));
 		}
 	}));
 

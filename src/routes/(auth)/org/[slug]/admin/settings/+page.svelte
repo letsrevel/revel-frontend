@@ -111,7 +111,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.settings.pageTitle']()} - {data.organization.name} Admin | Revel</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['orgAdmin.settings.pageTitle'](),
+			orgName: data.organization.name
+		})}</title
+	>
 	<meta name="description" content={m['orgAdmin.settings.metaDescription']()} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>

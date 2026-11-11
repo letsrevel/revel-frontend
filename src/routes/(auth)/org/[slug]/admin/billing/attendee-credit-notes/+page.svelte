@@ -63,7 +63,7 @@
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 					if (response.error || !response.data)
-						throw new Error('Failed to load attendee credit notes');
+						throw new Error(m['orgAdmin.billing.attendeeCreditNotes.loadError']());
 					return response.data;
 				},
 				enabled: !!accessToken
@@ -187,7 +187,7 @@
 		{#if totalPages > 1}
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-muted-foreground">
-					{creditNotesQuery.data.count} credit notes
+					{m['orgAdmin.billing.attendeeCreditNotes.count']({ count: creditNotesQuery.data.count })}
 				</p>
 				<div class="flex items-center gap-2">
 					<Button

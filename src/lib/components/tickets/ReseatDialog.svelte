@@ -104,26 +104,18 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error !== undefined || !response.data) {
-				throw response.error ?? new Error('Reseat failed');
+				throw response.error ?? new Error(m['reseatDialog.failedToast']());
 			}
 			return response.data;
 		},
 		onSuccess: (updated: AdminTicketSchema) => {
-			toast.success(
-				m['reseatDialog.successToast']?.({ seat: updated.seat?.label ?? '' }) ??
-					`Moved to seat ${updated.seat?.label ?? ''}`
-			);
+			toast.success(m['reseatDialog.successToast']({ seat: updated.seat?.label ?? '' }));
 			queryClient.invalidateQueries({ queryKey: ['seating-availability', eventId] });
 			onReseated();
 			onClose();
 		},
 		onError: (err: unknown) => {
-			toast.error(
-				extractPurchaseErrorMessage(
-					err,
-					m['reseatDialog.failedToast']?.() ?? 'Could not move the ticket to that seat'
-				)
-			);
+			toast.error(extractPurchaseErrorMessage(err, m['reseatDialog.failedToast']()));
 		}
 	}));
 
@@ -136,16 +128,14 @@
 <Dialog {open} onOpenChange={(value) => (!value ? onClose() : undefined)}>
 	<DialogContent class="max-h-[90vh] max-w-2xl overflow-y-auto">
 		<DialogHeader>
-			<DialogTitle>{m['reseatDialog.title']?.() ?? 'Move seat'}</DialogTitle>
+			<DialogTitle>{m['reseatDialog.title']()}</DialogTitle>
 		</DialogHeader>
 
 		<div class="mt-4 space-y-4">
 			<div class="rounded-lg border border-border bg-muted/40 p-3 text-sm">
-				<span class="text-muted-foreground"
-					>{m['reseatDialog.currentSeat']?.() ?? 'Current seat'}:</span
-				>
+				<span class="text-muted-foreground">{m['reseatDialog.currentSeat']()}:</span>
 				<span class="font-medium text-primary">
-					{currentSeatDisplay ?? m['reseatDialog.noSeat']?.() ?? 'No seat assigned'}
+					{currentSeatDisplay ?? m['reseatDialog.noSeat']()}
 				</span>
 			</div>
 
@@ -155,7 +145,7 @@
 					role="alert"
 				>
 					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
-					<span>{m['reseatDialog.noSeatError']?.() ?? 'This ticket has no seat to move.'}</span>
+					<span>{m['reseatDialog.noSeatError']()}</span>
 				</div>
 			{:else if isLoading}
 				<div class="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
@@ -164,13 +154,12 @@
 				</div>
 			{:else if eligibleIds.size === 0}
 				<p class="py-4 text-sm text-muted-foreground">
-					{m['reseatDialog.noTargets']?.() ??
-						'No free seats are available in the same price category.'}
+					{m['reseatDialog.noTargets']()}
 				</p>
 			{:else}
 				<div>
 					<p class="mb-2 text-sm font-medium">
-						{m['reseatDialog.pickTarget']?.() ?? 'Choose a free seat in the same price category'}
+						{m['reseatDialog.pickTarget']()}
 					</p>
 					<div class="max-h-[45vh] overflow-y-auto rounded-lg border border-border p-4">
 						<BoxOfficeSeatPicker
@@ -187,13 +176,13 @@
 
 		<div class="mt-6 flex justify-end gap-2 border-t pt-4">
 			<Button variant="outline" onclick={onClose} disabled={reseatMutation.isPending}>
-				{m['reseatDialog.cancel']?.() ?? 'Cancel'}
+				{m['reseatDialog.cancel']()}
 			</Button>
 			<Button onclick={submit} disabled={!selectedSeatId || reseatMutation.isPending}>
 				{#if reseatMutation.isPending}
 					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				{m['reseatDialog.confirm']?.() ?? 'Move ticket'}
+				{m['reseatDialog.confirm']()}
 			</Button>
 		</div>
 	</DialogContent>

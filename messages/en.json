@@ -433,7 +433,8 @@
 	"adminLayout": {
 		"admin": "Admin",
 		"staff": "Staff",
-		"navigation": "Navigation"
+		"navigation": "Navigation",
+		"documentTitle": "{title} · {orgName} Admin | Revel"
 	},
 	"adminPage": {
 		"quickActions": "Quick Actions",
@@ -1159,7 +1160,8 @@
 			"showing": "Showing {count} of {total}",
 			"previousPage": "Previous page",
 			"nextPage": "Next page"
-		}
+		},
+		"pageTitleNoName": "Welcome back!"
 	},
 	"dashboard.createOrganizationButton": "Create Organization",
 	"duration": {
@@ -1595,7 +1597,8 @@
 		"goBack": "Go Back",
 		"signIn": "Sign In",
 		"backToHome": "Back to Home",
-		"debugInfo": "Debug Info"
+		"debugInfo": "Debug Info",
+		"notFound": "Not found"
 	},
 	"errors": {
 		"loadError": "Failed to load event",
@@ -1738,7 +1741,8 @@
 			"cancel": "Cancel the event and notify everyone who is attending.",
 			"delete": "Permanently delete this event. This cannot be undone.",
 			"more": "More actions"
-		}
+		},
+		"error_noEventSelected": "No event selected"
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Download calendar event for {eventName}",
@@ -1934,7 +1938,8 @@
 		"status_ready": "Ready",
 		"status_published": "Published",
 		"unpublishedWarning": "One or more questionnaires are not published. Users will not be required to complete them until they are published.",
-		"notEnforcedTooltip": "Not enforced - questionnaire must be published"
+		"notEnforcedTooltip": "Not enforced - questionnaire must be published",
+		"removeAriaLabel": "Remove {name}"
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Limited spots remaining",
@@ -2310,7 +2315,12 @@
 		"retryUpload": "Retry upload",
 		"required": "required",
 		"upTo": "up to {maxSize}",
-		"maxFiles": "Maximum {count} files"
+		"maxFiles": "Maximum {count} files",
+		"typeImage": "Image",
+		"typeVideo": "Video",
+		"typeAudio": "Audio",
+		"typeArchive": "Archive",
+		"typeText": "Text"
 	},
 	"filters": {
 		"search": {
@@ -2359,7 +2369,9 @@
 			"label": "Sort order",
 			"infoLabel": "Sort order information",
 			"distanceTooltipTitle": "Distance Sorting",
-			"distanceTooltipDescription": "\"Nearest First\" uses your approximate location from IP address or your selected city in account settings."
+			"distanceTooltipDescription": "\"Nearest First\" uses your approximate location from IP address or your selected city in account settings.",
+			"alphabeticalLabel": "A-Z",
+			"reverseAlphabeticalLabel": "Z-A"
 		},
 		"tags": {
 			"heading": "Tags",
@@ -2394,7 +2406,9 @@
 		"preferencesUpdated": "Preferences updated",
 		"updateError": "Failed to update preferences",
 		"followError": "Failed to follow",
-		"unfollowError": "Failed to unfollow"
+		"unfollowError": "Failed to unfollow",
+		"unknownOrganization": "this organization",
+		"unknownSeries": "this series"
 	},
 	"footer": {
 		"aboutTitle": "Revel",
@@ -2420,7 +2434,8 @@
 		"solutionPrivacy": "Privacy-Focused Events",
 		"solutionCommunity": "Community-First Platform",
 		"solutionClubs": "Club Membership Management",
-		"solutionReferral": "Referral Program"
+		"solutionReferral": "Referral Program",
+		"loadingVersion": "Loading..."
 	},
 	"guest_attendance": {
 		"rsvp_title": "RSVP without an account",
@@ -4691,8 +4706,56 @@
 				"linkedInvoice": "Linked Invoice",
 				"grossAmount": "Amount"
 			}
-		}
+		},
+		"attendeeCreditNotes.count": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} credit note",
+					"countPlural=*": "{count} credit notes"
+				}
+			}
+		]
 	},
+	"orgAdmin.billing.loadFailed": "Failed to load billing info",
+	"orgAdmin.billing.attendeeCreditNotes.loadError": "Couldn't load attendee credit notes.",
+	"orgAdmin.billing.attendeeInvoices.loadError": "Failed to load attendee invoices",
+	"orgAdmin.billing.attendeeInvoices.detailLoadError": "Failed to load invoice",
+	"orgAdmin.billing.attendeeInvoices.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 invoice",
+				"countPlural=*": "{count} invoices"
+			}
+		}
+	],
+	"orgAdmin.billing.invoices.loadError": "Failed to load invoices",
+	"orgAdmin.billing.invoices.detail.loadError": "Failed to load invoice",
+	"orgAdmin.billing.invoices.detail.vatLine": "VAT: {vatId}",
+	"orgAdmin.billing.invoices.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 invoice",
+				"countPlural=*": "{count} invoices"
+			}
+		}
+	],
+	"orgAdmin.billing.creditNotes.loadError": "Failed to load credit notes",
+	"orgAdmin.billing.creditNotes.count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 credit note",
+				"countPlural=*": "{count} credit notes"
+			}
+		}
+	],
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionnaires",
 		"metaDescription": "Manage admission forms and surveys for {orgName}",
@@ -4745,6 +4808,7 @@
 		},
 		"confirmDelete": "Are you sure you want to delete this resource?"
 	},
+	"orgAdmin.resources.deleteError": "Failed to delete resource",
 	"orgAdmin.priceCategories.card.delete": "Delete price category {name}",
 	"orgAdmin.priceCategories.card.edit": "Edit price category {name}",
 	"orgAdmin.priceCategories.card.order": "Order: {order}",
@@ -4997,6 +5061,8 @@
 	"orgAdmin.venues.toast.created": "Venue created successfully",
 	"orgAdmin.venues.toast.updateError": "Failed to update venue",
 	"orgAdmin.venues.toast.updated": "Venue updated successfully",
+	"orgAdmin.venues.toast.createErrorDetail": "Failed to create venue: {message}",
+	"orgAdmin.venues.toast.updateErrorDetail": "Failed to update venue: {message}",
 	"orgAdmin.waitlist.actions.remove": "Remove",
 	"orgAdmin.waitlist.confirmDelete": "Are you sure you want to remove {userName} from the waitlist?",
 	"orgAdmin.waitlist.empty.description": "No one is currently on the waitlist for this event.",
@@ -5095,6 +5161,10 @@
 	"orgCreate.subtitle": "Two fields and you're in. Logo, address and description can wait until you need them.",
 	"orgCreate.title": "Name your organization",
 	"orgCreate.verifyEmail": "Go to Profile",
+	"orgCreate.validation.nameRequired": "Organization name is required",
+	"orgCreate.validation.nameTooLong": "Organization name must be 150 characters or less",
+	"orgCreate.validation.emailRequired": "Contact email is required",
+	"orgCreate.validation.emailInvalid": "Valid email address is required",
 	"orgResourcesPage": {
 		"pageTitle": "Resources - {organizationName}",
 		"pageDescription": "Resources for {organizationName}",
@@ -7181,7 +7251,8 @@
 			"selfBillingCheckbox": "I agree that Revel may issue invoices (Gutschrift) on my behalf in accordance with the",
 			"termsAndConditions": "terms and conditions",
 			"incomplete": "Billing information is incomplete",
-			"incompleteDescription": "Please complete all required fields."
+			"incompleteDescription": "Please complete all required fields.",
+			"vatIdCurrentLabel": "VAT ID: {vatId}"
 		}
 	},
 	"myInvoices": {
@@ -7457,7 +7528,8 @@
 				"partialFailure": "{done}/{total} cancelled; {remaining} left. Retry?",
 				"successToast": "{n} dates cancelled.",
 				"thresholdWarning": "This will cancel {n} dates and refund all associated tickets. The loop runs one date at a time and may take a minute for long lists.",
-				"errorToast": "Couldn't cancel some of the dates. Please try again."
+				"errorToast": "Couldn't cancel some of the dates. Please try again.",
+				"unknownError": "Unknown error"
 			}
 		},
 		"exdates": {
@@ -7595,7 +7667,8 @@
 				"empty": "No upcoming occurrences to cancel."
 			},
 			"cancelling": "Cancelling…",
-			"errorToast": "Couldn't cancel this date. Please try again."
+			"errorToast": "Couldn't cancel this date. Please try again.",
+			"noDateSelected": "No occurrence date selected"
 		},
 		"generateNow": {
 			"untilLabel": "Generate up to (optional)",
@@ -7950,6 +8023,7 @@
 	"waitlistSettings.closeConfirm.body": "Closing the waitlist will revoke {count} pending offers. Continue?",
 	"waitlistSettings.error.missingEventId": "Missing event id.",
 	"waitlistSettings.error.updateFailed": "Failed to update waitlist settings.",
+	"waitlistSettings.error.loadFailed": "Failed to load waitlist settings",
 	"ineligibilityMessage.spotsReserved.header": "Spots are reserved for waitlist members",
 	"ineligibilityMessage.spotsReserved.body": "{count} spots are held until {time}. Join the waitlist — you'll get a turn after this round.",
 	"ineligibilityMessage.waitingForBatch.header": "You're on the waitlist",
@@ -7992,6 +8066,13 @@
 	"orgAdmin.waitlist.offer.capacityBanner": "Event is at capacity. Revoke a pending offer to make room.",
 	"orgAdmin.waitlist.offer.viewPendingShortcut": "View pending offers",
 	"orgAdmin.waitlist.offer.seatsHeldHint": "{count} held for waitlist",
+	"orgAdmin.waitlist.offer.issueFailed": "Failed to issue offer",
+	"orgAdmin.waitlist.offer.reactivateFailed": "Failed to reactivate offer",
+	"orgAdmin.waitlist.offer.revokeFailed": "Failed to revoke offer",
+	"orgAdmin.waitlist.offer.error.loadFailed": "Failed to load waitlist offers",
+	"orgAdmin.waitlist.offer.error.createFailed": "Failed to create waitlist offer",
+	"orgAdmin.waitlist.offer.error.revokeFailed": "Failed to revoke waitlist offer",
+	"orgAdmin.waitlist.offer.error.reactivateFailed": "Failed to reactivate waitlist offer",
 	"joinWaitlist.capacityOpen": "A spot just opened up. Refresh to register directly.",
 	"joinWaitlist.refreshAction": "Refresh",
 	"notifications.waitlistSpot.title": "Your waitlist spot is ready",
@@ -8262,6 +8343,9 @@
 	"demoCardInfo.otherFieldsValue": "Any value",
 	"footer.loadingNotes": "Loading...",
 	"footer.noReleaseNotes": "No release notes",
+	"footer.demoMode": "(demo)",
+	"footer.frontendRepo": "Frontend repository on GitHub",
+	"footer.backendRepo": "Backend repository on GitHub",
 	"header.mainNavigation": "Main navigation",
 	"userAvatar.altText": "{displayName}'s avatar",
 	"userAvatar.viewProfilePicture": "View {displayName}'s profile picture",
@@ -8438,12 +8522,14 @@
 	"claimInvitationButton.claimedSuccessfully": "Invitation claimed successfully!",
 	"confirmationResult.confirmationFailed": "Confirmation Failed",
 	"confirmationResult.confirmationFailedSr": "Confirmation failed. {error}",
+	"confirmationResult.invalidResponse": "We couldn't process the confirmation. Please try again.",
 	"dietarySummary.severitySevereAllergy": "Severe Allergy",
 	"dietarySummary.severityAllergy": "Allergy",
 	"dietarySummary.severityIntolerant": "Intolerant",
 	"dietarySummary.severityDislike": "Dislike",
 	"dietarySummary.loadingDietaryInfo": "Loading dietary information...",
 	"dietarySummary.addDietaryPreferencesAriaLabel": "Add your dietary preferences and restrictions",
+	"dietarySummary.severityWithCount": "{count} {label}",
 	"eventActionSidebar.eventActionsAriaLabel": "Event actions",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Download calendar event",
 	"tierForm.whatsIncludedPlaceholder": "What's included in this tier?",
@@ -8536,6 +8622,7 @@
 	"invitationRequestCard.cancelling": "Cancelling...",
 	"invitationRequestCard.cancelRequest": "Cancel Request",
 	"invitationRequestCard.viewEvent": "View Event",
+	"invitationRequestCard.missingAuth": "You need to be signed in to cancel this request.",
 	"invitationRequestsTab.searchPlaceholder": "Search by name or email...",
 	"invitationRequestsTab.showingRange": "Showing {from} to {to} of {total} requests",
 	"manageMemberModal.unknownUser": "Unknown User",
@@ -8594,6 +8681,9 @@
 	"membersTab.promoteStaffFailed": "Failed to promote to staff: {error}",
 	"membersTab.memberBlacklisted": "Member has been blacklisted",
 	"membersTab.blacklistFailed": "Failed to blacklist member",
+	"membersTab.removeMemberError": "Failed to remove member",
+	"membersTab.updateMemberError": "Failed to update member",
+	"membersTab.promoteStaffError": "Failed to promote member to staff",
 	"organizationTokensTab.createSuccess": "Invitation link created successfully",
 	"organizationTokensTab.createFailed": "Failed to create invitation link",
 	"organizationTokensTab.updateSuccess": "Invitation link updated successfully",
@@ -8720,6 +8810,7 @@
 	"orgImageUploader.uploadCoverFailed": "Failed to upload cover art",
 	"orgImageUploader.uploadLogoNoData": "Failed to upload logo - no data returned",
 	"orgImageUploader.uploadCoverNoData": "Failed to upload cover art - no data returned",
+	"orgImageUploader.uploadFailedDetail": "Upload failed: {detail}",
 	"orgTagManager.tagsLabel": "Tags",
 	"orgTagManager.addTagsPlaceholder": "Add tags...",
 	"orgTagManager.add": "Add",
@@ -8746,6 +8837,7 @@
 	"stripeConnect.aboutIntro": "Stripe Connect allows you to accept online payments for event tickets. When you connect your Stripe account, you'll be able to:",
 	"stripeConnect.aboutFooter": "Revel uses Stripe Connect to securely process payments. Your Stripe account is separate from Revel and you maintain full control over your funds.",
 	"stripeConnect.failedToCreateLink": "Failed to create Stripe Connect link",
+	"stripeConnect.statusConnectedMessageWithEmail": "Your Stripe account is fully set up and ready to accept payments. Connected with: {email}",
 	"stripeConnectModal.required": "required",
 	"mobileOrganizationFilterSheet.closeFilters": "Close filters",
 	"mobileOrganizationFilterSheet.searchPlaceholder": "Search organizations...",
@@ -8772,6 +8864,12 @@
 	"autoEvalRecommendation.evaluatedManuallyOn": "Evaluated manually on {date}",
 	"autoEvalRecommendation.approved": "Approved",
 	"autoEvalRecommendation.rejected": "Rejected",
+	"autoEvalRecommendation.awaitingReview": "Awaiting Review",
+	"autoEvalRecommendation.awaitingReviewDescription": "This submission has not been evaluated yet.",
+	"autoEvalRecommendation.recommendApprove": "Recommended: Approve",
+	"autoEvalRecommendation.approveFallbackDescription": "This submission meets the requirements.",
+	"autoEvalRecommendation.recommendReject": "Recommended: Reject",
+	"autoEvalRecommendation.rejectFallbackDescription": "This submission does not meet the requirements.",
 	"evaluationForm.scoreHelp": "Provide a numeric score between 0 and 100",
 	"evaluationForm.commentsPlaceholder": "Add evaluation notes or feedback for the submitter...",
 	"evaluationForm.cancel": "Cancel",
@@ -8801,6 +8899,13 @@
 	"questionEditor.negativeWeight": "Negative Weight",
 	"questionEditor.pointsDeductedForWrong": "Points deducted for wrong answer",
 	"questionEditor.fatalQuestion": "Fatal question (wrong answer = automatic rejection)",
+	"questionEditor.defaultSectionName": "Section {number}",
+	"questionEditor.fileTypeImages": "Images (JPEG, PNG, GIF, WebP)",
+	"questionEditor.fileTypeAudio": "Audio (MP3, WAV, OGG, M4A)",
+	"questionEditor.fileTypeDocuments": "Documents (PDF)",
+	"questionEditor.fileTypeSpreadsheets": "Spreadsheets (Excel)",
+	"questionEditor.fileTypeText": "Text Files (TXT, CSV)",
+	"questionEditor.fileTypeArchives": "Archives (ZIP)",
 	"fileUploadQuestion.removeFile": "Remove file",
 	"fileUploadQuestion.cancelUpload": "Cancel upload",
 	"fileUploadQuestion.uploadFile": "Upload file",
@@ -9400,6 +9505,7 @@
 	"discountCodeEditPage.editing": "Editing",
 	"discountCodeEditPage.loadingAriaLabel": "Loading discount code",
 	"discountCodeEditPage.loadError": "Failed to load discount code. It may have been deleted.",
+	"discountCodeEditPage.updateError": "Failed to update discount code",
 	"blacklistAdminPage.metaTitle": "Blacklist Management - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Manage blacklisted users for {name}",
 	"blacklistAdminPage.title": "Blacklist Management",
@@ -9453,6 +9559,7 @@
 	"discountCodeNewPage.backAriaLabel": "Back to discount codes",
 	"discountCodeNewPage.title": "New Discount Code",
 	"discountCodeNewPage.subtitle": "Create a discount code for ticket checkout.",
+	"discountCodeNewPage.createFailed": "Failed to create discount code",
 	"seriesAdminPage.occurrenceTabsAriaLabel": "Occurrence tabs",
 	"seriesAdminPage.noUpcomingOccurrences": "No upcoming occurrences yet.",
 	"seriesAdminPage.loadingPastOccurrences": "Loading past occurrences…",
@@ -9472,6 +9579,7 @@
 	"attendeesAdmin.blacklistDialogMessage": "Are you sure you want to blacklist {name}? They will be blocked from all events in this organization.",
 	"attendeesAdmin.blacklistDialogConfirm": "Blacklist",
 	"attendeesAdmin.blacklistDialogCancel": "Cancel",
+	"attendeesAdmin.blacklistDialogMessageWithSubscription": "Are you sure you want to blacklist {name}? They will be blocked from all events in this organization. If they have a membership subscription with this organization, it is cancelled immediately and recurring billing stops. No refund is issued automatically.",
 	"eventEditPage.updateStatusAlert": "Failed to update status: {message}",
 	"eventEditPage.error_deleteFailed": "Failed to delete event",
 	"eventEditPage.deleteAlert": "Failed to delete event: {message}",
@@ -9504,6 +9612,11 @@
 	"orgAdmin.members.tabs.tiersShort": "Tiers",
 	"orgAdmin.members.tabs.tokens": "Invite Links",
 	"orgAdmin.members.tabs.tokensShort": "Links",
+	"orgAdmin.members.errors.removeStaff": "Failed to remove staff",
+	"orgAdmin.members.errors.updatePermissions": "Failed to update permissions",
+	"orgAdmin.members.staffRemoveFailed": "Failed to remove staff: {error}",
+	"orgAdmin.members.staffPermissionsFailed": "Failed to update permissions: {error}",
+	"orgAdmin.members.subscriptions.create.failed": "Couldn't create the subscription. Please try again.",
 	"questionnaireEditPage.loading": "Loading questionnaire...",
 	"questionnaireEditPage.editModeEnabled": "Edit mode enabled",
 	"questionnaireEditPage.editModeDescription": "You can now edit questions, sections, and options. Changes will be saved when you click Save.",
@@ -9736,6 +9849,7 @@
 	"financials.report.generating": "Generating your report…",
 	"financials.report.ready": "Your report is ready.",
 	"financials.report.error": "Couldn't generate the report.",
+	"financials.forbidden": "You do not have permission to view organization financials.",
 	"orgSettingsPage.reports.heading": "Financial reports",
 	"orgSettingsPage.reports.description": "Schedule revenue & VAT reports to be emailed to your billing address.",
 	"orgSettingsPage.reports.cadenceLabel": "Report delivery",
@@ -11333,5 +11447,58 @@
 	"subscriptionChangePlan.errors.soldOut": "This plan is sold out.",
 	"subscriptionChangePlan.errors.notFound": "The subscription or the plan wasn't found. Reload and try again.",
 	"subscriptionChangePlan.errors.generic": "Couldn't change the plan.",
-	"subscriptionChangePlan.soldOutSuffix": "(sold out)"
+	"subscriptionChangePlan.soldOutSuffix": "(sold out)",
+	"authValidation": {
+		"passwordMinLength": "Password must be at least 8 characters long",
+		"passwordUppercase": "Password must contain at least one uppercase letter",
+		"passwordLowercase": "Password must contain at least one lowercase letter",
+		"passwordDigit": "Password must contain at least one digit",
+		"passwordSpecial": "Password must contain at least one special character ({characters})",
+		"invalidEmail": "Invalid email address",
+		"termsRequired": "You must accept the terms and privacy policy",
+		"passwordsMismatch": "Passwords do not match",
+		"passwordRequired": "Password is required",
+		"otpLength": "Code must be 6 digits",
+		"otpDigitsOnly": "Code must contain only digits",
+		"resetTokenRequired": "Reset token is required",
+		"deletionTokenRequired": "Deletion token is required",
+		"confirmationTokenRequired": "Confirmation token is required"
+	},
+	"questionnaireValidation": {
+		"unknownError": "An unknown validation error occurred.",
+		"failed": "Validation failed. Please check your input.",
+		"multipleCorrect": "A question with \"{allowLabel}\" disabled cannot have multiple correct options marked. Please enable \"{allowLabel}\" or select only one correct option."
+	},
+	"tokenExpiry": {
+		"never": "Never",
+		"lessThanHour": "Less than 1 hour",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} day",
+					"countPlural=*": "{count} days"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} hour",
+					"countPlural=*": "{count} hours"
+				}
+			}
+		]
+	},
+	"tokenDuration": {
+		"oneHour": "1 Hour",
+		"oneDay": "1 Day",
+		"sevenDays": "7 Days",
+		"thirtyDays": "30 Days",
+		"minutes": "{minutes} minutes"
+	},
+	"dashboardTicketsPage.pagination.page": "Page {current} of {total}"
 }

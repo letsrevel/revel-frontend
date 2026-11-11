@@ -11,7 +11,8 @@
 	import { Info } from '@lucide/svelte';
 	import { estimateNetPayout, type PlatformFeeInfo } from '$lib/utils/fees';
 	import { formatMoney } from '$lib/utils/format';
-	import { SUPPORTED_CURRENCIES, normalizeDecimalInput } from './tier-form-helpers';
+	import { normalizeDecimalInput } from './tier-form-helpers';
+	import { currencyOptions } from '$lib/utils/currencies';
 
 	interface Props {
 		priceType: 'fixed' | 'pwyc';
@@ -77,8 +78,8 @@
 		disabled={isPending}
 		class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 	>
-		{#each SUPPORTED_CURRENCIES as curr (curr.code)}
-			<option value={curr.code}>{curr.code} - {curr.name}</option>
+		{#each currencyOptions() as opt (opt.value)}
+			<option value={opt.value}>{opt.label}</option>
 		{/each}
 	</select>
 	<p class="mt-1 text-xs text-muted-foreground">

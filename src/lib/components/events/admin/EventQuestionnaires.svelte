@@ -179,7 +179,9 @@
 						onclick={() => requestUnassign(questionnaire.id, questionnaire.questionnaire.name)}
 						disabled={unassigning === questionnaire.id}
 						class="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-						aria-label={`Remove ${questionnaire.questionnaire.name}`}
+						aria-label={m['eventQuestionnaires.removeAriaLabel']({
+							name: questionnaire.questionnaire.name
+						})}
 					>
 						<X class="h-4 w-4" />
 					</Button>

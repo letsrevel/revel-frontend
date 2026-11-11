@@ -74,7 +74,7 @@
 						path: { slug },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error || !response.data) throw new Error('Failed to load billing info');
+					if (response.error || !response.data) throw new Error(m['orgAdmin.billing.loadFailed']());
 					return response.data;
 				},
 				enabled: !!accessToken,

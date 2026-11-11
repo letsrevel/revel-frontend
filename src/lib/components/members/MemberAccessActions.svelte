@@ -86,7 +86,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				throw new Error(backendMessage(response.error) || 'Failed to remove member');
+				throw new Error(backendMessage(response.error) || m['membersTab.removeMemberError']());
 			}
 			return response.data;
 		},
@@ -120,7 +120,7 @@
 						backendMessage(response.error) || m['manageMemberModal.tierLockedReason']()
 					);
 				}
-				throw new Error(backendMessage(response.error) || 'Failed to update member');
+				throw new Error(backendMessage(response.error) || m['membersTab.updateMemberError']());
 			}
 			return response.data;
 		},
@@ -148,7 +148,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				throw new Error(backendMessage(response.error) || 'Failed to promote member to staff');
+				throw new Error(backendMessage(response.error) || m['membersTab.promoteStaffError']());
 			}
 			return response.data;
 		},

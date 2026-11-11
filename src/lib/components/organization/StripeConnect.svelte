@@ -158,13 +158,12 @@
 		}
 
 		if (chargesEnabled && detailsSubmitted) {
-			const emailMsg = stripeAccountEmail
-				? ` ${m['stripeConnect.connectedWithEmail']({ email: stripeAccountEmail })}`
-				: '';
 			return {
 				type: 'fully-connected',
 				title: m['stripeConnect.statusConnectedTitle'](),
-				message: `${m['stripeConnect.statusConnectedMessage']()}${emailMsg}`
+				message: stripeAccountEmail
+					? m['stripeConnect.statusConnectedMessageWithEmail']({ email: stripeAccountEmail })
+					: m['stripeConnect.statusConnectedMessage']()
 			};
 		}
 

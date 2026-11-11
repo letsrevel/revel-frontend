@@ -59,7 +59,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error || !response.data) throw new Error('Failed to load invoices');
+					if (response.error || !response.data)
+						throw new Error(m['orgAdmin.billing.invoices.loadError']());
 					return response.data;
 				},
 				enabled: !!accessToken
@@ -80,7 +81,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					if (response.error || !response.data)
+						throw new Error(m['orgAdmin.billing.invoices.detail.loadError']());
 					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
@@ -269,7 +271,7 @@
 		{#if totalPages > 1}
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-muted-foreground">
-					{invoicesQuery.data.count} invoice{invoicesQuery.data.count === 1 ? '' : 's'}
+					{m['orgAdmin.billing.invoices.count']({ count: invoicesQuery.data.count })}
 				</p>
 				<div class="flex items-center gap-2">
 					<Button
@@ -407,7 +409,9 @@
 					<h3 class="font-medium">{m['orgAdmin.billing.invoices.detail.orgInfo']()}</h3>
 					<p>{inv.org_name}</p>
 					{#if inv.org_vat_id}
-						<p class="text-muted-foreground">VAT: {inv.org_vat_id}</p>
+						<p class="text-muted-foreground">
+							{m['orgAdmin.billing.invoices.detail.vatLine']({ vatId: inv.org_vat_id })}
+						</p>
 					{/if}
 					{#if inv.org_vat_country}
 						<p class="text-muted-foreground">
