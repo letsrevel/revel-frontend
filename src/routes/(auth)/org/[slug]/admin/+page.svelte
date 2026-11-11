@@ -70,7 +70,12 @@
 </script>
 
 <svelte:head>
-	<title>{organization.name} Admin Dashboard | Revel</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['userMenu.adminDashboard'](),
+			orgName: organization.name
+		})}</title
+	>
 	<meta
 		name="description"
 		content={m['orgAdmin.dashboard.metaDescription']({ orgName: organization.name })}

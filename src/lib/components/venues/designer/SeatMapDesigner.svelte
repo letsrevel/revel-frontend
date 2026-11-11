@@ -217,7 +217,7 @@
 					<circle
 						role="button"
 						tabindex="0"
-						aria-label={m['seatDesigner.addVertex']?.() ?? 'Add shape point'}
+						aria-label={m['seatDesigner.addVertex']()}
 						cx={mid.x * CELL}
 						cy={mid.y * CELL}
 						r="4"

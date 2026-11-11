@@ -77,7 +77,11 @@
 </script>
 
 <svelte:head>
-	<title>{m['pollVoterPage.title']({ name: poll?.questionnaire?.name ?? 'Poll' })}</title>
+	<title
+		>{m['pollVoterPage.title']({
+			name: poll?.questionnaire?.name ?? m['pollVoterFallback.name']()
+		})}</title
+	>
 </svelte:head>
 
 <!--
@@ -101,7 +105,7 @@
 				<PageHeader
 					volume="poster"
 					onBand
-					title={poll.questionnaire?.name ?? 'Poll'}
+					title={poll.questionnaire?.name ?? m['pollVoterFallback.name']()}
 					subtitle={poll.questionnaire?.description ?? undefined}
 				>
 					{#snippet actions()}

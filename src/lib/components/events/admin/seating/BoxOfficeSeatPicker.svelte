@@ -38,7 +38,7 @@
 <div
 	class="space-y-6"
 	role="radiogroup"
-	aria-label={m['orgAdmin.seating.boxOffice.seatPickerLabel']?.() ?? 'Choose a seat'}
+	aria-label={m['orgAdmin.seating.boxOffice.seatPickerLabel']()}
 >
 	{#each groups as group (group.id)}
 		<section aria-label={group.name}>

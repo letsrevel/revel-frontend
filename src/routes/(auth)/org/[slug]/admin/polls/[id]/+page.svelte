@@ -268,7 +268,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['pollEditPage.pageTitle']()} - {data.organization.name} Admin</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['pollEditPage.pageTitle'](),
+			orgName: data.organization.name
+		})}</title
+	>
 </svelte:head>
 
 <div class="mb-6">

@@ -19,6 +19,7 @@ export function generateWebSiteJsonLd(origin: string): WebSiteJsonLd {
 		'@type': 'WebSite',
 		name: SITE_NAME,
 		url: origin,
+		// i18n-ignore: JSON-LD text stays English (owner decision)
 		description:
 			'Community-focused event management platform. Discover events, connect with organizers, and create unforgettable experiences.',
 		potentialAction: {

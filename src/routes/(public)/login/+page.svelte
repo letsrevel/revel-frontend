@@ -17,6 +17,7 @@
 		DEMO_ACCOUNTS_README_URL
 	} from '$lib/constants/demo-accounts';
 	import * as m from '$lib/paraglide/messages.js';
+	import { demoRoleLabel, demoDescriptionLabel } from '$lib/constants/demo-accounts-i18n';
 	import { SeoHead } from '$lib/seo';
 	import { oidcErrorMessage } from '$lib/utils/oidc-errors';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
@@ -193,7 +194,7 @@
 									<option value="">{m['login.chooseAccount']()}</option>
 									{#each DEMO_ACCOUNTS as account (account.email)}
 										<option value={account.email}>
-											{account.name} ({account.role}{account.organization
+											{account.name} ({demoRoleLabel(account.roleKey)}{account.organization
 												? ` - ${account.organization}`
 												: ''})
 										</option>
@@ -213,8 +214,10 @@
 									<div class="rounded-md border border-muted bg-muted/30 p-3">
 										<p class="text-sm font-medium">{account.name}</p>
 										<p class="mt-1 text-xs text-muted-foreground">{account.email}</p>
-										{#if account.description}
-											<p class="mt-1 text-xs text-muted-foreground">{account.description}</p>
+										{#if account.descriptionKey}
+											<p class="mt-1 text-xs text-muted-foreground">
+												{demoDescriptionLabel(account.descriptionKey)}
+											</p>
 										{/if}
 									</div>
 								{/if}

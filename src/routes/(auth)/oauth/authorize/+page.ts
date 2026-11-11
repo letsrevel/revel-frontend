@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import * as m from '$lib/paraglide/messages.js';
 import type { PageLoad } from './$types';
 
 // CSR only: the access token lives in memory and the decision POST must never
@@ -10,5 +11,5 @@ export const ssr = false;
 export const load: PageLoad = async ({ parent }) => {
 	const { features } = await parent();
 	// Fail-closed flag: without a signing key every /api/oauth/* route 404s too.
-	if (!features.oauth_provider) error(404, 'Not found');
+	if (!features.oauth_provider) error(404, m['serverErrors.common.notFound']());
 };
