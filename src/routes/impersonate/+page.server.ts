@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_BASE_URL } from '$lib/config/api';
@@ -37,7 +38,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 	if (!token) {
 		return {
 			error: 'missing_token',
-			errorMessage: 'No impersonation token provided.'
+			errorMessage: m['impersonateErrors.missingToken']()
 		};
 	}
 
@@ -60,21 +61,20 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 			if (status === 401) {
 				return {
 					error: 'invalid_token',
-					errorMessage: 'The impersonation token is invalid, expired, or has already been used.'
+					errorMessage: m['impersonateErrors.invalidToken']()
 				};
 			}
 
 			if (status === 403) {
 				return {
 					error: 'forbidden',
-					errorMessage:
-						'Impersonation is no longer allowed for this user (they may have become staff or superuser).'
+					errorMessage: m['impersonateErrors.forbidden']()
 				};
 			}
 
 			return {
 				error: 'unknown',
-				errorMessage: 'An unexpected error occurred. Please try again or contact support.'
+				errorMessage: m['impersonateErrors.unknown']()
 			};
 		}
 
@@ -112,7 +112,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 
 		return {
 			error: 'network',
-			errorMessage: 'Failed to connect to the server. Please check your connection and try again.'
+			errorMessage: m['impersonateErrors.network']()
 		};
 	}
 };

@@ -13,7 +13,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['eventNewPage.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['eventNewPage.pageTitle'](),
+			orgName: organization.name
+		})}</title
+	>
 	<meta
 		name="description"
 		content={m['eventNewPage.pageDescription']({ organizationName: organization.name })}

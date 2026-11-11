@@ -18,7 +18,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['recurringEvents.wizard.title']()} - {organization.name} Admin | Revel</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['recurringEvents.wizard.title'](),
+			orgName: organization.name
+		})}</title
+	>
 	<meta
 		name="description"
 		content={m['recurringEvents.wizard.pageDescription']({ organizationName: organization.name })}

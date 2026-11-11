@@ -23,7 +23,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.polls.pageTitle']()} - {data.organization.name} Admin</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['orgAdmin.polls.pageTitle'](),
+			orgName: data.organization.name
+		})}</title
+	>
 </svelte:head>
 
 <PageHeader

@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-freshness i18n-hardcoded i18n-hardcoded-update i18n-untranslated file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release e2e-setup e2e-run e2e e2e-teardown
+.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-freshness i18n-hardcoded i18n-hardcoded-canary i18n-hardcoded-update i18n-untranslated file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release e2e-setup e2e-run e2e e2e-teardown
 
 # ─────────────────────────────────────────────
 # Development
@@ -65,6 +65,10 @@ i18n-hardcoded:
 i18n-untranslated:
 	@node scripts/check-i18n-untranslated.mjs
 
+# Asserts the gate above can actually fail (a known leak, via a symlinked path).
+i18n-hardcoded-canary:
+	@node scripts/check-i18n-hardcoded-canary.mjs
+
 i18n-hardcoded-update:
 	@node scripts/check-i18n-hardcoded.mjs --update
 
@@ -106,7 +110,7 @@ audit-deps: audit licensecheck
 # i18n-check runs before the type checks: it compiles the Paraglide messages that
 # svelte-check resolves `$$lib/paraglide/*` against, and the canary refuses to run
 # without them (see scripts/check-type-gate-armed.sh).
-check: format-check lint i18n-freshness i18n-check i18n-untranslated types types-canary i18n-hardcoded file-length no-ssr-token audit-images
+check: format-check lint i18n-freshness i18n-check i18n-untranslated types types-canary i18n-hardcoded i18n-hardcoded-canary file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix

@@ -206,6 +206,7 @@ export function embedIframeSnippet(origin: string, config: EmbedBuilderConfig): 
 	const height = config.autoResize
 		? defaultHeight
 		: clamp(config.height, EMBED_MIN_HEIGHT, EMBED_MAX_HEIGHT);
+	// i18n-ignore: default <iframe title> written into HTML pasted on third-party sites; the builder lets the user set it
 	const title = config.title ?? 'Events on Revel';
 
 	return [

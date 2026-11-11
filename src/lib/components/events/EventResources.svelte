@@ -87,7 +87,9 @@
 							type="button"
 							onclick={() => openResource(resource)}
 							class="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label={resource.resource_type === 'file' ? 'Download file' : 'Open link'}
+							aria-label={resource.resource_type === 'file'
+								? m['questionAnswerDisplay.downloadFile']()
+								: m['orgResourcesPage.button_openLink']()}
 						>
 							<span class="flex items-center gap-2">
 								{#if resource.resource_type === 'file'}

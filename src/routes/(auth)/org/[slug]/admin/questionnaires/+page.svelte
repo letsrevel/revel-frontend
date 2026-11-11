@@ -51,7 +51,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.questionnaires.pageTitle']()} - {data.organization.name} Admin</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['orgAdmin.questionnaires.pageTitle'](),
+			orgName: data.organization.name
+		})}</title
+	>
 </svelte:head>
 
 <PageHeader

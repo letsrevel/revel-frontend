@@ -4,12 +4,26 @@
  *
  * Source: https://github.com/letsrevel/revel-backend/blob/main/src/events/management/commands/README.md#user-accounts
  */
+export type DemoRoleKey = 'owner' | 'staff' | 'member' | 'attendee' | 'multiOrgMember' | 'user';
+export type DemoDescriptionKey =
+	| 'fullControl'
+	| 'canManageEvents'
+	| 'memberPrivileges'
+	| 'variousTicketsAndRsvps'
+	| 'activeInMultipleEvents'
+	| 'onWaitlists'
+	| 'pendingPayment'
+	| 'memberOfBothOrgs'
+	| 'cancelledTicket'
+	| 'waitlistsAndInvited';
+
 export interface DemoAccount {
 	email: string;
 	name: string;
-	role: string;
+	/** Stable keys into `demoAccounts.role.*` / `demoAccounts.description.*` (see `demo-accounts-i18n.ts`). */
+	roleKey: DemoRoleKey;
 	organization?: string;
-	description?: string;
+	descriptionKey?: DemoDescriptionKey;
 }
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
@@ -17,92 +31,92 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 	{
 		email: 'alice.owner@example.com',
 		name: 'Alice Owner',
-		role: 'Owner',
+		roleKey: 'owner',
 		organization: 'Revel Events Collective',
-		description: 'Full control of organization'
+		descriptionKey: 'fullControl'
 	},
 	{
 		email: 'bob.staff@example.com',
 		name: 'Bob Staff',
-		role: 'Staff Member',
+		roleKey: 'staff',
 		organization: 'Revel Events Collective',
-		description: 'Can manage events'
+		descriptionKey: 'canManageEvents'
 	},
 	{
 		email: 'charlie.member@example.com',
 		name: 'Charlie Member',
-		role: 'Member',
+		roleKey: 'member',
 		organization: 'Revel Events Collective',
-		description: 'Member privileges'
+		descriptionKey: 'memberPrivileges'
 	},
 
 	// Organization Beta (Tech Innovators Network)
 	{
 		email: 'diana.owner@example.com',
 		name: 'Diana Owner',
-		role: 'Owner',
+		roleKey: 'owner',
 		organization: 'Tech Innovators Network',
-		description: 'Full control of organization'
+		descriptionKey: 'fullControl'
 	},
 	{
 		email: 'eve.staff@example.com',
 		name: 'Eve Staff',
-		role: 'Staff Member',
+		roleKey: 'staff',
 		organization: 'Tech Innovators Network',
-		description: 'Can manage events'
+		descriptionKey: 'canManageEvents'
 	},
 	{
 		email: 'frank.member@example.com',
 		name: 'Frank Member',
-		role: 'Member',
+		roleKey: 'member',
 		organization: 'Tech Innovators Network',
-		description: 'Member privileges'
+		descriptionKey: 'memberPrivileges'
 	},
 
 	// Regular Attendees
 	{
 		email: 'george.attendee@example.com',
 		name: 'George Attendee',
-		role: 'Attendee',
-		description: 'Has various tickets and RSVPs'
+		roleKey: 'attendee',
+		descriptionKey: 'variousTicketsAndRsvps'
 	},
 	{
 		email: 'hannah.attendee@example.com',
 		name: 'Hannah Attendee',
-		role: 'Attendee',
-		description: 'Active in multiple events'
+		roleKey: 'attendee',
+		descriptionKey: 'activeInMultipleEvents'
 	},
 	{
 		email: 'ivan.attendee@example.com',
 		name: 'Ivan Attendee',
-		role: 'Attendee',
-		description: 'On waitlists'
+		roleKey: 'attendee',
+		descriptionKey: 'onWaitlists'
 	},
 	{
 		email: 'julia.attendee@example.com',
 		name: 'Julia Attendee',
-		role: 'Attendee',
-		description: 'Pending payment'
+		roleKey: 'attendee',
+		descriptionKey: 'pendingPayment'
 	},
 
 	// Special Users
 	{
 		email: 'karen.multiorg@example.com',
 		name: 'Karen Multi',
-		role: 'Multi-org Member',
-		description: 'Member of BOTH organizations'
+		roleKey: 'multiOrgMember',
+		descriptionKey: 'memberOfBothOrgs'
 	},
 	{
 		email: 'leo.pending@example.com',
 		name: 'Leo Pending',
-		role: 'User',
-		description: 'Has cancelled ticket'
+		roleKey: 'user',
+		descriptionKey: 'cancelledTicket'
 	},
 	{
 		email: 'maria.invited@example.com',
 		name: 'Maria Invited',
-		role: 'User',
-		description: 'On waitlists, invited to events'
+		roleKey: 'user',
+		descriptionKey: 'waitlistsAndInvited'
 	}
 ];
 

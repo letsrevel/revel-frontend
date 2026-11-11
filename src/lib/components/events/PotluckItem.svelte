@@ -143,7 +143,7 @@
 				statusBadgeVariant === 'info' && 'border-info/40 bg-info/10 text-foreground',
 				statusBadgeVariant === 'default' && 'border-border bg-muted text-muted-foreground'
 			)}
-			aria-label={`Status: ${statusBadgeText}`}
+			aria-label={m['potluckItemCard.statusAria']({ status: statusBadgeText })}
 		>
 			{statusBadgeText}
 		</span>
@@ -169,7 +169,9 @@
 			type="button"
 			onclick={handleClaimClick}
 			disabled={isButtonDisabled}
-			aria-label={item.is_owned ? `Unclaim ${item.name}` : `Claim ${item.name}`}
+			aria-label={item.is_owned
+				? m['potluckItemCard.unclaimAria']({ name: item.name })
+				: m['potluckItemCard.claimAria']({ name: item.name })}
 			class={cn(
 				'min-w-[160px] flex-1 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:min-w-[140px] md:flex-initial md:px-4',
 				buttonVariant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -189,7 +191,7 @@
 					<button
 						type="button"
 						onclick={handleEditClick}
-						aria-label={`Edit ${item.name}`}
+						aria-label={m['potluckItemCard.editAria']({ name: item.name })}
 						class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Edit2 class="h-4 w-4" aria-hidden="true" />
@@ -199,7 +201,7 @@
 					<button
 						type="button"
 						onclick={handleDeleteClick}
-						aria-label={`Delete ${item.name}`}
+						aria-label={m['potluckItemCard.deleteAria']({ name: item.name })}
 						class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Trash2 class="h-4 w-4" aria-hidden="true" />
