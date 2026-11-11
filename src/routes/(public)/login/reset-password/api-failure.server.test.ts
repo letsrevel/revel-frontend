@@ -11,6 +11,7 @@ vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 import { actions } from './+page.server';
 
 const cookies = { delete: vi.fn(), get: vi.fn(), set: vi.fn() };
+const eventFetch = vi.fn();
 
 function run() {
 	const body = new FormData();
@@ -19,7 +20,7 @@ function run() {
 	body.set('confirmPassword', 'Sup3r-secret-pass!');
 	return actions.resetPassword({
 		request: new Request('http://localhost/login/reset-password', { method: 'POST', body }),
-		fetch: vi.fn(),
+		fetch: eventFetch,
 		cookies
 	} as unknown as Parameters<typeof actions.resetPassword>[0]);
 }
@@ -49,10 +50,46 @@ describe('resetPassword when the API returns an error result (#1226)', () => {
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('maps 400 field errors to the password field', async () => {
-		resolvesWithError(400, { errors: { password1: ['Too common'] } });
+	it('never shows the raw exception text of "Invalid token: ..." (400)', async () => {
+		resolvesWithError(400, { detail: 'Invalid token: Not enough segments' });
 		const result = await run();
-		expect(result).toMatchObject({ status: 400, data: { errors: { password: 'Too common' } } });
+		expect(result).toMatchObject({
+			status: 400,
+			data: { errors: { form: m['serverErrors.public.resetTokenInvalid']() } }
+		});
+		expect(JSON.stringify(result)).not.toContain('segments');
+		expect(cookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('shows the backend message for an expired token (400 detail)', async () => {
+		resolvesWithError(400, { detail: 'Token has expired.' });
+		expect(await run()).toMatchObject({
+			status: 400,
+			data: { errors: { form: 'Token has expired.' } }
+		});
+	});
+
+	it('shows backend password-validator messages (__all__) under the password field', async () => {
+		resolvesWithError(400, {
+			errors: { __all__: ['This password is too common.', 'This password is entirely numeric.'] }
+		});
+		const result = await run();
+		expect(result).toMatchObject({
+			status: 400,
+			data: {
+				errors: { password: 'This password is too common. This password is entirely numeric.' }
+			}
+		});
+		expect(cookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('shows the backend detail for a banned account (403)', async () => {
+		resolvesWithError(403, { detail: 'This account has been banned.' });
+		const result = await run();
+		expect(result).toMatchObject({
+			status: 403,
+			data: { errors: { form: 'This account has been banned.' } }
+		});
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
@@ -66,10 +103,18 @@ describe('resetPassword when the API returns an error result (#1226)', () => {
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
-	it('still reports a network throw as a failure', async () => {
-		accountResetPassword.mockRejectedValue(new TypeError('fetch failed'));
+	it('treats a resolved network error (no response) as a localized failure', async () => {
+		accountResetPassword.mockResolvedValue({
+			data: undefined,
+			error: new TypeError('fetch failed'),
+			response: undefined
+		});
 		const result = await run();
-		expect(result).toMatchObject({ status: 500 });
+		expect(result).toMatchObject({
+			status: 500,
+			data: { errors: { form: m['serverErrors.public.unexpectedErrorRetryLater']() } }
+		});
+		expect(JSON.stringify(result)).not.toContain('fetch failed');
 		expect(cookies.delete).not.toHaveBeenCalled();
 	});
 
@@ -82,5 +127,11 @@ describe('resetPassword when the API returns an error result (#1226)', () => {
 		const result = await run();
 		expect(result).toMatchObject({ success: true });
 		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
+
+	it('passes the event fetch to the SDK call', async () => {
+		resolvesWithError(500, undefined);
+		await run();
+		expect(accountResetPassword.mock.calls[0][0].fetch).toBe(eventFetch);
 	});
 });

@@ -1,12 +1,12 @@
 import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
-import { extractErrorMessage } from '$lib/utils/errors';
+import { backendMessage } from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
 import { getApiFailure } from '$lib/server/api-result';
 
 export const actions: Actions = {
-	exportData: async ({ cookies }) => {
+	exportData: async ({ cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
@@ -21,7 +21,9 @@ export const actions: Actions = {
 			const result = await accountExportData({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
-				}
+				},
+				// event.fetch so handleFetch forwards the tenant Origin (#1070)
+				fetch
 			});
 
 			// throwOnError is false: a 4xx/5xx is RETURNED, not thrown.
@@ -29,21 +31,26 @@ export const actions: Actions = {
 			if (failure) {
 				log.error('data_export_request_failed', { status: failure.status, error: failure.body });
 
+				// No response at all: never show the transport error text.
+				if (failure.network) {
+					return fail(500, {
+						errors: { exportForm: m['serverErrors.account.exportFailed']() }
+					});
+				}
+
 				// Rate limiting (429 Too Many Requests)
 				if (failure.status === 429) {
 					return fail(429, {
 						errors: {
-							exportForm: extractErrorMessage(
-								failure.body,
-								m['serverErrors.account.exportRateLimited']()
-							)
+							exportForm:
+								backendMessage(failure.body) ?? m['serverErrors.account.exportRateLimited']()
 						}
 					});
 				}
 
 				return fail(500, {
 					errors: {
-						exportForm: extractErrorMessage(failure.body, m['serverErrors.account.exportFailed']())
+						exportForm: backendMessage(failure.body) ?? m['serverErrors.account.exportFailed']()
 					}
 				});
 			}
@@ -52,7 +59,7 @@ export const actions: Actions = {
 				exportSuccess: true
 			};
 		} catch (error) {
-			// Network failure: the request never produced a response.
+			// Unexpected throw (not a request failure, which is returned above).
 			log.error('data_export_request_failed', { error });
 			return fail(500, {
 				errors: {
@@ -91,13 +98,17 @@ export const actions: Actions = {
 					error: failure.body
 				});
 
+				// No response at all: never show the transport error text.
+				if (failure.network) {
+					return fail(500, {
+						errors: { form: m['serverErrors.account.unexpectedErrorTryLater']() }
+					});
+				}
+
 				if (failure.status === 400) {
 					return fail(400, {
 						errors: {
-							form: extractErrorMessage(
-								failure.body,
-								m['serverErrors.account.deleteBlockedByOrgs']()
-							)
+							form: backendMessage(failure.body) ?? m['serverErrors.account.deleteBlockedByOrgs']()
 						}
 					});
 				}
@@ -105,20 +116,17 @@ export const actions: Actions = {
 				if (failure.status === 403) {
 					return fail(403, {
 						errors: {
-							form: extractErrorMessage(
-								failure.body,
+							form:
+								backendMessage(failure.body) ??
 								m['serverErrors.account.deleteForbiddenActiveOrgs']()
-							)
 						}
 					});
 				}
 
 				return fail(500, {
 					errors: {
-						form: extractErrorMessage(
-							failure.body,
-							m['serverErrors.account.unexpectedErrorTryLater']()
-						)
+						form:
+							backendMessage(failure.body) ?? m['serverErrors.account.unexpectedErrorTryLater']()
 					}
 				});
 			}
@@ -127,7 +135,7 @@ export const actions: Actions = {
 				success: true
 			};
 		} catch (error) {
-			// Network failure: the request never produced a response.
+			// Unexpected throw (not a request failure, which is returned above).
 			log.error('account_deletion_request_failed', { error });
 			return fail(500, {
 				errors: {

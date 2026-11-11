@@ -9,22 +9,31 @@ vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 import { actions } from './+page.server';
 
 const cookies = { get: vi.fn().mockReturnValue('access-tok') };
+const eventFetch = vi.fn();
 
 function runExport() {
-	return actions.exportData({ cookies } as unknown as Parameters<typeof actions.exportData>[0]);
+	return actions.exportData({ cookies, fetch: eventFetch } as unknown as Parameters<
+		typeof actions.exportData
+	>[0]);
 }
 
 function runDeletion() {
-	return actions.requestDeletion({
-		cookies,
-		fetch: vi.fn()
-	} as unknown as Parameters<typeof actions.requestDeletion>[0]);
+	return actions.requestDeletion({ cookies, fetch: eventFetch } as unknown as Parameters<
+		typeof actions.requestDeletion
+	>[0]);
 }
 
 /** The generated client RESOLVES (does not throw) on a 4xx/5xx (throwOnError: false). */
 function errorResult(status: number, error: unknown) {
 	return { data: undefined, error, response: new Response(null, { status }) };
 }
+
+/** A network failure as the real client reports it: resolved, with no response. */
+const networkResult = () => ({
+	data: undefined,
+	error: new TypeError('fetch failed'),
+	response: undefined
+});
 
 beforeEach(() => {
 	accountExportData.mockReset();
@@ -58,6 +67,16 @@ describe('exportData when the API returns an error result (#1226)', () => {
 		});
 	});
 
+	it('shows the localized message, not the transport error, on a network failure', async () => {
+		accountExportData.mockResolvedValue(networkResult());
+		const result = await runExport();
+		expect(result).toMatchObject({
+			status: 500,
+			data: { errors: { exportForm: m['serverErrors.account.exportFailed']() } }
+		});
+		expect(JSON.stringify(result)).not.toContain('fetch failed');
+	});
+
 	it('reports success after a 2xx', async () => {
 		accountExportData.mockResolvedValue({
 			data: { message: 'ok' },
@@ -67,9 +86,10 @@ describe('exportData when the API returns an error result (#1226)', () => {
 		expect(await runExport()).toEqual({ exportSuccess: true });
 	});
 
-	it('still reports a network throw as a failure', async () => {
-		accountExportData.mockRejectedValue(new TypeError('fetch failed'));
-		expect(await runExport()).toMatchObject({ status: 500 });
+	it('passes the event fetch to the SDK call', async () => {
+		accountExportData.mockResolvedValue(errorResult(500, undefined));
+		await runExport();
+		expect(accountExportData.mock.calls[0][0].fetch).toBe(eventFetch);
 	});
 });
 
@@ -98,6 +118,16 @@ describe('requestDeletion when the API returns an error result (#1226)', () => {
 			status: 500,
 			data: { errors: { form: m['serverErrors.account.unexpectedErrorTryLater']() } }
 		});
+	});
+
+	it('shows the localized message, not the transport error, on a network failure', async () => {
+		accountDeleteAccountRequest.mockResolvedValue(networkResult());
+		const result = await runDeletion();
+		expect(result).toMatchObject({
+			status: 500,
+			data: { errors: { form: m['serverErrors.account.unexpectedErrorTryLater']() } }
+		});
+		expect(JSON.stringify(result)).not.toContain('fetch failed');
 	});
 
 	it('reports success after a 2xx', async () => {

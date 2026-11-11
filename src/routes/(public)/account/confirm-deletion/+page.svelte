@@ -29,6 +29,10 @@
 
 	// Error handling
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
+
+	// The backend refused with 409: unpaid referral payouts would be forfeited.
+	// The token is still valid, so the same form re-submits it with force=true.
+	const forfeiture = $derived(form && 'forfeiture' in form ? form.forfeiture : null);
 </script>
 
 <svelte:head>
@@ -149,6 +153,27 @@
 				</div>
 			{/if}
 
+			<!-- Referral forfeiture: needs an explicit second confirmation -->
+			{#if forfeiture}
+				<div
+					role="alert"
+					data-testid="forfeiture-warning"
+					class="rounded-md border border-destructive bg-destructive/10 p-4"
+				>
+					<p class="text-sm font-bold text-destructive">
+						{m['accountDeletion.forfeitureHeading']()}
+					</p>
+					<p class="mt-1 text-sm text-foreground">
+						{m['accountDeletion.forfeitureBody']({
+							count: forfeiture.count,
+							total: forfeiture.total,
+							failed: forfeiture.failed,
+							currency: forfeiture.currency
+						})}
+					</p>
+				</div>
+			{/if}
+
 			<!-- Warning Box -->
 			<div class="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-6 shadow-poster">
 				<h2 class="font-bold text-destructive">{m['accountDeletion.confirmHeading']()}</h2>
@@ -194,6 +219,9 @@
 				class="space-y-4"
 			>
 				<input type="hidden" name="token" value={token} />
+				{#if forfeiture}
+					<input type="hidden" name="force" value="true" />
+				{/if}
 				{#if returnHost}
 					<input type="hidden" name="return_host" value={returnHost} />
 				{/if}
@@ -213,6 +241,8 @@
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 							<span>{m['accountDeletion.deleting']()}</span>
+						{:else if forfeiture}
+							<span>{m['accountDeletion.forfeitureConfirm']()}</span>
 						{:else}
 							<span>{m['accountDeletion.deleteButton']()}</span>
 						{/if}
