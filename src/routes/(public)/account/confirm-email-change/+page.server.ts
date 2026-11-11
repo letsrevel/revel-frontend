@@ -73,8 +73,8 @@ export const actions: Actions = {
 				if (changeCode === 'email_change_superseded') {
 					return fail(400, { errors: { form: 'superseded' } });
 				}
-				// Code-less refusal (older backend, blacklisted token,
-				// blacklisted token): the backend's own detail. The shared client
+				// Code-less refusal (older backend, blacklisted token): the backend's
+				// own detail. The shared client
 				// interceptor sends the UI locale as Accept-Language, so it is already
 				// in the user's language.
 				return fail(400, { errors: { form: detail ? 'detail' : 'invalid', detail } });
