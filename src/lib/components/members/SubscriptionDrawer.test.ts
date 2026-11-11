@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -9,6 +9,7 @@ import {
 	organizationadminsubscriptionsGetSubscription,
 	organizationadminsubscriptionsListSubscriptionPayments,
 	organizationadminsubscriptionsPauseSubscription,
+	organizationadminsubscriptionsRefundPayment,
 	organizationadminsubscriptionsUncancelSubscription
 } from '$lib/api/generated/sdk.gen';
 import type {
@@ -592,5 +593,62 @@ describe('SubscriptionDrawer refund gating', () => {
 			expect(screen.getByRole('button', { name: 'Refund' })).toBeInTheDocument();
 		});
 		expect(screen.queryByText('View on Stripe')).not.toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionDrawer refund refusal', () => {
+	// 409 `payment_voided`: the row was voided after the drawer loaded. The drawer
+	// must say so, close the refund dialog and refetch the subscription and its
+	// payments, so the stale row is replaced with what it is now.
+	it('explains a voided payment, closes the dialog and refetches the subscription', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub(), [makePayment({ id: 'pay-1' })]);
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'x', code: 'payment_voided' },
+			response: { ok: false, status: 409 } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsRefundPayment>>);
+		renderDrawer();
+
+		await user.click(await screen.findByRole('button', { name: 'Refund' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Mark payment as refunded' });
+		const subCallsBefore = vi.mocked(organizationadminsubscriptionsGetSubscription).mock.calls
+			.length;
+		const paymentCallsBefore = vi.mocked(organizationadminsubscriptionsListSubscriptionPayments)
+			.mock.calls.length;
+		await user.click(within(dialog).getByRole('button', { name: 'Mark refunded' }));
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith('This payment has already been voided.')
+		);
+		await waitFor(() =>
+			expect(
+				vi.mocked(organizationadminsubscriptionsGetSubscription).mock.calls.length
+			).toBeGreaterThan(subCallsBefore)
+		);
+		expect(
+			vi.mocked(organizationadminsubscriptionsListSubscriptionPayments).mock.calls.length
+		).toBeGreaterThan(paymentCallsBefore);
+		expect(
+			screen.queryByRole('dialog', { name: 'Mark payment as refunded' })
+		).not.toBeInTheDocument();
+	});
+
+	it('keeps the dialog open and shows the backend detail on an ordinary 400', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub(), [makePayment({ id: 'pay-1' })]);
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Nope' },
+			response: { ok: false, status: 400 } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsRefundPayment>>);
+		renderDrawer();
+
+		await user.click(await screen.findByRole('button', { name: 'Refund' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Mark payment as refunded' });
+		await user.click(within(dialog).getByRole('button', { name: 'Mark refunded' }));
+
+		await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Nope'));
+		expect(screen.getByRole('dialog', { name: 'Mark payment as refunded' })).toBeInTheDocument();
 	});
 });
