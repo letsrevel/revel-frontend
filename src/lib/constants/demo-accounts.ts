@@ -19,21 +19,21 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 		name: 'Alice Owner',
 		role: 'Owner',
 		organization: 'Revel Events Collective',
-		description: 'Full control of organization'
+		description: 'Full control of organization' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'bob.staff@example.com',
 		name: 'Bob Staff',
 		role: 'Staff Member',
 		organization: 'Revel Events Collective',
-		description: 'Can manage events'
+		description: 'Can manage events' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'charlie.member@example.com',
 		name: 'Charlie Member',
 		role: 'Member',
 		organization: 'Revel Events Collective',
-		description: 'Member privileges'
+		description: 'Member privileges' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 
 	// Organization Beta (Tech Innovators Network)
@@ -42,21 +42,21 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 		name: 'Diana Owner',
 		role: 'Owner',
 		organization: 'Tech Innovators Network',
-		description: 'Full control of organization'
+		description: 'Full control of organization' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'eve.staff@example.com',
 		name: 'Eve Staff',
 		role: 'Staff Member',
 		organization: 'Tech Innovators Network',
-		description: 'Can manage events'
+		description: 'Can manage events' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'frank.member@example.com',
 		name: 'Frank Member',
 		role: 'Member',
 		organization: 'Tech Innovators Network',
-		description: 'Member privileges'
+		description: 'Member privileges' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 
 	// Regular Attendees
@@ -64,25 +64,25 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 		email: 'george.attendee@example.com',
 		name: 'George Attendee',
 		role: 'Attendee',
-		description: 'Has various tickets and RSVPs'
+		description: 'Has various tickets and RSVPs' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'hannah.attendee@example.com',
 		name: 'Hannah Attendee',
 		role: 'Attendee',
-		description: 'Active in multiple events'
+		description: 'Active in multiple events' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'ivan.attendee@example.com',
 		name: 'Ivan Attendee',
 		role: 'Attendee',
-		description: 'On waitlists'
+		description: 'On waitlists' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'julia.attendee@example.com',
 		name: 'Julia Attendee',
 		role: 'Attendee',
-		description: 'Pending payment'
+		description: 'Pending payment' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 
 	// Special Users
@@ -90,19 +90,19 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 		email: 'karen.multiorg@example.com',
 		name: 'Karen Multi',
 		role: 'Multi-org Member',
-		description: 'Member of BOTH organizations'
+		description: 'Member of BOTH organizations' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'leo.pending@example.com',
 		name: 'Leo Pending',
 		role: 'User',
-		description: 'Has cancelled ticket'
+		description: 'Has cancelled ticket' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	},
 	{
 		email: 'maria.invited@example.com',
 		name: 'Maria Invited',
 		role: 'User',
-		description: 'On waitlists, invited to events'
+		description: 'On waitlists, invited to events' // i18n-ignore: demo-mode seed data, mirrors the backend demo-accounts README
 	}
 ];
 

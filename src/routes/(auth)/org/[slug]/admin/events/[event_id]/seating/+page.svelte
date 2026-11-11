@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-	<title>{pageTitle} - {organization.name} Admin | Revel</title>
+	<title>{m['adminLayout.documentTitle']({ title: pageTitle, orgName: organization.name })}</title>
 	<meta name="description" content={m['orgAdmin.seating.metaDescription']()} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>

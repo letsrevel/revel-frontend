@@ -64,7 +64,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['orgAdmin.eventSeries.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['orgAdmin.eventSeries.pageTitle'](),
+			orgName: organization.name
+		})}</title
+	>
 	<meta
 		name="description"
 		content={m['orgAdmin.eventSeries.metaDescription']({ orgName: organization.name })}

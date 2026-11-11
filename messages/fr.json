@@ -11688,5 +11688,29 @@
 			"verify": "Vérifie ton compte",
 			"unsubscribe": "Se désabonner"
 		}
-	}
+	},
+	"potluckItemCard.claimAria": "Réserver {name}",
+	"potluckItemCard.unclaimAria": "Annuler la réservation de {name}",
+	"potluckItemCard.editAria": "Modifier {name}",
+	"potluckItemCard.deleteAria": "Supprimer {name}",
+	"potluckItemCard.statusAria": "Statut : {status}",
+	"pollVoterFallback.name": "Sondage",
+	"profileSchema.firstNameMax": "Le prénom ne doit pas dépasser 30 caractères",
+	"profileSchema.lastNameMax": "Le nom ne doit pas dépasser 150 caractères",
+	"profileSchema.preferredNameMax": "Le nom préféré ne doit pas dépasser 255 caractères",
+	"profileSchema.pronounsMax": "Les pronoms ne doivent pas dépasser 10 caractères",
+	"profileSchema.bioMax": "La bio ne doit pas dépasser 500 caractères",
+	"questionnaireNewErrors.createFailedHttp": "Échec de la création du questionnaire (HTTP {status}).",
+	"questionnaireNewErrors.createFailedNetwork": "Échec de la création du questionnaire : erreur réseau.",
+	"questionnaireNewErrors.createFailedDetail": "Échec de la création du questionnaire : {detail}",
+	"questionnaireNewErrors.saveFailedDetail": "Échec de l'enregistrement du questionnaire : {detail}",
+	"impersonateErrors.missingToken": "Aucun jeton d'usurpation d'identité fourni.",
+	"impersonateErrors.invalidToken": "Le jeton d'usurpation d'identité est invalide, expiré ou a déjà été utilisé.",
+	"impersonateErrors.forbidden": "L'usurpation d'identité n'est plus autorisée pour ce compte (il est peut-être devenu membre du staff ou superutilisateur).",
+	"impersonateErrors.unknown": "Une erreur inattendue s'est produite. Réessaie ou contacte le support.",
+	"impersonateErrors.network": "Impossible de te connecter au serveur. Vérifie ta connexion et réessaie.",
+	"orgMembershipSeo.title": "Adhésion | {orgName} | Revel",
+	"orgMembershipSeo.descriptionTenant": "Deviens membre de {orgName}. Découvre les formules d'adhésion, ce que chacune inclut et comment adhérer.",
+	"orgMembershipSeo.descriptionPlatform": "Deviens membre de {orgName} sur Revel. Découvre les formules d'adhésion, ce que chacune inclut et comment adhérer.",
+	"checkEmailErrors.resendFailed": "Impossible de renvoyer l'e-mail de vérification"
 }

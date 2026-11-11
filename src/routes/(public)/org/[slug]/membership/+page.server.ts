@@ -116,11 +116,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		// the wording has to say what THIS page is. Overridden here rather than by
 		// adding a `kind` to `buildSeo`, so the membership route owns its own copy.
 		const title = locals.tenant
-			? withSiteName('Membership', locals.tenant)
-			: `Membership | ${organization.name} | Revel`;
+			? withSiteName(m['tenantChrome.membership'](), locals.tenant)
+			: m['orgMembershipSeo.title']({ orgName: organization.name });
 		const description = locals.tenant
-			? `Become a member of ${organization.name}: membership tiers, what each one includes, and how to join.`
-			: `Become a member of ${organization.name} on Revel — membership tiers, what each one includes, and how to join.`;
+			? m['orgMembershipSeo.descriptionTenant']({ orgName: organization.name })
+			: m['orgMembershipSeo.descriptionPlatform']({ orgName: organization.name });
 		const seo = {
 			...orgSeo,
 			title,

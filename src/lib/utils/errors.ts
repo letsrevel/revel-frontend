@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 /**
  * Error handling utilities for API errors
  *
@@ -33,7 +34,7 @@ interface ApiErrorResponse {
  */
 export function extractErrorMessage(
 	error: unknown,
-	fallbackMessage = 'An unexpected error occurred. Please try again.'
+	fallbackMessage: string = m['serverErrors.public.unexpectedErrorRetry']()
 ): string {
 	// Handle null/undefined
 	if (!error) {

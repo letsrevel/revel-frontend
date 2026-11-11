@@ -11688,5 +11688,29 @@
 			"verify": "Verify your account",
 			"unsubscribe": "Unsubscribe"
 		}
-	}
+	},
+	"potluckItemCard.claimAria": "Claim {name}",
+	"potluckItemCard.unclaimAria": "Unclaim {name}",
+	"potluckItemCard.editAria": "Edit {name}",
+	"potluckItemCard.deleteAria": "Delete {name}",
+	"potluckItemCard.statusAria": "Status: {status}",
+	"pollVoterFallback.name": "Poll",
+	"profileSchema.firstNameMax": "First name must be 30 characters or less",
+	"profileSchema.lastNameMax": "Last name must be 150 characters or less",
+	"profileSchema.preferredNameMax": "Preferred name must be 255 characters or less",
+	"profileSchema.pronounsMax": "Pronouns must be 10 characters or less",
+	"profileSchema.bioMax": "Bio must be 500 characters or less",
+	"questionnaireNewErrors.createFailedHttp": "Failed to create questionnaire (HTTP {status}).",
+	"questionnaireNewErrors.createFailedNetwork": "Failed to create questionnaire: network error.",
+	"questionnaireNewErrors.createFailedDetail": "Failed to create questionnaire: {detail}",
+	"questionnaireNewErrors.saveFailedDetail": "Failed to save questionnaire: {detail}",
+	"impersonateErrors.missingToken": "No impersonation token provided.",
+	"impersonateErrors.invalidToken": "The impersonation token is invalid, expired, or has already been used.",
+	"impersonateErrors.forbidden": "Impersonation is no longer allowed for this user (they may have become staff or superuser).",
+	"impersonateErrors.unknown": "An unexpected error occurred. Please try again or contact support.",
+	"impersonateErrors.network": "Failed to connect to the server. Please check your connection and try again.",
+	"orgMembershipSeo.title": "Membership | {orgName} | Revel",
+	"orgMembershipSeo.descriptionTenant": "Become a member of {orgName}. See the membership tiers, what each one includes and how to join.",
+	"orgMembershipSeo.descriptionPlatform": "Become a member of {orgName} on Revel. See the membership tiers, what each one includes and how to join.",
+	"checkEmailErrors.resendFailed": "Failed to resend verification email"
 }

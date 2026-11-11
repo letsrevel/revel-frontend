@@ -172,10 +172,10 @@
 							? err.detail
 							: null;
 					saveError = detail
-						? `Failed to create questionnaire: ${detail}`
+						? m['questionnaireNewErrors.createFailedDetail']({ detail })
 						: response.response
-							? `Failed to create questionnaire (HTTP ${response.response.status}).`
-							: 'Failed to create questionnaire: network error.';
+							? m['questionnaireNewErrors.createFailedHttp']({ status: response.response.status })
+							: m['questionnaireNewErrors.createFailedNetwork']();
 					console.error('API error:', response.error);
 				}
 				return;
@@ -197,7 +197,7 @@
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
 			const message = err instanceof Error ? err.message : String(err);
-			saveError = `Failed to save questionnaire: ${message}`;
+			saveError = m['questionnaireNewErrors.saveFailedDetail']({ detail: message });
 		} finally {
 			isSaving = false;
 		}
@@ -205,7 +205,12 @@
 </script>
 
 <svelte:head>
-	<title>{m['questionnaireNewPage.pageTitle']()} - {data.organization.name} Admin</title>
+	<title
+		>{m['adminLayout.documentTitle']({
+			title: m['questionnaireNewPage.pageTitle'](),
+			orgName: data.organization.name
+		})}</title
+	>
 </svelte:head>
 
 <!-- Header -->

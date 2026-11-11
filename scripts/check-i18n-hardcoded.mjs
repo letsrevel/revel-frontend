@@ -55,9 +55,10 @@
  *   node scripts/check-i18n-hardcoded.mjs           # check (CI / make check)
  *   node scripts/check-i18n-hardcoded.mjs --update   # regenerate the baseline
  *   node scripts/check-i18n-hardcoded.mjs --report   # every finding, ignoring the baseline
+ *   node scripts/check-i18n-hardcoded.mjs --scan f   # scan one file, no baseline (used by the canary)
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, realpathSync } from 'fs';
 import { execSync } from 'child_process';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -66,6 +67,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASELINE = resolve(ROOT, 'scripts/i18n-hardcoded-baseline.json');
 const UPDATE = process.argv.includes('--update');
 const REPORT = process.argv.includes('--report');
+const SCAN = process.argv.indexOf('--scan'); // --scan <file>: scan one file, no baseline (canary)
 
 const EXCLUDE = [
 	/\/paraglide\//,
@@ -156,16 +158,16 @@ function stripScriptBodies(content) {
 	});
 }
 
-function lineAt(content, idx) {
-	return content.slice(0, idx).split('\n').length;
-}
-function lineText(content, line) {
-	return content.split('\n')[line - 1] ?? '';
-}
-function hasIgnore(content, line) {
-	return (
-		/i18n-ignore/.test(lineText(content, line)) || /i18n-ignore/.test(lineText(content, line - 1))
-	);
+/** 1-based line of offset `idx`, given the line start offsets from `lineIndex`. */
+function lineAt(starts, idx) {
+	let lo = 0;
+	let hi = starts.length - 1;
+	while (lo < hi) {
+		const mid = (lo + hi + 1) >> 1;
+		if (starts[mid] <= idx) lo = mid;
+		else hi = mid - 1;
+	}
+	return lo + 1;
 }
 
 /** True when a string is NOT user-facing prose and should be ignored outright. */
@@ -206,18 +208,49 @@ const TEXT_RE = />\s*([A-Z][^<>{}]*[a-z][^<>{}]*?)\s*</g;
 
 // ── shared helpers for the structural rules (4-8) ─────────────────────────────
 
-/** Index of the bracket closing the one at `open`, skipping string literals; -1 if unbalanced. */
+const REGEX_PREV = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '>']);
+
+/** Index of the end of the string/regex literal starting at `i`; -1 if none starts there or it is unterminated. */
+function skipAtom(c, i) {
+	const ch = c[i];
+	if (ch === "'" || ch === '"' || ch === '`') return skipString(c, i);
+	if (ch === '/' && c[i + 1] !== '/' && c[i + 1] !== '*' && c[i + 1] !== '>') {
+		let p = i - 1;
+		while (p >= 0 && /\s/.test(c[p])) p--;
+		// a `/` right after `<` is a closing tag, after `)`/identifier it is a division
+		if (p >= 0 && !REGEX_PREV.has(c[p])) return -1;
+		return skipRegex(c, i);
+	}
+	return -1;
+}
+
+/** End of the regex literal starting at `i` (handles `[...]` classes and escapes); -1 if unterminated. */
+function skipRegex(c, i) {
+	let inClass = false;
+	for (let j = i + 1; j < c.length; j++) {
+		const ch = c[j];
+		if (ch === '\n') return -1;
+		if (ch === '\\') j++;
+		else if (ch === '[') inClass = true;
+		else if (ch === ']') inClass = false;
+		else if (ch === '/' && !inClass) return j;
+	}
+	return -1;
+}
+
+/** Index of the bracket closing the one at `open`, skipping string and regex literals; -1 if unbalanced. */
 function findClose(c, open) {
 	const openCh = c[open];
 	const closeCh = { '(': ')', '{': '}', '[': ']' }[openCh];
 	let depth = 0;
 	for (let i = open; i < c.length; i++) {
 		const ch = c[i];
-		if (ch === "'" || ch === '"' || ch === '`') {
-			i = skipString(c, i);
-			if (i < 0) return -1;
+		const e = skipAtom(c, i);
+		if (e >= 0) {
+			i = e;
 			continue;
 		}
+		if ((ch === "'" || ch === '"' || ch === '`') && e < 0) return -1;
 		if (ch === openCh) depth++;
 		else if (ch === closeCh && --depth === 0) return i;
 	}
@@ -239,27 +272,24 @@ function skipString(c, i) {
 	return -1;
 }
 
-/** Split the inside of a call on top-level commas. */
-function splitArgs(inner) {
-	const args = [];
+/** Split `s` on top-level occurrences of `sep` (a single char). */
+function splitTop(s, sep = ',') {
+	const parts = [];
 	let start = 0;
-	for (let i = 0; i < inner.length; i++) {
-		const ch = inner[i];
-		if (ch === "'" || ch === '"' || ch === '`') {
-			const e = skipString(inner, i);
-			if (e < 0) break;
-			i = e;
-		} else if (ch === '(' || ch === '{' || ch === '[') {
-			const e = findClose(inner, i);
-			if (e < 0) break;
-			i = e;
-		} else if (ch === ',') {
-			args.push(inner.slice(start, i));
+	for (let i = 0; i < s.length; i++) {
+		const e = skipAtom(s, i);
+		if (e >= 0) i = e;
+		else if (s[i] === '(' || s[i] === '{' || s[i] === '[') {
+			const close = findClose(s, i);
+			if (close < 0) break;
+			i = close;
+		} else if (s[i] === sep) {
+			parts.push(s.slice(start, i));
 			start = i + 1;
 		}
 	}
-	args.push(inner.slice(start));
-	return args.filter((a) => a.trim());
+	parts.push(s.slice(start));
+	return parts.filter((a) => a.trim());
 }
 
 /** The value of `arg` if it is exactly one string literal (template `${}` become `{x}`), else null. */
@@ -284,31 +314,86 @@ function flattenTemplate(body) {
 	return out;
 }
 
+/**
+ * Literals an expression can evaluate to directly: the expression itself, or either
+ * branch of a (nested) ternary / `||` / `??` fallback; `$state(..)`/`$derived(..)` unwrapped.
+ * Literals inside calls (`foo('x')`, `m.x({ a: 'b' })`) are not branches and are ignored.
+ */
+function branchLiterals(expr) {
+	let e = expr.trim();
+	const wrap = /^\$(?:state|derived)(?:<[^>]*>)?\(/.exec(e);
+	if (wrap) {
+		const close = findClose(e, wrap[0].length - 1);
+		if (close > 0) e = e.slice(wrap[0].length, close).trim();
+	}
+	while (e.startsWith('(') && findClose(e, 0) === e.length - 1) e = e.slice(1, -1).trim();
+	const lit = literalValue(e);
+	if (lit !== null) return [lit];
+	const out = [];
+	// split on top-level `?` / `:` / `||` / `??` (conditions on the left yield no literal and are dropped)
+	const parts = [];
+	let start = 0;
+	for (let i = 0; i < e.length; i++) {
+		const a = skipAtom(e, i);
+		if (a >= 0) i = a;
+		else if (e[i] === '(' || e[i] === '{' || e[i] === '[') {
+			const close = findClose(e, i);
+			if (close < 0) return out;
+			i = close;
+		} else if (e[i] === '?' && e[i + 1] === '.')
+			i++; // optional chaining
+		else if (e[i] === '?' || e[i] === ':' || (e[i] === '|' && e[i + 1] === '|')) {
+			parts.push(e.slice(start, i));
+			if (e[i] === '|' || (e[i] === '?' && e[i + 1] === '?')) i++;
+			start = i + 1;
+		}
+	}
+	parts.push(e.slice(start));
+	if (parts.length < 2) return out;
+	for (const p of parts) {
+		const l = literalValue(p);
+		if (l !== null) out.push(l);
+	}
+	return out;
+}
+
 /** Blank every call whose opening `name(` matches `re` (to its balanced closing paren), keeping offsets. */
 function blankCalls(c, re) {
-	let out = c;
 	const g = new RegExp(re.source, 'g');
+	const ranges = [];
 	let m;
 	while ((m = g.exec(c))) {
 		const open = m.index + m[0].length - 1;
 		const close = findClose(c, open);
 		if (close < 0) continue;
-		out = out.slice(0, m.index) + blank(out.slice(m.index, close + 1)) + out.slice(close + 1);
+		ranges.push([m.index, close + 1]);
+		g.lastIndex = close + 1;
 	}
-	return out;
+	return blankRanges(c, ranges);
+}
+
+/** Blank the given [start, end) ranges in a single pass (newlines kept). */
+function blankRanges(c, ranges) {
+	if (!ranges.length) return c;
+	let out = '';
+	let last = 0;
+	for (const [a, b] of ranges) {
+		out += c.slice(last, a) + blank(c.slice(a, b));
+		last = b;
+	}
+	return out + c.slice(last);
 }
 
 /** Calls that are never user-facing: logging, and developer `throw new Error(...)`. */
 function blankDevCalls(c) {
-	let out = blankCalls(c, /\b(?:log|logger|console)\.\w+\(/);
-	out = blankCalls(out, /\bthrow\s+new\s+\w*Error\(/);
-	return out;
+	return blankCalls(blankCalls(c, /\b(?:log|logger|console)\.\w+\(/), /\bthrow\s+new\s+\w*Error\(/);
 }
 
-/** Words of a literal with `{expr}` placeholders and punctuation removed. */
+/** Words of a literal with `{expr}` placeholders, HTML entities and punctuation removed. */
 function proseWords(s) {
 	return s
 		.replace(/\{[^}]*\}/g, ' ')
+		.replace(/&#?\w+;/g, ' ')
 		.split(/[\s|·•–—:,;.!?()/-]+/)
 		.filter((w) => /[A-Za-z]{2,}/.test(w));
 }
@@ -337,44 +422,45 @@ export function isSentence(raw) {
 const SERVER_FILE_RE = /(\.server\.ts$|\/\+page\.ts$|\/\+layout\.ts$|\/lib\/server\/)/;
 const COPY_NAME_RE = /(error|message|label|title|description|heading|text|placeholder)$/i;
 
-/** Rule 4: `error(404, 'x')`, `error(404, { message: 'x' })`, `fail(400, { key: 'x' })`. */
-function scanServerErrors(c, out) {
-	const errRe = /(?<![\w.$])error\(\s*\d{3}\s*,/g;
-	let m;
-	while ((m = errRe.exec(c))) {
-		const open = c.indexOf('(', m.index);
-		const close = findClose(c, open);
-		if (close < 0) continue;
-		const arg = splitArgs(c.slice(open + 1, close))[1];
-		if (!arg) continue;
-		let lit = literalValue(arg);
-		if (lit === null && arg.trim().startsWith('{')) {
-			for (const prop of splitArgs(arg.trim().slice(1, -1))) {
-				const pm = /^\s*message\s*:\s*([\s\S]*)$/.exec(prop);
-				if (pm) lit = literalValue(pm[1]);
-			}
-		}
-		if (lit !== null && isUiProse(lit)) out.push([`server-error: ${lit.trim()}`, m.index]);
+/** Every sentence literal an object literal can carry, at any depth, ternary values included. */
+function objectSentences(objText, out) {
+	const t = objText.trim();
+	if (!t.startsWith('{')) return;
+	for (const prop of splitTop(t.slice(1, findClose(t, 0) < 0 ? undefined : -1))) {
+		const pm = /^\s*(?:['"]?[\w$-]+['"]?)\s*:\s*([\s\S]*)$/.exec(prop);
+		if (!pm) continue;
+		const v = pm[1].trim();
+		if (v.startsWith('{')) objectSentences(v, out);
+		else for (const lit of branchLiterals(v)) if (isSentence(lit)) out.push(lit);
 	}
-	const failRe = /(?<![\w.$])fail\(\s*\d{3}\s*,/g;
-	while ((m = failRe.exec(c))) {
-		const open = c.indexOf('(', m.index);
+}
+
+/** Rule 4: `error(status, 'x')`, `error(status, { message: 'x' })`, `fail(status, { key: 'x' })`. */
+function scanServerErrors(c, out) {
+	const callRe = /(?<![\w.$])(error|fail)\(/g;
+	let m;
+	while ((m = callRe.exec(c))) {
+		const open = m.index + m[0].length - 1;
 		const close = findClose(c, open);
 		if (close < 0) continue;
-		const arg = splitArgs(c.slice(open + 1, close))[1];
-		if (!arg || !arg.trim().startsWith('{')) continue;
-		for (const prop of splitArgs(arg.trim().slice(1, -1))) {
-			const pm = /^\s*['"]?[\w$-]+['"]?\s*:\s*([\s\S]*)$/.exec(prop);
-			if (!pm) continue;
-			const lit = literalValue(pm[1]);
-			if (lit !== null && isSentence(lit)) out.push([`server-error: ${lit.trim()}`, m.index]);
-		}
+		const args = splitTop(c.slice(open + 1, close));
+		if (args.length < 2) continue;
+		const body = args[1].trim();
+		const lits = [];
+		if (m[1] === 'error') {
+			if (body.startsWith('{')) {
+				for (const prop of splitTop(body.slice(1, -1))) {
+					const pm = /^\s*message\s*:\s*([\s\S]*)$/.exec(prop);
+					if (pm) for (const l of branchLiterals(pm[1])) if (isUiProse(l)) lits.push(l);
+				}
+			} else for (const l of branchLiterals(body)) if (isUiProse(l)) lits.push(l);
+		} else objectSentences(body, lits);
+		for (const lit of lits) out.push({ finding: `server-error: ${lit.trim()}`, idx: m.index, lit });
 	}
 }
 
 /** Rule 5: literal words in a `<svelte:head>` `<title>`. */
-function scanTitles(content, file, out) {
-	const c = strip(content, file, true);
+function scanTitles(c, out) {
 	const headRe = /<svelte:head[\s\S]*?<\/svelte:head>/g;
 	let h;
 	while ((h = headRe.exec(c))) {
@@ -383,10 +469,12 @@ function scanTitles(content, file, out) {
 		while ((t = titleRe.exec(h[0]))) {
 			const text = t[1]
 				.replace(/\{(?:[^{}]|\{[^{}]*\})*\}/g, ' ')
+				.replace(/&#?\w+;/g, ' ')
 				.replace(/\s+/g, ' ')
 				.trim();
 			if (proseWords(text).some((w) => !ALLOW_WORDS.has(w.toLowerCase()))) {
-				out.push([`title: ${t[1].replace(/\s+/g, ' ').trim()}`, h.index + t.index]);
+				const lit = t[1].replace(/\s+/g, ' ').trim();
+				out.push({ finding: `title: ${lit}`, idx: h.index + t.index, lit });
 			}
 		}
 	}
@@ -402,28 +490,29 @@ function scanZod(c, out) {
 		const open = m.index + m[0].length - 1;
 		const close = findClose(c, open);
 		if (close < 0) continue;
-		const args = splitArgs(c.slice(open + 1, close));
+		const args = splitTop(c.slice(open + 1, close));
 		const last = args[args.length - 1];
 		if (!last) continue;
 		let lit = literalValue(last);
 		if (lit === null && last.trim().startsWith('{')) {
-			for (const prop of splitArgs(last.trim().slice(1, -1))) {
-				const pm = /^\s*message\s*:\s*([\s\S]*)$/.exec(prop);
+			for (const prop of splitTop(last.trim().slice(1, -1))) {
+				const pm = /^\s*(?:message|error)\s*:\s*([\s\S]*)$/.exec(prop); // zod 4 uses `error`
 				if (pm) lit = literalValue(pm[1]);
 			}
 		}
-		if (lit !== null && isUiProse(lit)) out.push([`zod: ${lit.trim()}`, m.index]);
+		if (lit !== null && isUiProse(lit))
+			out.push({ finding: `zod: ${lit.trim()}`, idx: m.index, lit });
 	}
-	const msgRe = /(?<![\w$])message\s*:\s*(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g;
+	const msgRe = /(?<![\w$])(?:message|error)\s*:\s*(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g;
 	while ((m = msgRe.exec(c))) {
 		const lit = flattenTemplate(m[2]);
-		if (isUiProse(lit)) out.push([`zod: ${lit.trim()}`, m.index]);
+		if (isUiProse(lit)) out.push({ finding: `zod: ${lit.trim()}`, idx: m.index, lit });
 	}
 }
 
 /** Rule 7: string literals in `aria-label={...}` / `placeholder={...}` / `title={...}` / `alt={...}`. */
 function scanAttrExpressions(c, out) {
-	const re = new RegExp(`\\b(?:${ATTRS.join('|')})=\\{`, 'g');
+	const re = new RegExp(`(?<![\\w:.$-])(${ATTRS.join('|')})=\\{`, 'g');
 	let m;
 	while ((m = re.exec(c))) {
 		const open = m.index + m[0].length - 1;
@@ -431,42 +520,87 @@ function scanAttrExpressions(c, out) {
 		if (close < 0) continue;
 		const expr = blankCalls(c.slice(open + 1, close), /\bm(?:\.\w+|\[[^\]]+\])\(/);
 		for (let i = 0; i < expr.length; i++) {
-			const ch = expr[i];
-			if (ch !== "'" && ch !== '"' && ch !== '`') continue;
-			const e = skipString(expr, i);
-			if (e < 0) break;
-			const lit = flattenTemplate(expr.slice(i + 1, e));
-			if (isUiProse(lit))
-				out.push([`attr-expr: ${m[0].slice(0, -2)}={... '${lit.trim()}' ...}`, m.index]);
+			const e = skipAtom(expr, i);
+			if (e < 0) continue;
+			if (expr[i] !== '/') {
+				const lit = flattenTemplate(expr.slice(i + 1, e));
+				if (isUiProse(lit))
+					out.push({
+						finding: `attr-expr: ${m[1]}={... '${lit.trim()}' ...}`,
+						idx: m.index,
+						lit
+					});
+			}
 			i = e;
 		}
 	}
 }
 
+/** Index where the expression starting at `from` ends: top-level `;`, `,`, unmatched closer, or a finished line. */
+function exprEnd(c, from) {
+	while (from < c.length && /\s/.test(c[from])) from++; // the value may start on the next line
+	for (let i = from; i < c.length; i++) {
+		const e = skipAtom(c, i);
+		if (e >= 0) {
+			i = e;
+			continue;
+		}
+		const ch = c[i];
+		if (ch === '(' || ch === '{' || ch === '[') {
+			const close = findClose(c, i);
+			if (close < 0) return c.length;
+			i = close;
+		} else if (ch === ';' || ch === ',' || ch === ')' || ch === '}' || ch === ']') return i;
+		else if (ch === '\n') {
+			const before = c.slice(from, i).trimEnd();
+			const after = c.slice(i).trimStart();
+			if (!/[?:|&+]$/.test(before) && !/^[?:|&+]/.test(after)) return i;
+		}
+	}
+	return c.length;
+}
+
 /** Rule 8: sentence-like literals assigned to UI-copy-named variables / properties. */
 function scanCopyAssignments(c, out) {
-	const re =
-		/(?:^|[{,;(])\s*(?:(?:export\s+)?(?:const|let|var)\s+)?([A-Za-z_$][\w$]*)\s*(?::\s*string\s*)?(=(?![=>])|:(?!:))\s*(?:\$(?:state|derived)(?:<[^>]*>)?\()?(['"`])((?:\\.|(?!\3)[^\\\n])*)\3/gm;
+	// `name =` (declaration, assignment, `this.name =`, after `if (..)` / `=>`) or `name:` (object property)
+	const re = /(?<![\w$])([A-Za-z_$][\w$]*)\s*(?::\s*string\s*)?(=(?![=>])|:(?!:))/g;
 	let m;
 	while ((m = re.exec(c))) {
-		if (!COPY_NAME_RE.test(m[1])) continue;
-		const lit = flattenTemplate(m[4]);
-		if (isSentence(lit)) out.push([`copy: ${m[1]} = ${lit.trim()}`, m.index + m[0].indexOf(m[1])]);
+		const name = m[1];
+		if (!COPY_NAME_RE.test(name)) continue;
+		if (m[2] === ':') {
+			// property position only: `{ label: ..`, `, label: ..` or first token on its line
+			const before = c.slice(0, m.index).trimEnd();
+			if (!/[{,]$/.test(before) && !/(^|\n)\s*$/.test(c.slice(0, m.index))) continue;
+		}
+		const start = m.index + m[0].length;
+		const expr = c.slice(start, exprEnd(c, start));
+		for (const lit of branchLiterals(expr))
+			if (isSentence(lit))
+				out.push({ finding: `copy: ${name} = ${lit.trim()}`, idx: m.index, lit, copy: true });
 	}
 }
 
 /** Blank everything outside `<script>` bodies (offsets and lines preserved). */
 function scriptBodiesOnly(c) {
-	let out = '';
+	const ranges = [];
 	let last = 0;
 	const re = /(<script[^>]*>)([\s\S]*?)(<\/script>)/g;
 	let m;
 	while ((m = re.exec(c))) {
 		const bodyStart = m.index + m[1].length;
-		out += blank(c.slice(last, bodyStart)) + m[2];
+		ranges.push([last, bodyStart]);
 		last = bodyStart + m[2].length;
 	}
-	return out + blank(c.slice(last));
+	ranges.push([last, c.length]);
+	return blankRanges(c, ranges);
+}
+
+/** Line start offsets for O(log n) offset -> line lookups. */
+function lineIndex(content) {
+	const starts = [0];
+	for (let i = 0; i < content.length; i++) if (content[i] === '\n') starts.push(i + 1);
+	return starts;
 }
 
 function scanFile(file) {
@@ -481,12 +615,20 @@ function scanFile(file) {
 
 /** The pure half of `scanFile` — exported so the rules can be unit-tested. */
 export function scanSource(content, file) {
-	const c = strip(content, file);
+	const isSvelte = file.endsWith('.svelte');
+	const withHead = strip(content, file, true); // comments/<style> blanked, <svelte:head> kept (for <title>)
+	const c = isSvelte
+		? withHead.replace(/<svelte:head[\s\S]*?<\/svelte:head>/g, blank) // SEO meta/JSON-LD
+		: withHead;
 	const found = new Set();
+	const starts = lineIndex(content);
+	const lines = content.split('\n');
+	const ignored = (idx) => {
+		const line = lineAt(starts, idx);
+		return /i18n-ignore/.test(lines[line - 1] ?? '') || /i18n-ignore/.test(lines[line - 2] ?? '');
+	};
 	const push = (str, idx) => {
-		const line = lineAt(c, idx);
-		if (hasIgnore(content, line)) return;
-		found.add(str.trim());
+		if (!ignored(idx)) found.add(str.trim());
 	};
 
 	let m;
@@ -494,7 +636,6 @@ export function scanSource(content, file) {
 	while ((m = ATTR_RE.exec(c))) if (!isNonProse(m[2])) push(`${m[1]}="${m[2].trim()}"`, m.index);
 	TOAST_RE.lastIndex = 0;
 	while ((m = TOAST_RE.exec(c))) if (!isNonProse(m[3])) push(`toast: ${m[3].trim()}`, m.index);
-	const isSvelte = file.endsWith('.svelte');
 	if (isSvelte) {
 		const markup = stripScriptBodies(c);
 		TEXT_RE.lastIndex = 0;
@@ -504,21 +645,19 @@ export function scanSource(content, file) {
 
 	// Structural rules (4-8). Dev-only calls are masked first so their literals never count.
 	const dev = blankDevCalls(c);
-	const hits = []; // [finding, offset]
+	const hits = [];
 	if (SERVER_FILE_RE.test(file)) scanServerErrors(dev, hits);
-	if (isSvelte) scanTitles(content, file, hits);
+	if (isSvelte) scanTitles(withHead, hits);
 	scanZod(dev, hits);
 	scanAttrExpressions(dev, hits);
 	// `+server.ts` endpoints answer machines (JSON bodies), not people: no copy rule there.
 	if (!/\/\+server\.ts$/.test(file))
 		scanCopyAssignments(isSvelte ? scriptBodiesOnly(dev) : dev, hits);
-	const seen = [];
-	for (const [finding, idx] of hits) {
-		// a literal an earlier rule already reported is not repeated by the broader `copy:` rule
-		const lit = finding.replace(/^[a-z-]+: (?:\w+ = )?/, '');
-		if (finding.startsWith('copy:') && seen.some((x) => x.includes(lit))) continue;
-		seen.push(finding);
-		push(finding, idx);
+	// a literal an earlier rule already reported is not repeated by the broader `copy:` rule
+	const reported = new Set(hits.filter((h) => !h.copy).map((h) => h.lit.trim()));
+	for (const h of hits) {
+		if (h.copy && reported.has(h.lit.trim())) continue;
+		push(h.finding, h.idx);
 	}
 	return [...found].sort();
 }
@@ -527,6 +666,13 @@ export function scanSource(content, file) {
 // Guarded: the unit tests import `scanSource` from this module, and importing it
 // must not shell out to git or call process.exit.
 function main() {
+	// ── --scan <file>: scan exactly that file against no baseline; exit 1 on any finding ──
+	if (SCAN > -1) {
+		const target = process.argv[SCAN + 1];
+		const hits = scanSource(readFileSync(resolve(target), 'utf-8'), target);
+		for (const h of hits) console.log(h);
+		process.exit(hits.length ? 1 : 0);
+	}
 	// ── gather source files ────────────────────────────────────────────────────
 	const files = execSync('git ls-files src', { cwd: ROOT, encoding: 'utf-8' })
 		.split('\n')
@@ -615,6 +761,18 @@ SEO landing pages (src/routes/(public)/{de,it,fr,es,pt}, src/lib/data/landing-pa
 	process.exit(1);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// Compare REAL paths: the ESM loader realpaths `import.meta.url`, so a symlinked
+// invocation (macOS /tmp -> /private/tmp, symlinked checkouts) would otherwise skip
+// main() and exit 0 having scanned nothing. `make i18n-hardcoded-canary` guards this.
+function isEntry() {
+	if (!process.argv[1]) return false;
+	try {
+		return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+	} catch {
+		return false;
+	}
+}
+
+if (isEntry()) {
 	main();
 }

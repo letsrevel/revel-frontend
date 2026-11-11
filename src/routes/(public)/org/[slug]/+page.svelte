@@ -592,8 +592,8 @@
 							onclick={toggleEventsOrder}
 							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							aria-label={eventsOrderBy === '-start'
-								? 'Showing newest first'
-								: 'Showing oldest first'}
+								? m['organizationProfile.events_sortNewestLabel']()
+								: m['organizationProfile.events_sortOldestLabel']()}
 						>
 							<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
 							{eventsOrderBy === '-start'

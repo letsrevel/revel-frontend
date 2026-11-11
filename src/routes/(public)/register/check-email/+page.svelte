@@ -50,12 +50,12 @@
 				resendError =
 					stringField(response.error, 'detail') ||
 					stringField(response.error, 'message') ||
-					'Failed to resend verification email';
+					m['checkEmailErrors.resendFailed']();
 			} else {
 				resendSuccess = true;
 			}
 		} catch {
-			resendError = 'An unexpected error occurred. Please try again.';
+			resendError = m['serverErrors.public.unexpectedErrorRetry']();
 		} finally {
 			isResending = false;
 		}
