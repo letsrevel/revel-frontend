@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.36.0] - 2026-11-11
+
+### Added
+- **Members area**: the organization admin now has one Members area with People, Applications, Tiers, Subscriptions, Payments, Staff and Invite links tabs. The old `/members/register` URL redirects there.
+  - People is the member register: every member with or without an account, with filters, a "Current" view of who is a member right now, a members-on-a-date view in the organization's timezone, and an Excel export. Owners can delete entries.
+  - A "Needs attention" strip surfaces possible duplicates and open applications. Duplicates can be merged (the surviving entry keeps its own start date), unlinked, or approved and linked in one step.
+  - Clicking a person opens a sheet with their membership, all their periods (merged ones included), the staff note, and linking or unlinking their account.
+  - **Add by account**: add someone who already has a verified Revel account as a member by entering their email.
+  - **Invites**: invite or re-invite register entries without an account, one at a time or in bulk. Invitees claim their entry on a new page that asks them to confirm before linking it to their account.
+- **Membership subscriptions and payments from the person sheet**: manage a member's subscription or add one, and change their plan on offline and free plans. While a subscription is running, the member's tier follows the plan. Recorded payments can be backdated, edited and voided with a reason; voided payments are hidden unless you include them.
+- **Day memberships**: a ticket tier can grant a membership for the day of the event, and a one-click event preset sets this up for clubs. Door scanning shows the membership, and the staff ticket list marks day members and can filter by them.
+- **Non-members ticket tiers**: a tier can be limited to people who are not members of chosen tiers. At checkout, members get a clear refusal with a way to choose another tier.
+- **Private organizer notes** on members and attendees. The door scanner shows a "Staff note" before check-in, and long notes collapse with a preview.
+- **Series-pass questionnaires**: when a series pass requires a questionnaire, buyers answer it before paying.
+- A guide for registered associations (Vereine) on running their membership in Revel.
+
+### Changed
+- The whole interface is now translated into all six languages, including error messages produced on the server, page titles, the descriptions shown when a page is shared, notification type names, waitlist durations, currency names and default questionnaire section names. Pages now always render in the language you chose, also when many people use the site at the same time.
+- Expired and invalid links (email verification, password reset, account deletion, email change, contact-email verification, unsubscribe) now say whether the link expired or is invalid, and offer a way to request a new one where there is one.
+- Confirming an email change explains, in your language, when the new address is already taken or when a password reset cancelled the change, and links back to your security settings to start over.
+- Confirm prompts throughout the app use the app's own dialog instead of the browser's.
+- Sign-in links (ticket tiers, the venue overview, guest RSVP, polls and the header) bring you back to the page you were on after logging in.
+- The "Skip to content" link is now the first thing the Tab key reaches on every page, ahead of any banner.
+
+### Fixed
+- Confirming an account deletion, resetting a password or requesting a data export no longer reports success when the request actually failed (for example because the link had expired). Accounts with unpaid referral payouts can now confirm the deletion after acknowledging that those payouts are forfeited.
+- Brief network or server hiccups right after your session refreshes no longer log you out, and reloading during a token refresh keeps you signed in. Logging out now also ends the session on the server.
+- Refunding a payment that was voided now explains why the refund was refused.
+
 ## [2.35.0] - 2026-11-05
 
 ### Added
