@@ -8944,6 +8944,7 @@
 	"questionnaireFormFields.advancedDescription": "Paramètres facultatifs pour le comportement du questionnaire",
 	"questionnaireFormFields.shuffleQuestionsLabel": "Mélanger les questions pour chaque personne",
 	"questionnaireFormFields.shuffleSectionsLabel": "Mélanger les sections pour chaque personne",
+	"questionnaireFormFields.defaultSectionName": "Section {n}",
 	"questionnaireReadOnlyView.required": "Obligatoire",
 	"questionnaireReadOnlyView.ifSelectedShow": "Si sélectionnée, afficher :",
 	"questionnaireReadOnlyView.ifSelectedShowSection": "Si sélectionnée, afficher la section :",

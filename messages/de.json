@@ -8974,6 +8974,7 @@
 	"questionnaireFormFields.advancedDescription": "Optionale Einstellungen für das Verhalten des Fragebogens",
 	"questionnaireFormFields.shuffleQuestionsLabel": "Fragen für jede*n Nutzer*in mischen",
 	"questionnaireFormFields.shuffleSectionsLabel": "Abschnitte für jede*n Nutzer*in mischen",
+	"questionnaireFormFields.defaultSectionName": "Abschnitt {n}",
 	"questionnaireReadOnlyView.required": "Erforderlich",
 	"questionnaireReadOnlyView.ifSelectedShow": "Wenn ausgewählt, zeige:",
 	"questionnaireReadOnlyView.ifSelectedShowSection": "Wenn ausgewählt, zeige Abschnitt:",

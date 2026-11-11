@@ -8974,6 +8974,7 @@
 	"questionnaireFormFields.advancedDescription": "Impostazioni opzionali per il comportamento del questionario",
 	"questionnaireFormFields.shuffleQuestionsLabel": "Mescola le domande per ogni persona",
 	"questionnaireFormFields.shuffleSectionsLabel": "Mescola le sezioni per ogni persona",
+	"questionnaireFormFields.defaultSectionName": "Sezione {n}",
 	"questionnaireReadOnlyView.required": "Obbligatoria",
 	"questionnaireReadOnlyView.ifSelectedShow": "Se selezionata, mostra:",
 	"questionnaireReadOnlyView.ifSelectedShowSection": "Se selezionata, mostra la sezione:",

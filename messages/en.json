@@ -8974,6 +8974,7 @@
 	"questionnaireFormFields.advancedDescription": "Optional settings for questionnaire behavior",
 	"questionnaireFormFields.shuffleQuestionsLabel": "Shuffle questions for each user",
 	"questionnaireFormFields.shuffleSectionsLabel": "Shuffle sections for each user",
+	"questionnaireFormFields.defaultSectionName": "Section {n}",
 	"questionnaireReadOnlyView.required": "Required",
 	"questionnaireReadOnlyView.ifSelectedShow": "If selected, show:",
 	"questionnaireReadOnlyView.ifSelectedShowSection": "If selected, show section:",
