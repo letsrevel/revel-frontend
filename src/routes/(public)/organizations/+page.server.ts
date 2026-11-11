@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { organizationListOrganizations } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
@@ -45,13 +46,13 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 		// Handle API errors
 		if (response.error) {
 			log.error('organizations_fetch_failed', { error: response.error });
-			throw svelteKitError(500, 'Failed to load organizations. Please try again later.');
+			throw svelteKitError(500, m['serverErrors.public.loadOrganizationsRetryLater']());
 		}
 
 		// Type guard: ensure response.data exists
 		if (!response.data) {
 			log.warning('organizations_response_invalid');
-			throw svelteKitError(500, 'Invalid API response');
+			throw svelteKitError(500, m['serverErrors.public.invalidApiResponse']());
 		}
 
 		const lang = resolveLang(request);
@@ -95,7 +96,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 			nextUrl: null,
 			previousUrl: null,
 			filters: {},
-			error: 'Failed to load organizations. Please try again later.'
+			error: m['serverErrors.public.loadOrganizationsRetryLater']()
 		};
 	}
 };

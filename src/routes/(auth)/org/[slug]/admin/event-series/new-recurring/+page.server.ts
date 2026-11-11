@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import type { CitySchema } from '$lib/api/generated/types.gen';
@@ -9,11 +10,11 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to create a recurring series');
+		throw error(401, m['serverErrors.admin.loginRequiredCreateRecurring']());
 	}
 
 	if (!canCreateEvent) {
-		throw error(403, 'You do not have permission to create events in this organization');
+		throw error(403, m['serverErrors.admin.permissionCreateEvents']());
 	}
 
 	const headers: HeadersInit = {

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -19,7 +20,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to build an embed');
+		throw error(401, m['serverErrors.admin.loginRequiredBuildEmbed']());
 	}
 
 	const headers: HeadersInit = {

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { questionnaireListOrgQuestionnaires } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -7,7 +8,7 @@ import { log } from '$lib/server/logger';
 export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	const user = locals.user;
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	// Get organization from parent layout
@@ -24,7 +25,10 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 
 	if (response.error) {
 		log.error('questionnaires_list_failed', { error: response.error });
-		const errorMessage = extractErrorMessage(response.error, 'Failed to load questionnaires');
+		const errorMessage = extractErrorMessage(
+			response.error,
+			m['serverErrors.admin.loadQuestionnairesFailed']()
+		);
 		throw error(500, errorMessage);
 	}
 

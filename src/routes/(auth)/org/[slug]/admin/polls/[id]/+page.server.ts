@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { listStandardTiers } from '$lib/queries/membership-tiers';
 import { error } from '@sveltejs/kit';
 import { pollGetPoll, eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
@@ -8,7 +9,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, parent, fetch }) => {
 	const user = locals.user;
-	if (!user) throw error(401, 'Unauthorized');
+	if (!user) throw error(401, m['serverErrors.common.unauthorized']());
 
 	const { organization, isOwner } = await parent();
 
@@ -26,14 +27,17 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 			query: { organization: organization.id, page_size: 200 }
 		}),
 		listStandardTiers(organization.slug, user.accessToken, fetch).catch((err: unknown) => {
-			throw error(502, extractErrorMessage(err, 'Failed to load membership tiers'));
+			throw error(
+				502,
+				extractErrorMessage(err, m['serverErrors.common.loadMembershipTiersFailed']())
+			);
 		})
 	]);
 
 	if (pollRes.error) {
 		const status = pollRes.response?.status ?? 500;
 		log.error('poll_load_failed', { status, error: pollRes.error });
-		const message = extractErrorMessage(pollRes.error, 'Failed to load poll');
+		const message = extractErrorMessage(pollRes.error, m['serverErrors.common.loadPollFailed']());
 		throw error(loaderErrorStatus(status), message);
 	}
 	// The audience picker depends on these; surface a failure instead of
@@ -42,12 +46,12 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		const status = eventsRes.response?.status ?? 500;
 		throw error(
 			status >= 500 ? 500 : 502,
-			extractErrorMessage(eventsRes.error, 'Failed to load events')
+			extractErrorMessage(eventsRes.error, m['serverErrors.common.loadEventsFailed']())
 		);
 	}
 
 	if (!pollRes.data) {
-		throw error(500, 'Failed to load poll');
+		throw error(500, m['serverErrors.common.loadPollFailed']());
 	}
 
 	return {

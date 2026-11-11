@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import type { EventType, Visibility } from '$lib/api/generated/types.gen';
@@ -77,13 +78,13 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 		// Handle API errors
 		if (response.error) {
 			log.error('events_load_failed', { error: response.error });
-			throw svelteKitError(500, 'Failed to load events. Please try again later.');
+			throw svelteKitError(500, m['serverErrors.public.loadEventsRetryLater']());
 		}
 
 		// Type guard: ensure response.data exists
 		if (!response.data) {
 			log.error('events_load_invalid_response');
-			throw svelteKitError(500, 'Invalid API response');
+			throw svelteKitError(500, m['serverErrors.public.invalidApiResponse']());
 		}
 
 		// Return paginated data
@@ -119,7 +120,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 			nextUrl: null,
 			previousUrl: null,
 			filters: {},
-			error: 'Failed to load events. Please try again later.'
+			error: m['serverErrors.public.loadEventsRetryLater']()
 		};
 	}
 };

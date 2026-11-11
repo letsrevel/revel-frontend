@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 		return {
 			seo,
 			success: false,
-			error: 'Verification token is missing'
+			error: m['serverErrors.public.verificationTokenMissing']()
 		};
 	}
 
@@ -80,7 +81,10 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 
 		// If response was not ok, handle the error
 		if (!response.response?.ok && response.error) {
-			const errorMessage = extractErrorMessage(response.error, 'Verification failed');
+			const errorMessage = extractErrorMessage(
+				response.error,
+				m['serverErrors.public.verificationFailed']()
+			);
 			return {
 				seo,
 				success: false,
@@ -92,7 +96,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 		return {
 			seo,
 			success: false,
-			error: 'Invalid response from server'
+			error: m['serverErrors.public.invalidServerResponse']()
 		};
 	} catch (error) {
 		// Re-throw redirects immediately
@@ -104,7 +108,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 		log.error('verify_unexpected_error', { error });
 		const errorMessage = extractErrorMessage(
 			error,
-			'An unexpected error occurred during verification'
+			m['serverErrors.public.unexpectedErrorVerification']()
 		);
 		return {
 			seo,

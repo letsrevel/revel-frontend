@@ -5,6 +5,12 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
+// Side effect: register the shared API client's interceptors (Accept-Language
+// from the request-scoped locale, encoding guards) at server start. SSR loads
+// this module anyway via the auth store, but a form action on a cold server can
+// run before any page renders, and its backend errors would then come back in
+// the backend's default language instead of the UI's.
+import '$lib/api/client';
 import { API_BASE_URL } from '$lib/config/api';
 import { prepareApiRequest } from '$lib/server/tenant-fetch';
 import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';

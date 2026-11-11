@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to view this series');
+		throw error(401, m['serverErrors.admin.loginRequiredViewSeries']());
 	}
 
 	const headers: HeadersInit = {
@@ -62,20 +63,20 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		const err = detailResult.reason;
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;
-			if (status === 404) throw error(404, 'Event series not found');
-			if (status === 403) throw error(403, 'You do not have permission to manage this series');
+			if (status === 404) throw error(404, m['serverErrors.common.seriesNotFound']());
+			if (status === 403) throw error(403, m['serverErrors.common.permissionManageSeries']());
 		}
 		log.error('series_detail_load_failed', { error: err });
-		throw error(500, 'Failed to load event series');
+		throw error(500, m['serverErrors.common.loadSeriesFailed']());
 	}
 
 	const detailResponse = detailResult.value;
 	if (detailResponse.error) {
 		const status = (detailResponse as { response?: { status?: number } }).response?.status;
-		if (status === 404) throw error(404, 'Event series not found');
-		if (status === 403) throw error(403, 'You do not have permission to manage this series');
+		if (status === 404) throw error(404, m['serverErrors.common.seriesNotFound']());
+		if (status === 403) throw error(403, m['serverErrors.common.permissionManageSeries']());
 		log.error('series_detail_response_error', { error: detailResponse.error });
-		throw error(500, 'Failed to load event series');
+		throw error(500, m['serverErrors.common.loadSeriesFailed']());
 	}
 
 	const series = detailResponse.data as EventSeriesRecurrenceDetailSchema;

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import { pollListPolls } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -7,7 +8,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	const user = locals.user;
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	// Get organization from parent layout
@@ -26,7 +27,7 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	if (response.error) {
 		const status = response.response?.status ?? 500;
 		log.error('polls_list_failed', { status, error: response.error });
-		const message = extractErrorMessage(response.error, 'Failed to load polls');
+		const message = extractErrorMessage(response.error, m['serverErrors.admin.loadPollsFailed']());
 		// Preserve upstream client-error statuses (401/403/404/410/422) so auth
 		// and permission failures surface correctly; normalize 5xx / transport
 		// failures to 500.

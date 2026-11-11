@@ -3,12 +3,13 @@ import type { PageServerLoad } from './$types';
 import { eventadminwaitlistListWaitlist } from '$lib/api';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import * as m from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'You must be logged in to manage waitlist');
+		throw error(401, m['serverErrors.adminEvents.loginToManageWaitlist']());
 	}
 
 	const headers: HeadersInit = {
@@ -25,7 +26,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		});
 
 		if (response.error) {
-			const errorMessage = extractErrorMessage(response.error, 'Failed to load waitlist');
+			const errorMessage = extractErrorMessage(
+				response.error,
+				m['serverErrors.adminEvents.loadWaitlistFailed']()
+			);
 			throw error(500, errorMessage);
 		}
 
@@ -40,15 +44,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			const status = (err as { status: number }).status;
 
 			if (status === 404) {
-				throw error(404, 'Event not found');
+				throw error(404, m['serverErrors.common.eventNotFound']());
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to manage this event');
+				throw error(403, m['serverErrors.common.permissionManageEvent']());
 			}
 		}
 
-		const errorMessage = extractErrorMessage(err, 'Failed to load waitlist');
+		const errorMessage = extractErrorMessage(
+			err,
+			m['serverErrors.adminEvents.loadWaitlistFailed']()
+		);
 		throw error(500, errorMessage);
 	}
 };

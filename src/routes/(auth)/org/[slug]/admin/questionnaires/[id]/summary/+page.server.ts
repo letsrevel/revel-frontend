@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import {
 	questionnaireGetOrgQuestionnaire,
@@ -12,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const user = locals.user;
 
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	const headers = { Authorization: `Bearer ${user.accessToken}` };
@@ -46,7 +47,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 				status: questionnaireRes.response?.status,
 				error: questionnaireRes.error
 			});
-			const fallback = status === 404 ? 'Questionnaire not found' : 'Failed to load questionnaire';
+			const fallback =
+				status === 404
+					? m['serverErrors.common.questionnaireNotFound']()
+					: m['serverErrors.common.loadQuestionnaireFailed']();
 			throw error(status, extractErrorMessage(questionnaireRes.error, fallback));
 		}
 
@@ -57,11 +61,14 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 				status: summaryRes.response?.status,
 				error: summaryRes.error
 			});
-			throw error(status, extractErrorMessage(summaryRes.error, 'Failed to load summary'));
+			throw error(
+				status,
+				extractErrorMessage(summaryRes.error, m['serverErrors.admin.loadSummaryFailed']())
+			);
 		}
 
 		if (!questionnaireRes.data) {
-			throw error(404, 'Questionnaire not found');
+			throw error(404, m['serverErrors.common.questionnaireNotFound']());
 		}
 
 		return {
@@ -80,7 +87,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			throw err;
 		}
 		log.error('questionnaire_summary_load_failed', { id, error: err });
-		const msg = extractErrorMessage(err, 'Failed to load summary');
+		const msg = extractErrorMessage(err, m['serverErrors.admin.loadSummaryFailed']());
 		throw error(500, msg);
 	}
 };

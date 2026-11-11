@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
@@ -106,16 +107,18 @@ export const actions: Actions = {
 				const errors: Record<string, string> = {};
 
 				if ('token' in apiErrors && apiErrors.token) {
-					errors.form = 'Invalid or expired reset token. Please request a new password reset.';
+					errors.form = m['serverErrors.public.resetTokenInvalid']();
 				} else if (password1 || password2) {
 					errors.password =
 						firstString(password1) ||
 						firstString(password2) ||
-						'Password does not meet requirements';
+						m['serverErrors.public.passwordRequirementsNotMet']();
 				} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
-					errors.form = firstString(apiErrors.non_field_errors) || 'Password reset failed';
+					errors.form =
+						firstString(apiErrors.non_field_errors) ||
+						m['serverErrors.public.passwordResetFailed']();
 				} else {
-					errors.form = 'Unable to reset password. Please try again.';
+					errors.form = m['serverErrors.public.resetPasswordUnavailable']();
 				}
 
 				return fail(400, { errors });
@@ -124,7 +127,7 @@ export const actions: Actions = {
 			// Generic error
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred. Please try again later.'
+					form: m['serverErrors.public.unexpectedErrorRetryLater']()
 				}
 			});
 		}

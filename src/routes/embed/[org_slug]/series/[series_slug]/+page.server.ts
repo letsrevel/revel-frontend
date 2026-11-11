@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventseriesGetEventSeriesBySlugs, eventpublicdiscoveryListEvents } from '$lib/api';
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async ({ params, url, fetch }) => {
 
 	const series = seriesResponse.data;
 	if (!series) {
-		error(404, 'Event series not found');
+		error(404, m['serverErrors.common.seriesNotFound']());
 	}
 
 	const eventsResponse = await eventpublicdiscoveryListEvents({

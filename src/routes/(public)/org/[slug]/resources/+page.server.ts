@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { organizationListResources, organizationGetOrganization } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
@@ -21,7 +22,10 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 
 	if (organizationResponse.error) {
 		throwIfTransientUpstream(organizationResponse.response);
-		const errorMessage = extractErrorMessage(organizationResponse.error, 'Organization not found');
+		const errorMessage = extractErrorMessage(
+			organizationResponse.error,
+			m['serverErrors.common.organizationNotFound']()
+		);
 		throw error(404, errorMessage);
 	}
 
@@ -36,7 +40,10 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 
 	if (resourcesResponse.error) {
 		throwIfTransientUpstream(resourcesResponse.response);
-		const errorMessage = extractErrorMessage(resourcesResponse.error, 'Failed to load resources');
+		const errorMessage = extractErrorMessage(
+			resourcesResponse.error,
+			m['serverErrors.public.loadResourcesFailed']()
+		);
 		throw error(500, errorMessage);
 	}
 

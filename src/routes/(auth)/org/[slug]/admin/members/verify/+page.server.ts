@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { canPerformAction } from '$lib/utils/permissions';
@@ -13,7 +14,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		isOwner || canPerformAction(permissions, organization.id, 'check_in_attendees');
 
 	if (!canVerifyMembers) {
-		throw error(403, 'You do not have permission to verify members');
+		throw error(403, m['serverErrors.admin.permissionVerifyMembers']());
 	}
 
 	return { organization };

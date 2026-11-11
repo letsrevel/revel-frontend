@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -57,7 +58,7 @@ export const actions: Actions = {
 		if (!accessToken) {
 			return fail(401, {
 				errors: {
-					form: 'You must be logged in to update your profile'
+					form: m['serverErrors.account.profileLoginRequired']()
 				}
 			});
 		}
@@ -101,7 +102,10 @@ export const actions: Actions = {
 				};
 			}
 
-			const errorMessage = extractErrorMessage(response.error, 'Failed to update profile');
+			const errorMessage = extractErrorMessage(
+				response.error,
+				m['serverErrors.account.profileUpdateFailed']()
+			);
 			return fail(500, {
 				errors: { form: errorMessage },
 				...data
@@ -109,7 +113,7 @@ export const actions: Actions = {
 		} catch (error) {
 			log.error('profile_update_failed', { error });
 
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
+			const errorMessage = extractErrorMessage(error, m['serverErrors.account.unexpectedError']());
 
 			return fail(500, { errors: { form: errorMessage }, ...data });
 		}

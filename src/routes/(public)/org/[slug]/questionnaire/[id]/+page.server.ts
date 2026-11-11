@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
@@ -32,7 +33,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	if (orgError || !organization) {
 		log.error('membership_questionnaire_org_fetch_failed', { error: orgError, slug });
 		throwIfTransientUpstream(orgResponse);
-		throw error(404, 'Organization not found');
+		throw error(404, m['serverErrors.common.organizationNotFound']());
 	}
 
 	canonicalTenantRedirect(locals, organization, url);
@@ -70,7 +71,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			questionnaireId
 		});
 		throwIfTransientUpstream(questionnaireResponse);
-		throw error(404, 'Questionnaire not found');
+		throw error(404, m['serverErrors.common.questionnaireNotFound']());
 	}
 
 	return {

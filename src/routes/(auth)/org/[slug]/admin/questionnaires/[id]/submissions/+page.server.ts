@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import {
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	// Ensure user is authenticated
 	const user = locals.user;
 	if (!user) {
-		throw error(401, 'Unauthorized');
+		throw error(401, m['serverErrors.common.unauthorized']());
 	}
 
 	// Prepare headers with authentication
@@ -71,7 +72,12 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 		});
 		// A wrong/foreign questionnaire id is a missing page, not a server fault.
 		const status = loaderErrorStatus(backendStatus);
-		throw error(status, status === 404 ? 'Questionnaire not found' : 'Failed to load submissions');
+		throw error(
+			status,
+			status === 404
+				? m['serverErrors.common.questionnaireNotFound']()
+				: m['serverErrors.admin.loadSubmissionsFailed']()
+		);
 	}
 
 	const submissionsData = submissionsResult.data;

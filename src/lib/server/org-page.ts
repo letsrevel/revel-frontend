@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { error, isHttpError, isRedirect } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -56,9 +57,9 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 		if (!orgResponse.data) {
 			throwIfTransientUpstream(orgResponse.response);
 			if (orgResponse.response?.status === 410) {
-				throw error(410, 'This invitation link is no longer valid');
+				throw error(410, m['serverErrors.common.invitationLinkInvalid']());
 			}
-			throw error(404, 'Organization not found');
+			throw error(404, m['serverErrors.common.organizationNotFound']());
 		}
 
 		const organization = orgResponse.data;
@@ -189,16 +190,16 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 			const status = (err as { status: number }).status;
 
 			if (status === 404) {
-				throw error(404, 'Organization not found');
+				throw error(404, m['serverErrors.common.organizationNotFound']());
 			}
 
 			if (status === 403) {
-				throw error(403, 'You do not have permission to view this organization');
+				throw error(403, m['serverErrors.common.organizationForbidden']());
 			}
 		}
 
 		// Generic error
 		log.error('org_load_error', { error: err, slug });
-		throw error(500, 'Failed to load organization details');
+		throw error(500, m['serverErrors.common.organizationLoadFailed']());
 	}
 }
