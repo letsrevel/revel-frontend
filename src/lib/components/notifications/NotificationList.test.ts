@@ -408,4 +408,50 @@ describe('NotificationList', () => {
 		const selectTrigger = screen.getByRole('button', { name: /all types/i });
 		expect(selectTrigger).toHaveAttribute('aria-haspopup', 'listbox');
 	});
+
+	it('shows human type labels in the type filter, not raw enum values', async () => {
+		// bits-ui's Select captures the pointer on open; jsdom has no pointer capture.
+		if (typeof Element.prototype.hasPointerCapture !== 'function') {
+			Element.prototype.hasPointerCapture = (): boolean => false;
+			Element.prototype.setPointerCapture = (): void => undefined;
+			Element.prototype.releasePointerCapture = (): void => undefined;
+		}
+		if (typeof Element.prototype.scrollIntoView !== 'function') {
+			Element.prototype.scrollIntoView = (): void => undefined;
+		}
+		const user = userEvent.setup();
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
+				count: 2,
+				next: null,
+				previous: null,
+				results: [
+					mockNotifications[0],
+					{
+						id: '4',
+						notification_type: 'staff_ticket_created',
+						title: 'New ticket',
+						body: 'A ticket was bought',
+						context: {},
+						read_at: null,
+						created_at: new Date().toISOString()
+					}
+				]
+			})
+		);
+
+		renderComponent({ authToken: 'test-token' });
+
+		await waitFor(() => {
+			expect(screen.getByText('Event Invitation')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByRole('button', { name: /all types/i }));
+
+		// bits-ui portals the listbox out of the accessibility tree lookups jsdom gives
+		// role queries, so assert on the text and the option ancestor directly.
+		const option = await screen.findByText('Ticket sold');
+		expect(option.closest('[role="option"]')).not.toBeNull();
+		expect(screen.queryByText('staff_ticket_created')).not.toBeInTheDocument();
+	});
 });
