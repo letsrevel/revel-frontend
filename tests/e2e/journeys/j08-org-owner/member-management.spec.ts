@@ -9,7 +9,26 @@ import { authenticateContext } from '../../support/session';
 import { waitForEmail } from '../../support/mailpit';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog, pickSelectOption } from '../../support/ui';
+import type { Locator, Page } from '@playwright/test';
 import { registerPath } from '../../support/member-register';
+
+/**
+ * Close Manage membership even when a status or tier is staged: since #1211 the
+ * dialog asks "Discard unsaved changes?" instead of dropping the edit, and this
+ * journey backs out of staged changes on purpose (e.g. after checking the ban
+ * confirmation panel), so it confirms the discard prompt when it appears.
+ */
+async function closeManage(page: Page, dialog: Locator): Promise<void> {
+	if (!(await dialog.isVisible())) return;
+	await page.keyboard.press('Escape');
+	const discard = page.getByTestId('confirm-dialog');
+	if (await discard.isVisible({ timeout: 1_500 }).catch(() => false)) {
+		await discard.getByTestId('confirm-dialog-confirm').click();
+	}
+	// Only wait: a second Escape while this dialog animates out would land on the
+	// person sheet underneath and close it.
+	await dialog.waitFor({ state: 'hidden', timeout: 10_000 });
+}
 
 // J8.3 (USER_JOURNEYS.md) — member management: approve a membership request
 // with a tier, reject another, pause the approved member from the person sheet,
@@ -92,7 +111,7 @@ test.describe('J8 member management @p1', () => {
 		};
 		const pausedBadge = sheet.getByTestId('register-status-paused');
 		await expect(async () => {
-			await closeDialog(page, manageModal);
+			await closeManage(page, manageModal);
 			if (!(await pausedBadge.isVisible())) {
 				await openManage();
 				await pickSelectOption(page, manageModal.getByLabel('Membership Status'), 'Paused');
@@ -100,7 +119,7 @@ test.describe('J8 member management @p1', () => {
 				if (await save.isVisible()) {
 					await save.click({ timeout: 3_000 });
 				}
-				await closeDialog(page, manageModal);
+				await closeManage(page, manageModal);
 			}
 			await expect(pausedBadge).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 90_000 });
@@ -113,7 +132,7 @@ test.describe('J8 member management @p1', () => {
 		// checks the confirmation panel and backs out; the member is removed next.
 		// (Executing a ban is covered by the blacklist journeys, j13.)
 		await expect(async () => {
-			await closeDialog(page, manageModal);
+			await closeManage(page, manageModal);
 			await openManage();
 			await pickSelectOption(page, manageModal.getByLabel('Membership Status'), 'Banned');
 			const save = manageModal.getByRole('button', { name: 'Save Changes' });
@@ -132,17 +151,17 @@ test.describe('J8 member management @p1', () => {
 			// sentence is now conditional on an inlined live subscription).
 			await expect(manageModal.getByText(/recurring billing stops/)).toHaveCount(0);
 		}).toPass({ timeout: 90_000 });
-		await closeDialog(page, manageModal);
+		await closeManage(page, manageModal);
 		await expect(pausedBadge).toBeVisible();
 
 		// Remove the member entirely: the entry ends and the sheet stays open,
 		// re-rendered as an ended membership ("Ended: removed" in its periods).
-		// The Current view is read as of today and the entry ends today, so the
-		// row stays in the list, now flagged Ended (and has no member actions).
+		// Current lists who is a member right now (`active_at`, #1214), so the
+		// ended entry leaves that view and shows up under the Ended chip instead.
 		const personRow = page.getByRole('button', { name: `Open ${applicantName}` });
 		const endedBadge = sheet.getByTestId('register-status-ended');
 		await expect(async () => {
-			await closeDialog(page, manageModal);
+			await closeManage(page, manageModal);
 			if (!(await endedBadge.isVisible())) {
 				await openManage();
 				await manageModal
@@ -154,6 +173,8 @@ test.describe('J8 member management @p1', () => {
 		}).toPass({ timeout: 90_000 });
 		await expect(sheet.getByTestId('person-periods')).toContainText('Ended: removed');
 		await closeDialog(page, sheet);
+		await expect(personRow).toHaveCount(0, { timeout: 15_000 });
+		await page.getByRole('button', { name: 'Ended', exact: true }).click();
 		await expect(personRow).toHaveCount(1, { timeout: 15_000 });
 		await expect(
 			page
