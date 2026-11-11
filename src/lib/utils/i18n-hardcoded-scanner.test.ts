@@ -267,3 +267,36 @@ const errorMessage = 'Not found anywhere at all';`;
 		]);
 	});
 });
+
+describe('CodeRabbit round', () => {
+	it('rule 6: a response body is not a zod message, a zod { message } still is', () => {
+		const src = `import { z } from 'zod';
+export const s = z.object({ a: z.string().min(1, { message: 'Name is required' }) });
+export const GET = () => json({ error: 'Invalid request payload' }, { status: 400 });
+const body = { message: 'Something went sideways' };`;
+		expect(scan(src, 'src/routes/api/x/+server.ts')).toEqual(['zod: Name is required']);
+	});
+
+	it('rule 8: type annotations (union, generic, plain) do not hide the literal', () => {
+		const src = `const errorMessage: string | null = 'Failed to load it';
+let saveError: Array<string> | undefined = 'Could not save it';
+const loadError: string = 'Could not load it';`;
+		expect(scan(src, 'src/lib/utils/x.ts')).toEqual([
+			'copy: errorMessage = Failed to load it',
+			'copy: loadError = Could not load it',
+			'copy: saveError = Could not save it'
+		]);
+	});
+
+	it('i18n-ignore on one occurrence never suppresses an identical one elsewhere', () => {
+		const src = `import { z } from 'zod';
+// i18n-ignore: fixture
+const s = z.string().min(1, 'Name is required');
+const errorMessage = 'Name is required';
+let other = z.string().min(1, 'Name is required');`;
+		expect(scan(src, 'src/lib/schemas/x.ts')).toEqual([
+			'copy: errorMessage = Name is required',
+			'zod: Name is required'
+		]);
+	});
+});

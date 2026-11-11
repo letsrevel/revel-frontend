@@ -11775,5 +11775,21 @@
 	"orgMembershipSeo.title": "Iscrizione | {orgName} | Revel",
 	"orgMembershipSeo.descriptionTenant": "Iscriviti a {orgName}. Scopri i livelli di iscrizione, cosa include ciascuno e come aderire.",
 	"orgMembershipSeo.descriptionPlatform": "Iscriviti a {orgName} su Revel. Scopri i livelli di iscrizione, cosa include ciascuno e come aderire.",
-	"checkEmailErrors.resendFailed": "Impossibile inviare di nuovo l'e-mail di verifica"
+	"checkEmailErrors.resendFailed": "Impossibile inviare di nuovo l'e-mail di verifica",
+	"demoAccounts.role.owner": "Titolare",
+	"demoAccounts.role.staff": "Membro dello staff",
+	"demoAccounts.role.member": "Membro",
+	"demoAccounts.role.attendee": "Partecipante",
+	"demoAccounts.role.multiOrgMember": "Membro di più organizzazioni",
+	"demoAccounts.role.user": "Utente",
+	"demoAccounts.description.fullControl": "Controllo completo dell'organizzazione",
+	"demoAccounts.description.canManageEvents": "Può gestire gli eventi",
+	"demoAccounts.description.memberPrivileges": "Privilegi da membro",
+	"demoAccounts.description.variousTicketsAndRsvps": "Ha vari biglietti e RSVP",
+	"demoAccounts.description.activeInMultipleEvents": "Partecipa a più eventi",
+	"demoAccounts.description.onWaitlists": "In lista d'attesa",
+	"demoAccounts.description.pendingPayment": "Pagamento in sospeso",
+	"demoAccounts.description.memberOfBothOrgs": "Membro di ENTRAMBE le organizzazioni",
+	"demoAccounts.description.cancelledTicket": "Ha un biglietto annullato",
+	"demoAccounts.description.waitlistsAndInvited": "In lista d'attesa, con inviti a eventi"
 }

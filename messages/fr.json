@@ -11775,5 +11775,21 @@
 	"orgMembershipSeo.title": "Adhésion | {orgName} | Revel",
 	"orgMembershipSeo.descriptionTenant": "Deviens membre de {orgName}. Découvre les formules d'adhésion, ce que chacune inclut et comment adhérer.",
 	"orgMembershipSeo.descriptionPlatform": "Deviens membre de {orgName} sur Revel. Découvre les formules d'adhésion, ce que chacune inclut et comment adhérer.",
-	"checkEmailErrors.resendFailed": "Impossible de renvoyer l'e-mail de vérification"
+	"checkEmailErrors.resendFailed": "Impossible de renvoyer l'e-mail de vérification",
+	"demoAccounts.role.owner": "Propriétaire",
+	"demoAccounts.role.staff": "Membre du staff",
+	"demoAccounts.role.member": "Membre",
+	"demoAccounts.role.attendee": "Participant·e",
+	"demoAccounts.role.multiOrgMember": "Membre multi-organisations",
+	"demoAccounts.role.user": "Utilisateur·rice",
+	"demoAccounts.description.fullControl": "Contrôle total de l'organisation",
+	"demoAccounts.description.canManageEvents": "Peut gérer les événements",
+	"demoAccounts.description.memberPrivileges": "Privilèges de membre",
+	"demoAccounts.description.variousTicketsAndRsvps": "A plusieurs billets et réponses",
+	"demoAccounts.description.activeInMultipleEvents": "Participe à plusieurs événements",
+	"demoAccounts.description.onWaitlists": "Sur des listes d'attente",
+	"demoAccounts.description.pendingPayment": "Paiement en attente",
+	"demoAccounts.description.memberOfBothOrgs": "Membre des DEUX organisations",
+	"demoAccounts.description.cancelledTicket": "A un billet annulé",
+	"demoAccounts.description.waitlistsAndInvited": "Sur des listes d'attente, avec des invitations à des événements"
 }

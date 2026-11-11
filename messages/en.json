@@ -11775,5 +11775,21 @@
 	"orgMembershipSeo.title": "Membership | {orgName} | Revel",
 	"orgMembershipSeo.descriptionTenant": "Become a member of {orgName}. See the membership tiers, what each one includes and how to join.",
 	"orgMembershipSeo.descriptionPlatform": "Become a member of {orgName} on Revel. See the membership tiers, what each one includes and how to join.",
-	"checkEmailErrors.resendFailed": "Failed to resend verification email"
+	"checkEmailErrors.resendFailed": "Failed to resend verification email",
+	"demoAccounts.role.owner": "Owner",
+	"demoAccounts.role.staff": "Staff Member",
+	"demoAccounts.role.member": "Member",
+	"demoAccounts.role.attendee": "Attendee",
+	"demoAccounts.role.multiOrgMember": "Multi-org Member",
+	"demoAccounts.role.user": "User",
+	"demoAccounts.description.fullControl": "Full control of organization",
+	"demoAccounts.description.canManageEvents": "Can manage events",
+	"demoAccounts.description.memberPrivileges": "Member privileges",
+	"demoAccounts.description.variousTicketsAndRsvps": "Has various tickets and RSVPs",
+	"demoAccounts.description.activeInMultipleEvents": "Active in multiple events",
+	"demoAccounts.description.onWaitlists": "On waitlists",
+	"demoAccounts.description.pendingPayment": "Pending payment",
+	"demoAccounts.description.memberOfBothOrgs": "Member of BOTH organizations",
+	"demoAccounts.description.cancelledTicket": "Has cancelled ticket",
+	"demoAccounts.description.waitlistsAndInvited": "On waitlists, invited to events"
 }

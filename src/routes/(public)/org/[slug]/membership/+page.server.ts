@@ -118,6 +118,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		const title = locals.tenant
 			? withSiteName(m['tenantChrome.membership'](), locals.tenant)
 			: m['orgMembershipSeo.title']({ orgName: organization.name });
+		const ogTitle = `${m['tenantChrome.membership']()} | ${organization.name}`;
 		const description = locals.tenant
 			? m['orgMembershipSeo.descriptionTenant']({ orgName: organization.name })
 			: m['orgMembershipSeo.descriptionPlatform']({ orgName: organization.name });
@@ -125,8 +126,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			...orgSeo,
 			title,
 			description,
-			og: { ...orgSeo.og, title: `Membership | ${organization.name}`, description },
-			twitter: { ...orgSeo.twitter, title: `Membership | ${organization.name}`, description }
+			og: { ...orgSeo.og, title: ogTitle, description },
+			twitter: { ...orgSeo.twitter, title: ogTitle, description }
 		};
 
 		return {

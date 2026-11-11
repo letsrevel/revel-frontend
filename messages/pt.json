@@ -11775,5 +11775,21 @@
 	"orgMembershipSeo.title": "Adesão | {orgName} | Revel",
 	"orgMembershipSeo.descriptionTenant": "Torna-te membro de {orgName}. Descobre os níveis de adesão, o que cada um inclui e como aderir.",
 	"orgMembershipSeo.descriptionPlatform": "Torna-te membro de {orgName} na Revel. Descobre os níveis de adesão, o que cada um inclui e como aderir.",
-	"checkEmailErrors.resendFailed": "Não foi possível reenviar o e-mail de verificação"
+	"checkEmailErrors.resendFailed": "Não foi possível reenviar o e-mail de verificação",
+	"demoAccounts.role.owner": "Titular",
+	"demoAccounts.role.staff": "Membro da equipa",
+	"demoAccounts.role.member": "Membro",
+	"demoAccounts.role.attendee": "Participante",
+	"demoAccounts.role.multiOrgMember": "Membro de várias organizações",
+	"demoAccounts.role.user": "Utilizador",
+	"demoAccounts.description.fullControl": "Controlo total da organização",
+	"demoAccounts.description.canManageEvents": "Pode gerir eventos",
+	"demoAccounts.description.memberPrivileges": "Privilégios de membro",
+	"demoAccounts.description.variousTicketsAndRsvps": "Tem vários bilhetes e confirmações",
+	"demoAccounts.description.activeInMultipleEvents": "Participa em vários eventos",
+	"demoAccounts.description.onWaitlists": "Em listas de espera",
+	"demoAccounts.description.pendingPayment": "Pagamento pendente",
+	"demoAccounts.description.memberOfBothOrgs": "Membro de AMBAS as organizações",
+	"demoAccounts.description.cancelledTicket": "Tem um bilhete cancelado",
+	"demoAccounts.description.waitlistsAndInvited": "Em listas de espera, com convites para eventos"
 }

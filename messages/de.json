@@ -11775,5 +11775,21 @@
 	"orgMembershipSeo.title": "Mitgliedschaft | {orgName} | Revel",
 	"orgMembershipSeo.descriptionTenant": "Werde Mitglied bei {orgName}. Entdecke die Mitgliedschaftsstufen, was jede enthält und wie du beitrittst.",
 	"orgMembershipSeo.descriptionPlatform": "Werde Mitglied bei {orgName} auf Revel. Entdecke die Mitgliedschaftsstufen, was jede enthält und wie du beitrittst.",
-	"checkEmailErrors.resendFailed": "Bestätigungs-E-Mail konnte nicht erneut gesendet werden"
+	"checkEmailErrors.resendFailed": "Bestätigungs-E-Mail konnte nicht erneut gesendet werden",
+	"demoAccounts.role.owner": "Inhaber*in",
+	"demoAccounts.role.staff": "Teammitglied",
+	"demoAccounts.role.member": "Mitglied",
+	"demoAccounts.role.attendee": "Teilnehmer*in",
+	"demoAccounts.role.multiOrgMember": "Mitglied mehrerer Organisationen",
+	"demoAccounts.role.user": "Nutzer*in",
+	"demoAccounts.description.fullControl": "Volle Kontrolle über die Organisation",
+	"demoAccounts.description.canManageEvents": "Kann Veranstaltungen verwalten",
+	"demoAccounts.description.memberPrivileges": "Mitgliedsprivilegien",
+	"demoAccounts.description.variousTicketsAndRsvps": "Hat verschiedene Tickets und Zusagen",
+	"demoAccounts.description.activeInMultipleEvents": "Nimmt an mehreren Veranstaltungen teil",
+	"demoAccounts.description.onWaitlists": "Auf Wartelisten",
+	"demoAccounts.description.pendingPayment": "Zahlung ausstehend",
+	"demoAccounts.description.memberOfBothOrgs": "Mitglied in BEIDEN Organisationen",
+	"demoAccounts.description.cancelledTicket": "Hat ein storniertes Ticket",
+	"demoAccounts.description.waitlistsAndInvited": "Auf Wartelisten, zu Veranstaltungen eingeladen"
 }

@@ -455,7 +455,8 @@ function scanServerErrors(c, out) {
 				}
 			} else for (const l of branchLiterals(body)) if (isUiProse(l)) lits.push(l);
 		} else objectSentences(body, lits);
-		for (const lit of lits) out.push({ finding: `server-error: ${lit.trim()}`, idx: m.index, lit });
+		for (const lit of lits)
+			out.push({ finding: `server-error: ${lit.trim()}`, idx: m.index, end: close, lit });
 	}
 }
 
@@ -480,11 +481,29 @@ function scanTitles(c, out) {
 	}
 }
 
-/** Rule 6: zod validation messages. */
+/** `message` / `error` string literals among the properties of an object-literal arg (zod 3 / zod 4). */
+function zodObjectMessage(arg) {
+	const t = arg.trim();
+	if (!t.startsWith('{')) return null;
+	for (const prop of splitTop(t.slice(1, -1))) {
+		const pm = /^\s*(?:message|error)\s*:\s*([\s\S]*)$/.exec(prop); // zod 4 uses `error`
+		if (pm) {
+			const lit = literalValue(pm[1]);
+			if (lit !== null) return lit;
+		}
+	}
+	return null;
+}
+
+/**
+ * Rule 6: zod validation messages. Only argument lists of zod calls are inspected:
+ * `z.*(...)` and the validation methods of a schema chain. A `{ error: '...' }` that is
+ * NOT an argument of such a call (a JSON response body, say) is never a zod message.
+ */
 function scanZod(c, out) {
 	if (!/from\s+['"]zod(?:\/[\w-]+)?['"]/.test(c)) return;
 	const callRe =
-		/\.(min|max|length|gt|gte|lt|lte|email|url|uuid|regex|refine|superRefine|nonempty|positive|nonnegative|int|multipleOf|datetime|date|time|ip|check|custom)\(/g;
+		/(?:(?<![\w$])z\.\w+|\.(?:min|max|length|gt|gte|lt|lte|email|url|uuid|regex|refine|superRefine|nonempty|positive|nonnegative|int|multipleOf|datetime|date|time|ip|check|custom))\(/g;
 	let m;
 	while ((m = callRe.exec(c))) {
 		const open = m.index + m[0].length - 1;
@@ -493,20 +512,18 @@ function scanZod(c, out) {
 		const args = splitTop(c.slice(open + 1, close));
 		const last = args[args.length - 1];
 		if (!last) continue;
-		let lit = literalValue(last);
-		if (lit === null && last.trim().startsWith('{')) {
-			for (const prop of splitTop(last.trim().slice(1, -1))) {
-				const pm = /^\s*(?:message|error)\s*:\s*([\s\S]*)$/.exec(prop); // zod 4 uses `error`
-				if (pm) lit = literalValue(pm[1]);
-			}
+		const found = [];
+		if (!m[0].startsWith('z.')) {
+			const direct = literalValue(last); // `.min(1, 'msg')`
+			if (direct !== null) found.push(direct);
 		}
-		if (lit !== null && isUiProse(lit))
-			out.push({ finding: `zod: ${lit.trim()}`, idx: m.index, lit });
-	}
-	const msgRe = /(?<![\w$])(?:message|error)\s*:\s*(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g;
-	while ((m = msgRe.exec(c))) {
-		const lit = flattenTemplate(m[2]);
-		if (isUiProse(lit)) out.push({ finding: `zod: ${lit.trim()}`, idx: m.index, lit });
+		for (const arg of args) {
+			const lit = zodObjectMessage(arg);
+			if (lit !== null) found.push(lit);
+		}
+		for (const lit of found)
+			if (isUiProse(lit))
+				out.push({ finding: `zod: ${lit.trim()}`, idx: m.index, end: close, lit });
 	}
 }
 
@@ -528,6 +545,7 @@ function scanAttrExpressions(c, out) {
 					out.push({
 						finding: `attr-expr: ${m[1]}={... '${lit.trim()}' ...}`,
 						idx: m.index,
+						end: close,
 						lit
 					});
 			}
@@ -563,7 +581,7 @@ function exprEnd(c, from) {
 /** Rule 8: sentence-like literals assigned to UI-copy-named variables / properties. */
 function scanCopyAssignments(c, out) {
 	// `name =` (declaration, assignment, `this.name =`, after `if (..)` / `=>`) or `name:` (object property)
-	const re = /(?<![\w$])([A-Za-z_$][\w$]*)\s*(?::\s*string\s*)?(=(?![=>])|:(?!:))/g;
+	const re = /(?<![\w$])([A-Za-z_$][\w$]*)\s*(?::[^=;(){}\n'"`]*)?(=(?![=>])|:(?!:))/g;
 	let m;
 	while ((m = re.exec(c))) {
 		const name = m[1];
@@ -653,10 +671,18 @@ export function scanSource(content, file) {
 	// `+server.ts` endpoints answer machines (JSON bodies), not people: no copy rule there.
 	if (!/\/\+server\.ts$/.test(file))
 		scanCopyAssignments(isSvelte ? scriptBodiesOnly(dev) : dev, hits);
-	// a literal an earlier rule already reported is not repeated by the broader `copy:` rule
-	const reported = new Set(hits.filter((h) => !h.copy).map((h) => h.lit.trim()));
-	for (const h of hits) {
-		if (h.copy && reported.has(h.lit.trim())) continue;
+	// `i18n-ignore` is applied per occurrence BEFORE dedup, so an ignored line can never
+	// suppress an identical literal elsewhere. A broader `copy:` finding is dropped only
+	// when a call-based rule (error()/fail()/zod/attr) reported the same literal from the
+	// call expression that contains it.
+	const live = hits.filter((h) => !ignored(h.idx));
+	const calls = live.filter((h) => !h.copy && h.end !== undefined);
+	for (const h of live) {
+		if (
+			h.copy &&
+			calls.some((x) => x.lit.trim() === h.lit.trim() && h.idx >= x.idx && h.idx <= x.end)
+		)
+			continue;
 		push(h.finding, h.idx);
 	}
 	return [...found].sort();
