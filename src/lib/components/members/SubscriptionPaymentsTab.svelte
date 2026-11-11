@@ -26,6 +26,7 @@
 	import PaymentVoidDialog from './PaymentVoidDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
 	import type { EditablePayment } from './paymentEdit';
+	import { PaymentRefusedError, invalidatePaymentCaches, paymentRefusalCode } from './paymentEdit';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -144,8 +145,12 @@
 			});
 			// 400 is the ONLINE guard, which `canRefundLedgerPayment` already keeps us
 			// away from; 404 is a row that moved. Both carry a translated `detail`.
-			if (res.error)
+			// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
+			if (res.error) {
+				const code = paymentRefusalCode(res.error);
+				if (code) throw new PaymentRefusedError(code);
 				throw new Error(backendMessage(res.error) || m['orgAdmin.members.payments.refundError']());
+			}
 			return res.data;
 		},
 		onSuccess: () => {
@@ -173,7 +178,14 @@
 			// look like the action did nothing.
 			toast.success(m['orgAdmin.members.payments.refundDone']());
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error) => {
+			toast.error(err.message);
+			// A refusal means the row on screen is stale: show what it is now.
+			if (err instanceof PaymentRefusedError) {
+				refundTarget = null;
+				invalidatePaymentCaches(queryClient, organization.slug);
+			}
+		}
 	}));
 </script>
 

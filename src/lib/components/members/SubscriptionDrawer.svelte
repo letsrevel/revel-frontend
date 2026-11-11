@@ -34,6 +34,7 @@
 	import ChangePlanDialog from './ChangePlanDialog.svelte';
 	import ShowVoidedToggle from './ShowVoidedToggle.svelte';
 	import type { EditablePayment } from './paymentEdit';
+	import { PaymentRefusedError, paymentRefusalCode } from './paymentEdit';
 	import {
 		getAvailableActions,
 		formatPlanPrice,
@@ -338,17 +339,28 @@
 				body: { notes },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error)
+			if (res.error) {
+				// 409 `payment_voided` (BE #1368): the row was voided meanwhile.
+				const code = paymentRefusalCode(res.error);
+				if (code) throw new PaymentRefusedError(code);
 				throw new Error(
 					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.refund']()
 				);
+			}
 			return res.data;
 		},
 		onSuccess: () => {
 			invalidateAll();
 			refundTarget = null;
 		},
-		onError: (err: Error) => toast.error(err.message)
+		onError: (err: Error) => {
+			toast.error(err.message);
+			// A refusal means the row on screen is stale: show what it is now.
+			if (err instanceof PaymentRefusedError) {
+				refundTarget = null;
+				invalidateAll();
+			}
+		}
 	}));
 
 	function fmtDate(d: string | null | undefined): string {

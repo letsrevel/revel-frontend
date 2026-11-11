@@ -121,10 +121,11 @@ function arrange(payments: OrganizationMembershipPaymentSchema[], count = paymen
 	>);
 }
 
-function renderTab() {
-	const client = new QueryClient({
+function renderTab(
+	client = new QueryClient({
 		defaultOptions: { queries: { retry: false, gcTime: 0 } }
-	});
+	})
+) {
 	return render(QueryClientTestWrapper, {
 		props: { client, component: SubscriptionPaymentsTab, componentProps: { organization } }
 	});
@@ -581,5 +582,57 @@ describe('SubscriptionPaymentsTab refund flow', () => {
 			)
 		);
 		expect(toastSuccessMock).not.toHaveBeenCalled();
+	});
+
+	function arrangeRefundFailure(error: Record<string, unknown>, status: number) {
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockResolvedValue({
+			data: undefined,
+			error,
+			response: { ok: false, status } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsRefundPayment>>);
+	}
+
+	// 409 `payment_voided`: the row was voided after the page loaded. The toast
+	// must name the refusal, and the stale row must be refetched so the operator
+	// sees what the payment is now.
+	it('explains a voided payment, closes the dialog and refetches the ledger', async () => {
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false, gcTime: 0 } }
+		});
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefundFailure({ detail: 'x', code: 'payment_voided' }, 409);
+		renderTab(client);
+		await openDialogAndSubmit();
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith('This payment has already been voided.')
+		);
+		await waitFor(() =>
+			expect(invalidate).toHaveBeenCalledWith(
+				expect.objectContaining({ queryKey: ['organization', 'test-org', 'subscription-payments'] })
+			)
+		);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toastSuccessMock).not.toHaveBeenCalled();
+	});
+
+	// A plain refusal keeps the old contract: the backend's own detail, the dialog
+	// stays open for another attempt, and nothing is refetched on the error path.
+	it('keeps the dialog open and does not refetch on an ordinary 400', async () => {
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false, gcTime: 0 } }
+		});
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefundFailure({ detail: 'Nope' }, 400);
+		renderTab(client);
+		await openDialogAndSubmit();
+
+		await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Nope'));
+		expect(invalidate).not.toHaveBeenCalledWith(
+			expect.objectContaining({ queryKey: ['organization', 'test-org', 'subscription-payments'] })
+		);
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});
 });
