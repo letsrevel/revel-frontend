@@ -3869,9 +3869,11 @@
 				"addressPlaceholder": "123 rue Principale, Ville, Région 12345",
 				"visibilityLabel": "Visibilité",
 				"visibilityPublic": "Public - Tout le monde peut voir",
+				"visibilityUnlisted": "Non répertorié - Toute personne disposant du lien peut voir",
 				"visibilityMembersOnly": "Membres uniquement - Seuls les membres de l'organisation peuvent voir",
 				"visibilityStaffOnly": "Équipe uniquement - Seuls les membres de l'équipe peuvent voir",
 				"visibilityPublicHelp": "Le profil de ton organisation est visible par tous",
+				"visibilityUnlistedHelp": "Toute personne disposant du lien peut voir le profil de ton organisation, mais il n'apparaît ni dans la recherche ni dans la liste. Tes événements gardent leur propre visibilité.",
 				"visibilityMembersOnlyHelp": "Le profil de ton organisation est visible uniquement par les membres",
 				"visibilityStaffOnlyHelp": "Le profil de ton organisation est visible uniquement par l'équipe"
 			},

@@ -109,6 +109,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			url: canonicalUrl,
 			lang,
 			org: organization,
+			indexable: organization.visibility === 'public',
 			tenant: locals.tenant,
 			linkContext: serverLinkContext(locals)
 		});

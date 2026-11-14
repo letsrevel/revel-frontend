@@ -3899,9 +3899,11 @@
 				"addressPlaceholder": "Calle Mayor 123, Ciudad, Provincia 12345",
 				"visibilityLabel": "Visibilidad",
 				"visibilityPublic": "Público - Cualquiera puede verlo",
+				"visibilityUnlisted": "No listado - Cualquiera con el enlace puede verlo",
 				"visibilityMembersOnly": "Solo miembros - Solo los miembros de la organización pueden verlo",
 				"visibilityStaffOnly": "Solo staff - Solo el staff puede verlo",
 				"visibilityPublicHelp": "El perfil de tu organización es visible para todo el mundo",
+				"visibilityUnlistedHelp": "Cualquiera con el enlace puede ver el perfil de tu organización, pero no aparece en la búsqueda ni en el listado. Tus eventos mantienen su propia visibilidad.",
 				"visibilityMembersOnlyHelp": "El perfil de tu organización solo es visible para los miembros",
 				"visibilityStaffOnlyHelp": "El perfil de tu organización solo es visible para el staff"
 			},

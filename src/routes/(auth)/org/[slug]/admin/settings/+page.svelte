@@ -342,6 +342,7 @@
 					class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 				>
 					<option value="public">{m['orgAdmin.settings.profile.visibilityPublic']()}</option>
+					<option value="unlisted">{m['orgAdmin.settings.profile.visibilityUnlisted']()}</option>
 					<option value="members-only"
 						>{m['orgAdmin.settings.profile.visibilityMembersOnly']()}</option
 					>
@@ -350,6 +351,8 @@
 				<p class="mt-1 text-xs text-muted-foreground">
 					{#if visibility === 'public'}
 						{m['orgAdmin.settings.profile.visibilityPublicHelp']()}
+					{:else if visibility === 'unlisted'}
+						{m['orgAdmin.settings.profile.visibilityUnlistedHelp']()}
 					{:else if visibility === 'members-only'}
 						{m['orgAdmin.settings.profile.visibilityMembersOnlyHelp']()}
 					{:else if visibility === 'staff-only'}

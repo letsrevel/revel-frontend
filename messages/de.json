@@ -3899,9 +3899,11 @@
 				"addressPlaceholder": "Musterstraße 123, Stadt, Bundesland 12345",
 				"visibilityLabel": "Sichtbarkeit",
 				"visibilityPublic": "Öffentlich - Jeder kann es sehen",
+				"visibilityUnlisted": "Nicht gelistet - Alle mit dem Link können es sehen",
 				"visibilityMembersOnly": "Nur Mitglieder - Nur Organisationsmitglieder können es sehen",
 				"visibilityStaffOnly": "Nur Mitarbeiter*innen - Nur Mitarbeiter*innen können es sehen",
 				"visibilityPublicHelp": "Dein Organisationsprofil ist für alle sichtbar",
+				"visibilityUnlistedHelp": "Alle mit dem Link können dein Organisationsprofil sehen, es erscheint aber weder in der Suche noch in der Übersicht. Deine Veranstaltungen behalten ihre eigene Sichtbarkeit.",
 				"visibilityMembersOnlyHelp": "Dein Organisationsprofil ist nur für Mitglieder sichtbar",
 				"visibilityStaffOnlyHelp": "Dein Organisationsprofil ist nur für Mitarbeiter*innen sichtbar"
 			},

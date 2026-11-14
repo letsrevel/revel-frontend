@@ -7,6 +7,7 @@ vi.mock('$env/dynamic/private', () => mockEnv);
 const listEvents = vi.fn();
 const listSeries = vi.fn();
 const listOrgs = vi.fn();
+const getOrg = vi.fn();
 
 vi.mock('$lib/api', () => ({
 	eventpublicdiscoveryListEvents: (...a: unknown[]) => listEvents(...a),
@@ -14,9 +15,7 @@ vi.mock('$lib/api', () => ({
 	organizationListOrganizations: (...a: unknown[]) => listOrgs(...a),
 	eventpublicdetailsGetEventBySlugs: vi.fn(async () => ({ data: null })),
 	eventseriesGetEventSeriesBySlugs: vi.fn(async () => ({ data: null })),
-	organizationGetOrganization: vi.fn(async () => ({
-		data: { name: 'Acme Club', slug: 'acme', cover_art: null }
-	}))
+	organizationGetOrganization: (...a: unknown[]) => getOrg(...a)
 }));
 
 import { GET as sitemapIndex } from './sitemap.xml/+server';
@@ -76,6 +75,9 @@ const evt = {
 };
 
 beforeEach(() => {
+	getOrg.mockReset().mockResolvedValue({
+		data: { name: 'Acme Club', slug: 'acme', cover_art: null, visibility: 'public' }
+	});
 	listEvents.mockReset().mockResolvedValue({ data: { count: 1, results: [evt] } });
 	listSeries.mockReset().mockResolvedValue({
 		data: {
@@ -113,6 +115,27 @@ describe('child sitemaps', () => {
 		expect(body.match(/<loc>/g)).toHaveLength(1);
 		expect(body).toContain(`<loc>${T}/</loc>`);
 		expect(body).not.toMatch(/eventbrite|login|legal|organizations/);
+	});
+
+	it('tenant static: an unlisted org is left out of the sitemap', async () => {
+		getOrg.mockResolvedValue({ data: { slug: 'acme', visibility: 'unlisted' } });
+		const body = await (await call(sitemapStatic, onTenant('/sitemap-static.xml'))).text();
+		expect(body).not.toContain('<loc>');
+	});
+
+	it('tenant static: a 404 from the org lookup empties the sitemap', async () => {
+		getOrg.mockResolvedValue({ data: undefined, response: { status: 404 } });
+		const body = await (await call(sitemapStatic, onTenant('/sitemap-static.xml'))).text();
+		expect(body).not.toContain('<loc>');
+	});
+
+	it('tenant static: a 5xx or thrown lookup fails open and keeps the org home', async () => {
+		getOrg.mockResolvedValue({ data: undefined, response: { status: 500 } });
+		let body = await (await call(sitemapStatic, onTenant('/sitemap-static.xml'))).text();
+		expect(body.match(/<loc>/g)).toHaveLength(1);
+		getOrg.mockRejectedValue(new Error('boom'));
+		body = await (await call(sitemapStatic, onTenant('/sitemap-static.xml'))).text();
+		expect(body.match(/<loc>/g)).toHaveLength(1);
 	});
 
 	it('platform static still lists the marketing pages', async () => {

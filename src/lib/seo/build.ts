@@ -49,7 +49,7 @@ type BuildSeoVariant =
 			event: EventDetailSchema;
 			indexable: boolean;
 	  }
-	| { kind: 'org'; url: URL; lang: Lang; org: OrganizationRetrieveSchema }
+	| { kind: 'org'; url: URL; lang: Lang; org: OrganizationRetrieveSchema; indexable: boolean }
 	| { kind: 'series'; url: URL; lang: Lang; series: EventSeriesRetrieveSchema }
 	| {
 			kind: 'landing';
@@ -325,6 +325,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				title,
 				description,
 				canonical,
+				robots: input.indexable ? undefined : 'noindex,follow',
 				// The tenant root `/` renders the org page but is not an oEmbed target
 				// path; point discovery at the org's own `/org/{slug}` URL.
 				oembed: oembedDiscoveryUrl(

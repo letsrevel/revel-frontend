@@ -27,13 +27,17 @@ export interface OrgPageEvent {
 	fetch: typeof globalThis.fetch;
 	url: URL;
 	request: Request;
+	setHeaders: (headers: Record<string, string>) => void;
 }
 
 /**
  * Server load shared by `/org/{slug}` and, on a tenant host, the root `/`
  * (#1056). On the platform host an org with an active custom domain 301s to it.
  */
-export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent, slug: string) {
+export async function loadOrgPage(
+	{ locals, fetch, url, request, setHeaders }: OrgPageEvent,
+	slug: string
+) {
 	try {
 		// Prepare headers with authentication if user is logged in
 		const headers: HeadersInit = {};
@@ -156,9 +160,17 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 			}
 		}
 
+		// Only public orgs are indexable; unlisted (link-only) and restricted ones
+		// must stay out of search engines even though the page may render.
+		const indexable = organization.visibility === 'public';
+		if (!indexable) {
+			setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
+		}
+
 		const lang = resolveLang(request);
 		const seo = buildSeo({
 			kind: 'org',
+			indexable,
 			url,
 			lang,
 			org: organization,
