@@ -26,7 +26,7 @@ import type {
  */
 export const ssr = true;
 
-export const load: PageServerLoad = async ({ params, locals, fetch, url, request }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url, request, setHeaders }) => {
 	const { slug } = params;
 
 	try {
@@ -99,6 +99,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			}
 		}
 
+		// Same rule as the org page: only a public org is indexable.
+		const indexable = organization.visibility === 'public';
+		if (!indexable) setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
+
 		const lang = resolveLang(request);
 		// Canonical without the query string: `?ot=` and the Stripe return flags
 		// are per-visit, and each would otherwise mint a distinct canonical URL
@@ -109,7 +113,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			url: canonicalUrl,
 			lang,
 			org: organization,
-			indexable: organization.visibility === 'public',
+			indexable,
 			tenant: locals.tenant,
 			linkContext: serverLinkContext(locals)
 		});
