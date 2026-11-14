@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.37.0] - 2026-11-14
+
+### Added
+- Organizations can now be set to **Unlisted** in their settings. Anyone with the link can open the organization profile, but it doesn't appear in search or browse. Events keep their own visibility.
+
+### Changed
+- Profiles of organizations that aren't public (unlisted, members-only, staff-only) are now kept out of search engines, and a custom domain's sitemap no longer lists the profile of a non-public organization.
+
 ## [2.36.0] - 2026-11-11
 
 ### Added
