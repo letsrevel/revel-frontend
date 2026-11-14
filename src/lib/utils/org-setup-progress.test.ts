@@ -130,6 +130,7 @@ describe('isPageHidden', () => {
 		expect(isPageHidden('staff-only')).toBe(true);
 		expect(isPageHidden('public')).toBe(false);
 		expect(isPageHidden('members-only')).toBe(false);
+		expect(isPageHidden('unlisted')).toBe(false);
 	});
 });
 

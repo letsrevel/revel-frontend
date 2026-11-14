@@ -3899,9 +3899,11 @@
 				"addressPlaceholder": "Via Roma 123, Città, Stato 12345",
 				"visibilityLabel": "Visibilità",
 				"visibilityPublic": "Pubblico - Chiunque può visualizzare",
+				"visibilityUnlisted": "Non in elenco - Chiunque abbia il link può visualizzare",
 				"visibilityMembersOnly": "Solo Membri - Solo i membri dell'organizzazione possono visualizzare",
 				"visibilityStaffOnly": "Solo Staff - Solo i membri dello staff possono visualizzare",
 				"visibilityPublicHelp": "Il profilo della tua organizzazione è visibile a tutti",
+				"visibilityUnlistedHelp": "Chiunque abbia il link può vedere il profilo della tua organizzazione, ma non compare nella ricerca né nell'elenco. I tuoi eventi mantengono la propria visibilità.",
 				"visibilityMembersOnlyHelp": "Il profilo della tua organizzazione è visibile solo ai membri",
 				"visibilityStaffOnlyHelp": "Il profilo della tua organizzazione è visibile solo allo staff"
 			},

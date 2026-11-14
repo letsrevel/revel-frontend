@@ -1,3 +1,4 @@
+import { organizationGetOrganization } from '$lib/api';
 import { orgOrigin } from '$lib/utils/org-links';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
@@ -65,10 +66,26 @@ ${lines.join('\n')}
 	});
 }
 
-export const GET: RequestHandler = async ({ url, locals }) => {
+export const GET: RequestHandler = async ({ url, locals, fetch }) => {
 	// Tenant host: the org page (served at `/`) is the only static entry. No
 	// marketing, landing, auth or platform pages (#1057).
 	if (locals.tenant) {
+		// `locals.tenant` carries no visibility, so ask the API anonymously: only a
+		// public org page is indexable. A definitive "not public" (unlisted, or
+		// 403/404/410) yields an empty urlset; a transient failure fails open so a
+		// blip does not cache an empty sitemap for a day.
+		try {
+			const res = await organizationGetOrganization({ fetch, path: { slug: locals.tenant.slug } });
+			if (
+				res.data
+					? res.data.visibility !== 'public'
+					: [403, 404, 410].includes(res.response?.status ?? 0)
+			) {
+				return urlset([]);
+			}
+		} catch {
+			// fail open
+		}
 		const loc = `${orgOrigin(locals.tenant, serverLinkContext(locals)) ?? url.origin}/`;
 		return urlset([
 			`<url>\n  <loc>${escapeXml(loc)}</loc>\n  <changefreq>daily</changefreq>\n  <priority>1.0</priority>\n</url>`

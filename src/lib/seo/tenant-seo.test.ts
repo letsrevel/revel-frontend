@@ -104,7 +104,14 @@ describe('site-name helpers', () => {
 
 describe('buildSeo on a tenant host', () => {
 	it('org page: title is just the org name; site name, no twitter:site, no Revel anywhere', () => {
-		const cfg = buildSeo({ kind: 'org', url: tenantUrl('/'), lang: 'en', org, tenant });
+		const cfg = buildSeo({
+			kind: 'org',
+			url: tenantUrl('/'),
+			lang: 'en',
+			indexable: true,
+			org,
+			tenant
+		});
 		expect(cfg.title).toBe('Acme Club');
 		expect(cfg.canonical).toBe('https://events.acme.test/');
 		expect(cfg.og.siteName).toBe('Acme Club');
@@ -118,14 +125,35 @@ describe('buildSeo on a tenant host', () => {
 	});
 
 	it('org page: /org/{slug} on its own domain canonicalizes to the root', () => {
-		const cfg = buildSeo({ kind: 'org', url: tenantUrl('/org/acme'), lang: 'en', org, tenant });
+		const cfg = buildSeo({
+			kind: 'org',
+			url: tenantUrl('/org/acme'),
+			lang: 'en',
+			indexable: true,
+			org,
+			tenant
+		});
 		expect(cfg.canonical).toBe('https://events.acme.test/');
-		const root = buildSeo({ kind: 'org', url: tenantUrl('/'), lang: 'en', org, tenant });
+		const root = buildSeo({
+			kind: 'org',
+			url: tenantUrl('/'),
+			lang: 'en',
+			indexable: true,
+			org,
+			tenant
+		});
 		expect(root.canonical).toBe('https://events.acme.test/');
 	});
 
 	it('org page: no breadcrumb trail (it is the root), only the Organization block', () => {
-		const cfg = buildSeo({ kind: 'org', url: tenantUrl('/'), lang: 'en', org, tenant });
+		const cfg = buildSeo({
+			kind: 'org',
+			url: tenantUrl('/'),
+			lang: 'en',
+			indexable: true,
+			org,
+			tenant
+		});
 		expect(cfg.jsonLd.map((j) => (j as Record<string, unknown>)['@type'])).toEqual([
 			'Organization'
 		]);
@@ -204,7 +232,13 @@ describe('buildSeo on the platform host is unchanged', () => {
 		expect(ev.twitter.site).toBe('@letsrevel');
 		expect(ev.og.logo).toBe('https://letsrevel.io/og-logo-v2.png');
 
-		const o = buildSeo({ kind: 'org', url: platformUrl('/org/acme'), lang: 'en', org });
+		const o = buildSeo({
+			kind: 'org',
+			url: platformUrl('/org/acme'),
+			lang: 'en',
+			indexable: true,
+			org
+		});
 		expect(o.title).toBe('Acme Club | Revel');
 
 		const s = buildSeo({

@@ -3899,9 +3899,11 @@
 				"addressPlaceholder": "Rua Principal, 123, Cidade, 1234-567",
 				"visibilityLabel": "Visibilidade",
 				"visibilityPublic": "Público - Qualquer pessoa pode ver",
+				"visibilityUnlisted": "Não listado - Qualquer pessoa com o link pode ver",
 				"visibilityMembersOnly": "Apenas membros - Só os membros da organização podem ver",
 				"visibilityStaffOnly": "Apenas staff - Só o staff pode ver",
 				"visibilityPublicHelp": "O perfil da tua organização é visível a toda a gente",
+				"visibilityUnlistedHelp": "Qualquer pessoa com o link pode ver o perfil da tua organização, mas não aparece na pesquisa nem na listagem. Os teus eventos mantêm a sua própria visibilidade.",
 				"visibilityMembersOnlyHelp": "O perfil da tua organização só é visível aos membros",
 				"visibilityStaffOnlyHelp": "O perfil da tua organização só é visível ao staff"
 			},

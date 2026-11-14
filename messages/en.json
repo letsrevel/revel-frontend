@@ -3899,9 +3899,11 @@
 				"addressPlaceholder": "123 Main St, City, State 12345",
 				"visibilityLabel": "Visibility",
 				"visibilityPublic": "Public - Anyone can view",
+				"visibilityUnlisted": "Unlisted - Anyone with the link can view",
 				"visibilityMembersOnly": "Members Only - Only organization members can view",
 				"visibilityStaffOnly": "Staff Only - Only staff members can view",
 				"visibilityPublicHelp": "Your organization profile is visible to everyone",
+				"visibilityUnlistedHelp": "Anyone with the link can see your organization profile, but it isn't listed in search or browse. Your events keep their own visibility.",
 				"visibilityMembersOnlyHelp": "Your organization profile is only visible to members",
 				"visibilityStaffOnlyHelp": "Your organization profile is only visible to staff"
 			},

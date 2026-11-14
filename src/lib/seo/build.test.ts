@@ -1,7 +1,7 @@
 // src/lib/seo/build.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildSeo } from '$lib/seo/build';
-import type { EventDetailSchema } from '$lib/api/generated/types.gen';
+import type { EventDetailSchema, OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 
 const url = (path: string) => new URL(`https://letsrevel.io${path}`);
 
@@ -173,6 +173,14 @@ describe('buildSeo', () => {
 			lang: 'en'
 		});
 		expect(referralCfg.robots).toBe('noindex,follow');
+	});
+
+	it('org: robots follows indexable', () => {
+		const org = { id: 'o1', name: 'Acme', slug: 'acme' } as unknown as OrganizationRetrieveSchema;
+		const mk = (indexable: boolean) =>
+			buildSeo({ kind: 'org', url: url('/org/acme'), lang: 'en', org, indexable });
+		expect(mk(false).robots).toBe('noindex,follow');
+		expect(mk(true).robots).toBeUndefined();
 	});
 
 	it('event: canonical and og:url use the org custom domain (#1056)', () => {
