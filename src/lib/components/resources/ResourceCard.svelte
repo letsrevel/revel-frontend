@@ -168,7 +168,7 @@
 
 <article
 	class={cn(
-		'group relative flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-all hover:-translate-y-1 hover:shadow-poster-lg',
+		'group relative flex min-w-0 flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-all hover:-translate-y-1 hover:shadow-poster-lg',
 		isDeleting && 'opacity-50'
 	)}
 >
@@ -234,7 +234,7 @@
 		<button
 			type="button"
 			onclick={handleResourceClick}
-			class="w-full rounded-md bg-muted/50 px-3 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			class="w-full min-w-0 rounded-md bg-muted/50 px-3 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 		>
 			<p class="truncate text-muted-foreground">
 				{contentPreview}
