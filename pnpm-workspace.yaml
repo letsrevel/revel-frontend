@@ -42,6 +42,24 @@ auditConfig:
     # from our own tailwind config, never attacker-controlled input at runtime.
     # Drop this entry and add a 'braces@<3.0.4' override once a fixed braces ships.
     - GHSA-vfj7-8cjw-p6xm
+    # @sveltejs/kit, both low, patched only in kit 3.0.0 (a major migration, tracked
+    # separately from #1239):
+    #  GHSA-pfhg-q3qv-9q6r: open redirect via use:enhance on routes accepting paths that
+    #  start with `//` (catch-all routes). We have no catch-all ([...rest]) routes.
+    #  GHSA-27mw-82g8-phjj: XSS via an untrusted cache-control value passed to setHeaders on
+    #  a PRERENDERED page. Nothing is prerendered, and our only setHeaders cache-control
+    #  (oembed) is a constant. Neither applies; drop both when we move to kit 3.
+    - GHSA-pfhg-q3qv-9q6r
+    - GHSA-27mw-82g8-phjj
+    # deepmerge <=4.3.1 prototype poisoning (low). NO patched release on npm (latest is
+    # 4.3.1). Reached only via @rollup/plugin-node-resolve and @sveltejs/vite-plugin-svelte,
+    # which merge our own build config at build time; never fed request data.
+    - GHSA-gcqx-w48m-w2h4
+    # minimatch 10.x pattern amplification DoS (moderate), patched only in 11.0.1.
+    # @typescript-eslint/typescript-estree (latest included) pins minimatch ^10, and we
+    # never force cross-major jumps via overrides.
+    # Lint-time only, with glob patterns from our own eslint config, not shipped.
+    - GHSA-g3hv-75wg-m249
 
 # ── Version overrides ────────────────────────────────────────────────────────────
 # Pre-existing pins (kept) plus the security remediation of 2026-06: each transitive
@@ -50,10 +68,13 @@ auditConfig:
 overrides:
   cookie: '0.7.0'
   set-cookie-parser: '2.7.2'
-  devalue: '>=5.8.1'
+  # GHSA-j22f-vq7h-c4qm, -mcm9-63f2-9j32, -x5rw-q4pp-hg5g, -r9w8-h9r3-54w4, -9rgm-9g3h-6x36,
+  # -hx4r-w6wj-j8fg, -4q55-j62x-fr9h, -wf3x-273g-mvxv: devalue <=5.9.2. kit 2.x declares ^5.8.1,
+  # so cap below 6 to stay on the major kit was built against.
+  devalue: '>=5.9.3 <6.0.0'
   'glob@>=10.2.0 <10.5.0': '>=10.5.0'
   'valibot@>=0.31.0 <1.2.0': '>=1.2.0'
-  'js-yaml@>=4.0.0 <4.1.1': '>=4.1.1'
+  'js-yaml@>=4.0.0 <4.3.2': '>=4.3.2 <5.0.0'
   'minimatch@<3.1.4': '>=3.1.4'
   'minimatch@>=9.0.0 <9.0.7': '>=9.0.7'
   'rollup@>=4.0.0 <4.59.0': '>=4.59.0'
@@ -63,13 +84,15 @@ overrides:
   # jsdom (server-side DOMPurify) loads undici 8, whose import swaps Node's global
   # dispatcher; before 8.11.2 its legacy wrapper stripped every response header
   # from Node 22's built-in fetch over HTTPS/HTTP2 (SSR 500s, demo login). See undici-compat.test.ts.
-  'undici@>=8.0.0 <8.12.2': '>=8.12.2 <9.0.0'
+  # 8.12.4 also fixes CVE-2026-120222 (attacker-triggered uncaught exception that would
+  # take the SSR Node process down) — #1239.
+  'undici@>=8.0.0 <8.12.4': '>=8.12.4 <9.0.0'
   'kysely@<=0.28.13': '>=0.28.14'
   'effect@<3.20.0': '>=3.20.0'
   'handlebars@>=4.0.0 <4.7.9': '>=4.7.9'
   'brace-expansion@<1.1.13': '>=1.1.13'
   'brace-expansion@>=2.0.0 <2.0.3': '>=2.0.3'
-  'brace-expansion@>=5.0.0 <5.0.6': '>=5.0.6'
+  'brace-expansion@>=3.0.0 <5.0.12': '>=5.0.12 <6.0.0'
   picomatch: '>=4.0.4'
   'yaml@>=1.0.0 <1.10.3': '>=1.10.3'
   'dompurify@<3.4.17': '>=3.4.17'
@@ -88,6 +111,12 @@ overrides:
   # transitively via postcss (5 paths). Scoped to the v3 line so consumers that
   # require() nanoid 3 (CJS) are not force-jumped to the ESM-only 4/5 majors.
   'nanoid@<3.3.18': '>=3.3.18 <4.0.0'
+  # GHSA-rj75-hqrm-r3gf: postcss-selector-parser <6.1.5. @tailwindcss/typography pins the
+  # exact 6.0.10; scoped to the 6.x line (#1239).
+  'postcss-selector-parser@<6.1.5': '>=6.1.5 <7.0.0'
+  # Aikido ReDoS flag on inline-style-parser 0.2.7 (#1239). style-to-object (via bits-ui /
+  # mode-watcher) pins the exact 0.2.7; take the latest 0.2.x patch.
+  'inline-style-parser@<0.2.9': '>=0.2.9 <0.3.0'
   # Dedupe @tiptap/pm to a single version. @tiptap/starter-kit floats its
   # sub-extensions ahead of the directly declared @tiptap/core, and each side
   # pulls its own @tiptap/pm — two @tiptap/core instances whose ChainedCommands
