@@ -6098,6 +6098,8 @@
 	},
 	"register": {
 		"turnstileUnavailable": "The anti-bot check couldn't load. If you use an ad or script blocker, allow challenges.cloudflare.com and reload the page.",
+		"turnstileError": "The anti-bot check failed. Please try again.",
+		"turnstileRetry": "Try again",
 		"title": "Create Account - Revel",
 		"metaDescription": "Create your Revel account to start organizing and attending community events",
 		"createAccount": "Create your account",

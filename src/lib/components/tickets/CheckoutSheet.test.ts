@@ -7,7 +7,7 @@
  */
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 const toastInfo = vi.hoisted(() => vi.fn());
 vi.mock('svelte-sonner', () => ({ toast: { info: toastInfo, success: vi.fn(), error: vi.fn() } }));
 import CheckoutSheet from './CheckoutSheet.svelte';
@@ -44,6 +44,9 @@ interface Opts {
 	buyerName?: string;
 	identity?: GuestIdentity;
 	open?: boolean;
+	turnstileSiteKey?: string | null;
+	onConfirm?: (opts: Record<string, unknown>) => Promise<void>;
+	wouldResume?: () => boolean;
 }
 
 function renderSheet(opts: Opts = {}) {
@@ -60,10 +63,12 @@ function renderSheet(opts: Opts = {}) {
 			organizationSlug: 'acme',
 			isProcessing: false,
 			purchaseError: null,
-			onConfirm: vi.fn().mockResolvedValue(undefined),
+			onConfirm: opts.onConfirm ?? vi.fn().mockResolvedValue(undefined),
 			registry: new CartSeatHoldRegistry(),
 			identity: opts.identity,
-			buyerName: opts.buyerName
+			buyerName: opts.buyerName,
+			turnstileSiteKey: opts.turnstileSiteKey,
+			wouldResume: opts.wouldResume
 		}
 	});
 	return { cart, ...utils };
@@ -207,5 +212,117 @@ describe('CheckoutSheet "choose another tier" after a members_excluded refusal',
 			m['checkoutSheet.nonMembersTiersRemoved']({ names: 'Non-members' })
 		);
 		expect(onChooseAnotherTier).toHaveBeenCalledOnce();
+	});
+});
+
+describe('CheckoutSheet Turnstile (guests)', () => {
+	const api = { render: vi.fn(), reset: vi.fn(), remove: vi.fn() };
+	afterEach(() => {
+		delete window.turnstile;
+	});
+
+	function guestIdentity(): GuestIdentity {
+		const identity = new GuestIdentity();
+		identity.email = 'guest@example.com';
+		return identity;
+	}
+
+	it('blocks confirm until a token arrives, sends it, then resets the widget', async () => {
+		let solve: (token: string) => void = vi.fn();
+		api.render.mockImplementation((_el: HTMLElement, opts: { callback: (t: string) => void }) => {
+			solve = opts.callback;
+			return 'widget-1';
+		});
+		window.turnstile = api;
+		const onConfirm = vi.fn().mockResolvedValue(undefined);
+		renderSheet({
+			isAuthenticated: false,
+			requireTicketNames: false,
+			identity: guestIdentity(),
+			turnstileSiteKey: 'site-key',
+			onConfirm
+		});
+		const confirm = await screen.findByRole('button', { name: m['cartSheet.claim']() });
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalled());
+		expect(confirm).toBeDisabled();
+
+		solve('ts-tok');
+		await vi.waitFor(() => expect(confirm).toBeEnabled());
+		await userEvent.setup().click(confirm);
+
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ turnstileToken: 'ts-tok' }));
+		await vi.waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
+	});
+
+	it('renders no widget for an authenticated buyer', () => {
+		renderSheet({ isAuthenticated: true, turnstileSiteKey: 'site-key' });
+		expect(screen.queryByTestId('turnstile')).toBeNull();
+	});
+
+	it('renders no widget, keeps confirm enabled and sends no token without a site key', async () => {
+		const onConfirm = vi.fn().mockResolvedValue(undefined);
+		renderSheet({
+			isAuthenticated: false,
+			requireTicketNames: false,
+			identity: guestIdentity(),
+			turnstileSiteKey: null,
+			onConfirm
+		});
+		const confirm = screen.getByRole('button', { name: m['cartSheet.claim']() });
+		expect(screen.queryByTestId('turnstile')).toBeNull();
+		expect(confirm).toBeEnabled();
+		await userEvent.setup().click(confirm);
+		expect(onConfirm.mock.calls[0][0]).not.toHaveProperty('turnstileToken');
+	});
+
+	it('does not require a token when the attempt would resume a held reservation', async () => {
+		window.turnstile = api;
+		const onConfirm = vi.fn().mockResolvedValue(undefined);
+		renderSheet({
+			isAuthenticated: false,
+			requireTicketNames: false,
+			identity: guestIdentity(),
+			turnstileSiteKey: 'site-key',
+			wouldResume: () => true,
+			onConfirm
+		});
+		const confirm = screen.getByRole('button', { name: m['cartSheet.claim']() });
+		expect(confirm).toBeEnabled();
+		await userEvent.setup().click(confirm);
+		expect(onConfirm.mock.calls[0][0]).not.toHaveProperty('turnstileToken');
+	});
+
+	it('still resets the widget when onConfirm rejects', async () => {
+		let solve: (token: string) => void = vi.fn();
+		api.render.mockImplementation((_el: HTMLElement, opts: { callback: (t: string) => void }) => {
+			solve = opts.callback;
+			return 'widget-1';
+		});
+		api.reset.mockClear();
+		window.turnstile = api;
+		renderSheet({
+			isAuthenticated: false,
+			requireTicketNames: false,
+			identity: guestIdentity(),
+			turnstileSiteKey: 'site-key',
+			onConfirm: vi.fn().mockRejectedValue(new Error('boom'))
+		});
+		const confirm = await screen.findByRole('button', { name: m['cartSheet.claim']() });
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalled());
+		solve('ts-tok');
+		await vi.waitFor(() => expect(confirm).toBeEnabled());
+		// handleConfirm rethrows the rejection (try/finally, no catch); keep Vitest
+		// from failing the run on that expected unhandled rejection.
+		const saved = process.listeners('unhandledRejection');
+		process.removeAllListeners('unhandledRejection');
+		process.on('unhandledRejection', vi.fn());
+		try {
+			await userEvent.setup().click(confirm);
+			await vi.waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		} finally {
+			process.removeAllListeners('unhandledRejection');
+			saved.forEach((l) => process.on('unhandledRejection', l));
+		}
 	});
 });

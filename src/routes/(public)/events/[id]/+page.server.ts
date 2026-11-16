@@ -5,6 +5,7 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
+import { getTurnstileSiteKey } from '$lib/server/features';
 import {
 	eventpublicdetailsGetEvent,
 	eventpublicattendanceGetMyEventStatus,
@@ -38,6 +39,12 @@ export const load: PageServerLoad = async ({
 	cookies
 }) => {
 	const { id } = params;
+
+	// Public, cached `/version` lookup kicked off alongside the other upstream
+	// fetches so it adds no sequential round trip. Always returned, even for
+	// authenticated visitors: live auth can drop to guest in place, and the
+	// guest forms then need the key. Fail-safe (null on error), never rejects.
+	const turnstileSiteKeyPromise = getTurnstileSiteKey(fetch);
 
 	try {
 		// Prepare headers with authentication if user is logged in
@@ -282,6 +289,7 @@ export const load: PageServerLoad = async ({
 			isStaff,
 			eventTokenDetails,
 			userVisibility,
+			turnstileSiteKey: await turnstileSiteKeyPromise,
 			// Explicitly pass authentication state to the page. The token
 			// itself is NOT shipped — the client reads it from authStore to
 			// avoid serializing the JWT into the SSR HTML.

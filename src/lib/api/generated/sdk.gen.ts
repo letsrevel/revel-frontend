@@ -6316,6 +6316,8 @@ export const eventpublicseatingHoldBestAvailable = <ThrowOnError extends boolean
  * Send an invitation link's token as ``X-Event-Token`` (or ``?et=``) and it is claimed for
  * the guest first, exactly as the join page does for a logged-in user — this is how a guest
  * passes a private event's invitation gate.
+ *
+ * When bot protection is configured, a valid `turnstile_token` is required (400 otherwise).
  */
 export const eventpublicguestGuestRsvp = <ThrowOnError extends boolean = false>(options: Options<EventpublicguestGuestRsvpE90516EeData, ThrowOnError>): RequestResult<EventpublicguestGuestRsvpE90516EeResponses, EventpublicguestGuestRsvpE90516EeErrors, ThrowOnError> => (options.client ?? client).post<EventpublicguestGuestRsvpE90516EeResponses, EventpublicguestGuestRsvpE90516EeErrors, ThrowOnError>({
     security: [{
@@ -6456,6 +6458,8 @@ export const eventpublicguestGuestTicketPwycCheckout = <ThrowOnError extends boo
  * it is claimed for the guest first, exactly as the join page does for a logged-in
  * user — this is how a guest buys from an invited-only tier. Returns 403 if a tier's
  * `purchasable_by` rule or sale window rejects the buyer.
+ *
+ * When bot protection is configured, a valid `turnstile_token` is required (400 otherwise).
  */
 export const eventpublicguestGuestMultiTierCheckout = <ThrowOnError extends boolean = false>(options: Options<EventpublicguestGuestMultiTierCheckout11C6125bData, ThrowOnError>): RequestResult<EventpublicguestGuestMultiTierCheckout11C6125bResponses, EventpublicguestGuestMultiTierCheckout11C6125bErrors, ThrowOnError> => (options.client ?? client).post<EventpublicguestGuestMultiTierCheckout11C6125bResponses, EventpublicguestGuestMultiTierCheckout11C6125bErrors, ThrowOnError>({
     security: [{

@@ -15,8 +15,10 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import type { GuestCartCheckoutParams } from '../tickets/cart-payload';
 
 const eventpublicguestGuestMultiTierCheckout = vi.hoisted(() => vi.fn());
+const eventpublicguestGuestCheckoutSession = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	eventpublicguestGuestMultiTierCheckout
+	eventpublicguestGuestMultiTierCheckout,
+	eventpublicguestGuestCheckoutSession
 }));
 
 const toastMock = vi.hoisted(() => ({
@@ -265,6 +267,81 @@ describe('createGuestCartCheckoutController — invitation-link token header', (
 // Issue #912: errors the sheet renders with their own CTAs (log in / split the
 // purchase) must not ALSO fire the generic checkout-failed toast — the inline
 // alert is the feedback. Every other failure keeps the toast.
+describe('createGuestCartCheckoutController — Turnstile token', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValue({
+			data: { message: 'Check your email' },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+	});
+
+	it('sends turnstile_token in the body when the params carry one', async () => {
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart({ ...makeParams(), turnstileToken: 'ts-tok' });
+
+		const options = eventpublicguestGuestMultiTierCheckout.mock.calls[0][0];
+		expect(options.body.turnstile_token).toBe('ts-tok');
+	});
+
+	it('calls onBadRequest on a 400 refusal only', async () => {
+		const onBadRequest = vi.fn();
+		const controller = await renderController(makeDeps({ onBadRequest }));
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Bot verification failed. Please try again.' },
+			response: { ok: false, status: 400 }
+		});
+		await expect(controller.checkoutCart(makeParams())).rejects.toThrow();
+		expect(onBadRequest).toHaveBeenCalledOnce();
+
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'nope' },
+			response: { ok: false, status: 404 }
+		});
+		await expect(controller.checkoutCart(makeParams())).rejects.toThrow();
+		expect(onBadRequest).toHaveBeenCalledOnce();
+	});
+
+	it('does not fall through to a tokenless reserve when a resumeOnly resume finds an expired hold', async () => {
+		const controller = await renderController(makeDeps());
+		// First attempt: reserve succeeds, session step fails retryably -> handle kept.
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: { reservation_id: 'res-1', requires_payment: true },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		eventpublicguestGuestCheckoutSession.mockResolvedValueOnce({
+			error: { detail: 'later' },
+			response: { status: 500 }
+		});
+		await expect(
+			controller.checkoutCart({ ...makeParams(), turnstileToken: 'ts-tok' })
+		).rejects.toThrow();
+		expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledTimes(1);
+
+		// Retry without a token: the hold has expired server-side (404) -> no reserve call.
+		eventpublicguestGuestCheckoutSession.mockResolvedValueOnce({
+			error: { detail: 'gone' },
+			response: { status: 404 }
+		});
+		await expect(controller.checkoutCart({ ...makeParams(), resumeOnly: true })).rejects.toThrow(
+			/expired/i
+		);
+		expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledTimes(1);
+	});
+
+	it('omits turnstile_token without one (no site key configured)', async () => {
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart(makeParams());
+
+		const options = eventpublicguestGuestMultiTierCheckout.mock.calls[0][0];
+		expect(options.body).not.toHaveProperty('turnstile_token');
+	});
+});
+
 describe('createGuestCartCheckoutController — CTA-error toast suppression', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();

@@ -6098,6 +6098,8 @@
 	},
 	"register": {
 		"turnstileUnavailable": "Die Anti-Bot-Prüfung konnte nicht geladen werden. Wenn du einen Werbe- oder Skriptblocker nutzt, erlaube challenges.cloudflare.com und lade die Seite neu.",
+		"turnstileError": "Die Anti-Bot-Prüfung ist fehlgeschlagen. Bitte versuche es erneut.",
+		"turnstileRetry": "Erneut versuchen",
 		"title": "Konto erstellen - Revel",
 		"metaDescription": "Erstelle dein Revel-Konto, um Community-Events zu organisieren und daran teilzunehmen",
 		"createAccount": "Konto erstellen",

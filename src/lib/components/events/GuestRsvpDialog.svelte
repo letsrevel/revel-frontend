@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { invalidateAll } from '$app/navigation';
 	import { loginHrefFor, withReturnUrl } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
@@ -23,6 +24,7 @@
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import { isGuestActionError } from '$lib/utils/api-error-detail';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import Turnstile from '$lib/components/auth/Turnstile.svelte';
 	import { GUEST_COMPATIBLE_STEPS } from './guest-cart-checkout-controller.svelte';
 
 	interface Props {
@@ -32,6 +34,8 @@
 		 * as `X-Event-Token` so the backend claims the link for the guest before
 		 * eligibility checks run (backend #923). */
 		eventToken?: string | null;
+		/** Cloudflare Turnstile site key; null/omitted = bot protection off. */
+		turnstileSiteKey?: string | null;
 		/** Whether the event accepts an optional note with RSVPs. */
 		acceptsNotes?: boolean;
 		onClose: () => void;
@@ -42,6 +46,7 @@
 		open = $bindable(),
 		eventId,
 		eventToken = null,
+		turnstileSiteKey = null,
 		acceptsNotes = false,
 		onClose,
 		onSuccess
@@ -57,6 +62,11 @@
 
 	// Optional note for the organizers (only when the event accepts notes)
 	let note = $state('');
+
+	// Turnstile token (single-use) and widget handle; only used when a site key is configured
+	let turnstileToken = $state('');
+	let turnstile = $state<ReturnType<typeof Turnstile> | null>(null);
+	const awaitingTurnstile = $derived(!!turnstileSiteKey && !turnstileToken);
 
 	// UI state
 	let isSubmitting = $state(false);
@@ -89,6 +99,7 @@
 			errorMessage = null;
 			showSuccess = false;
 			requiresAccount = false;
+			turnstileToken = '';
 		}
 	});
 
@@ -133,7 +144,7 @@
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
-		if (!validateForm()) return;
+		if (awaitingTurnstile || !validateForm()) return;
 
 		isSubmitting = true;
 		errorMessage = null;
@@ -149,12 +160,17 @@
 					email: formData.email,
 					first_name: formData.first_name,
 					last_name: formData.last_name,
+					...(turnstileSiteKey && turnstileToken ? { turnstile_token: turnstileToken } : {}),
 					...(acceptsNotes && note.trim() ? { note: note.trim() } : {})
 				}
 			});
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
+				// No widget because the site key couldn't be read at load time while the
+				// backend still enforces the check: re-run load so the retry gets the key
+				// (mirrors /register).
+				if (response.response?.status === 400 && !turnstileSiteKey) void invalidateAll();
 				// The runtime error payload can carry eligibility fields (next_step, reason)
 				// that are not part of the declared ResponseMessage type, so narrow from unknown.
 				const err: unknown = response.error;
@@ -197,6 +213,8 @@
 			errorMessage = handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
+			// Tokens are single-use: any outcome that keeps the dialog open needs a fresh one.
+			if (!showSuccess) turnstile?.reset();
 		}
 	}
 
@@ -404,6 +422,14 @@
 						</div>
 					{/if}
 
+					{#if turnstileSiteKey}
+						<Turnstile
+							bind:this={turnstile}
+							siteKey={turnstileSiteKey}
+							bind:token={turnstileToken}
+						/>
+					{/if}
+
 					<!-- Error Message -->
 					{#if errorMessage}
 						<Alert variant="destructive">
@@ -441,7 +467,11 @@
 					>
 						{m['guest_attendance.common_cancel']()}
 					</Button>
-					<Button type="submit" disabled={isSubmitting} class="flex-1 sm:flex-initial">
+					<Button
+						type="submit"
+						disabled={isSubmitting || awaitingTurnstile}
+						class="flex-1 sm:flex-initial"
+					>
 						{#if isSubmitting}
 							{m['guest_attendance.submitting']()}
 						{:else}

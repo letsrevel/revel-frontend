@@ -307,6 +307,7 @@
 		event,
 		eventId: event.id,
 		eventToken: data.eventTokenDetails?.id,
+		getTurnstileSiteKey: () => data.turnstileSiteKey,
 		queryClient,
 		isAuthenticated: data.isAuthenticated,
 		cart,
@@ -667,6 +668,8 @@
 		chart={seatHoldRegistry.chart}
 		registry={seatHoldRegistry}
 		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
+		turnstileSiteKey={data.turnstileSiteKey}
+		wouldResume={purchaseFlow.wouldResumeGuestCheckout}
 		buyerName={ticketHolderDefaultName}
 		onChooseAnotherTier={handleGetTicketsClick}
 	/>
@@ -705,6 +708,7 @@
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
 	eventToken={data.eventTokenDetails?.id}
+	turnstileSiteKey={data.turnstileSiteKey}
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
 	bind:showVenueOverview

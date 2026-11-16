@@ -13,6 +13,8 @@ vi.mock('$lib/api', () => ({
 vi.mock('$lib/server/logger', () => ({
 	log: { warning: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() }
 }));
+const getTurnstileSiteKey = vi.hoisted(() => vi.fn(async (): Promise<string | null> => null));
+vi.mock('$lib/server/features', () => ({ getTurnstileSiteKey }));
 vi.mock('$lib/seo', () => ({ buildSeo: vi.fn(() => ({})) }));
 vi.mock('$lib/seo/server', () => ({ resolveLang: vi.fn(() => 'en') }));
 
@@ -188,5 +190,27 @@ describe('event [id] loader — tenant host', () => {
 	it('still renders on the platform host', async () => {
 		const data = await load(loadEvent());
 		expect(data).toMatchObject({ event: expect.objectContaining({ id: 'event-1' }) });
+	});
+});
+
+// Live auth can drop to guest in place after an authenticated SSR, so the site
+// key is returned regardless of who loaded the page.
+describe('event [id] loader — Turnstile site key', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		getEvent.mockResolvedValue(ok(EVENT) as never);
+		listResources.mockResolvedValue(ok({ results: [] }) as never);
+		listTiers.mockResolvedValue(ok([]) as never);
+		getTurnstileSiteKey.mockResolvedValue('site-key');
+	});
+
+	it('returns the site key for anonymous and authenticated visitors alike', async () => {
+		const anon = await load(loadEvent());
+		const event = loadEvent();
+		(event.locals as { user: unknown }).user = { accessToken: 'jwt' };
+		const authed = await load(event);
+
+		expect(anon).toMatchObject({ turnstileSiteKey: 'site-key' });
+		expect(authed).toMatchObject({ turnstileSiteKey: 'site-key' });
 	});
 });

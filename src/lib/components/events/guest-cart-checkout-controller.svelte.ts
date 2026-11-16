@@ -129,6 +129,17 @@ export function mapGuestCheckoutError(
 	return checkoutError(error, m['cart.checkoutFailed']());
 }
 
+/**
+ * Resume fingerprint of a checkout attempt: the params minus the single-use
+ * Turnstile token (a fresh token per attempt must not defeat resuming a held
+ * reservation). Key order: items, email, first_name, last_name, discountCode,
+ * billingInfo — always. mutationFn and wouldResume must both use this.
+ */
+function fingerprintOf(params: GuestCartCheckoutParams): string {
+	const { turnstileToken: _token, resumeOnly: _resumeOnly, ...rest } = params;
+	return JSON.stringify(rest);
+}
+
 /** Dependencies the guest cart checkout controller needs from the host component. */
 export interface GuestCartCheckoutDeps {
 	/** The event id used for the checkout call. */
@@ -149,6 +160,9 @@ export interface GuestCartCheckoutDeps {
 	 * it was sent to, so the host can render the confirmation state.
 	 */
 	onEmailConfirmationPending: (message: string, email: string) => void;
+	/** Called on any 400 refusal; the host uses it to re-load the Turnstile site
+	 * key when the page rendered without one (backend still enforces the check). */
+	onBadRequest?: () => void;
 }
 
 /**
@@ -227,9 +241,15 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 
 	const checkoutCartMutation = createMutation(() => ({
 		mutationFn: async (params: GuestCartCheckoutParams) => {
-			const fingerprint = JSON.stringify(params); // key order: items, email, first_name, last_name, discountCode, billingInfo — always
+			const fingerprint = fingerprintOf(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
+			// The sheet sent no token because it expected a resume; the held reservation
+			// is gone (expired server-side), so a fresh reserve would be rejected by the
+			// token check. Stop here: the sheet stays open and asks for a token.
+			if (params.resumeOnly && !params.turnstileToken) {
+				throw new Error(m['eventPage.paymentStartFailedExpired']());
+			}
 			const body: GuestMultiTierCheckoutPayload = {
 				items: params.items,
 				email: params.email,
@@ -237,7 +257,8 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				last_name: params.last_name,
 				discount_code: params.discountCode || undefined,
 				billing_info: params.billingInfo || undefined,
-				attribution: readAttributionFromCurrentUrl()
+				attribution: readAttributionFromCurrentUrl(),
+				...(params.turnstileToken ? { turnstile_token: params.turnstileToken } : {})
 			};
 			const response = await eventpublicguestGuestMultiTierCheckout({
 				path: { event_id: eventId },
@@ -249,6 +270,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				if (status === 404) {
 					queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 				}
+				if (status === 400) deps.onBadRequest?.();
 				throw mapGuestCheckoutError(response.error, status, params.email);
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
@@ -278,8 +300,9 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 		/**
 		 * Pure peek: would `checkoutCart(params)` RESUME a held reservation
 		 * instead of reserving afresh? Rebuilds the fingerprint the exact same
-		 * way the mutation does (`JSON.stringify(params)` — the two must never
-		 * drift) and forwards to `reservationRetry.wouldResume`, which makes no
+		 * way the mutation does (`fingerprintOf(params)`: the params minus the
+		 * single-use `turnstileToken`, so a fresh token per attempt never
+		 * defeats a resume — the two must never drift) and forwards to `reservationRetry.wouldResume`, which makes no
 		 * network call and never consumes the held handle.
 		 *
 		 * Callers (the confirm-time best-available hold step) use this to skip
@@ -288,7 +311,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 		 * reacquire the same block for nothing.
 		 */
 		wouldResume: (params: GuestCartCheckoutParams): boolean => {
-			const fingerprint = JSON.stringify(params); // must match mutationFn's fingerprint exactly
+			const fingerprint = fingerprintOf(params);
 			return reservationRetry.wouldResume(fingerprint);
 		},
 		get isPending() {

@@ -22,6 +22,15 @@ export interface GuestCartCheckoutParams {
 	last_name?: string;
 	discountCode?: string;
 	billingInfo?: BuyerBillingInfoSchema;
+	/** Single-use Turnstile token. Deliberately NOT part of the checkout resume
+	 * fingerprint (see guest-cart-checkout-controller): a fresh token per attempt
+	 * must not defeat resuming a held reservation. */
+	turnstileToken?: string;
+	/** Set when the sheet sent no token because it assumed a held reservation
+	 * would resume. The controller must then NOT fall through to a fresh
+	 * (token-protected) reserve if the resume turns out to be impossible
+	 * (e.g. the reservation expired server-side). Not part of the fingerprint. */
+	resumeOnly?: boolean;
 }
 
 export interface CartPayloadOptions {
@@ -93,7 +102,8 @@ export function buildGuestCartCheckoutParams(
 	items: CheckoutGroupSchema[],
 	identity: GuestCartIdentity,
 	discountCode: string,
-	billingInfo: BuyerBillingInfoSchema | null
+	billingInfo: BuyerBillingInfoSchema | null,
+	turnstileToken?: string
 ): GuestCartCheckoutParams {
 	const trimmedEmail = identity.email.trim();
 	const trimmedFirstName = identity.firstName?.trim() || undefined;
@@ -107,5 +117,6 @@ export function buildGuestCartCheckoutParams(
 	if (trimmedLastName !== undefined) result.last_name = trimmedLastName;
 	if (trimmedCode !== undefined) result.discountCode = trimmedCode;
 	if (normalizedBilling !== undefined) result.billingInfo = normalizedBilling;
+	if (turnstileToken) result.turnstileToken = turnstileToken;
 	return result;
 }
