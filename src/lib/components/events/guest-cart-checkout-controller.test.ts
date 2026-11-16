@@ -15,8 +15,10 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import type { GuestCartCheckoutParams } from '../tickets/cart-payload';
 
 const eventpublicguestGuestMultiTierCheckout = vi.hoisted(() => vi.fn());
+const eventpublicguestGuestCheckoutSession = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	eventpublicguestGuestMultiTierCheckout
+	eventpublicguestGuestMultiTierCheckout,
+	eventpublicguestGuestCheckoutSession
 }));
 
 const toastMock = vi.hoisted(() => ({
@@ -301,6 +303,34 @@ describe('createGuestCartCheckoutController — Turnstile token', () => {
 		});
 		await expect(controller.checkoutCart(makeParams())).rejects.toThrow();
 		expect(onBadRequest).toHaveBeenCalledOnce();
+	});
+
+	it('does not fall through to a tokenless reserve when a resumeOnly resume finds an expired hold', async () => {
+		const controller = await renderController(makeDeps());
+		// First attempt: reserve succeeds, session step fails retryably -> handle kept.
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: { reservation_id: 'res-1', requires_payment: true },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		eventpublicguestGuestCheckoutSession.mockResolvedValueOnce({
+			error: { detail: 'later' },
+			response: { status: 500 }
+		});
+		await expect(
+			controller.checkoutCart({ ...makeParams(), turnstileToken: 'ts-tok' })
+		).rejects.toThrow();
+		expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledTimes(1);
+
+		// Retry without a token: the hold has expired server-side (404) -> no reserve call.
+		eventpublicguestGuestCheckoutSession.mockResolvedValueOnce({
+			error: { detail: 'gone' },
+			response: { status: 404 }
+		});
+		await expect(controller.checkoutCart({ ...makeParams(), resumeOnly: true })).rejects.toThrow(
+			/expired/i
+		);
+		expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledTimes(1);
 	});
 
 	it('omits turnstile_token without one (no site key configured)', async () => {

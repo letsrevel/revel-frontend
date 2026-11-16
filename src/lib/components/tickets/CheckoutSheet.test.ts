@@ -316,10 +316,13 @@ describe('CheckoutSheet Turnstile (guests)', () => {
 		const saved = process.listeners('unhandledRejection');
 		process.removeAllListeners('unhandledRejection');
 		process.on('unhandledRejection', vi.fn());
-		await userEvent.setup().click(confirm);
-		await vi.waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		process.removeAllListeners('unhandledRejection');
-		saved.forEach((l) => process.on('unhandledRejection', l));
+		try {
+			await userEvent.setup().click(confirm);
+			await vi.waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		} finally {
+			process.removeAllListeners('unhandledRejection');
+			saved.forEach((l) => process.on('unhandledRejection', l));
+		}
 	});
 });

@@ -136,7 +136,7 @@ export function mapGuestCheckoutError(
  * billingInfo — always. mutationFn and wouldResume must both use this.
  */
 function fingerprintOf(params: GuestCartCheckoutParams): string {
-	const { turnstileToken: _token, ...rest } = params;
+	const { turnstileToken: _token, resumeOnly: _resumeOnly, ...rest } = params;
 	return JSON.stringify(rest);
 }
 
@@ -244,6 +244,12 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 			const fingerprint = fingerprintOf(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
+			// The sheet sent no token because it expected a resume; the held reservation
+			// is gone (expired server-side), so a fresh reserve would be rejected by the
+			// token check. Stop here: the sheet stays open and asks for a token.
+			if (params.resumeOnly && !params.turnstileToken) {
+				throw new Error(m['eventPage.paymentStartFailedExpired']());
+			}
 			const body: GuestMultiTierCheckoutPayload = {
 				items: params.items,
 				email: params.email,

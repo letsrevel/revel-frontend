@@ -301,7 +301,13 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 					handlers
 				)
 			: await cartBaHolds.submitCart(
-					guestParams(items, discountCode, billingInfo, turnstileToken),
+					{
+						...guestParams(items, discountCode, billingInfo, turnstileToken),
+						// Site key configured but no token: the sheet only allows that when it
+						// expects a held reservation to resume, so never fall through to a
+						// fresh (token-protected) reserve.
+						...(deps.getTurnstileSiteKey?.() && !turnstileToken ? { resumeOnly: true } : {})
+					},
 					guestCartSubmitDeps,
 					handlers
 				);

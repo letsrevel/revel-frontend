@@ -26,6 +26,11 @@ export interface GuestCartCheckoutParams {
 	 * fingerprint (see guest-cart-checkout-controller): a fresh token per attempt
 	 * must not defeat resuming a held reservation. */
 	turnstileToken?: string;
+	/** Set when the sheet sent no token because it assumed a held reservation
+	 * would resume. The controller must then NOT fall through to a fresh
+	 * (token-protected) reserve if the resume turns out to be impossible
+	 * (e.g. the reservation expired server-side). Not part of the fingerprint. */
+	resumeOnly?: boolean;
 }
 
 export interface CartPayloadOptions {
