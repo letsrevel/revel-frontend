@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.38.0] - 2026-11-16
+
+### Security
+- **Bot protection on guest flows**: guest RSVP and guest ticket checkout now ask for a Cloudflare Turnstile check before submitting. Logged-in visitors don't see it, and resuming a held reservation doesn't need a new check.
+- Updated SvelteKit, its Node adapter, `undici` and `devalue` to fix published advisories, including requests that could crash the server.
+
 ## [2.37.0] - 2026-11-14
 
 ### Added
