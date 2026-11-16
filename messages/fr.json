@@ -6068,6 +6068,8 @@
 	},
 	"register": {
 		"turnstileUnavailable": "La vérification anti-robot n'a pas pu se charger. Si tu utilises un bloqueur de publicités ou de scripts, autorise challenges.cloudflare.com et recharge la page.",
+		"turnstileError": "La vérification anti-robot a échoué. Réessaie.",
+		"turnstileRetry": "Réessayer",
 		"title": "Créer un compte - Revel",
 		"metaDescription": "Crée ton compte Revel pour commencer à organiser des événements communautaires et y participer",
 		"createAccount": "Crée ton compte",

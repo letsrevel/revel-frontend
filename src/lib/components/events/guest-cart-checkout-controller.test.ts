@@ -283,6 +283,26 @@ describe('createGuestCartCheckoutController — Turnstile token', () => {
 		expect(options.body.turnstile_token).toBe('ts-tok');
 	});
 
+	it('calls onBadRequest on a 400 refusal only', async () => {
+		const onBadRequest = vi.fn();
+		const controller = await renderController(makeDeps({ onBadRequest }));
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Bot verification failed. Please try again.' },
+			response: { ok: false, status: 400 }
+		});
+		await expect(controller.checkoutCart(makeParams())).rejects.toThrow();
+		expect(onBadRequest).toHaveBeenCalledOnce();
+
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'nope' },
+			response: { ok: false, status: 404 }
+		});
+		await expect(controller.checkoutCart(makeParams())).rejects.toThrow();
+		expect(onBadRequest).toHaveBeenCalledOnce();
+	});
+
 	it('omits turnstile_token without one (no site key configured)', async () => {
 		const controller = await renderController(makeDeps());
 		await controller.checkoutCart(makeParams());

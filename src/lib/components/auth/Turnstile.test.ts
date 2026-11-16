@@ -77,4 +77,25 @@ describe('Turnstile', () => {
 		unmount();
 		expect(vi.getTimerCount()).toBe(0);
 	});
+
+	it('shows an alert with a retry that resets the widget when the widget errors', async () => {
+		let onError: (() => void) | undefined;
+		const reset = vi.fn();
+		window.turnstile = {
+			render: vi.fn((_el: HTMLElement, opts: { 'error-callback': () => void }) => {
+				onError = opts['error-callback'];
+				return 'w1';
+			}),
+			reset,
+			remove: vi.fn()
+		};
+		render(Turnstile, { props: { siteKey: 'site-key' } });
+		await vi.waitFor(() => expect(onError).toBeDefined());
+		onError?.();
+		const alert = await screen.findByRole('alert');
+		expect(alert).toBeTruthy();
+		screen.getByRole('button', { name: /try again/i }).click();
+		expect(reset).toHaveBeenCalledWith('w1');
+		await vi.waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+	});
 });

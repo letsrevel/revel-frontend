@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { invalidateAll } from '$app/navigation';
 	import { loginHrefFor, withReturnUrl } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
@@ -166,6 +167,10 @@
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
+				// No widget because the site key couldn't be read at load time while the
+				// backend still enforces the check: re-run load so the retry gets the key
+				// (mirrors /register).
+				if (response.response?.status === 400 && !turnstileSiteKey) void invalidateAll();
 				// The runtime error payload can carry eligibility fields (next_step, reason)
 				// that are not part of the declared ResponseMessage type, so narrow from unknown.
 				const err: unknown = response.error;

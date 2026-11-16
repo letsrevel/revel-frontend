@@ -40,6 +40,12 @@ export const load: PageServerLoad = async ({
 }) => {
 	const { org_slug, event_slug } = params;
 
+	// Public, cached `/version` lookup kicked off alongside the other upstream
+	// fetches so it adds no sequential round trip. Always returned, even for
+	// authenticated visitors: live auth can drop to guest in place, and the
+	// guest forms then need the key. Fail-safe (null on error), never rejects.
+	const turnstileSiteKeyPromise = getTurnstileSiteKey(fetch);
+
 	try {
 		// Prepare headers with authentication if user is logged in
 		const headers: HeadersInit = {};
@@ -264,11 +270,6 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
-		// Cloudflare Turnstile site key for the anonymous guest RSVP / checkout
-		// forms (null when bot protection is off). Authenticated visitors never
-		// hit those endpoints, so skip the lookup for them.
-		const turnstileSiteKey = locals.user ? null : await getTurnstileSiteKey(fetch);
-
 		const returnData = {
 			seo,
 			event,
@@ -285,7 +286,7 @@ export const load: PageServerLoad = async ({
 			isStaff,
 			eventTokenDetails,
 			userVisibility,
-			turnstileSiteKey,
+			turnstileSiteKey: await turnstileSiteKeyPromise,
 			// Explicitly pass authentication state to the page. The token
 			// itself is NOT shipped — the client reads it from authStore to
 			// avoid serializing the JWT into the SSR HTML.

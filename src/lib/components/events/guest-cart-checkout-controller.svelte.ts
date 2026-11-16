@@ -160,6 +160,9 @@ export interface GuestCartCheckoutDeps {
 	 * it was sent to, so the host can render the confirmation state.
 	 */
 	onEmailConfirmationPending: (message: string, email: string) => void;
+	/** Called on any 400 refusal; the host uses it to re-load the Turnstile site
+	 * key when the page rendered without one (backend still enforces the check). */
+	onBadRequest?: () => void;
 }
 
 /**
@@ -261,6 +264,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				if (status === 404) {
 					queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 				}
+				if (status === 400) deps.onBadRequest?.();
 				throw mapGuestCheckoutError(response.error, status, params.email);
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
@@ -290,8 +294,9 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 		/**
 		 * Pure peek: would `checkoutCart(params)` RESUME a held reservation
 		 * instead of reserving afresh? Rebuilds the fingerprint the exact same
-		 * way the mutation does (`JSON.stringify(params)` — the two must never
-		 * drift) and forwards to `reservationRetry.wouldResume`, which makes no
+		 * way the mutation does (`fingerprintOf(params)`: the params minus the
+		 * single-use `turnstileToken`, so a fresh token per attempt never
+		 * defeats a resume — the two must never drift) and forwards to `reservationRetry.wouldResume`, which makes no
 		 * network call and never consumes the held handle.
 		 *
 		 * Callers (the confirm-time best-available hold step) use this to skip

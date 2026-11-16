@@ -307,6 +307,7 @@
 		event,
 		eventId: event.id,
 		eventToken: data.eventTokenDetails?.id,
+		getTurnstileSiteKey: () => data.turnstileSiteKey,
 		queryClient,
 		isAuthenticated: data.isAuthenticated,
 		cart,
@@ -668,6 +669,7 @@
 		registry={seatHoldRegistry}
 		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
 		turnstileSiteKey={data.turnstileSiteKey}
+		wouldResume={purchaseFlow.wouldResumeGuestCheckout}
 		buyerName={ticketHolderDefaultName}
 		onChooseAnotherTier={handleGetTicketsClick}
 	/>

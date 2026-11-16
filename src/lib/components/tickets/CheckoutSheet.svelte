@@ -84,6 +84,13 @@
 		onChooseAnotherTier?: () => void;
 		/** Cloudflare Turnstile site key — guests only; null/omitted = bot protection off. */
 		turnstileSiteKey?: string | null;
+		/** Guests only: would confirming with these inputs resume a held
+		 * reservation? Such an attempt never hits the token-protected endpoint,
+		 * so it must not require a fresh Turnstile token. */
+		wouldResume?: (opts: {
+			discountCode: string;
+			billingInfo: BuyerBillingInfoSchema | null;
+		}) => boolean;
 	}
 
 	let {
@@ -103,7 +110,8 @@
 		identity,
 		buyerName = '',
 		onChooseAnotherTier,
-		turnstileSiteKey = null
+		turnstileSiteKey = null,
+		wouldResume
 	}: Props = $props();
 
 	// `members_excluded` refusal: the 400 carries no tier id, so every `non_members`
@@ -213,7 +221,16 @@
 	let turnstileToken = $state('');
 	let turnstile = $state<ReturnType<typeof Turnstile> | null>(null);
 	const needsTurnstile = $derived(!isAuthenticated && !!turnstileSiteKey);
-	const awaitingTurnstile = $derived(needsTurnstile && !turnstileToken);
+	const noToken = $derived(needsTurnstile && !turnstileToken);
+	// A resume skips the token-protected endpoint, so a missing token must not block it.
+	// Called from the markup/handlers (not a $derived): billing info isn't reactive.
+	function awaitingTurnstile(): boolean {
+		if (!noToken) return false;
+		return !wouldResume?.({
+			discountCode: appliedDiscountCode,
+			billingInfo: billingSection?.getBillingInfo() ?? null
+		});
+	}
 	// Closing unmounts the widget; a token left behind would be stale (spent or expired).
 	$effect(() => {
 		if (!open) turnstileToken = '';
@@ -281,14 +298,17 @@
 		if (guestError) return;
 		if (validationError) return;
 		if (billingSection && !billingSection.validate()) return;
-		if (awaitingTurnstile) return;
-		await onConfirm({
-			discountCode: appliedDiscountCode,
-			billingInfo: billingSection?.getBillingInfo() ?? null,
-			...(needsTurnstile ? { turnstileToken } : {})
-		});
-		// Still open = the attempt failed; the spent token needs a fresh one.
-		if (open) turnstile?.reset();
+		if (awaitingTurnstile()) return;
+		try {
+			await onConfirm({
+				discountCode: appliedDiscountCode,
+				billingInfo: billingSection?.getBillingInfo() ?? null,
+				...(needsTurnstile && turnstileToken ? { turnstileToken } : {})
+			});
+		} finally {
+			// Still open = the attempt failed (or threw); the spent token needs a fresh one.
+			if (open) turnstile?.reset();
+		}
 	}
 
 	// Same guard as the (disabled) confirm button: Enter in a PWYC field must
@@ -296,7 +316,7 @@
 	function handlePwycKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && !isProcessing) {
 			e.preventDefault();
-			if (guestError || validationError || awaitingTurnstile) return;
+			if (guestError || validationError || awaitingTurnstile()) return;
 			void handleConfirm();
 		}
 	}
@@ -523,7 +543,7 @@
 						discountValidating,
 						guestError,
 						validationError
-					}) || awaitingTurnstile}
+					}) || awaitingTurnstile()}
 					class="flex-1 sm:flex-initial"
 				>
 					{#if isProcessing}

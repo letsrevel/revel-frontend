@@ -1,5 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+const invalidateAll = vi.hoisted(() => vi.fn());
+vi.mock('$app/navigation', () => ({ invalidateAll }));
 import GuestRsvpDialog from './GuestRsvpDialog.svelte';
 
 const eventpublicguestGuestRsvp = vi.hoisted(() => vi.fn());
@@ -236,6 +238,33 @@ describe('GuestRsvpDialog — Turnstile', () => {
 		await waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
 		// The spent token is cleared, so submit is blocked until the widget re-solves.
 		await waitFor(() => expect(submit).toBeDisabled());
+	});
+
+	it('re-loads the page on a 400 when it rendered without a site key, but not with one', async () => {
+		eventpublicguestGuestRsvp.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Bot verification failed. Please try again.' },
+			response: { ok: false, status: 400 }
+		});
+		const { unmount } = render(GuestRsvpDialog, {
+			props: { open: true, eventId: 'event-1', onClose: vi.fn(), turnstileSiteKey: null }
+		});
+		await fillAndSubmit();
+		await waitFor(() => expect(invalidateAll).toHaveBeenCalledOnce());
+		unmount();
+		await new Promise((resolve) => setTimeout(resolve, 30));
+		document.body.style.pointerEvents = '';
+
+		invalidateAll.mockClear();
+		renderDialog({ turnstileSiteKey: 'site-key' });
+		await fillFields();
+		await waitFor(() => expect(api.render).toHaveBeenCalled());
+		solve('ts-tok');
+		const submit = screen.getByRole('button', { name: /submit rsvp/i });
+		await waitFor(() => expect(submit).toBeEnabled());
+		await fireEvent.click(submit);
+		await waitFor(() => expect(api.reset).toHaveBeenCalled());
+		expect(invalidateAll).not.toHaveBeenCalled();
 	});
 
 	it('renders no widget and sends no token without a site key', async () => {

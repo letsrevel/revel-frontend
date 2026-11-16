@@ -11,6 +11,7 @@
 import { tick } from 'svelte';
 import type { QueryClient } from '@tanstack/svelte-query';
 import { toast } from 'svelte-sonner';
+import { invalidateAll } from '$app/navigation';
 import * as m from '$lib/paraglide/messages.js';
 import type { EventDetailSchema, BuyerBillingInfoSchema } from '$lib/api/generated/types.gen';
 import { authStore } from '$lib/stores/auth.svelte';
@@ -38,6 +39,8 @@ export interface CartPurchaseFlowDeps {
 	 * `X-Event-Token` (backend #923). */
 	eventToken?: string | null;
 	queryClient: QueryClient;
+	/** Live Turnstile site key (null = page rendered without one). */
+	getTurnstileSiteKey?: () => string | null;
 	/** The trustworthy per-request SSR truth (`data.isAuthenticated`) — static
 	 * for the page's lifetime, used only to SEED the flow's live auth state;
 	 * see the login-mid-cart effect below for why the live `authStore` is
@@ -113,6 +116,11 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		eventToken: deps.eventToken,
 		queryClient,
 		onPurchaseComplete: handlePurchaseComplete,
+		// Site key unreadable at load time but the backend enforces: re-run load so
+		// the retry gets the widget (mirrors /register).
+		onBadRequest: () => {
+			if (!deps.getTurnstileSiteKey?.()) void invalidateAll();
+		},
 		onEmailConfirmationPending: (message, email) => {
 			guestEmailConfirmation = { email, message };
 			showCheckoutSheet = false;
@@ -232,6 +240,36 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		});
 	}
 
+	function guestParams(
+		items: ReturnType<typeof buildCartCheckoutItems>,
+		discountCode: string,
+		billingInfo: BuyerBillingInfoSchema | null,
+		turnstileToken?: string
+	) {
+		return buildGuestCartCheckoutParams(
+			items,
+			{
+				email: guestIdentity.email,
+				firstName: guestIdentity.firstName,
+				lastName: guestIdentity.lastName
+			},
+			discountCode,
+			billingInfo,
+			turnstileToken
+		);
+	}
+
+	/** Would a guest confirm with these sheet inputs resume a held reservation
+	 * (a path that never hits the token-protected endpoint)? */
+	function wouldResumeGuestCheckout(opts: {
+		discountCode: string;
+		billingInfo: BuyerBillingInfoSchema | null;
+	}): boolean {
+		return guestCartController.wouldResume(
+			guestParams(buildCartCheckoutItems(), opts.discountCode, opts.billingInfo)
+		);
+	}
+
 	async function handleSheetConfirm({
 		discountCode,
 		billingInfo,
@@ -263,17 +301,7 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 					handlers
 				)
 			: await cartBaHolds.submitCart(
-					buildGuestCartCheckoutParams(
-						items,
-						{
-							email: guestIdentity.email,
-							firstName: guestIdentity.firstName,
-							lastName: guestIdentity.lastName
-						},
-						discountCode,
-						billingInfo,
-						turnstileToken
-					),
+					guestParams(items, discountCode, billingInfo, turnstileToken),
 					guestCartSubmitDeps,
 					handlers
 				);
@@ -308,7 +336,8 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 			return liveAuth.isAuthenticated;
 		},
 		handleCartBuy,
-		handleSheetConfirm
+		handleSheetConfirm,
+		wouldResumeGuestCheckout
 	};
 }
 

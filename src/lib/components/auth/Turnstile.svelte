@@ -80,6 +80,8 @@
 	let widgetId: string | null = null;
 
 	let unavailable = $state(false);
+	// The widget itself errored (network, hostname, challenge failure): surface it and offer a retry.
+	let failed = $state(false);
 
 	$effect(() => {
 		if (!container) return;
@@ -93,9 +95,15 @@
 					sitekey: siteKey,
 					theme: 'auto',
 					language: getLocale(),
-					callback: (value) => (token = value),
+					callback: (value) => {
+						failed = false;
+						token = value;
+					},
 					'expired-callback': () => (token = ''),
-					'error-callback': () => (token = '')
+					'error-callback': () => {
+						token = '';
+						failed = true;
+					}
 				});
 			})
 			.catch(() => {
@@ -113,6 +121,7 @@
 	/** Tokens are single-use: call after any submit that didn't navigate away. */
 	export function reset(): void {
 		token = '';
+		failed = false;
 		if (widgetId && window.turnstile) window.turnstile.reset(widgetId);
 	}
 </script>
@@ -122,5 +131,13 @@
 	<p role="alert" class="text-center text-sm text-destructive">
 		{m['register.turnstileUnavailable']()}
 	</p>
+{/if}
+{#if failed}
+	<div role="alert" class="flex flex-col items-center gap-2 text-center text-sm text-destructive">
+		<p>{m['register.turnstileError']()}</p>
+		<button type="button" class="font-medium underline hover:no-underline" onclick={() => reset()}>
+			{m['register.turnstileRetry']()}
+		</button>
+	</div>
 {/if}
 <input type="hidden" name="turnstileToken" value={token} />
