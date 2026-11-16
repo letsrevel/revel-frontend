@@ -7,7 +7,7 @@
  */
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 const toastInfo = vi.hoisted(() => vi.fn());
 vi.mock('svelte-sonner', () => ({ toast: { info: toastInfo, success: vi.fn(), error: vi.fn() } }));
 import CheckoutSheet from './CheckoutSheet.svelte';
@@ -44,6 +44,8 @@ interface Opts {
 	buyerName?: string;
 	identity?: GuestIdentity;
 	open?: boolean;
+	turnstileSiteKey?: string | null;
+	onConfirm?: () => Promise<void>;
 }
 
 function renderSheet(opts: Opts = {}) {
@@ -60,10 +62,11 @@ function renderSheet(opts: Opts = {}) {
 			organizationSlug: 'acme',
 			isProcessing: false,
 			purchaseError: null,
-			onConfirm: vi.fn().mockResolvedValue(undefined),
+			onConfirm: opts.onConfirm ?? vi.fn().mockResolvedValue(undefined),
 			registry: new CartSeatHoldRegistry(),
 			identity: opts.identity,
-			buyerName: opts.buyerName
+			buyerName: opts.buyerName,
+			turnstileSiteKey: opts.turnstileSiteKey
 		}
 	});
 	return { cart, ...utils };
@@ -207,5 +210,50 @@ describe('CheckoutSheet "choose another tier" after a members_excluded refusal',
 			m['checkoutSheet.nonMembersTiersRemoved']({ names: 'Non-members' })
 		);
 		expect(onChooseAnotherTier).toHaveBeenCalledOnce();
+	});
+});
+
+describe('CheckoutSheet Turnstile (guests)', () => {
+	const api = { render: vi.fn(), reset: vi.fn(), remove: vi.fn() };
+	afterEach(() => {
+		delete window.turnstile;
+	});
+
+	function guestIdentity(): GuestIdentity {
+		const identity = new GuestIdentity();
+		identity.email = 'guest@example.com';
+		return identity;
+	}
+
+	it('blocks confirm until a token arrives, sends it, then resets the widget', async () => {
+		let solve: (token: string) => void = vi.fn();
+		api.render.mockImplementation((_el: HTMLElement, opts: { callback: (t: string) => void }) => {
+			solve = opts.callback;
+			return 'widget-1';
+		});
+		window.turnstile = api;
+		const onConfirm = vi.fn().mockResolvedValue(undefined);
+		renderSheet({
+			isAuthenticated: false,
+			requireTicketNames: false,
+			identity: guestIdentity(),
+			turnstileSiteKey: 'site-key',
+			onConfirm
+		});
+		const confirm = await screen.findByRole('button', { name: m['cartSheet.claim']() });
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalled());
+		expect(confirm).toBeDisabled();
+
+		solve('ts-tok');
+		await vi.waitFor(() => expect(confirm).toBeEnabled());
+		await userEvent.setup().click(confirm);
+
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ turnstileToken: 'ts-tok' }));
+		await vi.waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
+	});
+
+	it('renders no widget for an authenticated buyer or without a site key', () => {
+		renderSheet({ isAuthenticated: true, turnstileSiteKey: 'site-key' });
+		expect(screen.queryByTestId('turnstile')).toBeNull();
 	});
 });

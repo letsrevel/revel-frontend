@@ -5,6 +5,7 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
+import { getTurnstileSiteKey } from '$lib/server/features';
 import {
 	eventpublicdetailsGetEvent,
 	eventpublicattendanceGetMyEventStatus,
@@ -266,6 +267,10 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
+		// Turnstile site key for the guest RSVP / checkout forms; authenticated
+		// visitors never use them, so skip the lookup.
+		const turnstileSiteKey = locals.user ? null : await getTurnstileSiteKey(fetch);
+
 		return {
 			seo,
 			event,
@@ -282,6 +287,7 @@ export const load: PageServerLoad = async ({
 			isStaff,
 			eventTokenDetails,
 			userVisibility,
+			turnstileSiteKey,
 			// Explicitly pass authentication state to the page. The token
 			// itself is NOT shipped — the client reads it from authStore to
 			// avoid serializing the JWT into the SSR HTML.

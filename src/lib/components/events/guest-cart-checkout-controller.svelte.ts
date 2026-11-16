@@ -129,6 +129,17 @@ export function mapGuestCheckoutError(
 	return checkoutError(error, m['cart.checkoutFailed']());
 }
 
+/**
+ * Resume fingerprint of a checkout attempt: the params minus the single-use
+ * Turnstile token (a fresh token per attempt must not defeat resuming a held
+ * reservation). Key order: items, email, first_name, last_name, discountCode,
+ * billingInfo — always. mutationFn and wouldResume must both use this.
+ */
+function fingerprintOf(params: GuestCartCheckoutParams): string {
+	const { turnstileToken: _token, ...rest } = params;
+	return JSON.stringify(rest);
+}
+
 /** Dependencies the guest cart checkout controller needs from the host component. */
 export interface GuestCartCheckoutDeps {
 	/** The event id used for the checkout call. */
@@ -227,7 +238,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 
 	const checkoutCartMutation = createMutation(() => ({
 		mutationFn: async (params: GuestCartCheckoutParams) => {
-			const fingerprint = JSON.stringify(params); // key order: items, email, first_name, last_name, discountCode, billingInfo — always
+			const fingerprint = fingerprintOf(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
 			const body: GuestMultiTierCheckoutPayload = {
@@ -237,7 +248,8 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				last_name: params.last_name,
 				discount_code: params.discountCode || undefined,
 				billing_info: params.billingInfo || undefined,
-				attribution: readAttributionFromCurrentUrl()
+				attribution: readAttributionFromCurrentUrl(),
+				...(params.turnstileToken ? { turnstile_token: params.turnstileToken } : {})
 			};
 			const response = await eventpublicguestGuestMultiTierCheckout({
 				path: { event_id: eventId },
@@ -288,7 +300,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 		 * reacquire the same block for nothing.
 		 */
 		wouldResume: (params: GuestCartCheckoutParams): boolean => {
-			const fingerprint = JSON.stringify(params); // must match mutationFn's fingerprint exactly
+			const fingerprint = fingerprintOf(params);
 			return reservationRetry.wouldResume(fingerprint);
 		},
 		get isPending() {

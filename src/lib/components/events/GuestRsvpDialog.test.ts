@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GuestRsvpDialog from './GuestRsvpDialog.svelte';
 
 const eventpublicguestGuestRsvp = vi.hoisted(() => vi.fn());
@@ -162,5 +162,93 @@ describe('GuestRsvpDialog — guest-action error codes', () => {
 			expect(screen.getByText('A refusal this client does not know yet.')).toBeInTheDocument();
 		});
 		expect(screen.queryByRole('link', { name: 'create an account' })).toBeNull();
+	});
+});
+
+// Cloudflare Turnstile (#1242): the real <Turnstile> component renders against
+// a stubbed window.turnstile so we can drive its token callback and observe resets.
+describe('GuestRsvpDialog — Turnstile', () => {
+	const api = { render: vi.fn(), reset: vi.fn(), remove: vi.fn() };
+	let solve: (token: string) => void;
+
+	beforeEach(async () => {
+		vi.clearAllMocks();
+		api.render.mockImplementation((_el: HTMLElement, opts: { callback: (t: string) => void }) => {
+			solve = opts.callback;
+			return 'widget-1';
+		});
+		window.turnstile = api;
+		await new Promise((resolve) => setTimeout(resolve, 30));
+		document.body.style.pointerEvents = '';
+	});
+
+	afterEach(() => {
+		delete window.turnstile;
+	});
+
+	async function fillFields(): Promise<void> {
+		await fireEvent.input(screen.getByLabelText(/email address/i), {
+			target: { value: 'guest@example.com' }
+		});
+		await fireEvent.input(screen.getByLabelText(/first name/i), { target: { value: 'Guest' } });
+		await fireEvent.input(screen.getByLabelText(/last name/i), { target: { value: 'Example' } });
+	}
+
+	it('disables submit until a token arrives, then sends turnstile_token', async () => {
+		eventpublicguestGuestRsvp.mockResolvedValue({
+			data: { message: 'ok' },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		renderDialog({ turnstileSiteKey: 'site-key' });
+		await fillFields();
+		const submit = screen.getByRole('button', { name: /submit rsvp/i });
+		await waitFor(() => expect(api.render).toHaveBeenCalled());
+		expect(submit).toBeDisabled();
+
+		solve('ts-tok');
+		await waitFor(() => expect(submit).toBeEnabled());
+		await fireEvent.click(submit);
+
+		await waitFor(() => {
+			expect(eventpublicguestGuestRsvp).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: expect.objectContaining({ turnstile_token: 'ts-tok' })
+				})
+			);
+		});
+	});
+
+	it('resets the widget after a failed submission', async () => {
+		eventpublicguestGuestRsvp.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Bot verification failed. Please try again.' },
+			response: { ok: false, status: 400 }
+		});
+		renderDialog({ turnstileSiteKey: 'site-key' });
+		await fillFields();
+		await waitFor(() => expect(api.render).toHaveBeenCalled());
+		solve('ts-tok');
+		const submit = screen.getByRole('button', { name: /submit rsvp/i });
+		await waitFor(() => expect(submit).toBeEnabled());
+		await fireEvent.click(submit);
+
+		await waitFor(() => expect(api.reset).toHaveBeenCalledWith('widget-1'));
+		// The spent token is cleared, so submit is blocked until the widget re-solves.
+		await waitFor(() => expect(submit).toBeDisabled());
+	});
+
+	it('renders no widget and sends no token without a site key', async () => {
+		eventpublicguestGuestRsvp.mockResolvedValue({
+			data: { message: 'ok' },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+		renderDialog({ turnstileSiteKey: null });
+		await fillAndSubmit();
+
+		expect(screen.queryByTestId('turnstile')).toBeNull();
+		await waitFor(() => expect(eventpublicguestGuestRsvp).toHaveBeenCalled());
+		expect(eventpublicguestGuestRsvp.mock.calls[0][0].body).not.toHaveProperty('turnstile_token');
 	});
 });

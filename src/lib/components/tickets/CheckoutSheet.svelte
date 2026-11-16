@@ -20,6 +20,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { AlertCircle, ChevronDown, Loader2, Tag } from '@lucide/svelte';
+	import Turnstile from '$lib/components/auth/Turnstile.svelte';
 	import CheckoutSheetGroup from './CheckoutSheetGroup.svelte';
 	import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 	import CheckoutBillingSection from './CheckoutBillingSection.svelte';
@@ -61,6 +62,7 @@
 		onConfirm: (opts: {
 			discountCode: string;
 			billingInfo: BuyerBillingInfoSchema | null;
+			turnstileToken?: string;
 		}) => Promise<void>;
 		/** Venue chart for seated groups' totals (#853 PR 3) — from the page's
 		 * seat-hold registry; null/omitted while no user_choice controller has
@@ -80,6 +82,8 @@
 		buyerName?: string;
 		/** Brings the tier list back into view (the `members_excluded` CTA); the sheet closes first. */
 		onChooseAnotherTier?: () => void;
+		/** Cloudflare Turnstile site key — guests only; null/omitted = bot protection off. */
+		turnstileSiteKey?: string | null;
 	}
 
 	let {
@@ -98,7 +102,8 @@
 		registry,
 		identity,
 		buyerName = '',
-		onChooseAnotherTier
+		onChooseAnotherTier,
+		turnstileSiteKey = null
 	}: Props = $props();
 
 	// `members_excluded` refusal: the 400 carries no tier id, so every `non_members`
@@ -203,6 +208,17 @@
 		!isAuthenticated && identity ? guestIdentityError(identity, requireTicketNames) : null
 	);
 
+	// Turnstile (guests only): the token is single-use, so the widget is reset
+	// after every attempt that leaves the sheet open (see handleConfirm).
+	let turnstileToken = $state('');
+	let turnstile = $state<ReturnType<typeof Turnstile> | null>(null);
+	const needsTurnstile = $derived(!isAuthenticated && !!turnstileSiteKey);
+	const awaitingTurnstile = $derived(needsTurnstile && !turnstileToken);
+	// Closing unmounts the widget; a token left behind would be stale (spent or expired).
+	$effect(() => {
+		if (!open) turnstileToken = '';
+	});
+
 	// Split the translated "Already have an account? <a>Log in</a>" string around
 	// its <a> markers so we can render a real anchor instead of {@html}-injecting
 	// translator-editable content (latent XSS channel). Ported from the legacy
@@ -265,10 +281,14 @@
 		if (guestError) return;
 		if (validationError) return;
 		if (billingSection && !billingSection.validate()) return;
+		if (awaitingTurnstile) return;
 		await onConfirm({
 			discountCode: appliedDiscountCode,
-			billingInfo: billingSection?.getBillingInfo() ?? null
+			billingInfo: billingSection?.getBillingInfo() ?? null,
+			...(needsTurnstile ? { turnstileToken } : {})
 		});
+		// Still open = the attempt failed; the spent token needs a fresh one.
+		if (open) turnstile?.reset();
 	}
 
 	// Same guard as the (disabled) confirm button: Enter in a PWYC field must
@@ -276,7 +296,7 @@
 	function handlePwycKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && !isProcessing) {
 			e.preventDefault();
-			if (guestError || validationError) return;
+			if (guestError || validationError || awaitingTurnstile) return;
 			void handleConfirm();
 		}
 	}
@@ -439,6 +459,10 @@
 				<GuestOnlinePaymentNotice />
 			{/if}
 
+			{#if needsTurnstile && turnstileSiteKey}
+				<Turnstile bind:this={turnstile} siteKey={turnstileSiteKey} bind:token={turnstileToken} />
+			{/if}
+
 			<PurchaseErrorAlert
 				error={purchaseError}
 				tiers={cart.groups.map((group) => group.tier)}
@@ -499,7 +523,7 @@
 						discountValidating,
 						guestError,
 						validationError
-					})}
+					}) || awaitingTurnstile}
 					class="flex-1 sm:flex-initial"
 				>
 					{#if isProcessing}

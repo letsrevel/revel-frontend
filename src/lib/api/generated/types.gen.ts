@@ -12868,6 +12868,12 @@ export type GuestRsvpRequestSchema = {
      */
     last_name?: string;
     /**
+     * Turnstile Token
+     *
+     * Cloudflare Turnstile token (`cf-turnstile-response`); required when bot protection is configured
+     */
+    turnstile_token?: string | null;
+    /**
      * Note
      */
     note?: string;
@@ -12938,6 +12944,12 @@ export type GuestBatchCheckoutPayload = {
      */
     last_name?: string;
     /**
+     * Turnstile Token
+     *
+     * Cloudflare Turnstile token (`cf-turnstile-response`); required when bot protection is configured
+     */
+    turnstile_token?: string | null;
+    /**
      * Tickets
      *
      * List of tickets to purchase
@@ -12993,6 +13005,12 @@ export type GuestBatchCheckoutPwycPayload = {
      * Guest user's last name (optional)
      */
     last_name?: string;
+    /**
+     * Turnstile Token
+     *
+     * Cloudflare Turnstile token (`cf-turnstile-response`); required when bot protection is configured
+     */
+    turnstile_token?: string | null;
     /**
      * Tickets
      *
@@ -13055,6 +13073,12 @@ export type GuestMultiTierCheckoutPayload = {
      * Guest user's last name (optional)
      */
     last_name?: string;
+    /**
+     * Turnstile Token
+     *
+     * Cloudflare Turnstile token (`cf-turnstile-response`); required when bot protection is configured
+     */
+    turnstile_token?: string | null;
     /**
      * Items
      */

@@ -667,6 +667,7 @@
 		chart={seatHoldRegistry.chart}
 		registry={seatHoldRegistry}
 		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
+		turnstileSiteKey={data.turnstileSiteKey}
 		buyerName={ticketHolderDefaultName}
 		onChooseAnotherTier={handleGetTicketsClick}
 	/>
@@ -705,6 +706,7 @@
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
 	eventToken={data.eventTokenDetails?.id}
+	turnstileSiteKey={data.turnstileSiteKey}
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
 	bind:showVenueOverview

@@ -5,6 +5,7 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
+import { getTurnstileSiteKey } from '$lib/server/features';
 import {
 	eventpublicdetailsGetEventBySlugs,
 	eventpublicattendanceGetMyEventStatus,
@@ -263,6 +264,11 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
+		// Cloudflare Turnstile site key for the anonymous guest RSVP / checkout
+		// forms (null when bot protection is off). Authenticated visitors never
+		// hit those endpoints, so skip the lookup for them.
+		const turnstileSiteKey = locals.user ? null : await getTurnstileSiteKey(fetch);
+
 		const returnData = {
 			seo,
 			event,
@@ -279,6 +285,7 @@ export const load: PageServerLoad = async ({
 			isStaff,
 			eventTokenDetails,
 			userVisibility,
+			turnstileSiteKey,
 			// Explicitly pass authentication state to the page. The token
 			// itself is NOT shipped — the client reads it from authStore to
 			// avoid serializing the JWT into the SSR HTML.

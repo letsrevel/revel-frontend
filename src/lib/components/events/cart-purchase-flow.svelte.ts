@@ -234,10 +234,12 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 
 	async function handleSheetConfirm({
 		discountCode,
-		billingInfo
+		billingInfo,
+		turnstileToken
 	}: {
 		discountCode: string;
 		billingInfo: BuyerBillingInfoSchema | null;
+		turnstileToken?: string;
 	}) {
 		const items = buildCartCheckoutItems();
 		const handlers = {
@@ -269,7 +271,8 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 							lastName: guestIdentity.lastName
 						},
 						discountCode,
-						billingInfo
+						billingInfo,
+						turnstileToken
 					),
 					guestCartSubmitDeps,
 					handlers

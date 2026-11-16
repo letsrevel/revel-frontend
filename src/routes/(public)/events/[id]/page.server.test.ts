@@ -13,6 +13,7 @@ vi.mock('$lib/api', () => ({
 vi.mock('$lib/server/logger', () => ({
 	log: { warning: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() }
 }));
+vi.mock('$lib/server/features', () => ({ getTurnstileSiteKey: vi.fn(async () => null) }));
 vi.mock('$lib/seo', () => ({ buildSeo: vi.fn(() => ({})) }));
 vi.mock('$lib/seo/server', () => ({ resolveLang: vi.fn(() => 'en') }));
 

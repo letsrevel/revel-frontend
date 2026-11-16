@@ -47,6 +47,8 @@
 		/** Invitation-link token id (`?et=`) — forwarded to GuestRsvpDialog as
 		 * `X-Event-Token` (backend #923). */
 		eventToken?: string | null;
+		/** Cloudflare Turnstile site key (null/omitted = bot protection off). */
+		turnstileSiteKey?: string | null;
 		showMyTicketModal: boolean;
 		showGuestRsvpDialog: boolean;
 		showVenueOverview: boolean;
@@ -69,6 +71,7 @@
 		onGuestRsvpClose,
 		onGuestAttendanceSuccess,
 		eventToken = null,
+		turnstileSiteKey = null,
 		showMyTicketModal = $bindable(),
 		showGuestRsvpDialog = $bindable(),
 		showVenueOverview = $bindable()
@@ -108,6 +111,7 @@
 		bind:open={showGuestRsvpDialog}
 		eventId={event.id}
 		{eventToken}
+		{turnstileSiteKey}
 		acceptsNotes={event.accept_rsvp_notes}
 		onClose={onGuestRsvpClose}
 		onSuccess={onGuestAttendanceSuccess}

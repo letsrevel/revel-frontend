@@ -265,6 +265,33 @@ describe('createGuestCartCheckoutController — invitation-link token header', (
 // Issue #912: errors the sheet renders with their own CTAs (log in / split the
 // purchase) must not ALSO fire the generic checkout-failed toast — the inline
 // alert is the feedback. Every other failure keeps the toast.
+describe('createGuestCartCheckoutController — Turnstile token', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValue({
+			data: { message: 'Check your email' },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		});
+	});
+
+	it('sends turnstile_token in the body when the params carry one', async () => {
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart({ ...makeParams(), turnstileToken: 'ts-tok' });
+
+		const options = eventpublicguestGuestMultiTierCheckout.mock.calls[0][0];
+		expect(options.body.turnstile_token).toBe('ts-tok');
+	});
+
+	it('omits turnstile_token without one (no site key configured)', async () => {
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart(makeParams());
+
+		const options = eventpublicguestGuestMultiTierCheckout.mock.calls[0][0];
+		expect(options.body).not.toHaveProperty('turnstile_token');
+	});
+});
+
 describe('createGuestCartCheckoutController — CTA-error toast suppression', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
