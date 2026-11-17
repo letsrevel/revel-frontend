@@ -368,10 +368,11 @@ describe('PlanFormModal payment instructions', () => {
 			onSave: vi.fn(),
 			organization: orgConnected
 		});
-		expect(screen.getByLabelText('Payment instructions')).toBeInTheDocument();
-		expect(
-			screen.getByText(/Shown to people after they join or are accepted, and in payment reminders/)
-		).toBeInTheDocument();
+		const field = screen.getByLabelText('Payment instructions');
+		expect(field).toBeInTheDocument();
+		expect(field).toHaveAccessibleDescription(
+			'Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default.'
+		);
 	});
 
 	it('hides the field for online and free plans', async () => {

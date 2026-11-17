@@ -314,8 +314,9 @@
 						label={m['orgAdmin.members.plans.form.paymentInstructions']()}
 						rows={4}
 						disabled={isSaving}
+						describedBy="plan-payment-instructions-help"
 					/>
-					<p class="text-xs text-muted-foreground">
+					<p id="plan-payment-instructions-help" class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
 					</p>
 					<!-- Mounted whether or not there is anything to say, so the warning

@@ -88,9 +88,10 @@
 			label={m['orgSettingsPage.subscriptionPolicy.refundPolicyLabel']()}
 			placeholder={m['orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder']()}
 			rows={6}
+			describedBy="refund-policy-help"
 		/>
 		<input type="hidden" name="membership_refund_policy" value={refundPolicy} />
-		<p class="mt-1 text-xs text-muted-foreground">
+		<p id="refund-policy-help" class="mt-1 text-xs text-muted-foreground">
 			{m['orgSettingsPage.subscriptionPolicy.refundPolicyHelp']()}
 		</p>
 	</div>
@@ -102,9 +103,10 @@
 			label={m['orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel']()}
 			placeholder={m['orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder']()}
 			rows={6}
+			describedBy="payment-instructions-help"
 		/>
 		<input type="hidden" name="membership_payment_instructions" value={paymentInstructions} />
-		<p class="mt-1 text-xs text-muted-foreground">
+		<p id="payment-instructions-help" class="mt-1 text-xs text-muted-foreground">
 			{m['orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp']()}
 		</p>
 	</div>
