@@ -4151,7 +4151,8 @@
 					"paymentFreeHelp": "Los planes gratuitos no tienen precio y no caducan nunca. Cualquiera puede unirse por su cuenta, sin ningún paso de pago.",
 					"periodLifetime": "de por vida (no se renueva nunca)",
 					"freeShapeLocked": "Los planes gratuitos siempre tienen precio 0 y duran de por vida, así que estos campos no se pueden cambiar.",
-					"lifetimeNoCount": "Un plan de por vida no se renueva nunca, así que no hay una frecuencia de facturación que configurar."
+					"lifetimeNoCount": "Un plan de por vida no se renueva nunca, así que no hay una frecuencia de facturación que configurar.",
+					"paymentInstructionsMissing": "Quienes soliciten no verán cómo pagar. Añade instrucciones aquí o define las predeterminadas de la organización en Ajustes."
 				},
 				"errors": {
 					"createFailed": "No se ha podido crear el plan: {detail}",
@@ -4259,7 +4260,11 @@
 					"immediateConfirm": "Entiendo que el acceso se revoca de inmediato.",
 					"pendingSwitchDropped": "Se anulará su cambio de plan programado.",
 					"keep": "Mantener la suscripción",
-					"confirm": "Confirmar la cancelación"
+					"confirm": "Confirmar la cancelación",
+					"requestTitle": "Cancelar solicitud",
+					"requestDesc": "{name} todavía no ha pagado. Al cancelar se elimina su membresía pendiente; podrá unirse de nuevo más adelante.",
+					"requestKeep": "Mantener la solicitud",
+					"requestConfirm": "Cancelar solicitud"
 				},
 				"recordPayment": {
 					"title": "Registrar pago",

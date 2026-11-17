@@ -5,7 +5,19 @@ import type { ComponentProps } from 'svelte';
 import PlanFormModal from './PlanFormModal.svelte';
 import { focusSettled } from '$lib/test-utils/focus';
 
+// A synchronous textarea stands in for the async Tiptap editor (see the same
+// stub in StaffNoteEditor.collapse.test.ts).
+vi.mock('$lib/components/forms/MarkdownEditor.svelte', async () => ({
+	default: (await import('$lib/test-utils/MarkdownEditorStub.svelte')).default
+}));
+
 const orgConnected = { id: 'o1', slug: 'o', is_stripe_connected: true } as never;
+const orgWithDefault = {
+	id: 'o1',
+	slug: 'o',
+	is_stripe_connected: true,
+	membership_payment_instructions: 'Pay at the front desk.'
+} as never;
 const orgNotConnected = { id: 'o1', slug: 'o', is_stripe_connected: false } as never;
 
 /**
@@ -348,7 +360,7 @@ describe('PlanFormModal free and lifetime plans', () => {
 });
 
 describe('PlanFormModal payment instructions', () => {
-	it('shows the payment instructions field for an offline plan, described by its hint and the markdown note', async () => {
+	it('shows the payment instructions field for an offline plan, with its hint', async () => {
 		await renderModal({
 			plan: null,
 			open: true,
@@ -356,11 +368,10 @@ describe('PlanFormModal payment instructions', () => {
 			onSave: vi.fn(),
 			organization: orgConnected
 		});
-		const field = screen.getByLabelText('Payment instructions');
-		expect(field).toBeInTheDocument();
-		expect(field).toHaveAccessibleDescription(
-			'Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default. Basic markdown supported'
-		);
+		expect(screen.getByLabelText('Payment instructions')).toBeInTheDocument();
+		expect(
+			screen.getByText(/Shown to people after they join or are accepted, and in payment reminders/)
+		).toBeInTheDocument();
 	});
 
 	it('hides the field for online and free plans', async () => {
@@ -412,5 +423,57 @@ describe('PlanFormModal payment instructions', () => {
 		await user.click(screen.getByRole('button', { name: /create/i }));
 		expect(onSave).toHaveBeenCalledTimes(1);
 		expect('payment_instructions' in onSave.mock.calls[0][0]).toBe(false);
+	});
+
+	describe('the missing-instructions warning', () => {
+		const WARNING = /Applicants won't see how to pay/;
+
+		it('warns when neither the plan nor the organization has instructions', async () => {
+			await renderModal({
+				plan: null,
+				open: true,
+				onClose: vi.fn(),
+				onSave: vi.fn(),
+				organization: orgConnected
+			});
+			expect(screen.getByRole('status')).toHaveTextContent(WARNING);
+		});
+
+		it('stays quiet when the organization has a default', async () => {
+			await renderModal({
+				plan: null,
+				open: true,
+				onClose: vi.fn(),
+				onSave: vi.fn(),
+				organization: orgWithDefault
+			});
+			expect(screen.queryByText(WARNING)).toBeNull();
+		});
+
+		it('clears as soon as the plan gets its own instructions', async () => {
+			const user = userEvent.setup();
+			await renderModal({
+				plan: null,
+				open: true,
+				onClose: vi.fn(),
+				onSave: vi.fn(),
+				organization: orgConnected
+			});
+			await user.type(screen.getByLabelText('Payment instructions'), 'Pay at the bar');
+			expect(screen.queryByText(WARNING)).toBeNull();
+		});
+
+		it('is not shown for an online plan', async () => {
+			const user = userEvent.setup();
+			await renderModal({
+				plan: null,
+				open: true,
+				onClose: vi.fn(),
+				onSave: vi.fn(),
+				organization: orgConnected
+			});
+			await user.click(screen.getByRole('radio', { name: /online/i }));
+			expect(screen.queryByText(WARNING)).toBeNull();
+		});
 	});
 });

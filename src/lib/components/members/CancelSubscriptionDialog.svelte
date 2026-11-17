@@ -33,7 +33,14 @@
 		return d ? formatDate(d) : '—';
 	}
 
-	const canSubmit = $derived(mode === 'period_end' || immediateAck);
+	// An offline subscription that never got its first payment: the member holds
+	// nothing yet (no access, no paid period), so the period-end / immediate split
+	// is meaningless. There is exactly one outcome: the request goes away.
+	const isAwaitingPayment = $derived(
+		subscription.status === 'pending' && subscription.plan?.payment_method === 'offline'
+	);
+
+	const canSubmit = $derived(isAwaitingPayment || mode === 'period_end' || immediateAck);
 
 	// `cancel_online_subscription` releases the Stripe schedule before either
 	// cancel branch, which clears `pending_plan` — so the warning applies to both
@@ -44,41 +51,54 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (!canSubmit) return;
-		onSubmit({ immediate: mode === 'immediate' });
+		onSubmit({ immediate: isAwaitingPayment || mode === 'immediate' });
 	}
 </script>
 
 <Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
-			<DialogTitle>{m['orgAdmin.members.subscriptions.cancel.title']()}</DialogTitle>
+			<DialogTitle>
+				{isAwaitingPayment
+					? m['orgAdmin.members.subscriptions.cancel.requestTitle']()
+					: m['orgAdmin.members.subscriptions.cancel.title']()}
+			</DialogTitle>
 		</DialogHeader>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
-			<RadioGroup bind:value={mode as string}>
-				<div class="flex items-start gap-2">
-					<RadioGroupItem id="cancel-pe" value="period_end" />
-					<div>
-						<Label for="cancel-pe">
-							{m['orgAdmin.members.subscriptions.cancel.atPeriodEnd']({
-								date: fmtDate(subscription.current_period_end)
-							})}
-						</Label>
-						<p class="text-xs text-muted-foreground">
-							{m['orgAdmin.members.subscriptions.cancel.atPeriodEndDesc']()}
-						</p>
+			{#if isAwaitingPayment}
+				<p class="text-sm text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.cancel.requestDesc']({
+						name: subscription.user_display_name
+					})}
+				</p>
+			{:else}
+				<RadioGroup bind:value={mode as string}>
+					<div class="flex items-start gap-2">
+						<RadioGroupItem id="cancel-pe" value="period_end" />
+						<div>
+							<Label for="cancel-pe">
+								{m['orgAdmin.members.subscriptions.cancel.atPeriodEnd']({
+									date: fmtDate(subscription.current_period_end)
+								})}
+							</Label>
+							<p class="text-xs text-muted-foreground">
+								{m['orgAdmin.members.subscriptions.cancel.atPeriodEndDesc']()}
+							</p>
+						</div>
 					</div>
-				</div>
-				<div class="flex items-start gap-2">
-					<RadioGroupItem id="cancel-im" value="immediate" />
-					<div>
-						<Label for="cancel-im">{m['orgAdmin.members.subscriptions.cancel.immediate']()}</Label>
-						<p class="text-xs text-muted-foreground">
-							{m['orgAdmin.members.subscriptions.cancel.immediateDesc']()}
-						</p>
+					<div class="flex items-start gap-2">
+						<RadioGroupItem id="cancel-im" value="immediate" />
+						<div>
+							<Label for="cancel-im">{m['orgAdmin.members.subscriptions.cancel.immediate']()}</Label
+							>
+							<p class="text-xs text-muted-foreground">
+								{m['orgAdmin.members.subscriptions.cancel.immediateDesc']()}
+							</p>
+						</div>
 					</div>
-				</div>
-			</RadioGroup>
+				</RadioGroup>
+			{/if}
 
 			{#if hasPendingSwitch}
 				<p class="flex gap-2 text-xs text-muted-foreground">
@@ -87,7 +107,7 @@
 				</p>
 			{/if}
 
-			{#if mode === 'immediate'}
+			{#if !isAwaitingPayment && mode === 'immediate'}
 				<div class="flex items-center gap-2">
 					<Checkbox
 						id="cancel-ack"
@@ -102,11 +122,15 @@
 
 			<div class="flex justify-end gap-2">
 				<Button type="button" variant="outline" onclick={onClose} disabled={isSubmitting}>
-					{m['orgAdmin.members.subscriptions.cancel.keep']()}
+					{isAwaitingPayment
+						? m['orgAdmin.members.subscriptions.cancel.requestKeep']()
+						: m['orgAdmin.members.subscriptions.cancel.keep']()}
 				</Button>
 				<Button type="submit" disabled={isSubmitting || !canSubmit}>
 					{#if isSubmitting}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}
-					{m['orgAdmin.members.subscriptions.cancel.confirm']()}
+					{isAwaitingPayment
+						? m['orgAdmin.members.subscriptions.cancel.requestConfirm']()
+						: m['orgAdmin.members.subscriptions.cancel.confirm']()}
 				</Button>
 			</div>
 		</form>

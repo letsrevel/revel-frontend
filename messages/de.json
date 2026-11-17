@@ -4151,7 +4151,8 @@
 					"paymentFreeHelp": "Kostenlose Pläne haben keinen Preis und laufen nie ab. Mitglieder treten selbst bei, ohne Zahlungsschritt.",
 					"periodLifetime": "lebenslang (keine Verlängerung)",
 					"freeShapeLocked": "Kostenlose Pläne haben immer den Preis 0 und laufen lebenslang — das lässt sich nicht ändern.",
-					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus."
+					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus.",
+					"paymentInstructionsMissing": "Bewerber*innen sehen nicht, wie sie bezahlen können. Füge hier Anweisungen hinzu oder lege in den Einstellungen einen Standard für die Organisation fest."
 				},
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
@@ -4259,7 +4260,11 @@
 					"immediateConfirm": "Mir ist klar, dass der Zugang sofort entzogen wird.",
 					"pendingSwitchDropped": "Der vorgemerkte Planwechsel wird verworfen.",
 					"keep": "Abonnement behalten",
-					"confirm": "Kündigung bestätigen"
+					"confirm": "Kündigung bestätigen",
+					"requestTitle": "Anfrage stornieren",
+					"requestDesc": "{name} hat noch nicht bezahlt. Beim Stornieren wird die ausstehende Mitgliedschaft entfernt; die Person kann später erneut beitreten.",
+					"requestKeep": "Anfrage behalten",
+					"requestConfirm": "Anfrage stornieren"
 				},
 				"recordPayment": {
 					"title": "Zahlung erfassen",

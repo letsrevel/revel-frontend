@@ -4151,7 +4151,8 @@
 					"paymentFreeHelp": "I piani gratuiti non hanno prezzo e non scadono mai. I membri si iscrivono da soli, senza passaggio di pagamento.",
 					"periodLifetime": "a vita (nessun rinnovo)",
 					"freeShapeLocked": "I piani gratuiti hanno sempre prezzo 0 e durata a vita: questi campi non sono modificabili.",
-					"lifetimeNoCount": "Un piano a vita non si rinnova mai, quindi non c'è una frequenza di fatturazione da impostare."
+					"lifetimeNoCount": "Un piano a vita non si rinnova mai, quindi non c'è una frequenza di fatturazione da impostare.",
+					"paymentInstructionsMissing": "Chi si candida non vedrà come pagare. Aggiungi le istruzioni qui o imposta quelle predefinite dell'organizzazione nelle Impostazioni."
 				},
 				"errors": {
 					"createFailed": "Impossibile creare il piano: {detail}",
@@ -4259,7 +4260,11 @@
 					"immediateConfirm": "Ho capito che l'accesso viene revocato subito.",
 					"pendingSwitchDropped": "Il cambio di piano programmato verrà annullato.",
 					"keep": "Mantieni l'abbonamento",
-					"confirm": "Conferma la disdetta"
+					"confirm": "Conferma la disdetta",
+					"requestTitle": "Annulla richiesta",
+					"requestDesc": "{name} non ha ancora pagato. Annullando, l'iscrizione in sospeso viene rimossa; potrà iscriversi di nuovo in seguito.",
+					"requestKeep": "Mantieni la richiesta",
+					"requestConfirm": "Annulla richiesta"
 				},
 				"recordPayment": {
 					"title": "Registra pagamento",

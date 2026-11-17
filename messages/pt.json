@@ -4151,7 +4151,8 @@
 					"paymentFreeHelp": "Os planos gratuitos não têm preço e nunca expiram. Os membros inscrevem-se sozinhos, sem etapa de pagamento.",
 					"periodLifetime": "vitalício (nunca renova)",
 					"freeShapeLocked": "Os planos gratuitos têm sempre preço 0 e duração vitalícia, por isso estes campos não podem ser alterados.",
-					"lifetimeNoCount": "Um plano vitalício nunca renova, por isso não há frequência de faturação a definir."
+					"lifetimeNoCount": "Um plano vitalício nunca renova, por isso não há frequência de faturação a definir.",
+					"paymentInstructionsMissing": "Quem se candidatar não verá como pagar. Adiciona instruções aqui ou define as predefinidas da organização nas Definições."
 				},
 				"errors": {
 					"createFailed": "Não foi possível criar o plano: {detail}",
@@ -4259,7 +4260,11 @@
 					"immediateConfirm": "Percebo que o acesso é revogado de imediato.",
 					"pendingSwitchDropped": "A mudança de plano agendada será cancelada.",
 					"keep": "Manter subscrição",
-					"confirm": "Confirmar cancelamento"
+					"confirm": "Confirmar cancelamento",
+					"requestTitle": "Cancelar pedido",
+					"requestDesc": "{name} ainda não pagou. Ao cancelar, a adesão pendente é removida; poderá aderir novamente mais tarde.",
+					"requestKeep": "Manter o pedido",
+					"requestConfirm": "Cancelar pedido"
 				},
 				"recordPayment": {
 					"title": "Registar pagamento",

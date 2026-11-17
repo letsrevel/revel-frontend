@@ -13,7 +13,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2 } from '@lucide/svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import { AlertTriangle, Loader2 } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { currencyOptions } from '$lib/utils/currencies';
 
@@ -95,6 +96,17 @@
 	const isOnline = $derived(effectiveMethod === 'online');
 	const isOffline = $derived(effectiveMethod === 'offline');
 	const isLifetime = $derived(periodUnit === 'lifetime');
+
+	// An offline plan with no instructions of its own AND no organization default
+	// leaves applicants with nothing about how to pay. Read from the admin org
+	// already in hand, so there is no extra fetch. Every operand is read
+	// unconditionally (`&&` in a `$derived` would leave the skipped one untracked).
+	const missingInstructions = $derived.by(() => {
+		const offline = isOffline;
+		const own = paymentInstructions.trim() !== '';
+		const orgDefault = (organization.membership_payment_instructions ?? '').trim() !== '';
+		return offline && !own && !orgDefault;
+	});
 
 	/**
 	 * Keep the (method, price, cadence) triple coherent as the organizer types.
@@ -295,20 +307,29 @@
 
 			{#if isOffline}
 				<div class="space-y-1">
-					<Label for="plan-payment-instructions">
-						{m['orgAdmin.members.plans.form.paymentInstructions']()}
-					</Label>
-					<Textarea
+					<!-- The same markdown editor the organization default uses. -->
+					<MarkdownEditor
 						id="plan-payment-instructions"
 						bind:value={paymentInstructions}
+						label={m['orgAdmin.members.plans.form.paymentInstructions']()}
 						rows={4}
 						disabled={isSaving}
-						aria-describedby="plan-payment-instructions-hint"
 					/>
-					<p id="plan-payment-instructions-hint" class="text-xs text-muted-foreground">
+					<p class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
-						{m['potluckItemForm.markdownSupported']()}
 					</p>
+					<!-- Mounted whether or not there is anything to say, so the warning
+					     is announced when it appears rather than missed on insertion. -->
+					<div role="status">
+						{#if missingInstructions}
+							<p
+								class="flex items-start gap-2 text-xs text-highlight-foreground dark:text-highlight"
+							>
+								<AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+								{m['orgAdmin.members.plans.form.paymentInstructionsMissing']()}
+							</p>
+						{/if}
+					</div>
 				</div>
 			{/if}
 

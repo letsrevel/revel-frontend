@@ -4121,7 +4121,8 @@
 					"paymentFreeHelp": "Les formules gratuites n'ont pas de prix et n'expirent jamais. Les membres s'inscrivent eux-mêmes, sans étape de paiement.",
 					"periodLifetime": "à vie (sans renouvellement)",
 					"freeShapeLocked": "Les formules gratuites sont toujours au prix de 0 et à vie : ces champs ne sont pas modifiables.",
-					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir."
+					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir.",
+					"paymentInstructionsMissing": "Les personnes qui postulent ne verront pas comment payer. Ajoutez des instructions ici ou définissez celles par défaut de l'organisation dans les Paramètres."
 				},
 				"errors": {
 					"createFailed": "Échec de la création du forfait : {detail}",
@@ -4229,7 +4230,11 @@
 					"immediateConfirm": "Je comprends que l'accès est révoqué immédiatement.",
 					"pendingSwitchDropped": "Le changement de forfait programmé sera annulé.",
 					"keep": "Conserver l'abonnement",
-					"confirm": "Confirmer l'annulation"
+					"confirm": "Confirmer l'annulation",
+					"requestTitle": "Annuler la demande",
+					"requestDesc": "{name} n'a pas encore payé. L'annulation supprime son adhésion en attente ; la personne pourra adhérer à nouveau plus tard.",
+					"requestKeep": "Conserver la demande",
+					"requestConfirm": "Annuler la demande"
 				},
 				"recordPayment": {
 					"title": "Enregistrer un paiement",
