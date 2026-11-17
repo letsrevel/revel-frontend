@@ -33,12 +33,12 @@ test.describe('J8 org tokens @p1', () => {
 		await waitForClientAuth(ownerPage);
 
 		await ownerPage.getByRole('button', { name: 'Create Link' }).click();
-		const createModal = ownerPage.getByRole('dialog', { name: 'Create Invitation Token' });
+		const createModal = ownerPage.getByRole('dialog', { name: 'Create Invitation Link' });
 		await expect(createModal).toBeVisible();
 		await createModal.getByLabel('Name (optional)').fill('E2E membership link');
 		await createModal.getByLabel('Grant membership access').check();
 		await createModal.getByLabel('Membership Tier').selectOption({ label: 'General membership' });
-		await createModal.getByRole('button', { name: 'Create Token' }).click();
+		await createModal.getByRole('button', { name: 'Create Link', exact: true }).click();
 		await expect(ownerPage.getByText(/Invitation link created successfully/)).toBeVisible({
 			timeout: 15_000
 		});
@@ -46,7 +46,7 @@ test.describe('J8 org tokens @p1', () => {
 		// Grab the shareable URL from the token card's share dialog: the public
 		// org page with `?ot=<code>`, which the server hook captures into a
 		// cookie that the next login claims.
-		await ownerPage.getByRole('button', { name: 'Share token' }).click();
+		await ownerPage.getByRole('button', { name: 'Share link' }).click();
 		const shareDialog = ownerPage.getByRole('dialog', { name: 'Share Invitation Link' });
 		const shareUrl = await shareDialog.getByLabel('Shareable URL').inputValue();
 		const shareTarget = new URL(shareUrl);

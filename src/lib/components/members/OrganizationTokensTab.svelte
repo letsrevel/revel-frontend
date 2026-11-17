@@ -25,7 +25,7 @@
 		DialogDescription,
 		DialogFooter
 	} from '$lib/components/ui/dialog';
-	import { Search, Link, Loader2 } from '@lucide/svelte';
+	import { Search, Link, Loader2, Plus } from '@lucide/svelte';
 	import OrganizationTokenCard from '$lib/components/tokens/OrganizationTokenCard.svelte';
 	import OrganizationTokenModal from '$lib/components/tokens/OrganizationTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
@@ -182,18 +182,25 @@
 	}
 </script>
 
-<!-- Search -->
-<div class="relative">
-	<Search
-		class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-		aria-hidden="true"
-	/>
-	<Input
-		type="search"
-		placeholder={m['organizationTokensTab.searchPlaceholder']()}
-		bind:value={tokenSearch}
-		class="pl-10"
-	/>
+<!-- Search + create -->
+<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+	<div class="relative flex-1">
+		<Search
+			class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+			aria-hidden="true"
+		/>
+		<Input
+			type="search"
+			placeholder={m['organizationTokensTab.searchPlaceholder']()}
+			aria-label={m['organizationTokensTab.searchPlaceholder']()}
+			bind:value={tokenSearch}
+			class="pl-10"
+		/>
+	</div>
+	<Button onclick={() => onCreateModalOpenChange(true)} class="w-full sm:w-auto">
+		<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
+		{m['memberPeople.createInviteLink']()}
+	</Button>
 </div>
 
 <!-- Tokens List -->
