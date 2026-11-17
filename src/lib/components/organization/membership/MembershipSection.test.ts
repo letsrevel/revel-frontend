@@ -249,7 +249,10 @@ describe('MembershipSection', () => {
 			screen.getByRole('link', {
 				name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
 			})
-		).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership#tier-t-gold')}`
+		);
 		expect(screen.getByRole('heading', { level: 4, name: 'Monthly' })).toBeInTheDocument();
 	});
 

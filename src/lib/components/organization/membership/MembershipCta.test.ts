@@ -176,7 +176,10 @@ describe('MembershipCta', () => {
 		renderCta();
 
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
-		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		expect(link).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership')}`
+		);
 	});
 
 	it('appends a safe returnUrl to the questionnaire link', async () => {
@@ -193,7 +196,9 @@ describe('MembershipCta', () => {
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
 		expect(link).toHaveAttribute(
 			'href',
-			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent(
+				`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			)}`
 		);
 	});
 
@@ -209,7 +214,10 @@ describe('MembershipCta', () => {
 		);
 		renderCta();
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
-		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		expect(link).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership')}`
+		);
 	});
 
 	it('labels a questionnaire awaiting evaluation differently from a pending application', async () => {
@@ -650,7 +658,10 @@ describe('MembershipCta', () => {
 
 			expect(
 				await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
-			).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+			).toHaveAttribute(
+				'href',
+				`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership#tier-tier-gold')}`
+			);
 		});
 
 		// The deferral is gated on the PLAN, not on the plans merely being on
@@ -689,6 +700,9 @@ describe('MembershipCta', () => {
 		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
 		expect(
 			await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
-		).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership#tier-tier-silver')}`
+		);
 	});
 });

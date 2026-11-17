@@ -122,7 +122,15 @@ describe('TierCard', () => {
 			screen.getByRole('link', {
 				name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
 			})
-		).toHaveAttribute('href', '/org/acme/questionnaire/q-42');
+		).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q-42?returnUrl=${encodeURIComponent('/org/acme/membership#tier-t-gold')}`
+		);
+	});
+
+	it('anchors the card so the questionnaire can return to it', () => {
+		const { container } = renderCard({ tier: makeTier({ questionnaire_id: 'q-42' }) });
+		expect(container.querySelector('#tier-t-gold')).not.toBeNull();
 	});
 
 	it('marks a plan-less tier as free and still offers a join CTA', async () => {
@@ -217,7 +225,10 @@ describe('TierCard', () => {
 				screen.getByRole('link', {
 					name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
 				})
-			).toHaveAttribute('href', '/org/acme/questionnaire/q-42');
+			).toHaveAttribute(
+				'href',
+				`/org/acme/questionnaire/q-42?returnUrl=${encodeURIComponent('/org/acme/membership#tier-t-gold')}`
+			);
 		});
 
 		// The crux, in the direction that matters most: a member who has already

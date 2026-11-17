@@ -208,6 +208,26 @@ describe('Membership questionnaire fill page', () => {
 			expect(gotoMock).toHaveBeenCalledWith('/events/acme/gala', { invalidateAll: true });
 		});
 
+		it('returns to the tier anchor on the membership page after a pending submit', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage('/org/acme/membership#tier-t1');
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/org/acme/membership#tier-t1', {
+				invalidateAll: true
+			});
+		});
+
+		it('continues to the membership returnUrl itself, not a self-nested copy', async () => {
+			submitMock.mockResolvedValue(submissionResponse(false));
+			renderPage('/org/acme/membership#tier-t1');
+			await submit();
+
+			const link = await screen.findByRole('link', { name: 'Continue joining' });
+			expect(link).toHaveAttribute('href', '/org/acme/membership#tier-t1');
+		});
+
 		it('goes to the org page after a pending submit when there is no returnUrl', async () => {
 			submitMock.mockResolvedValue(submissionResponse(true));
 			renderPage();

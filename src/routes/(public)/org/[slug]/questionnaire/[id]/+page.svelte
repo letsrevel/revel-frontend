@@ -6,7 +6,7 @@
 	import { memembershipquestionnaireSubmitMembershipQuestionnaire } from '$lib/api';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated/types.gen';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
-	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
+	import { isMembershipReturnTarget, safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft, Check } from '@lucide/svelte';
@@ -64,11 +64,16 @@
 	}
 
 	const returnUrl = $derived(safeInternalReturnUrl());
+	// A returnUrl that already is the membership page (the tier links send the
+	// applicant there, anchor included) is the destination itself; wrapping it in
+	// another `?returnUrl=` would point the page back at itself.
 	const membershipHref = $derived(
-		withReturnUrl(
-			resolve('/(public)/org/[slug]/membership', { slug: data.organization.slug }),
-			returnUrl
-		)
+		isMembershipReturnTarget(returnUrl, data.organization.slug) && returnUrl
+			? returnUrl
+			: withReturnUrl(
+					resolve('/(public)/org/[slug]/membership', { slug: data.organization.slug }),
+					returnUrl
+				)
 	);
 
 	const queryClient = useQueryClient();

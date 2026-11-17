@@ -28,7 +28,7 @@
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
-	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
+	import { membershipReturnPath, safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		organizationSlug: string;
@@ -226,7 +226,7 @@
 		if (!id) return null;
 		return withReturnUrl(
 			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
-			safeInternalReturnUrl()
+			membershipReturnPath(membershipHref, tierId ?? undefined)
 		);
 	});
 
