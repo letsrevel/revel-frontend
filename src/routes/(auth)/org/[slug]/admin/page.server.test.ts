@@ -182,7 +182,6 @@ describe('admin dashboard loader', () => {
 });
 
 describe('admin dashboard awaitingPaymentCount', () => {
-	const sub = (payment_method: string) => ({ plan: { payment_method } });
 	const noEvents = () =>
 		mockEvents({
 			live: { results: [], count: 0 },
@@ -190,27 +189,24 @@ describe('admin dashboard awaitingPaymentCount', () => {
 			drafts: { results: [], count: 0 }
 		});
 
-	it('counts only pending subscriptions on offline plans', async () => {
+	it('takes the count of pending OFFLINE subscriptions from the server filter', async () => {
 		noEvents();
 		listSubs.mockResolvedValue({
-			data: { count: 3, results: [sub('offline'), sub('online'), sub('offline')] },
+			data: { count: 250, results: [{}] },
 			error: undefined
 		} as never);
 		const res = await run();
-		expect(res.awaitingPaymentCount).toBe(2);
+		expect(res.awaitingPaymentCount).toBe(250);
 		expect(listSubs.mock.calls[0][0]).toMatchObject({
 			path: { slug: 'org' },
-			query: { status: 'pending' }
+			query: { status: 'pending', payment_method: 'offline', page_size: 1 }
 		});
 	});
 
-	it('falls back to the pending total when the page cannot hold them all', async () => {
+	it('is zero (row hidden) when nobody is awaiting', async () => {
 		noEvents();
-		listSubs.mockResolvedValue({
-			data: { count: 250, results: [sub('offline')] },
-			error: undefined
-		} as never);
-		expect((await run()).awaitingPaymentCount).toBe(250);
+		listSubs.mockResolvedValue({ data: { count: 0, results: [] }, error: undefined } as never);
+		expect((await run()).awaitingPaymentCount).toBe(0);
 	});
 
 	it('is null when the call fails', async () => {

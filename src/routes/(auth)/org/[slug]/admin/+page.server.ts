@@ -17,7 +17,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const LIVE_LOOKBACK_DAYS = 14;
 // Pending subscriptions fetched to count the offline ones. Past this many the exact offline
 // count is unknowable without a server filter, so the pending total is shown instead.
-const PENDING_SUBS_PAGE_SIZE = 100;
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, params, cookies }) => {
 	const { organization, isOwner } = await parent();
@@ -79,12 +78,12 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 			path: { slug: params.slug },
 			query: { status: 'pending', page_size: 1 }
 		}).catch(fail),
-		// Pending subscriptions: the list has no plan-method filter, so offline ones are
-		// counted client-side (see `countAwaitingPayment`).
+		// Awaiting payment = PENDING subscriptions on OFFLINE plans. The server filters
+		// by `payment_method`, so one row is enough: only `.count` is read.
 		organizationadminsubscriptionsListSubscriptions({
 			...base,
 			path: { slug: params.slug },
-			query: { status: 'pending', page_size: PENDING_SUBS_PAGE_SIZE }
+			query: { status: 'pending', payment_method: 'offline', page_size: 1 }
 		}).catch(fail),
 		// Owners only: feeds the setup card. Never throws.
 		isOwner && !hiddenCookie
@@ -135,14 +134,9 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 
 	// PENDING subscriptions on OFFLINE plans: people waiting on a first payment (awaiting
 	// members, legacy rows, upgrading free members). Null (hidden) on error or no permission.
-	let awaitingPaymentCount: number | null = null;
-	if (pendingSubsResult.data) {
-		const { count, results } = pendingSubsResult.data;
-		awaitingPaymentCount =
-			count > results.length
-				? count
-				: results.filter((s) => s.plan.payment_method === 'offline').length;
-	}
+	const awaitingPaymentCount: number | null = pendingSubsResult.data
+		? pendingSubsResult.data.count
+		: null;
 
 	return {
 		dashboardEvents,

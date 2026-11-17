@@ -48,7 +48,7 @@
 				count: awaitingPaymentCount,
 				text: m['orgAdmin.dashboard.attention.awaitingPayment']({ count: awaitingPaymentCount }),
 				linkLabel: m['orgAdmin.dashboard.attention.review'](),
-				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=subscriptions&status=pending`
+				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=subscriptions&status=pending&payment_method=offline`
 			});
 		}
 		if (isOwner && billingNeedsAttention) {

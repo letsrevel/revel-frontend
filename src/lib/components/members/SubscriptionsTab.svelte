@@ -9,7 +9,8 @@
 		SubscriptionSchema,
 		OrganizationAdminDetailSchema,
 		SubscriptionCreateSchema,
-		SubscriptionStatus
+		SubscriptionStatus,
+		SubscriptionPaymentMethod
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -22,6 +23,7 @@
 	import { onDestroy } from 'svelte';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { getStatusLabel, STATUS_ORDER } from '$lib/utils/subscriptions';
+	import { getPaymentMethodLabel } from '$lib/utils/ticket-helpers';
 
 	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
 	// open inside another Dialog's close handler in the same tick leaves
@@ -33,19 +35,28 @@
 		organization: OrganizationAdminDetailSchema;
 		/** Pre-selected status filter (e.g. the dashboard's awaiting-payment link). */
 		initialStatus?: string | null;
+		/** Pre-selected payment-method filter (the dashboard link adds `offline`). */
+		initialPaymentMethod?: string | null;
 	}
 
-	const { organization, initialStatus = null }: Props = $props();
+	const { organization, initialStatus = null, initialPaymentMethod = null }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	const PAGE_SIZE = 25;
+	// Same order as the backend's `SubscriptionPaymentMethod`; validates the URL value.
+	const PAYMENT_METHODS: readonly SubscriptionPaymentMethod[] = ['online', 'offline', 'free'];
 
 	let search = $state('');
 	let debounced = $state('');
 	let statusFilter = $state<SubscriptionStatus | 'all'>(
 		(STATUS_ORDER as readonly string[]).includes(initialStatus ?? '')
 			? (initialStatus as SubscriptionStatus)
+			: 'all'
+	);
+	let methodFilter = $state<SubscriptionPaymentMethod | 'all'>(
+		(PAYMENT_METHODS as readonly string[]).includes(initialPaymentMethod ?? '')
+			? (initialPaymentMethod as SubscriptionPaymentMethod)
 			: 'all'
 	);
 	let pageNum = $state(1);
@@ -69,6 +80,7 @@
 
 	$effect(() => {
 		void statusFilter;
+		void methodFilter;
 		pageNum = 1;
 	});
 
@@ -77,7 +89,7 @@
 			'organization',
 			organization.slug,
 			'subscriptions',
-			{ search: debounced, page: pageNum, status: statusFilter }
+			{ search: debounced, page: pageNum, status: statusFilter, method: methodFilter }
 		],
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptions({
@@ -86,7 +98,8 @@
 					page: pageNum,
 					page_size: PAGE_SIZE,
 					search: debounced || undefined,
-					status: statusFilter === 'all' ? undefined : statusFilter
+					status: statusFilter === 'all' ? undefined : statusFilter,
+					payment_method: methodFilter === 'all' ? undefined : methodFilter
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -163,6 +176,16 @@
 					<option value={status}>{getStatusLabel(status)}</option>
 				{/each}
 			</select>
+			<select
+				bind:value={methodFilter}
+				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:w-48"
+				aria-label={m['orgAdmin.members.subscriptions.filter.allMethods']()}
+			>
+				<option value="all">{m['orgAdmin.members.subscriptions.filter.allMethods']()}</option>
+				{#each PAYMENT_METHODS as method (method)}
+					<option value={method}>{getPaymentMethodLabel(method)}</option>
+				{/each}
+			</select>
 		</div>
 		<Button onclick={openCreate}>
 			<Plus class="mr-1 h-4 w-4" />
@@ -174,7 +197,7 @@
 		<Loader2 class="h-5 w-5 animate-spin" />
 	{:else if subs.length === 0}
 		<p class="text-sm text-muted-foreground">
-			{#if statusFilter !== 'all' || debounced}
+			{#if statusFilter !== 'all' || methodFilter !== 'all' || debounced}
 				{m['orgAdmin.members.subscriptions.emptyFiltered']()}
 			{:else}
 				{m['orgAdmin.members.subscriptions.empty']()}

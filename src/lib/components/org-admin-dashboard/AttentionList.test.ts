@@ -22,6 +22,7 @@ describe('AttentionList awaiting-payment item', () => {
 		const link = screen.getByRole('link', { name: /Review/ });
 		expect(link.getAttribute('href')).toContain('tab=subscriptions');
 		expect(link.getAttribute('href')).toContain('status=pending');
+		expect(link.getAttribute('href')).toContain('payment_method=offline');
 	});
 
 	it.each([0, null])('is hidden for %s', (count) => {
