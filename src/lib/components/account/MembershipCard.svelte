@@ -5,6 +5,7 @@
 		mesubscriptionsCreateBillingPortalSession,
 		mesubscriptionsSubscribe,
 		mesubscriptionsUncancelSubscription,
+		organizationGetOrganization,
 		organizationListMembershipPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type { MyMembershipSchema } from '$lib/api/generated/types.gen';
@@ -17,6 +18,8 @@
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
 	import MembershipCardModal from './MembershipCardModal.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import {
 		formatPlanPrice,
 		getDateLine,
@@ -45,6 +48,50 @@
 	// membership row carries that fact.
 	const actions = $derived(sub ? getMemberActions(sub, new Date(), membership.status) : null);
 	const isOffline = $derived(sub?.plan.payment_method === 'offline');
+
+	/**
+	 * An offline-paid join the organizer has not yet confirmed: the member row is
+	 * `awaiting_payment` and its subscription is PENDING. Either signal suffices —
+	 * the row status alone covers a membership listed without its subscription.
+	 * Such a member holds no credential yet, so the member card (and with it the
+	 * wallet buttons it hosts) is withheld: the backend would refuse both.
+	 */
+	const awaitingPayment = $derived(
+		membership.status === 'awaiting_payment' || (isOffline && sub?.status === 'pending')
+	);
+	const instructions = $derived(sub?.payment_instructions?.trim() || null);
+
+	/** Backend auto-cancels an awaiting request 30 days after it was created. */
+	const AWAITING_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+	const awaitingDeadline = $derived.by(() => {
+		const created = sub?.created_at;
+		if (!created) return null;
+		const start = new Date(created).getTime();
+		if (Number.isNaN(start)) return null;
+		return formatDate(new Date(start + AWAITING_WINDOW_MS).toISOString());
+	});
+
+	// Contact details are only needed for the no-instructions fallback, so the
+	// (shared, cached) public org read is skipped whenever instructions exist.
+	const orgQuery = createQuery(() => ({
+		queryKey: ['org', membership.organization_slug, 'public-detail'],
+		queryFn: async () => {
+			const res = await organizationGetOrganization({
+				path: { slug: membership.organization_slug }
+			});
+			if (res.error || !res.data) throw new Error('Failed to load organization');
+			return res.data;
+		},
+		enabled: awaitingPayment && !instructions
+	}));
+	// Stricter than `contact_method !== 'none'`: the button's email branch also
+	// needs an address, and promising a button that never renders is a dead end.
+	const contactable = $derived.by(() => {
+		const org = orgQuery.data;
+		if (!org) return false;
+		if (org.contact_method === 'email') return !!org.contact_email;
+		return org.contact_method === 'form';
+	});
 
 	let cancelOpen = $state(false);
 	let changePlanOpen = $state(false);
@@ -306,21 +353,23 @@
 					</p>
 				{/if}
 
-				<p class="mt-2 text-sm">
-					{#if line.kind === 'renewal'}
-						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'cancels'}
-						{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'period_ends'}
-						{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'paused_since'}
-						{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'ended'}
-						{m['subscriptions.dateLine.ended']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'pending'}
-						{m['subscriptions.dateLine.pending']()}
-					{/if}
-				</p>
+				{#if !awaitingPayment}
+					<p class="mt-2 text-sm">
+						{#if line.kind === 'renewal'}
+							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'cancels'}
+							{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'period_ends'}
+							{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'paused_since'}
+							{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'ended'}
+							{m['subscriptions.dateLine.ended']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'pending'}
+							{m['subscriptions.dateLine.pending']()}
+						{/if}
+					</p>
+				{/if}
 
 				<!-- Two different truths, told apart by whether the way back is actually
 				     on offer: a member who can un-cancel is pointed at the button below,
@@ -352,10 +401,42 @@
 						</p>
 					{/if}
 				{/if}
-			{:else}
+			{:else if !awaitingPayment}
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['account.memberships.memberSince']({ date: fmtDate(membership.member_since) })}
 				</p>
+			{/if}
+
+			{#if awaitingPayment}
+				<div class="mt-3 space-y-2 text-sm" data-testid="membership-awaiting-payment">
+					<p>
+						{m['membershipPlans.awaitingPaymentHelper']({ orgName: membership.organization_name })}
+					</p>
+					{#if instructions}
+						<MarkdownContent
+							content={instructions}
+							class="rounded-lg border bg-muted/40 p-3 text-sm"
+						/>
+					{:else}
+						<p class="text-muted-foreground">
+							{m['subscribe.offline.fallback']({ orgName: membership.organization_name })}
+						</p>
+						{#if contactable && orgQuery.data}
+							<OrgContactButton
+								organizationSlug={membership.organization_slug}
+								organizationName={membership.organization_name}
+								contactMethod={orgQuery.data.contact_method}
+								contactEmail={orgQuery.data.contact_email}
+								isAuthenticated={!!accessToken}
+							/>
+						{/if}
+					{/if}
+					{#if awaitingDeadline}
+						<p class="text-xs text-muted-foreground">
+							{m['account.memberships.awaitingDeadline']({ date: awaitingDeadline })}
+						</p>
+					{/if}
+				</div>
 			{/if}
 
 			<div class="mt-3 flex flex-wrap gap-2">
@@ -371,9 +452,11 @@
 					resume payment), and two competing primaries would flatten that
 					hierarchy exactly when it matters.
 				-->
-				<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
-					{m['membershipCard.showCard']()}
-				</Button>
+				{#if !awaitingPayment}
+					<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
+						{m['membershipCard.showCard']()}
+					</Button>
+				{/if}
 				<Button href="/org/{membership.organization_slug}" variant="outline" size="sm">
 					{m['account.memberships.viewOrg']()}
 				</Button>

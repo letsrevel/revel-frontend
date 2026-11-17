@@ -19,6 +19,7 @@ const plansMock = vi.hoisted(() => vi.fn());
 const subscribeMock = vi.hoisted(() => vi.fn());
 const uncancelMock = vi.hoisted(() => vi.fn());
 const paymentsMock = vi.hoisted(() => vi.fn());
+const orgMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCreateBillingPortalSession: portalMock,
 	organizationListMembershipPlans: plansMock,
@@ -27,7 +28,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsListMySubscriptionPayments: paymentsMock,
 	mesubscriptionsCancelSubscription: vi.fn(),
 	mesubscriptionsChangePlan: vi.fn(),
-	organizationGetOrganization: vi.fn()
+	organizationGetOrganization: orgMock
 }));
 
 const toastErrorMock = vi.hoisted(() => vi.fn());
@@ -511,5 +512,68 @@ describe('MembershipCard', () => {
 
 		expect(screen.getByText(/member since/i)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /manage billing/i })).toBeNull();
+	});
+
+	describe('awaiting payment (offline)', () => {
+		function awaiting(overrides: Partial<MySubscriptionSchema> = {}) {
+			return makeMembership(
+				makeOfflineSub({ status: 'pending', created_at: '2026-08-01T00:00:00Z', ...overrides }),
+				'awaiting_payment'
+			);
+		}
+
+		it('renders the payment instructions as markdown, the deadline and the helper', () => {
+			renderCard(awaiting({ payment_instructions: 'Send **EUR 10** by bank transfer.' }));
+
+			expect(screen.getByText('EUR 10').tagName).toBe('STRONG');
+			expect(
+				screen.getByText('Your membership starts once Test Org confirms your payment.')
+			).toBeInTheDocument();
+			// created_at + 30 days
+			expect(
+				screen.getByText(
+					`If no payment is recorded by ${formatDate('2026-08-31T00:00:00Z')}, this request is cancelled.`
+				)
+			).toBeInTheDocument();
+			expect(screen.queryByText(/will tell you how to pay/i)).toBeNull();
+		});
+
+		it('falls back to the organization contact when there are no instructions', async () => {
+			orgMock.mockResolvedValue({
+				data: { contact_method: 'email', contact_email: 'hi@org.test' },
+				error: undefined
+			});
+			renderCard(awaiting({ payment_instructions: null }));
+
+			expect(screen.getByText('Test Org will tell you how to pay.')).toBeInTheDocument();
+			await waitFor(() =>
+				expect(screen.getByRole('link', { name: 'Email Test Org' })).toBeInTheDocument()
+			);
+		});
+
+		it('offers no contact button when the organization has no contact method', async () => {
+			orgMock.mockResolvedValue({
+				data: { contact_method: 'none', contact_email: null },
+				error: undefined
+			});
+			renderCard(awaiting({ payment_instructions: null }));
+
+			await waitFor(() => expect(orgMock).toHaveBeenCalled());
+			expect(screen.queryByRole('link', { name: 'Email Test Org' })).toBeNull();
+			expect(screen.queryByRole('button', { name: /contact/i })).toBeNull();
+		});
+
+		it('hides the member card button while awaiting', () => {
+			renderCard(awaiting({ payment_instructions: 'x' }));
+
+			expect(screen.queryByRole('button', { name: /card/i })).toBeNull();
+			expect(screen.getByRole('link', { name: /view org/i })).toBeInTheDocument();
+		});
+
+		it('still offers the member card on an active offline membership', () => {
+			renderCard(makeMembership(makeOfflineSub()));
+
+			expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+		});
 	});
 });

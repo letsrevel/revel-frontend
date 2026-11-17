@@ -7857,6 +7857,7 @@
 			"contactOrg": "Contacte l'organisation pour renouveler.",
 			"memberSince": "Membre depuis le {date}",
 			"managedBy": "Géré par {org} — contacte-les pour toute modification.",
+			"awaitingDeadline": "Si aucun paiement n'est enregistré d'ici le {date}, cette demande est annulée.",
 			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page.",
 			"loadErrorRejoin": "Impossible de vérifier quelles adhésions tu peux renouveler. Essaie de recharger la page."
 		}
@@ -10158,9 +10159,11 @@
 			"approved": "Approuvée",
 			"completed": "Terminée",
 			"rejected": "Refusée",
-			"cancelled": "Annulée"
+			"cancelled": "Annulée",
+			"approvedOffline": "Acceptée, en attente de paiement"
 		},
 		"continueCta": "Continuer le questionnaire",
+		"awaitingPaymentSeeAbove": "Retrouve les détails de paiement dans tes adhésions ci-dessus.",
 		"becameMember": "Tu es maintenant membre de {org} !",
 		"statusAriaLabel": "Statut de la candidature : {status}",
 		"cancelCta": "Annuler la candidature",

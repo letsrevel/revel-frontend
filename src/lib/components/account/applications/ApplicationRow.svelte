@@ -106,14 +106,22 @@
 	const isOpen = $derived(!TERMINAL.has(app.status));
 	const logoUrl = $derived(getImageUrl(app.organization_logo_url));
 
+	/** Approved onto an offline-paid plan: the member still owes the organizer a
+	 * payment, and the instructions live on the membership card, not here. */
+	const awaitingOfflinePayment = $derived(
+		app.status === 'approved' && app.plan?.payment_method === 'offline'
+	);
+
 	const statusLabel = $derived(
-		{
-			pending: m['applications.status.pending'](),
-			approved: m['applications.status.approved'](),
-			completed: m['applications.status.completed'](),
-			rejected: m['applications.status.rejected'](),
-			cancelled: m['applications.status.cancelled']()
-		}[app.status]
+		awaitingOfflinePayment
+			? m['applications.status.approvedOffline']()
+			: {
+					pending: m['applications.status.pending'](),
+					approved: m['applications.status.approved'](),
+					completed: m['applications.status.completed'](),
+					rejected: m['applications.status.rejected'](),
+					cancelled: m['applications.status.cancelled']()
+				}[app.status]
 	);
 
 	/**
@@ -296,6 +304,10 @@
 		     during this very read. Same `role="status"` treatment as `becameMember`
 		     above: the row changed under the member without them acting. -->
 		<p role="status" class="mt-3 text-sm">{autoRejectedLine}</p>
+	{/if}
+
+	{#if awaitingOfflinePayment}
+		<p class="mt-2 text-sm">{m['applications.awaitingPaymentSeeAbove']()}</p>
 	{/if}
 
 	{#if nextStepLine}

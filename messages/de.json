@@ -7887,6 +7887,7 @@
 			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
 			"memberSince": "Mitglied seit {date}",
 			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie.",
+			"awaitingDeadline": "Wenn bis zum {date} keine Zahlung verbucht ist, wird diese Anfrage storniert.",
 			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu.",
 			"loadErrorRejoin": "Es konnte nicht geprüft werden, welche Mitgliedschaften du erneuern kannst. Lade die Seite neu."
 		}
@@ -10158,9 +10159,11 @@
 			"approved": "Angenommen",
 			"completed": "Abgeschlossen",
 			"rejected": "Abgelehnt",
-			"cancelled": "Zurückgezogen"
+			"cancelled": "Zurückgezogen",
+			"approvedOffline": "Angenommen, Zahlung ausstehend"
 		},
 		"continueCta": "Fragebogen fortsetzen",
+		"awaitingPaymentSeeAbove": "Die Zahlungsdetails findest du oben unter deinen Mitgliedschaften.",
 		"becameMember": "Du bist jetzt Mitglied bei {org}!",
 		"statusAriaLabel": "Bewerbungsstatus: {status}",
 		"cancelCta": "Bewerbung zurückziehen",

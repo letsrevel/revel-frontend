@@ -430,4 +430,39 @@ describe('ApplicationRow', () => {
 			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
 		});
 	});
+
+	describe('approved applications', () => {
+		const plan = (payment_method: 'offline' | 'online') =>
+			({
+				id: 'p1',
+				tier_id: 't1',
+				tier_name: 'Gold',
+				name: 'Monthly',
+				description: null,
+				price: '10.00',
+				currency: 'EUR',
+				period_unit: 'month',
+				period_count: 1,
+				payment_method,
+				sales_status: 'open',
+				is_active: true
+			}) as MembershipApplicationSchema['plan'];
+
+		it('labels an approved offline application as awaiting payment and points to memberships', () => {
+			renderRow(makeApplication({ status: 'approved', plan: plan('offline') }));
+
+			expect(screen.getByText('Accepted, awaiting payment')).toBeInTheDocument();
+			expect(
+				screen.getByText('See payment details in your memberships above.')
+			).toBeInTheDocument();
+		});
+
+		it('keeps the plain label for an approved online application', () => {
+			renderRow(makeApplication({ status: 'approved', plan: plan('online') }));
+
+			expect(screen.getByText('Approved')).toBeInTheDocument();
+			expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			expect(screen.queryByText(/payment details/i)).toBeNull();
+		});
+	});
 });

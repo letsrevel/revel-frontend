@@ -7887,6 +7887,7 @@
 			"contactOrg": "Contacta quem organiza para renovar.",
 			"memberSince": "Membro desde {date}",
 			"managedBy": "Gerida por {org} — contacta-a para fazeres alterações.",
+			"awaitingDeadline": "Se nenhum pagamento for registado até {date}, este pedido é cancelado.",
 			"loadError": "Não foi possível carregar as tuas adesões. Tenta recarregar a página.",
 			"loadErrorRejoin": "Não foi possível verificar quais as adesões que podes renovar. Tenta recarregar a página."
 		}
@@ -10158,9 +10159,11 @@
 			"approved": "Aprovada",
 			"completed": "Concluída",
 			"rejected": "Rejeitada",
-			"cancelled": "Cancelada"
+			"cancelled": "Cancelada",
+			"approvedOffline": "Aceite, a aguardar pagamento"
 		},
 		"continueCta": "Continuar o questionário",
+		"awaitingPaymentSeeAbove": "Consulta os dados de pagamento nas tuas subscrições, acima.",
 		"becameMember": "Agora és membro de {org}!",
 		"statusAriaLabel": "Estado da candidatura: {status}",
 		"cancelCta": "Cancelar candidatura",

@@ -7887,6 +7887,7 @@
 			"contactOrg": "Contatta chi organizza per rinnovare.",
 			"memberSince": "Membro dal {date}",
 			"managedBy": "Gestito da {org} — contattali per apportare modifiche.",
+			"awaitingDeadline": "Se entro il {date} non viene registrato alcun pagamento, questa richiesta viene annullata.",
 			"loadError": "Non è stato possibile caricare i tuoi abbonamenti. Prova a ricaricare la pagina.",
 			"loadErrorRejoin": "Non è stato possibile verificare quali abbonamenti puoi rinnovare. Prova a ricaricare la pagina."
 		}
@@ -10158,9 +10159,11 @@
 			"approved": "Approvata",
 			"completed": "Completata",
 			"rejected": "Respinta",
-			"cancelled": "Annullata"
+			"cancelled": "Annullata",
+			"approvedOffline": "Accettata, in attesa di pagamento"
 		},
 		"continueCta": "Continua il questionario",
+		"awaitingPaymentSeeAbove": "Trovi i dettagli di pagamento nelle tue iscrizioni qui sopra.",
 		"becameMember": "Ora sei membro di {org}!",
 		"statusAriaLabel": "Stato della candidatura: {status}",
 		"cancelCta": "Annulla la candidatura",
