@@ -190,6 +190,10 @@
 		queryClient.invalidateQueries({
 			queryKey: ['organization', organization.slug, 'members']
 		});
+		// A first offline payment opens the member's register entry (awaiting
+		// members have none), and cancel/pause change its status: the People
+		// register list and total must follow.
+		void invalidateRegister(queryClient, organization.slug, false);
 	}
 
 	// A plan change moves the member's tier: the register and the person sheet's

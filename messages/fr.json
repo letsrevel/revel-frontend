@@ -11865,5 +11865,6 @@
 	"memberPeople.awaiting.helper": "L'adhésion démarre dès que vous enregistrez le premier paiement.",
 	"memberPeople.awaiting.record": "Enregistrer le paiement",
 	"memberPeople.awaiting.recordFor": "Enregistrer le paiement de {name}",
-	"memberPeople.awaiting.truncated": "Affichage des {shown} premiers."
+	"memberPeople.awaiting.truncated": "Affichage des {shown} premiers.",
+	"memberPeople.awaiting.seeAll": "Tout voir dans Abonnements"
 }

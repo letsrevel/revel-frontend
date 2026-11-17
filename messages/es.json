@@ -11865,5 +11865,6 @@
 	"memberPeople.awaiting.helper": "Pasan a ser miembros cuando registres su primer pago.",
 	"memberPeople.awaiting.record": "Registrar pago",
 	"memberPeople.awaiting.recordFor": "Registrar pago de {name}",
-	"memberPeople.awaiting.truncated": "Se muestran los primeros {shown}."
+	"memberPeople.awaiting.truncated": "Se muestran los primeros {shown}.",
+	"memberPeople.awaiting.seeAll": "Ver todos en Suscripciones"
 }

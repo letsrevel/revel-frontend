@@ -11865,5 +11865,6 @@
 	"memberPeople.awaiting.helper": "They join as members once you record their first payment.",
 	"memberPeople.awaiting.record": "Record payment",
 	"memberPeople.awaiting.recordFor": "Record payment for {name}",
-	"memberPeople.awaiting.truncated": "Showing the first {shown}."
+	"memberPeople.awaiting.truncated": "Showing the first {shown}.",
+	"memberPeople.awaiting.seeAll": "See all in Subscriptions"
 }

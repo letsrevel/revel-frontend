@@ -6,6 +6,7 @@
 		OrganizationAdminDetailSchema,
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
@@ -53,6 +54,9 @@
 	);
 	const total = $derived(query.data?.count ?? people.length);
 	let drawerSubId = $state<string | null>(null);
+	const seeAllHref = $derived(
+		`${resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })}?tab=subscriptions&status=pending&payment_method=offline`
+	);
 </script>
 
 {#if canManageSubscriptions && people.length > 0}
@@ -93,6 +97,13 @@
 		{#if total > people.length}
 			<p class="text-sm text-muted-foreground">
 				{m['memberPeople.awaiting.truncated']({ shown: people.length })}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- seeAllHref is resolve()d in the script, plus a query string -->
+				<a
+					href={seeAllHref}
+					class="rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>{m['memberPeople.awaiting.seeAll']()}</a
+				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</p>
 		{/if}
 	</section>
