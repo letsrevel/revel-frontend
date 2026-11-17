@@ -185,7 +185,7 @@ test.describe('j27 membership eligibility states @p2', () => {
 		await waitForClientAuth(openPage);
 		const card = membershipCard(openPage, lax.name);
 		await expect(card).toBeVisible({ timeout: 15_000 });
-		await expect(card.getByText('active', { exact: true })).toBeVisible();
+		await expect(card.getByText('Active', { exact: true })).toBeVisible();
 		await expect(
 			applicationRow(openPage, 'Closed', lax.name)
 				.getByTestId('status-badge')

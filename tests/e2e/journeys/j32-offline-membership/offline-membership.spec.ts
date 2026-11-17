@@ -228,7 +228,9 @@ test.describe('j32 offline membership @p1', () => {
 			.filter({ hasText: '1 awaiting first payment' })
 			.getByRole('link', { name: 'Review' })
 			.click();
-		await staff.waitForURL('**/admin/members?tab=subscriptions&status=pending');
+		await staff.waitForURL(
+			'**/admin/members?tab=subscriptions&status=pending&payment_method=offline'
+		);
 		await expect(
 			staff
 				.getByRole('button', { name: 'Open subscription details' })
@@ -290,6 +292,11 @@ test.describe('j32 offline membership @p1', () => {
 		await expect(requestCardEl).toBeVisible({ timeout: 20_000 });
 		await expect(requestCardEl.getByText(tier3.planName)).toBeVisible();
 		await requestCardEl.getByRole('button', { name: `Approve request from ${name}` }).click();
+		// A plan-bearing application always asks for confirmation first (the dialog
+		// says whether the plan is paid offline), with the tier locked to the plan's.
+		const approveModal = staff.getByRole('dialog', { name: 'Approve Membership Request' });
+		await expect(approveModal).toBeVisible();
+		await approveModal.getByRole('button', { name: 'Approve Request' }).click();
 		await expect(staff.getByRole('article', { name, exact: true })).toBeHidden({
 			timeout: 20_000
 		});

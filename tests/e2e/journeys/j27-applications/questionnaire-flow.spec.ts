@@ -110,7 +110,9 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await expect(
 			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
-		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
+		await page.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 15_000
+		});
 		await expect(page.getByText('Questionnaire approved')).toBeHidden();
 
 		// Grading is asynchronous, and the CTA is a cached client query: advance it
@@ -147,7 +149,7 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		// The card's status badge carries no aria-label — the text IS the message
 		// (CSS-capitalized, so the DOM string is lowercase).
-		await expect(card.getByText('active', { exact: true })).toBeVisible();
+		await expect(card.getByText('Active', { exact: true })).toBeVisible();
 
 		await page.context().close();
 	});
@@ -184,7 +186,9 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await expect(
 			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
-		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
+		await page.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 15_000
+		});
 
 		// `wait_for_questionnaire_evaluation` → the disabled waiting CTA, named for
 		// the questionnaire (#1154), and NO account-hub link: there is no application

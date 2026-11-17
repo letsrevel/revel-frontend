@@ -117,7 +117,7 @@ test.describe('j27 application flows @p2', () => {
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		// The card's own status badge carries no aria-label — the text IS the
 		// message (CSS-capitalized, so the DOM string is lowercase).
-		await expect(card.getByText('active', { exact: true })).toBeVisible();
+		await expect(card.getByText('Active', { exact: true })).toBeVisible();
 		await expect(
 			applicationRow(page, 'Closed', org.name)
 				.getByTestId('status-badge')
