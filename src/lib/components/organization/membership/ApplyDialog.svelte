@@ -4,6 +4,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
 	import type {
+		ApplyConflictSchema,
 		ApplyResponseSchema,
 		MembershipEligibilitySchema
 	} from '$lib/api/generated/types.gen';
@@ -83,13 +84,17 @@
 	let errorMessage = $state<string | null>(null);
 	let result = $state<ApplyResponseSchema | null>(null);
 	/**
-	 * The backend answers 409 (`Reasons.ALREADY_ACTIVE_MEMBER`) when the caller is
-	 * already an ACTIVE member at the target tier — it refuses rather than minting a
-	 * junk application row. The eligibility verdict reports that case too and hides
-	 * the Join CTA, so a 409 only ever lands on a stale verdict: this is a race
-	 * backstop, not something a retry can fix.
+	 * The backend answers 409 (`ApplyConflictSchema`) instead of minting a junk
+	 * application row, and the machine `reason_code` says why. `already_active_member`:
+	 * the caller is already ACTIVE at the target tier. `awaiting_offline_payment`:
+	 * the application was accepted and payment is outstanding. The eligibility
+	 * verdict reports both and hides the Join CTA, so a 409 only ever lands on a
+	 * stale verdict: a race backstop, not something a retry can fix. Any other or
+	 * unparseable body falls back to "already a member".
 	 */
 	let alreadyMember = $state(false);
+	/** The 409 flavour meaning "accepted, payment outstanding" — not a membership yet. */
+	let conflictAwaitingPayment = $state(false);
 
 	// Unique per instance: the dialog can sit next to other labelled controls.
 	const uid = $props.id();
@@ -110,6 +115,16 @@
 			!!error &&
 			typeof error === 'object' &&
 			typeof (error as { allowed?: unknown }).allowed === 'boolean'
+		);
+	}
+
+	// Classify a 409 body by its machine code only, never by the localized `detail`.
+	function isAwaitingPaymentConflict(error: unknown): boolean {
+		if (!error || typeof error !== 'object') return false;
+		const body = error as Partial<ApplyConflictSchema>;
+		return (
+			body.reason_code === 'awaiting_offline_payment' ||
+			body.next_step === 'wait_for_offline_payment'
 		);
 	}
 
@@ -137,7 +152,15 @@
 					// Terminal, and positive: there is nothing to apply for. Show the
 					// outcome panel instead of a form-level error, so the user is not
 					// invited to press a button that will keep 409ing.
-					alreadyMember = true;
+					if (isAwaitingPaymentConflict(res.error)) {
+						conflictAwaitingPayment = true;
+						// Same refresh as the 200 wait verdict. The 409 carries no organization
+						// id, so the per-org subscription caches go by their shared prefix.
+						queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+						queryClient.invalidateQueries({ queryKey: ['me', 'org'] });
+					} else {
+						alreadyMember = true;
+					}
 					// Everything that let the Join CTA appear is provably stale: the
 					// cached verdict…
 					queryClient.invalidateQueries({
@@ -187,7 +210,7 @@
 		onError: (err: Error) => {
 			// The already-member outcome replaces the form with its own panel, so a
 			// form-level alert would never be reachable.
-			if (alreadyMember) return;
+			if (alreadyMember || conflictAwaitingPayment) return;
 			errorMessage = err.message || m['membershipApply.error']();
 		}
 	}));
@@ -195,17 +218,19 @@
 	const isBusy = $derived(applyMutation.isPending);
 	const completed = $derived(result?.application.status === 'completed');
 	/** Keyed on the verdict's `next_step`, never on localized text. */
-	const awaitingPayment = $derived(result?.eligibility.next_step === 'wait_for_offline_payment');
-	/** Both terminal states replace the form with a read-only panel. */
-	const showOutcome = $derived(!!result || alreadyMember);
+	const awaitingPayment = $derived(
+		conflictAwaitingPayment || result?.eligibility.next_step === 'wait_for_offline_payment'
+	);
+	/** Every terminal state replaces the form with a read-only panel. */
+	const showOutcome = $derived(!!result || alreadyMember || conflictAwaitingPayment);
 	const showMemberBadge = $derived(alreadyMember || completed);
 
 	const heading = $derived.by(() => {
 		if (alreadyMember) {
 			return m['membershipApply.alreadyMemberTitle']();
 		}
+		if (awaitingPayment) return m['membershipApply.awaitingPaymentTitle']();
 		if (result) {
-			if (awaitingPayment) return m['membershipApply.awaitingPaymentTitle']();
 			return completed
 				? m['membershipApply.completedTitle']()
 				: m['membershipApply.pendingTitle']();
@@ -238,6 +263,7 @@
 		errorMessage = null;
 		result = null;
 		alreadyMember = false;
+		conflictAwaitingPayment = false;
 	});
 
 	function handleOpenChange(next: boolean): void {
@@ -285,9 +311,7 @@
 						{m['membershipEligibility.memberBadge']()}
 					</p>
 					{#if alreadyMember}
-						<!-- A 409 carries no machine code, so "already a member" cannot be told
-						     apart from "accepted, awaiting offline payment" — the hub is where
-						     either state is spelled out. -->
+						<!-- The hub spells out the member's state. -->
 						<a
 							href={membershipsHref}
 							class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
