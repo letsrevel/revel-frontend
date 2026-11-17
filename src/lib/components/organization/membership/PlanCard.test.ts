@@ -177,6 +177,16 @@ describe('PlanCard', () => {
 			expect(screen.queryByRole('button')).toBeNull();
 		});
 
+		it('keeps "Your plan" and the resume-checkout helper for a pending ONLINE subscription', () => {
+			renderCard({ subscription: makeSub({ plan_id: 'plan-1', status: 'pending' }) });
+
+			expect(screen.getByText(m['membershipPlans.yourPlan']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.pendingCheckoutHelper']())).toBeInTheDocument();
+			expect(
+				screen.queryByText(m['membershipPlans.awaitingPaymentHelper']({ orgName: 'Acme' }))
+			).toBeNull();
+		});
+
 		it('gives the other plans neutral copy and no change-plan link while awaiting', () => {
 			renderCard({
 				plan: makePlan({ id: 'plan-2', name: 'Yearly' }),
@@ -526,7 +536,7 @@ describe('PlanCard', () => {
 			expect(screen.getByText('Free')).toBeInTheDocument();
 			expect(screen.getByText('Never expires')).toBeInTheDocument();
 			expect(screen.queryByText(/€0\.00/)).toBeNull();
-			expect(screen.queryByText(m['membershipPlans.offlineManaged']())).toBeNull();
+			expect(screen.queryByText('Managed manually by the organization.')).toBeNull();
 		});
 
 		it('offers a join CTA that hands the plan to the caller', async () => {

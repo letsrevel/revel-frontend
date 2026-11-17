@@ -535,6 +535,24 @@ describe('SubscribeDialog', () => {
 			expect(window.location.href).toBe('');
 		});
 
+		it('moves focus to the outcome heading once the offline subscribe resolves', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			const heading = await screen.findByRole('heading', {
+				name: m['subscribe.offline.title']()
+			});
+			await waitFor(() => expect(heading).toHaveFocus());
+			// Only the short title + body sentence is a live region.
+			expect(heading.parentElement).toHaveAttribute('role', 'status');
+			expect(
+				screen.getByRole('link', { name: m['subscribe.offline.link']() }).closest('[role="status"]')
+			).toBeNull();
+		});
+
 		it('falls back to a plain sentence when no instructions are set', async () => {
 			const user = userEvent.setup();
 			mockOfflineSubscribe(null);

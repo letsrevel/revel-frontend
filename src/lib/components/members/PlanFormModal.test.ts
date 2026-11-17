@@ -348,7 +348,7 @@ describe('PlanFormModal free and lifetime plans', () => {
 });
 
 describe('PlanFormModal payment instructions', () => {
-	it('shows the markdown instructions field for an offline plan, with its hint', async () => {
+	it('shows the payment instructions field for an offline plan, described by its hint and the markdown note', async () => {
 		await renderModal({
 			plan: null,
 			open: true,
@@ -359,7 +359,7 @@ describe('PlanFormModal payment instructions', () => {
 		const field = screen.getByLabelText('Payment instructions');
 		expect(field).toBeInTheDocument();
 		expect(field).toHaveAccessibleDescription(
-			'Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default.'
+			'Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default. Basic markdown supported'
 		);
 	});
 

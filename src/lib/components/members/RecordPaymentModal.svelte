@@ -72,7 +72,15 @@
 			<div class="grid grid-cols-2 gap-3">
 				<div class="space-y-1">
 					<Label for="rp-amt">{m['orgAdmin.members.subscriptions.recordPayment.amount']()}</Label>
-					<Input id="rp-amt" type="number" min="0" step="0.01" bind:value={amount} required />
+					<Input
+						id="rp-amt"
+						type="number"
+						min="0"
+						step="0.01"
+						bind:value={amount}
+						required
+						aria-describedby={amountWarning ? 'rp-amt-warning' : undefined}
+					/>
 				</div>
 				<div class="space-y-1">
 					<Label for="rp-cur">{m['orgAdmin.members.subscriptions.recordPayment.currency']()}</Label>
@@ -99,16 +107,20 @@
 				</p>
 			{/if}
 
-			{#if amountWarning}
-				<p
-					role="status"
-					class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
-				>
-					{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
-						price: formatPlanPrice(subscription.plan)
-					})}
-				</p>
-			{/if}
+			<!-- Persistent live region: a role="status" element mounted already filled
+			     is not reliably announced, so only its content comes and goes. -->
+			<div role="status" class="contents">
+				{#if amountWarning}
+					<p
+						id="rp-amt-warning"
+						class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
+					>
+						{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
+							price: formatPlanPrice(subscription.plan)
+						})}
+					</p>
+				{/if}
+			</div>
 
 			<div class="space-y-1">
 				<Label for="rp-status">{m['orgAdmin.members.subscriptions.recordPayment.status']()}</Label>

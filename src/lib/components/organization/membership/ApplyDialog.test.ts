@@ -490,6 +490,21 @@ describe('ApplyDialog', () => {
 			expect(screen.queryByLabelText(/message \(optional\)/i)).toBeNull();
 			expect(screen.queryByRole('alert')).toBeNull();
 			expect(screen.queryByRole('button', { name: /send application/i })).toBeNull();
+			// The way out of the panel: the hub spells out the member's state.
+			expect(
+				screen.getByRole('link', { name: m['subscribe.return.checkAccount']() })
+			).toHaveAttribute('href', '/account/memberships');
+		});
+
+		it('moves focus to the outcome heading when the form is replaced', async () => {
+			const user = userEvent.setup();
+			mockApplyError({ detail: 'You are already a member at this tier.' }, 409);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			const heading = await screen.findByRole('heading', { name: "You're already a member" });
+			await waitFor(() => expect(heading).toHaveFocus());
 		});
 
 		it('refreshes the stale verdict and the page that rendered the Join CTA', async () => {

@@ -155,6 +155,16 @@ describe('SubscriptionCreateModal offline note', () => {
 		expect(screen.queryByText(/becomes a member when you record the first payment/)).toBeNull();
 	});
 
+	it('shows no note until a member is selected, never an "unknown user" name', async () => {
+		renderModal();
+		const select = await screen.findByLabelText('Plan');
+		await waitFor(() =>
+			expect(screen.getByRole('option', { name: /Monthly/ })).toBeInTheDocument()
+		);
+		await userEvent.selectOptions(select, 'plan-1');
+		expect(screen.queryByText(/becomes a member when you record the first payment/)).toBeNull();
+	});
+
 	it('shows no note before a plan is chosen', async () => {
 		renderModal();
 		await screen.findByLabelText('Plan');

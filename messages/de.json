@@ -6162,7 +6162,6 @@
 		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
 		"paused": "Anmeldung pausiert",
 		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
-		"offlineManaged": "Wird von der Organisation manuell verwaltet.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
 		"viewMembership": "Mitgliedschaftsoptionen ansehen",
 		"joinFreeCta": "Kostenlos beitreten",
@@ -10163,7 +10162,7 @@
 			"approvedOffline": "Angenommen, Zahlung ausstehend"
 		},
 		"continueCta": "Fragebogen fortsetzen",
-		"awaitingPaymentSeeAbove": "Die Zahlungsdetails findest du oben unter deinen Mitgliedschaften.",
+		"awaitingPaymentSeeAbove": "Die Zahlungsdetails findest du auf deiner Mitgliedskarte.",
 		"becameMember": "Du bist jetzt Mitglied bei {org}!",
 		"statusAriaLabel": "Bewerbungsstatus: {status}",
 		"cancelCta": "Bewerbung zurückziehen",

@@ -36,6 +36,7 @@ describe('RecordPaymentModal amount warning', () => {
 		await userEvent.clear(amount);
 		await userEvent.type(amount, '10');
 		expect(screen.queryByText(warning)).not.toBeInTheDocument();
+		expect(amount).not.toHaveAttribute('aria-describedby');
 	});
 
 	it('warns in a status region when the amount differs, and keeps submit enabled', async () => {
@@ -44,7 +45,9 @@ describe('RecordPaymentModal amount warning', () => {
 		await userEvent.clear(amount);
 		await userEvent.type(amount, '5');
 		const note = screen.getByText(warning);
-		expect(note).toHaveAttribute('role', 'status');
+		// The live region is a persistent wrapper, not the (late-mounted) note itself.
+		expect(note.parentElement).toHaveAttribute('role', 'status');
+		expect(amount).toHaveAttribute('aria-describedby', note.id);
 		expect(note).toHaveTextContent('The full period will still be granted.');
 		expect(screen.getByRole('button', { name: 'Record payment' })).toBeEnabled();
 	});

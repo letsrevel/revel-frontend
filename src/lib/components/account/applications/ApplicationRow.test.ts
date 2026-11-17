@@ -453,7 +453,7 @@ describe('ApplicationRow', () => {
 
 			expect(screen.getByText('Accepted, awaiting payment')).toBeInTheDocument();
 			expect(
-				screen.getByText('See payment details in your memberships above.')
+				screen.getByText('See the payment details on your membership card.')
 			).toBeInTheDocument();
 		});
 

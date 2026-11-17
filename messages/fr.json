@@ -6132,7 +6132,6 @@
 		"soldOutHelper": "Toutes les places sont prises — une peut se libérer si une adhésion prend fin.",
 		"paused": "Inscriptions en pause",
 		"pausedHelper": "L'organisation a temporairement fermé les inscriptions.",
-		"offlineManaged": "Géré manuellement par l'organisation.",
 		"refundPolicy": "Politique de remboursement",
 		"viewMembership": "Voir les options d'adhésion",
 		"joinFreeCta": "Rejoindre gratuitement",
@@ -10163,7 +10162,7 @@
 			"approvedOffline": "Acceptée, en attente de paiement"
 		},
 		"continueCta": "Continuer le questionnaire",
-		"awaitingPaymentSeeAbove": "Retrouve les détails de paiement dans tes adhésions ci-dessus.",
+		"awaitingPaymentSeeAbove": "Retrouve les détails de paiement sur ta carte d'adhésion.",
 		"becameMember": "Tu es maintenant membre de {org} !",
 		"statusAriaLabel": "Statut de la candidature : {status}",
 		"cancelCta": "Annuler la candidature",

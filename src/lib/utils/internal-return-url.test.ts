@@ -13,6 +13,7 @@ import {
 	safeInternalReturnUrl,
 	isPassFlowReturnTarget,
 	isPassPageReturnTarget,
+	isMembershipReturnTarget,
 	passQuestionnaireReturnUrl,
 	withSearchParam,
 	currentPageReturnPath
@@ -92,5 +93,27 @@ describe('quote invalidation after a questionnaire submission', () => {
 		expect(key.slice(0, seriesPassQueryKeys.allQuotes.length)).toEqual(
 			seriesPassQueryKeys.allQuotes
 		);
+	});
+});
+
+describe('isMembershipReturnTarget', () => {
+	it('accepts the slug membership page, with any query or hash', () => {
+		expect(isMembershipReturnTarget('/org/acme/membership', 'acme')).toBe(true);
+		expect(isMembershipReturnTarget('/org/acme/membership?returnUrl=%2Fevents', 'acme')).toBe(true);
+		expect(isMembershipReturnTarget('/org/acme/membership#tier-1', 'acme')).toBe(true);
+	});
+
+	it('rejects a dot-segment that escapes the page', () => {
+		expect(isMembershipReturnTarget('/org/acme/membership/../x', 'acme')).toBe(false);
+	});
+
+	it('rejects a different slug', () => {
+		expect(isMembershipReturnTarget('/org/other/membership', 'acme')).toBe(false);
+	});
+
+	it('rejects a trailing slash and empty input', () => {
+		expect(isMembershipReturnTarget('/org/acme/membership/', 'acme')).toBe(false);
+		expect(isMembershipReturnTarget(null, 'acme')).toBe(false);
+		expect(isMembershipReturnTarget('', 'acme')).toBe(false);
 	});
 });

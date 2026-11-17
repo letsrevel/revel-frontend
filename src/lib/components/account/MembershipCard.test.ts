@@ -570,6 +570,22 @@ describe('MembershipCard', () => {
 			expect(screen.getByRole('link', { name: /view org/i })).toBeInTheDocument();
 		});
 
+		it('labels the badge "Awaiting payment" when no subscription is inlined', () => {
+			renderCard(makeMembership(null, 'awaiting_payment'));
+
+			expect(screen.getByText('Awaiting payment')).toBeInTheDocument();
+			expect(screen.queryByText('awaiting_payment')).toBeNull();
+		});
+
+		it('does not treat an ONLINE pending subscription as awaiting payment', () => {
+			renderCard(makeMembership(makeSub({ status: 'pending' }), 'active'));
+
+			expect(screen.queryByText(/your membership starts once/i)).toBeNull();
+			expect(screen.queryByText(/will tell you how to pay/i)).toBeNull();
+			expect(screen.getByRole('button', { name: /resume payment/i })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+		});
+
 		it('still offers the member card on an active offline membership', () => {
 			renderCard(makeMembership(makeOfflineSub()));
 

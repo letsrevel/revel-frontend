@@ -6162,7 +6162,6 @@
 		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
 		"paused": "Sales paused",
 		"pausedHelper": "The organization has temporarily closed sign-ups.",
-		"offlineManaged": "Managed manually by the organization.",
 		"refundPolicy": "Refund policy",
 		"viewMembership": "View membership options",
 		"joinFreeCta": "Join for free",
@@ -10163,7 +10162,7 @@
 			"approvedOffline": "Accepted, awaiting payment"
 		},
 		"continueCta": "Continue questionnaire",
-		"awaitingPaymentSeeAbove": "See payment details in your memberships above.",
+		"awaitingPaymentSeeAbove": "See the payment details on your membership card.",
 		"becameMember": "You're now a member of {org}!",
 		"statusAriaLabel": "Application status: {status}",
 		"cancelCta": "Cancel application",

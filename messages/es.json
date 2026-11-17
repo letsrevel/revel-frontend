@@ -6162,7 +6162,6 @@
 		"soldOutHelper": "No quedan plazas: puede que se libere alguna si termina una membresía.",
 		"paused": "Inscripciones en pausa",
 		"pausedHelper": "La organización ha cerrado temporalmente las inscripciones.",
-		"offlineManaged": "Gestionado manualmente por la organización.",
 		"refundPolicy": "Política de reembolso",
 		"viewMembership": "Ver opciones de membresía",
 		"joinFreeCta": "Unirse gratis",
@@ -10163,7 +10162,7 @@
 			"approvedOffline": "Aceptada, pendiente de pago"
 		},
 		"continueCta": "Continuar el cuestionario",
-		"awaitingPaymentSeeAbove": "Consulta los datos de pago en tus membresías, más arriba.",
+		"awaitingPaymentSeeAbove": "Consulta los datos de pago en tu tarjeta de membresía.",
 		"becameMember": "¡Ya eres miembro de {org}!",
 		"statusAriaLabel": "Estado de la candidatura: {status}",
 		"cancelCta": "Cancelar candidatura",

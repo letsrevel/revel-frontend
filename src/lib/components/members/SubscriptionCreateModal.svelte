@@ -95,7 +95,10 @@
 	// awaiting-payment member; they only become a member once that payment is recorded.
 	const selectedPlan = $derived(selectablePlans.find((p) => p.id === planId) ?? null);
 	const showAwaitingNote = $derived(
-		!!selectedPlan && selectedPlan.payment_method === 'offline' && !recordInitial
+		!!selectedMember &&
+			!!selectedPlan &&
+			selectedPlan.payment_method === 'offline' &&
+			!recordInitial
 	);
 	const memberDisplayName = $derived(
 		selectedMember

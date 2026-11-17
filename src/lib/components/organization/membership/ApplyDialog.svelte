@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
@@ -221,6 +222,14 @@
 			: m['membershipApply.title']({ orgName: organizationName });
 	});
 
+	// The submit button that held focus disappears when an outcome replaces the
+	// form, which would drop focus out of the dialog: park it on the new heading.
+	let titleEl = $state<HTMLElement | null>(null);
+	$effect(() => {
+		if (!showOutcome) return;
+		void tick().then(() => titleEl?.focus());
+	});
+
 	// A reopened dialog must start from a blank form — reset on open, so the
 	// outgoing content stays intact during the close animation.
 	$effect(() => {
@@ -246,7 +255,7 @@
 		showCloseButton={!isBusy}
 	>
 		<DialogHeader>
-			<DialogTitle>{heading}</DialogTitle>
+			<DialogTitle bind:ref={titleEl} tabindex={-1} class="outline-none">{heading}</DialogTitle>
 			<DialogDescription>
 				{#if alreadyMember}
 					{m['membershipApply.alreadyMemberBody']({ orgName: organizationName })}
@@ -281,7 +290,7 @@
 						     either state is spelled out. -->
 						<a
 							href={membershipsHref}
-							class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+							class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							{m['subscribe.return.checkAccount']()}
 						</a>
@@ -289,7 +298,7 @@
 				{:else if awaitingPayment}
 					<a
 						href={membershipsHref}
-						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{m['membershipEligibility.seePaymentDetails']()}
 					</a>
@@ -299,7 +308,7 @@
 					</p>
 					<a
 						href={membershipsHref}
-						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{m['membershipApply.trackLink']()}
 					</a>

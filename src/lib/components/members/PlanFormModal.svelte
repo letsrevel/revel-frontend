@@ -307,6 +307,7 @@
 					/>
 					<p id="plan-payment-instructions-hint" class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
+						{m['potluckItemForm.markdownSupported']()}
 					</p>
 				</div>
 			{/if}

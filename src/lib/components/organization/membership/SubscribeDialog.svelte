@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateAll } from '$app/navigation';
@@ -114,6 +115,8 @@
 	let awaitingPayment = $state(false);
 	/** `MySubscriptionSchema.payment_instructions`, only set while awaiting. */
 	let paymentInstructions = $state<string | null>(null);
+	/** Focus target once the outcome replaces the (now removed) Join button. */
+	let offlineHeading = $state<HTMLElement | null>(null);
 
 	const isOffline = $derived(plan.payment_method === 'offline');
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
@@ -210,6 +213,9 @@
 				if (held) {
 					paymentInstructions = res.data.subscription.payment_instructions ?? null;
 					awaitingPayment = true;
+					// The Join button that held focus is gone; keep focus inside the dialog.
+					await tick();
+					offlineHeading?.focus();
 					return null;
 				}
 				await invalidateAll();
@@ -275,9 +281,11 @@
 				{/if}
 			</div>
 		{:else if awaitingPayment}
-			<div class="space-y-3" role="status" aria-live="polite">
-				<div class="space-y-1">
-					<h3 class="text-lg font-semibold">{m['subscribe.offline.title']()}</h3>
+			<div class="space-y-3">
+				<div class="space-y-1" role="status" aria-live="polite">
+					<h3 bind:this={offlineHeading} tabindex="-1" class="text-lg font-semibold outline-none">
+						{m['subscribe.offline.title']()}
+					</h3>
 					<p class="text-sm text-muted-foreground">
 						{m['subscribe.offline.body']({ orgName: organizationName })}
 					</p>

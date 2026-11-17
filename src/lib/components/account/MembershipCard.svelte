@@ -27,6 +27,7 @@
 		needsMembershipSuspendedNotice
 	} from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { getMemberStatusLabel } from '$lib/utils/member-status';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
@@ -61,7 +62,11 @@
 	);
 	const instructions = $derived(sub?.payment_instructions?.trim() || null);
 
-	/** Backend auto-cancels an awaiting request 30 days after it was created. */
+	/**
+	 * Backend auto-cancels an awaiting request 30 days after it was created.
+	 * Mirrors the backend's `APPLICATION_PAYMENT_WINDOW_DAYS` setting: keep the two
+	 * in sync (display-only here, the server owns the actual cancellation).
+	 */
 	const AWAITING_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 	const awaitingDeadline = $derived.by(() => {
 		const created = sub?.created_at;
@@ -322,7 +327,7 @@
 						data-testid="membership-subscription-status"
 					/>
 				{:else}
-					<Badge variant="secondary" class="capitalize">{membership.status}</Badge>
+					<Badge variant="secondary">{getMemberStatusLabel(membership.status)}</Badge>
 				{/if}
 			</div>
 
