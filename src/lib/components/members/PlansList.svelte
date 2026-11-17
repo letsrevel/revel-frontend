@@ -23,6 +23,7 @@
 	import MigrateSubscribersDialog from './MigrateSubscribersDialog.svelte';
 	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { formatPlanPrice, isLifetimePlan } from '$lib/utils/subscriptions';
+	import { planPaymentMethodLabel } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
@@ -232,13 +233,7 @@
 								<p class="text-sm text-muted-foreground">{formatPlanPrice(p)}</p>
 								<div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
 									<span class="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
-										{#if p.payment_method === 'online'}
-											{m['orgAdmin.members.plans.badge.online']()}
-										{:else if p.payment_method === 'free'}
-											{m['orgAdmin.members.plans.badge.free']()}
-										{:else}
-											{m['orgAdmin.members.plans.badge.offline']()}
-										{/if}
+										{planPaymentMethodLabel(p.payment_method)}
 									</span>
 									<!-- A lifetime term has no renewal to quote, and the price line
 									     above says so too ("Free" / "€50.00 · one-time") — this names

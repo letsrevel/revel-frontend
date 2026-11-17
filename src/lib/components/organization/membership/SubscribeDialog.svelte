@@ -121,6 +121,8 @@
 	/** Focus target once the outcome replaces the (now removed) Join button. */
 	let offlineHeading = $state<HTMLElement | null>(null);
 
+	// Local predicate on purpose: the /subscribe response has no `plan`, so the
+	// prop is the only source for the payment method.
 	const isOffline = $derived(plan.payment_method === 'offline');
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
@@ -220,6 +222,9 @@
 					// The Join button that held focus is gone; keep focus inside the dialog.
 					await tick();
 					offlineHeading?.focus();
+					// Refresh the server-rendered isMember/membershipStatus. Done after the
+					// panel state is set so the outcome stays visible while the page reloads.
+					await invalidateAll();
 					return null;
 				}
 				await invalidateAll();
@@ -295,6 +300,8 @@
 					</p>
 				</div>
 				<p class="text-sm font-medium">{formatPlanPrice(plan)}</p>
+				<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on muted/0.40 over the dialog
+				     surface (background), 14.75 dark / 15.91 light. The intro box below is the same recipe. -->
 				{#if paymentInstructions}
 					<MarkdownContent
 						content={paymentInstructions}

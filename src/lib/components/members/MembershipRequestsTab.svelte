@@ -81,7 +81,6 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { invalidateDuplicates } from '$lib/member-register/api';
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
-	import { invalidateAll } from '$app/navigation';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -228,7 +227,6 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'subscriptions']
 			});
-			void invalidateAll();
 		},
 		onError: (error: Error, variables: ApproveVariables) => {
 			// Offer the override only when the backend says it can bypass the refusal
@@ -366,6 +364,14 @@
 	): Promise<void> {
 		const linkRecordId = record.id;
 		if (!linkRecordId) return;
+
+		// Plan-bearing applications are confirmed first, like plain approve.
+		if (isPlanBearing(request)) {
+			requestToApprove = request;
+			linkRecordToApprove = linkRecordId;
+			approveMembershipModalOpen = true;
+			return;
+		}
 
 		let tierId: string | null = null;
 		if (!request.tier) {

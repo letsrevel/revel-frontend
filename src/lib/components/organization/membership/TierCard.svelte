@@ -262,10 +262,11 @@
 	);
 	// A viewer with a live (non-terminal) subscription gets the state explained
 	// by the plan cards; the tier CTA would only contradict them, e.g. "You
-	// already have an active subscription" beside "awaiting payment".
+	// already have an active subscription" beside "awaiting payment". Plan-less
+	// tiers have no plan cards, so they keep their own CTA verdict.
 	const hasLiveSubscription = $derived(!!subscription);
 	const showCta = $derived(
-		showJoinCta && !!tierId && !ctaSentenceElsewhere && !hasLiveSubscription
+		showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans)
 	);
 
 	/**

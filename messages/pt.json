@@ -10179,7 +10179,8 @@
 			"completed": "Concluída",
 			"rejected": "Rejeitada",
 			"cancelled": "Cancelada",
-			"approvedOffline": "Aceite, a aguardar pagamento"
+			"approvedOffline": "Aceite, a aguardar pagamento",
+			"lapsed": "Pedido caducado"
 		},
 		"continueCta": "Continuar o questionário",
 		"awaitingPaymentSeeAbove": "Consulta os dados de pagamento no teu cartão de subscrição.",

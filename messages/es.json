@@ -10179,7 +10179,8 @@
 			"completed": "Completada",
 			"rejected": "Rechazada",
 			"cancelled": "Cancelada",
-			"approvedOffline": "Aceptada, pendiente de pago"
+			"approvedOffline": "Aceptada, pendiente de pago",
+			"lapsed": "Solicitud caducada"
 		},
 		"continueCta": "Continuar el cuestionario",
 		"awaitingPaymentSeeAbove": "Consulta los datos de pago en tu tarjeta de membresía.",

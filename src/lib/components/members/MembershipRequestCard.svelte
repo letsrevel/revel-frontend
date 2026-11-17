@@ -21,6 +21,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RegisterMatchHint from '$lib/components/member-register/RegisterMatchHint.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { planPaymentMethodLabel } from '$lib/utils/plan-payment-method';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 
 	interface Props {
@@ -179,11 +180,7 @@
 								<StatusBadge
 									tone="neutral"
 									size="sm"
-									label={request.plan.payment_method === 'online'
-										? m['orgAdmin.members.plans.badge.online']()
-										: request.plan.payment_method === 'free'
-											? m['orgAdmin.members.plans.badge.free']()
-											: m['orgAdmin.members.plans.badge.offline']()}
+									label={planPaymentMethodLabel(request.plan.payment_method)}
 								/>
 							</p>
 						{/if}

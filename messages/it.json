@@ -10179,7 +10179,8 @@
 			"completed": "Completata",
 			"rejected": "Respinta",
 			"cancelled": "Annullata",
-			"approvedOffline": "Accettata, in attesa di pagamento"
+			"approvedOffline": "Accettata, in attesa di pagamento",
+			"lapsed": "Richiesta scaduta"
 		},
 		"continueCta": "Continua il questionario",
 		"awaitingPaymentSeeAbove": "Trovi i dettagli di pagamento sulla tua tessera di iscrizione.",

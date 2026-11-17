@@ -116,16 +116,26 @@
 			app.subscription_status === 'pending'
 	);
 
+	/** Approved onto an offline plan whose held subscription was cancelled or expired
+	 * unpaid: the approval no longer leads anywhere, so the chip says so (neutral). */
+	const requestLapsed = $derived(
+		app.status === 'approved' &&
+			app.plan?.payment_method === 'offline' &&
+			(app.subscription_status === 'cancelled' || app.subscription_status === 'expired')
+	);
+
 	const statusLabel = $derived(
 		awaitingOfflinePayment
 			? m['applications.status.approvedOffline']()
-			: {
-					pending: m['applications.status.pending'](),
-					approved: m['applications.status.approved'](),
-					completed: m['applications.status.completed'](),
-					rejected: m['applications.status.rejected'](),
-					cancelled: m['applications.status.cancelled']()
-				}[app.status]
+			: requestLapsed
+				? m['applications.status.lapsed']()
+				: {
+						pending: m['applications.status.pending'](),
+						approved: m['applications.status.approved'](),
+						completed: m['applications.status.completed'](),
+						rejected: m['applications.status.rejected'](),
+						cancelled: m['applications.status.cancelled']()
+					}[app.status]
 	);
 
 	/**
@@ -289,7 +299,7 @@
 			</div>
 		</div>
 		<StatusBadge
-			tone={REQUEST_STATUS_TONES[app.status]}
+			tone={requestLapsed ? 'neutral' : REQUEST_STATUS_TONES[app.status]}
 			label={statusLabel}
 			size="sm"
 			class="shrink-0"

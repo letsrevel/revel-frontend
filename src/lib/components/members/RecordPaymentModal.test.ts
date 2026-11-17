@@ -52,6 +52,21 @@ describe('RecordPaymentModal amount warning', () => {
 		expect(screen.getByRole('button', { name: 'Record payment' })).toBeEnabled();
 	});
 
+	it('does not warn while the amount field is empty', async () => {
+		open();
+		const amount = await screen.findByLabelText('Amount');
+		await userEvent.clear(amount);
+		expect(screen.queryByText(warning)).not.toBeInTheDocument();
+		expect(amount).not.toHaveAttribute('aria-describedby');
+	});
+
+	it('keeps the status region in the accessibility tree while empty', async () => {
+		open();
+		await screen.findByLabelText('Amount');
+		const region = screen.getByRole('status');
+		expect(region.className).not.toContain('contents');
+	});
+
 	it('does not warn for a non-succeeded status', async () => {
 		open();
 		const amount = await screen.findByLabelText('Amount');

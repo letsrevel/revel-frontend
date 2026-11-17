@@ -10179,7 +10179,8 @@
 			"completed": "Terminée",
 			"rejected": "Refusée",
 			"cancelled": "Annulée",
-			"approvedOffline": "Acceptée, en attente de paiement"
+			"approvedOffline": "Acceptée, en attente de paiement",
+			"lapsed": "Demande caduque"
 		},
 		"continueCta": "Continuer le questionnaire",
 		"awaitingPaymentSeeAbove": "Retrouve les détails de paiement sur ta carte d'adhésion.",

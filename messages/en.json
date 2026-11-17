@@ -10179,7 +10179,8 @@
 			"completed": "Completed",
 			"rejected": "Rejected",
 			"cancelled": "Cancelled",
-			"approvedOffline": "Accepted, awaiting payment"
+			"approvedOffline": "Accepted, awaiting payment",
+			"lapsed": "Request lapsed"
 		},
 		"continueCta": "Continue questionnaire",
 		"awaitingPaymentSeeAbove": "See the payment details on your membership card.",

@@ -463,6 +463,18 @@ describe('ApplicationRow', () => {
 			).toBeInTheDocument();
 		});
 
+		it.each(['cancelled', 'expired'] as const)(
+			'labels an approved offline application whose subscription is %s as lapsed',
+			(subscription_status) => {
+				renderRow(
+					makeApplication({ status: 'approved', plan: plan('offline'), subscription_status })
+				);
+
+				expect(screen.getByText('Request lapsed')).toBeInTheDocument();
+				expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			}
+		);
+
 		it.each(['active', null] as const)(
 			'keeps the plain label for an approved offline application whose subscription is %s',
 			(subscription_status) => {

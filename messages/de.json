@@ -10179,7 +10179,8 @@
 			"completed": "Abgeschlossen",
 			"rejected": "Abgelehnt",
 			"cancelled": "Zurückgezogen",
-			"approvedOffline": "Angenommen, Zahlung ausstehend"
+			"approvedOffline": "Angenommen, Zahlung ausstehend",
+			"lapsed": "Anfrage verfallen"
 		},
 		"continueCta": "Fragebogen fortsetzen",
 		"awaitingPaymentSeeAbove": "Die Zahlungsdetails findest du auf deiner Mitgliedskarte.",

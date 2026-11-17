@@ -134,8 +134,10 @@
 
 			toast.info(m['membershipQuestionnairePage.pendingToast']());
 			if (returnUrl) {
-				// Back to where the applicant started (the event page); invalidate so
-				// its eligibility reloads and shows the pending state.
+				// Back to returnUrl: usually the org membership page, which is the extra
+				// hop on purpose (membership is required before the event; its nested
+				// returnUrl keeps the event round trip). Invalidate so eligibility
+				// reloads and shows the pending state.
 				// eslint-disable-next-line svelte/no-navigation-without-resolve -- sanitized same-origin path
 				goto(returnUrl, { invalidateAll: true });
 			} else {

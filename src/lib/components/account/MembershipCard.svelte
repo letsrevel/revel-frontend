@@ -33,6 +33,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { getMemberStatusLabel, getMemberStatusTone } from '$lib/utils/member-status';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
+	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -109,14 +110,9 @@
 		},
 		enabled: showAwaitingBlock && !instructions
 	}));
-	// Stricter than `contact_method !== 'none'`: the button's email branch also
-	// needs an address, and promising a button that never renders is a dead end.
-	const contactable = $derived.by(() => {
-		const org = orgQuery.data;
-		if (!org) return false;
-		if (org.contact_method === 'email') return !!org.contact_email;
-		return org.contact_method === 'form';
-	});
+	const contactable = $derived(
+		orgQuery.data ? canContactOrg(orgQuery.data.contact_method, orgQuery.data.contact_email) : false
+	);
 
 	let cancelOpen = $state(false);
 	let withdrawOpen = $state(false);
@@ -499,6 +495,7 @@
 							content={instructions}
 							class="rounded-lg border bg-muted/40 p-3 text-sm"
 						/>
+						<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on muted/0.40 over card, 14.98 light / 15.90 dark -->
 					{:else}
 						<p class="text-muted-foreground">
 							{m['subscribe.offline.fallback']({ orgName: membership.organization_name })}

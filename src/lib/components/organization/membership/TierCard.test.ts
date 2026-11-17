@@ -173,13 +173,28 @@ describe('TierCard', () => {
 			status: 'pending',
 			plan_id: 'plan-1'
 		} as unknown as MySubscriptionSchema;
-		renderCard({ subscription: sub });
+		renderCard({ subscription: sub, tier: makeTier({ plans: [makePlan()] }) });
 
 		// Let any (wrongly mounted) CTA settle its eligibility query first.
 		await new Promise((resolve) => setTimeout(resolve, 50));
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 		expect(screen.queryByText(/already have an active subscription/i)).toBeNull();
+	});
+
+	// Plan-less tiers have no plan cards to explain the subscription, so the CTA
+	// verdict must survive a live subscription.
+	it('keeps the tier CTA for a plan-less tier even with a live subscription', async () => {
+		const sub = {
+			id: 'sub-1',
+			status: 'pending',
+			plan_id: 'plan-1'
+		} as unknown as MySubscriptionSchema;
+		renderCard({ subscription: sub, tier: makeTier({ plans: [] }) });
+
+		await waitFor(() => {
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+		});
 	});
 
 	// A tier the backend serialized without an id cannot be applied to (there is no

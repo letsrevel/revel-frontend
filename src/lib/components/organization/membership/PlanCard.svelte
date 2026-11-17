@@ -5,6 +5,7 @@
 		MySubscriptionSchema,
 		PublicPlanSchema
 	} from '$lib/api/generated/types.gen';
+	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import type { MembershipGateAction } from '$lib/utils/membership-eligibility';
 	import PricingCard from '$lib/components/common/PricingCard.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
@@ -189,23 +190,7 @@
 	 */
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
 
-	/**
-	 * Whether `OrgContactButton` would really render something for this org.
-	 *
-	 * Deliberately stricter than the `method !== 'none'` test used elsewhere: the
-	 * button's own `email` branch also requires an address, so a method of
-	 * `email` with none on file renders NOTHING. Gating the copy on the looser
-	 * test would leave the offline card promising a button that never arrives —
-	 * the same dead end this replaces, one step further along.
-	 */
-	const canContactOrganization = $derived.by(() => {
-		// Both operands read unconditionally: `&&`/`||` inside a `$derived` would
-		// leave the skipped one untracked.
-		const method = contactMethod;
-		const hasEmail = !!contactEmail;
-		if (method === 'email') return hasEmail;
-		return method === 'form';
-	});
+	const canContactOrganization = $derived(canContactOrg(contactMethod, contactEmail));
 
 	const isFree = $derived(isFreePlan(plan));
 	const isOffline = $derived(plan.payment_method === 'offline');

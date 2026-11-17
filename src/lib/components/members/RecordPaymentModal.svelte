@@ -41,8 +41,12 @@
 
 	// Numeric compare, so "10" equals "10.00". Only a succeeded payment grants the
 	// period, so only then does a different amount deserve a heads-up.
+	// A cleared number input binds `null` at runtime despite the string type.
 	const amountWarning = $derived(
-		status === 'succeeded' && amount !== '' && Number(amount) !== Number(subscription.plan.price)
+		status === 'succeeded' &&
+			(amount as string | null) != null &&
+			String(amount).trim() !== '' &&
+			Number(amount) !== Number(subscription.plan.price)
 	);
 
 	const currencyWarning = $derived(currency !== subscription.plan.currency);
@@ -96,6 +100,8 @@
 				</div>
 			</div>
 
+			<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on highlight/0.10 over the dialog
+			     surface (background), 14.28 light / 14.55 dark. Both warnings share the recipe. -->
 			{#if currencyWarning}
 				<p
 					class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
@@ -109,7 +115,7 @@
 
 			<!-- Persistent live region: a role="status" element mounted already filled
 			     is not reliably announced, so only its content comes and goes. -->
-			<div role="status" class="contents">
+			<div role="status" class="empty:!mt-0">
 				{#if amountWarning}
 					<p
 						id="rp-amt-warning"

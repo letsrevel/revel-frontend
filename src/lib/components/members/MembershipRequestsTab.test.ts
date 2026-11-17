@@ -708,7 +708,7 @@ describe('MembershipRequestsTab plan-bearing approval', () => {
 		await waitFor(() => {
 			expect(spy).toHaveBeenCalledWith({ queryKey: ['organization', 'test-org', 'subscriptions'] });
 		});
-		expect(vi.mocked(invalidateAll)).toHaveBeenCalled();
+		expect(vi.mocked(invalidateAll)).not.toHaveBeenCalled();
 	});
 
 	it('keeps the one-click approve for a tier-only application', async () => {
@@ -806,6 +806,38 @@ describe('MembershipRequestsTab approve and link', () => {
 			error: undefined
 		} as never);
 	}
+
+	it('routes a plan-bearing application through the confirmation and keeps the link', async () => {
+		const user = userEvent.setup();
+		const planned = {
+			...pendingRequest,
+			tier: { id: 'tier-1', name: 'Gold' },
+			plan: { id: 'p1', name: 'Yearly', payment_method: 'offline' }
+		} as unknown as OrganizationMembershipRequestRetrieve;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([planned]) as never
+		);
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await screen.findByText('This may be register entry Ada L.');
+		await user.click(screen.getByTestId('approve-and-link'));
+
+		const dialog = await screen.findByRole('dialog', { name: /approve/i });
+		expect(dialog).toHaveTextContent(/awaiting payment/i);
+		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
+
+		await user.click(within(dialog).getByRole('button', { name: /^approve/i }));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({ body: expect.objectContaining({ link_record_id: 'rec-9' }) })
+			);
+		});
+	});
 
 	it('defaults the tier to the register entry tier when several tiers exist', async () => {
 		const user = userEvent.setup();

@@ -540,6 +540,20 @@ describe('SubscribeDialog', () => {
 			expect(window.location.href).toBe('');
 		});
 
+		it('refreshes server data on the held path and keeps the outcome panel visible', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await waitFor(() => {
+				expect(vi.mocked(invalidateAll)).toHaveBeenCalledTimes(1);
+			});
+			expect(screen.getByText(m['subscribe.offline.title']())).toBeInTheDocument();
+			expect(screen.getByText('Wire it.')).toBeInTheDocument();
+		});
+
 		it('moves focus to the outcome heading once the offline subscribe resolves', async () => {
 			const user = userEvent.setup();
 			mockOfflineSubscribe('Wire it.');
