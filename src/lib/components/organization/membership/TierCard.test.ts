@@ -7,6 +7,7 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import { memembershipapplicationsGetJoinEligibility } from '$lib/api/generated/sdk.gen';
 import type {
 	MembershipEligibilitySchema,
+	MySubscriptionSchema,
 	PublicMembershipTierSchema,
 	PublicPlanSchema
 } from '$lib/api/generated/types.gen';
@@ -161,6 +162,24 @@ describe('TierCard', () => {
 			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 		});
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+	});
+
+	// The viewer already holds a non-terminal subscription (e.g. an offline one
+	// awaiting payment): the plan cards explain it, so the tier-level CTA would
+	// only contradict them ("You already have an active subscription...").
+	it('omits the tier CTA while the viewer holds a live subscription', async () => {
+		const sub = {
+			id: 'sub-1',
+			status: 'pending',
+			plan_id: 'plan-1'
+		} as unknown as MySubscriptionSchema;
+		renderCard({ subscription: sub });
+
+		// Let any (wrongly mounted) CTA settle its eligibility query first.
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+		expect(screen.queryByText(/already have an active subscription/i)).toBeNull();
 	});
 
 	// A tier the backend serialized without an id cannot be applied to (there is no
@@ -441,7 +460,7 @@ describe('TierCard', () => {
 			renderCard({ tier: offlineOnlyTier() });
 
 			expect(
-				await screen.findByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+				await screen.findByText(m['membershipPlans.gatedJoinHelper'](), { exact: false })
 			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: m['membershipPlans.joinCta']() })).toBeNull();
 		});

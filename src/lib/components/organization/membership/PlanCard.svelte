@@ -363,7 +363,7 @@
 				class="text-sm text-muted-foreground"
 				aria-describedby={gateRequirementsId ?? undefined}
 			>
-				{isFree
+				{isFree || isOffline
 					? m['membershipPlans.gatedJoinHelper']()
 					: m['membershipPlans.gatedSubscribeHelper']()}
 			</p>
@@ -379,6 +379,10 @@
 			</Button>
 			{#if isFree}
 				<p class="mt-2 text-sm text-muted-foreground">{m['membershipPlans.freeHelper']()}</p>
+			{:else if isOffline}
+				<p class="mt-2 text-sm text-muted-foreground">
+					{m['membershipPlans.offlineGuestNote']({ orgName: organizationName })}
+				</p>
 			{/if}
 		{:else if action === 'login'}
 			<!-- A real link, not a scripted redirect: it survives no-JS,

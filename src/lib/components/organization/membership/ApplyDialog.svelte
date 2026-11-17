@@ -119,13 +119,15 @@
 	}
 
 	// Classify a 409 body by its machine code only, never by the localized `detail`.
+	// `reason_code` wins when present; `next_step` is only a fallback for bodies
+	// that carry no reason code.
 	function isAwaitingPaymentConflict(error: unknown): boolean {
 		if (!error || typeof error !== 'object') return false;
 		const body = error as Partial<ApplyConflictSchema>;
-		return (
-			body.reason_code === 'awaiting_offline_payment' ||
-			body.next_step === 'wait_for_offline_payment'
-		);
+		if (body.reason_code !== undefined && body.reason_code !== null) {
+			return body.reason_code === 'awaiting_offline_payment';
+		}
+		return body.next_step === 'wait_for_offline_payment';
 	}
 
 	const applyMutation = createMutation(() => ({
@@ -154,8 +156,9 @@
 					// invited to press a button that will keep 409ing.
 					if (isAwaitingPaymentConflict(res.error)) {
 						conflictAwaitingPayment = true;
-						// Same refresh as the 200 wait verdict. The 409 carries no organization
-						// id, so the per-org subscription caches go by their shared prefix.
+						// Intentionally broader than the 200 wait verdict's refresh: the 409
+						// carries no organization id, so the per-org subscription caches go by
+						// their shared prefix rather than by a specific org key.
 						queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
 						queryClient.invalidateQueries({ queryKey: ['me', 'org'] });
 					} else {

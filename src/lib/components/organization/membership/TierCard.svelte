@@ -260,7 +260,13 @@
 			(sentenceInRequirements || showVerdictNote) &&
 			isNoteOnlyMembershipCta(gateVerdict, !!ctaPlanId && hasPlans)
 	);
-	const showCta = $derived(showJoinCta && !!tierId && !ctaSentenceElsewhere);
+	// A viewer with a live (non-terminal) subscription gets the state explained
+	// by the plan cards; the tier CTA would only contradict them, e.g. "You
+	// already have an active subscription" beside "awaiting payment".
+	const hasLiveSubscription = $derived(!!subscription);
+	const showCta = $derived(
+		showJoinCta && !!tierId && !ctaSentenceElsewhere && !hasLiveSubscription
+	);
 
 	/**
 	 * The plan a pressed Apply button belongs to. One dialog per TIER rather than

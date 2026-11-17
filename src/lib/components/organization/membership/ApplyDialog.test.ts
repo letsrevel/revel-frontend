@@ -583,6 +583,27 @@ describe('ApplyDialog', () => {
 				expect(spy).toHaveBeenCalledWith({ queryKey: MY_MEMBERSHIPS_KEY });
 			});
 			expect(spy).toHaveBeenCalledWith({ queryKey: ['org', 'acme', 'join-eligibility'] });
+			// The 409 carries no organization id, so the per-org caches go by prefix.
+			expect(spy).toHaveBeenCalledWith({ queryKey: ['me', 'org'] });
+		});
+
+		it('trusts reason_code over a contradictory next_step', async () => {
+			const user = userEvent.setup();
+			mockApplyError(
+				{
+					detail: 'whatever',
+					reason_code: 'already_active_member',
+					next_step: 'wait_for_offline_payment'
+				},
+				409
+			);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.alreadyMemberTitle']() })
+			).toBeVisible();
 		});
 
 		it('falls back to the already-member panel for an unexpected 409 body', async () => {

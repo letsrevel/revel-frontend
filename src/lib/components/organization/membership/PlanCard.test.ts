@@ -138,6 +138,23 @@ describe('PlanCard', () => {
 			expect(onSubscribe).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }));
 		});
 
+		it('tells a logged-in user the plan is paid directly to the org', () => {
+			renderCard({ plan: offlinePlan() });
+
+			expect(
+				screen.getByText(m['membershipPlans.offlineGuestNote']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+		});
+
+		it('words the blocked-gate note as joining, not subscribing', () => {
+			renderCard({ plan: offlinePlan(), gateAction: 'blocked' });
+
+			expect(
+				screen.getByText(m['membershipPlans.gatedJoinHelper'](), { exact: false })
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlans.gatedSubscribeHelper']())).toBeNull();
+		});
+
 		it('offers Apply when the tier needs approval', async () => {
 			const user = userEvent.setup();
 			const { onApply } = renderCard({ plan: offlinePlan(), gateAction: 'apply' });
