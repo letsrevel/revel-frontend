@@ -9,6 +9,8 @@ import { invalidateAll } from '$app/navigation';
 import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
 import { myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
+import { formatPlanPrice } from '$lib/utils/subscriptions';
+import { formatDate } from '$lib/utils/date';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsSubscribe: vi.fn()
@@ -485,7 +487,10 @@ describe('SubscribeDialog', () => {
 	describe('an offline plan', () => {
 		const offlinePlan = () => makePlan({ name: 'Card', payment_method: 'offline' });
 
-		function mockOfflineSubscribe(paymentInstructions: string | null) {
+		function mockOfflineSubscribe(
+			paymentInstructions: string | null,
+			paymentDueBy: string | null = null
+		) {
 			vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
 				data: {
 					subscription: {
@@ -493,7 +498,8 @@ describe('SubscribeDialog', () => {
 						organization_id: 'org-1',
 						plan_id: 'plan-1',
 						status: 'pending',
-						payment_instructions: paymentInstructions
+						payment_instructions: paymentInstructions,
+						payment_due_by: paymentDueBy
 					},
 					checkout_url: null
 				},
@@ -551,6 +557,34 @@ describe('SubscribeDialog', () => {
 			expect(
 				screen.getByRole('link', { name: m['subscribe.offline.link']() }).closest('[role="status"]')
 			).toBeNull();
+		});
+
+		it('shows the amount, period and payment deadline in the outcome', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.', '2026-09-15T00:00:00Z');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await screen.findByText(m['subscribe.offline.title']());
+			expect(screen.getByText(formatPlanPrice(offlinePlan()))).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					m['account.memberships.awaitingDeadline']({ date: formatDate('2026-09-15T00:00:00Z') })
+				)
+			).toBeInTheDocument();
+		});
+
+		it('omits the deadline line when the backend sends no payment_due_by', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.', null);
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await screen.findByText(m['subscribe.offline.title']());
+			expect(screen.getByText(formatPlanPrice(offlinePlan()))).toBeInTheDocument();
+			expect(screen.queryByText(/if no payment is recorded by/i)).toBeNull();
 		});
 
 		it('falls back to a plain sentence when no instructions are set', async () => {

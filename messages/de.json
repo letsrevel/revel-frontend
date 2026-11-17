@@ -403,6 +403,8 @@
 		"typeMembershipRequestApproved": "Mitgliedschaftsanfrage genehmigt",
 		"typeMembershipRequestRejected": "Mitgliedschaftsanfrage abgelehnt",
 		"typeMembershipPaymentRequested": "Zahlung für Mitgliedschaft angefordert",
+		"typeMembershipOfflineJoined": "Team-Hinweis: Beitritt, Zahlung ausstehend",
+		"typeMembershipOfflineJoinedDescription": "Eine Person ist einem Offline-Tarif direkt beigetreten und wartet darauf, dass ihre erste Zahlung erfasst wird.",
 		"typeOrgAnnouncement": "Mitteilung der Organisation",
 		"typeOrgContactMessageReceived": "Kontaktnachricht erhalten",
 		"typeOrgCustomDomainActive": "Eigene Domain aktiv",
@@ -4165,7 +4167,8 @@
 				"title": "Abonnements",
 				"searchPlaceholder": "Nach Name oder E-Mail suchen…",
 				"filter": {
-					"all": "Alle Status"
+					"all": "Alle Status",
+					"allMethods": "Alle Zahlungsarten"
 				},
 				"create": {
 					"title": "Abonnement erstellen",
@@ -7892,6 +7895,12 @@
 			"memberSince": "Mitglied seit {date}",
 			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie.",
 			"awaitingDeadline": "Wenn bis zum {date} keine Zahlung verbucht ist, wird diese Anfrage storniert.",
+			"withdraw": "Anfrage zurückziehen",
+			"withdrawTitle": "Mitgliedschaftsanfrage zurückziehen?",
+			"withdrawMessage": "Du kannst später erneut beitreten.",
+			"withdrawSuccess": "Deine Anfrage wurde zurückgezogen.",
+			"withdrawError": "Die Anfrage konnte nicht zurückgezogen werden. Bitte versuche es erneut.",
+			"howToPay": "So bezahlst du {orgName}",
 			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu.",
 			"loadErrorRejoin": "Es konnte nicht geprüft werden, welche Mitgliedschaften du erneuern kannst. Lade die Seite neu."
 		}

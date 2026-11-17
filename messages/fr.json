@@ -3435,6 +3435,8 @@
 		"typeMembershipRequestApproved": "Demande d'adhésion approuvée",
 		"typeMembershipRequestRejected": "Demande d'adhésion refusée",
 		"typeMembershipPaymentRequested": "Paiement demandé pour l'adhésion",
+		"typeMembershipOfflineJoined": "Alerte équipe : adhésion en attente de paiement",
+		"typeMembershipOfflineJoinedDescription": "Une personne a rejoint directement un plan hors ligne et attend l'enregistrement de son premier paiement.",
 		"typeOrgAnnouncement": "Annonce de l'organisation",
 		"typeOrgContactMessageReceived": "Message de contact reçu",
 		"typeOrgCustomDomainActive": "Domaine personnalisé actif",
@@ -4135,7 +4137,8 @@
 				"title": "Abonnements",
 				"searchPlaceholder": "Rechercher par nom ou e-mail…",
 				"filter": {
-					"all": "Tous les statuts"
+					"all": "Tous les statuts",
+					"allMethods": "Tous les modes de paiement"
 				},
 				"create": {
 					"title": "Créer un abonnement",
@@ -7862,6 +7865,12 @@
 			"memberSince": "Membre depuis le {date}",
 			"managedBy": "Géré par {org} — contacte-les pour toute modification.",
 			"awaitingDeadline": "Si aucun paiement n'est enregistré d'ici le {date}, cette demande est annulée.",
+			"withdraw": "Retirer la demande",
+			"withdrawTitle": "Retirer ta demande d'adhésion ?",
+			"withdrawMessage": "Tu pourras rejoindre à nouveau plus tard.",
+			"withdrawSuccess": "Ta demande a été retirée.",
+			"withdrawError": "Impossible de retirer ta demande. Réessaie.",
+			"howToPay": "Comment payer {orgName}",
 			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page.",
 			"loadErrorRejoin": "Impossible de vérifier quelles adhésions tu peux renouveler. Essaie de recharger la page."
 		}

@@ -403,6 +403,8 @@
 		"typeMembershipRequestApproved": "Solicitud de membresía aprobada",
 		"typeMembershipRequestRejected": "Solicitud de membresía rechazada",
 		"typeMembershipPaymentRequested": "Pago solicitado para la membresía",
+		"typeMembershipOfflineJoined": "Aviso al equipo: nueva adhesión, pago pendiente",
+		"typeMembershipOfflineJoinedDescription": "Una persona se unió directamente a un plan offline y espera que se registre su primer pago.",
 		"typeOrgAnnouncement": "Anuncio de la organización",
 		"typeOrgContactMessageReceived": "Mensaje de contacto recibido",
 		"typeOrgCustomDomainActive": "Dominio personalizado activo",
@@ -4165,7 +4167,8 @@
 				"title": "Suscripciones",
 				"searchPlaceholder": "Buscar por nombre o correo electrónico…",
 				"filter": {
-					"all": "Todos los estados"
+					"all": "Todos los estados",
+					"allMethods": "Todos los métodos de pago"
 				},
 				"create": {
 					"title": "Crear suscripción",
@@ -7892,6 +7895,12 @@
 			"memberSince": "Miembro desde {date}",
 			"managedBy": "Gestionada por {org} — contacta para hacer cambios.",
 			"awaitingDeadline": "Si no se registra ningún pago antes del {date}, esta solicitud se cancela.",
+			"withdraw": "Retirar solicitud",
+			"withdrawTitle": "¿Retirar tu solicitud de membresía?",
+			"withdrawMessage": "Podrás unirte de nuevo más tarde.",
+			"withdrawSuccess": "Tu solicitud fue retirada.",
+			"withdrawError": "No se pudo retirar la solicitud. Inténtalo de nuevo.",
+			"howToPay": "Cómo pagar a {orgName}",
 			"loadError": "No se han podido cargar tus membresías. Intenta recargar la página.",
 			"loadErrorRejoin": "No se ha podido comprobar qué membresías puedes renovar. Intenta recargar la página."
 		}

@@ -25,6 +25,7 @@
 		isSubscriptionActivationPending
 	} from '$lib/utils/subscriptions';
 	import { formatMoney } from '$lib/utils/format';
+	import { formatDate } from '$lib/utils/date';
 	import { Loader2 } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 
@@ -115,6 +116,8 @@
 	let awaitingPayment = $state(false);
 	/** `MySubscriptionSchema.payment_instructions`, only set while awaiting. */
 	let paymentInstructions = $state<string | null>(null);
+	/** `MySubscriptionSchema.payment_due_by`: when the unpaid request lapses. */
+	let paymentDueBy = $state<string | null>(null);
 	/** Focus target once the outcome replaces the (now removed) Join button. */
 	let offlineHeading = $state<HTMLElement | null>(null);
 
@@ -212,6 +215,7 @@
 				const held = isOffline && res.data.subscription.status === 'pending';
 				if (held) {
 					paymentInstructions = res.data.subscription.payment_instructions ?? null;
+					paymentDueBy = res.data.subscription.payment_due_by ?? null;
 					awaitingPayment = true;
 					// The Join button that held focus is gone; keep focus inside the dialog.
 					await tick();
@@ -290,6 +294,7 @@
 						{m['subscribe.offline.body']({ orgName: organizationName })}
 					</p>
 				</div>
+				<p class="text-sm font-medium">{formatPlanPrice(plan)}</p>
 				{#if paymentInstructions}
 					<MarkdownContent
 						content={paymentInstructions}
@@ -298,6 +303,11 @@
 				{:else}
 					<p class="text-sm text-muted-foreground">
 						{m['subscribe.offline.fallback']({ orgName: organizationName })}
+					</p>
+				{/if}
+				{#if paymentDueBy}
+					<p class="text-xs text-muted-foreground">
+						{m['account.memberships.awaitingDeadline']({ date: formatDate(paymentDueBy) })}
 					</p>
 				{/if}
 				<a

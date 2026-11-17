@@ -403,6 +403,8 @@
 		"typeMembershipRequestApproved": "Pedido de adesão aprovado",
 		"typeMembershipRequestRejected": "Pedido de adesão recusado",
 		"typeMembershipPaymentRequested": "Pagamento solicitado para a adesão",
+		"typeMembershipOfflineJoined": "Alerta da equipa: nova adesão, pagamento pendente",
+		"typeMembershipOfflineJoinedDescription": "Uma pessoa aderiu diretamente a um plano offline e aguarda o registo do primeiro pagamento.",
 		"typeOrgAnnouncement": "Anúncio da organização",
 		"typeOrgContactMessageReceived": "Mensagem de contacto recebida",
 		"typeOrgCustomDomainActive": "Domínio personalizado ativo",
@@ -4165,7 +4167,8 @@
 				"title": "Subscrições",
 				"searchPlaceholder": "Procurar por nome ou e-mail…",
 				"filter": {
-					"all": "Todos os estados"
+					"all": "Todos os estados",
+					"allMethods": "Todos os métodos de pagamento"
 				},
 				"create": {
 					"title": "Criar subscrição",
@@ -7892,6 +7895,12 @@
 			"memberSince": "Membro desde {date}",
 			"managedBy": "Gerida por {org} — contacta-a para fazeres alterações.",
 			"awaitingDeadline": "Se nenhum pagamento for registado até {date}, este pedido é cancelado.",
+			"withdraw": "Retirar pedido",
+			"withdrawTitle": "Retirar o teu pedido de adesão?",
+			"withdrawMessage": "Poderás aderir novamente mais tarde.",
+			"withdrawSuccess": "O teu pedido foi retirado.",
+			"withdrawError": "Não foi possível retirar o pedido. Tenta novamente.",
+			"howToPay": "Como pagar a {orgName}",
 			"loadError": "Não foi possível carregar as tuas adesões. Tenta recarregar a página.",
 			"loadErrorRejoin": "Não foi possível verificar quais as adesões que podes renovar. Tenta recarregar a página."
 		}

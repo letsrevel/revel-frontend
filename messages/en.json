@@ -403,6 +403,8 @@
 		"typeMembershipRequestApproved": "Membership request approved",
 		"typeMembershipRequestRejected": "Membership request rejected",
 		"typeMembershipPaymentRequested": "Payment requested for membership",
+		"typeMembershipOfflineJoined": "Staff alert: member joined, payment pending",
+		"typeMembershipOfflineJoinedDescription": "Someone joined an offline plan directly and is waiting for their first payment to be recorded.",
 		"typeOrgAnnouncement": "Organization announcement",
 		"typeOrgContactMessageReceived": "Contact message received",
 		"typeOrgCustomDomainActive": "Custom domain active",
@@ -4165,7 +4167,8 @@
 				"title": "Subscriptions",
 				"searchPlaceholder": "Search by name or email…",
 				"filter": {
-					"all": "All statuses"
+					"all": "All statuses",
+					"allMethods": "All payment methods"
 				},
 				"create": {
 					"title": "Create subscription",
@@ -7892,6 +7895,12 @@
 			"memberSince": "Member since {date}",
 			"managedBy": "Managed by {org} — contact them to make changes.",
 			"awaitingDeadline": "If no payment is recorded by {date}, this request is cancelled.",
+			"withdraw": "Withdraw request",
+			"withdrawTitle": "Withdraw your membership request?",
+			"withdrawMessage": "You can join again later.",
+			"withdrawSuccess": "Your request was withdrawn.",
+			"withdrawError": "Could not withdraw your request. Please try again.",
+			"howToPay": "How to pay {orgName}",
 			"loadError": "Could not load your memberships. Try reloading the page.",
 			"loadErrorRejoin": "Could not check which memberships you can renew. Try reloading the page."
 		}

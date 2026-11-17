@@ -403,6 +403,8 @@
 		"typeMembershipRequestApproved": "Richiesta di iscrizione approvata",
 		"typeMembershipRequestRejected": "Richiesta di iscrizione rifiutata",
 		"typeMembershipPaymentRequested": "Pagamento richiesto per l'iscrizione",
+		"typeMembershipOfflineJoined": "Avviso allo staff: nuova iscrizione, pagamento in attesa",
+		"typeMembershipOfflineJoinedDescription": "Una persona ha aderito direttamente a un piano offline e attende la registrazione del primo pagamento.",
 		"typeOrgAnnouncement": "Annuncio dell'organizzazione",
 		"typeOrgContactMessageReceived": "Messaggio di contatto ricevuto",
 		"typeOrgCustomDomainActive": "Dominio personalizzato attivo",
@@ -4165,7 +4167,8 @@
 				"title": "Abbonamenti",
 				"searchPlaceholder": "Cerca per nome o email…",
 				"filter": {
-					"all": "Tutti gli stati"
+					"all": "Tutti gli stati",
+					"allMethods": "Tutti i metodi di pagamento"
 				},
 				"create": {
 					"title": "Crea abbonamento",
@@ -7892,6 +7895,12 @@
 			"memberSince": "Membro dal {date}",
 			"managedBy": "Gestito da {org} — contattali per apportare modifiche.",
 			"awaitingDeadline": "Se entro il {date} non viene registrato alcun pagamento, questa richiesta viene annullata.",
+			"withdraw": "Ritira la richiesta",
+			"withdrawTitle": "Ritirare la richiesta di iscrizione?",
+			"withdrawMessage": "Potrai iscriverti di nuovo in seguito.",
+			"withdrawSuccess": "La tua richiesta è stata ritirata.",
+			"withdrawError": "Impossibile ritirare la richiesta. Riprova.",
+			"howToPay": "Come pagare {orgName}",
 			"loadError": "Non è stato possibile caricare i tuoi abbonamenti. Prova a ricaricare la pagina.",
 			"loadErrorRejoin": "Non è stato possibile verificare quali abbonamenti puoi rinnovare. Prova a ricaricare la pagina."
 		}
