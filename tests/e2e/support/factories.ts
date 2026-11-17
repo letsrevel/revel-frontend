@@ -1481,10 +1481,13 @@ export async function setOrgMembershipPolicy(
 		requiresApproval?: boolean;
 		defaultQuestionnaireId?: string | null;
 		revivalWindowDays?: number;
+		/** Org-wide payment instructions, shown for OFFLINE plans that carry none. */
+		paymentInstructions?: string;
 	}
 ): Promise<void> {
 	const api = await ApiClient.login(owner.email, owner.password);
 	const current = await api.get<{
+		membership_payment_instructions?: string | null;
 		visibility: string;
 		accept_membership_requests: boolean;
 		contact_method: string;
@@ -1530,7 +1533,9 @@ export async function setOrgMembershipPolicy(
 				? policy.defaultQuestionnaireId
 				: (current.default_membership_questionnaire_id ?? null),
 		default_requires_membership_approval:
-			policy.requiresApproval ?? current.default_requires_membership_approval
+			policy.requiresApproval ?? current.default_requires_membership_approval,
+		membership_payment_instructions:
+			policy.paymentInstructions ?? current.membership_payment_instructions ?? ''
 	});
 }
 
