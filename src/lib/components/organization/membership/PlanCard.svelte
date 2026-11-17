@@ -19,7 +19,8 @@
 		isLifetimePlan
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
-	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
+	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		plan: PublicPlanSchema;
@@ -206,8 +207,15 @@
 	// longer shows the plan they were about to take is the whole point of a
 	// returnUrl going wrong. TierCard's own CTA already resolves to this route, so
 	// the two agree.
+	// The page's own safe `?returnUrl=` (e.g. the members-only event the visitor
+	// came from) rides inside the login return target, exactly as MembershipCta does.
 	const loginHref = $derived(
-		buildLoginHref(resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }))
+		buildLoginHref(
+			withReturnUrl(
+				resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }),
+				safeInternalReturnUrl()
+			)
+		)
 	);
 
 	const membershipsHref = resolve('/(auth)/account/memberships', {});

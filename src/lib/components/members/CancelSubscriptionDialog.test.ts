@@ -34,7 +34,11 @@ describe('admin CancelSubscriptionDialog', () => {
 
 	describe('an offline subscription still awaiting its first payment', () => {
 		const awaiting = () =>
-			makeSub({ status: 'pending', plan: { payment_method: 'offline' } as never });
+			makeSub({
+				status: 'pending',
+				member_status: 'awaiting_payment',
+				plan: { payment_method: 'offline' } as never
+			});
 
 		it('shows one "Cancel request" choice with the never-paid copy', () => {
 			renderDialog(awaiting());
@@ -66,5 +70,25 @@ describe('admin CancelSubscriptionDialog', () => {
 
 			expect(onSubmit).toHaveBeenCalledWith({ immediate: true });
 		});
+
+		it.each(['active', null, undefined] as const)(
+			'keeps the normal flow for a pending offline row whose member status is %s',
+			(member_status) => {
+				renderDialog(
+					makeSub({
+						status: 'pending',
+						member_status,
+						plan: { payment_method: 'offline' } as never
+					})
+				);
+
+				expect(screen.getAllByRole('radio')).toHaveLength(2);
+				expect(
+					screen.queryByRole('heading', {
+						name: m['orgAdmin.members.subscriptions.cancel.requestTitle']()
+					})
+				).toBeNull();
+			}
+		);
 	});
 });

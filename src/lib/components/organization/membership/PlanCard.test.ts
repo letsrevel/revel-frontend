@@ -7,6 +7,15 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/membership${pageUrl.search}`);
+		}
+	}
+}));
+
 // The offline branch mounts OrgContactButton, which reads the token for its
 // contact-form mutation.
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -102,6 +111,7 @@ function renderCard(props: Record<string, unknown> = {}) {
 
 describe('PlanCard', () => {
 	beforeEach(() => {
+		pageUrl.search = '';
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
@@ -176,6 +186,29 @@ describe('PlanCard', () => {
 				screen.getByText(m['membershipPlans.offlineGuestNote']({ orgName: 'Acme' }))
 			).toBeInTheDocument();
 			expect(screen.getByRole('link', { name: /log in to join/i })).toBeInTheDocument();
+		});
+
+		it('keeps the page returnUrl nested in the guest login link', () => {
+			pageUrl.search = `?returnUrl=${encodeURIComponent('/events/acme/gala')}`;
+			renderCard({ plan: offlinePlan(), isAuthenticated: false });
+
+			const link = screen.getByRole('link', { name: /log in to join/i });
+			expect(link).toHaveAttribute(
+				'href',
+				`/login?returnUrl=${encodeURIComponent(
+					`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+				)}`
+			);
+		});
+
+		it('drops an unsafe page returnUrl from the guest login link', () => {
+			pageUrl.search = `?returnUrl=${encodeURIComponent('//evil.com')}`;
+			renderCard({ plan: offlinePlan(), isAuthenticated: false });
+
+			expect(screen.getByRole('link', { name: /log in to join/i })).toHaveAttribute(
+				'href',
+				'/login?returnUrl=%2Forg%2Facme%2Fmembership'
+			);
 		});
 
 		it('shows an awaiting-payment block for a pending offline subscription on this plan', () => {

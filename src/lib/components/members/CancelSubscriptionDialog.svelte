@@ -34,10 +34,14 @@
 		return d ? formatDate(d) : '—';
 	}
 
-	// An offline subscription that never got its first payment: the member holds
-	// nothing yet (no access, no paid period), so the period-end / immediate split
-	// is meaningless. There is exactly one outcome: the request goes away.
-	const isAwaitingPayment = $derived(isAwaitingOfflinePayment(subscription));
+	// An offline subscription that never got its first payment AND whose member is
+	// actually held (`awaiting_payment`): they hold nothing yet (no access, no paid
+	// period), so the period-end / immediate split is meaningless. There is exactly
+	// one outcome: the request goes away. A pending offline row under an ACTIVE
+	// member (an upgrade, a legacy same-tier row) is a real membership: normal flow.
+	const isAwaitingPayment = $derived(
+		isAwaitingOfflinePayment(subscription) && subscription.member_status === 'awaiting_payment'
+	);
 
 	const canSubmit = $derived(isAwaitingPayment || mode === 'period_end' || immediateAck);
 

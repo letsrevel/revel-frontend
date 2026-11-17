@@ -321,14 +321,14 @@
 
 	/**
 	 * Withdraw an unpaid offline request. It is the ordinary member cancel: the
-	 * backend ends a never-paid OFFLINE row immediately, so an empty body is
-	 * enough. The confirmation dialog is the only guard, hence no optimistic UI.
+	 * backend ends a never-paid OFFLINE row immediately; `immediate` says so
+	 * explicitly. The confirmation dialog is the only guard, hence no optimistic UI.
 	 */
 	const withdrawMutation = createMutation(() => ({
 		mutationFn: async () => {
 			const res = await mesubscriptionsCancelSubscription({
 				path: { org_id: membership.organization_id },
-				body: {},
+				body: { immediate: true },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error || !res.data) {
@@ -347,6 +347,13 @@
 		}
 	}));
 	const withdrawBusy = $derived(withdrawMutation.isPending);
+
+	// The request can stop being withdrawable under an open dialog (a refetch
+	// records the payment). Close it, but never mid-flight: the mutation's own
+	// settle handlers own the close then.
+	$effect(() => {
+		if (!canWithdraw && withdrawOpen && !withdrawBusy) withdrawOpen = false;
+	});
 </script>
 
 <Card>
@@ -624,7 +631,9 @@
 	confirmText={m['account.memberships.withdraw']()}
 	confirmDisabled={withdrawBusy}
 	variant="warning"
-	onConfirm={() => withdrawMutation.mutate()}
+	onConfirm={() => {
+		if (canWithdraw) withdrawMutation.mutate();
+	}}
 	onCancel={() => {
 		if (!withdrawBusy) withdrawOpen = false;
 	}}

@@ -77,17 +77,31 @@
 	// different member). A refreshed object for the SAME member (window-focus refetch,
 	// a parallel mutation) must not wipe staged edits or close an open discard prompt.
 	let sessionKey: string | null = null;
+	// The status the server last reported during this session. When it moves while
+	// the form still holds the OLD server value, the staged value was never an edit,
+	// so it follows the server; a status staff actually changed stays as it is.
+	let lastServerStatus: MembershipStatus | null = null;
 	$effect(() => {
 		const key = open && member ? (member.user.id ?? member.user.email ?? '') : null;
 		if (key === null) {
 			sessionKey = null;
+			lastServerStatus = null;
 			return;
 		}
-		if (key === sessionKey) return;
+		const serverStatus = member?.status ?? null;
+		if (key === sessionKey) {
+			untrack(() => {
+				if (serverStatus === null || serverStatus === lastServerStatus) return;
+				if (selectedStatus === lastServerStatus) selectedStatus = serverStatus;
+				lastServerStatus = serverStatus;
+			});
+			return;
+		}
 		sessionKey = key;
 		untrack(() => {
 			if (!member) return;
 			selectedStatus = member.status;
+			lastServerStatus = member.status;
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
 			showBlacklistConfirm = false;
@@ -194,7 +208,8 @@
 	function commitChanges() {
 		showBanConfirm = false;
 
-		if (hasStatusChanged) {
+		// `awaiting_payment` is system-set and never a valid staff choice.
+		if (hasStatusChanged && selectedStatus !== 'awaiting_payment') {
 			onUpdateStatus(selectedStatus);
 		}
 

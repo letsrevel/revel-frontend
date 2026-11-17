@@ -463,6 +463,41 @@ describe('ApplicationRow', () => {
 			).toBeInTheDocument();
 		});
 
+		it('refreshes both member lists when the read turns an approval into an awaiting-payment offline request', async () => {
+			const offlinePlan = plan('offline');
+			mockAdvance({
+				application: makeApplication({
+					status: 'approved',
+					plan: offlinePlan,
+					subscription_status: 'pending'
+				}),
+				eligibility: makeEligibility()
+			});
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderRow(makeApplication({ status: 'pending' }));
+
+			await screen.findByText('Accepted, awaiting payment');
+			await waitFor(() => {
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me', 'memberships'] });
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me', 'subscriptions'] });
+			});
+		});
+
+		it('does not refresh when the approval already arrived awaiting payment', async () => {
+			const row = makeApplication({
+				status: 'approved',
+				plan: plan('offline'),
+				subscription_status: 'pending'
+			});
+			mockAdvance({ application: row, eligibility: makeEligibility() });
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderRow(row);
+
+			await waitFor(() => expect(getApplicationMock).toHaveBeenCalled());
+			await screen.findByText('Accepted, awaiting payment');
+			expect(invalidateSpy).not.toHaveBeenCalled();
+		});
+
 		it.each(['cancelled', 'expired'] as const)(
 			'labels an approved offline application whose subscription is %s as lapsed',
 			(subscription_status) => {

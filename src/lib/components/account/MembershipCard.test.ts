@@ -151,9 +151,18 @@ describe('MembershipCard', () => {
 	});
 
 	function renderCard(membership: MyMembershipSchema) {
-		return render(QueryClientTestWrapper, {
+		const result = render(QueryClientTestWrapper, {
 			props: { client: queryClient, component: MembershipCard, componentProps: { membership } }
 		});
+		return {
+			...result,
+			update: (next: MyMembershipSchema) =>
+				result.rerender({
+					client: queryClient,
+					component: MembershipCard,
+					componentProps: { membership: next }
+				})
+		};
 	}
 
 	it('offers all three self-serve actions on an online active subscription', () => {
@@ -629,7 +638,7 @@ describe('MembershipCard', () => {
 				await waitFor(() => expect(cancelMock).toHaveBeenCalledTimes(1));
 				expect(cancelMock.mock.calls[0][0]).toMatchObject({
 					path: { org_id: 'org-1' },
-					body: {}
+					body: { immediate: true }
 				});
 				await waitFor(() =>
 					expect(toastSuccessMock).toHaveBeenCalledWith('Your request was withdrawn.')
@@ -638,6 +647,32 @@ describe('MembershipCard', () => {
 				expect(keys).toContain(JSON.stringify(['me', 'memberships']));
 				expect(keys).toContain(JSON.stringify(['me', 'subscriptions']));
 				expect(keys).toContain(JSON.stringify(['me', 'org', 'org-1', 'subscription']));
+			});
+
+			it('closes the dialog when the request stops being withdrawable under it', async () => {
+				const user = userEvent.setup();
+				const card = renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await card.update(makeMembership(makeOfflineSub({ status: 'cancelled' }), 'active'));
+
+				await waitFor(() => expect(screen.queryByTestId('confirm-dialog')).toBeNull());
+				expect(cancelMock).not.toHaveBeenCalled();
+			});
+
+			it('keeps the dialog open while the withdrawal is in flight', async () => {
+				const user = userEvent.setup();
+				let release!: (v: unknown) => void;
+				cancelMock.mockReturnValue(new Promise((r) => (release = r)));
+				const card = renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await user.click(screen.getByTestId('confirm-dialog-confirm'));
+				await waitFor(() => expect(cancelMock).toHaveBeenCalledTimes(1));
+				await card.update(makeMembership(makeOfflineSub({ status: 'cancelled' }), 'active'));
+
+				expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
+				release({ data: makeOfflineSub({ status: 'cancelled' }), error: undefined });
 			});
 
 			it('does nothing when the confirmation is dismissed', async () => {

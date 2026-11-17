@@ -171,7 +171,16 @@
 	 * Once-guarded: `invalidated` latches, so the refetches this triggers can
 	 * never loop back through the effect.
 	 */
-	const becameMember = $derived(app.status === 'completed' && application.status !== 'completed');
+	const isAwaitingOffline = (a: typeof app): boolean =>
+		a.status === 'approved' &&
+		a.plan?.payment_method === 'offline' &&
+		a.subscription_status === 'pending';
+	// An approval onto an offline plan creates the held (awaiting_payment)
+	// membership too, so that transition needs the same refresh as `completed`.
+	const becameMember = $derived(
+		(app.status === 'completed' && application.status !== 'completed') ||
+			(isAwaitingOffline(app) && !isAwaitingOffline(application))
+	);
 	let invalidated = $state(false);
 	$effect(() => {
 		if (!becameMember || invalidated) return;
