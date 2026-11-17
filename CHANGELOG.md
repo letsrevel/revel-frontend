@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.39.1] - 2026-11-17
+
+### Changed
+- The organization invite-link dialog and link cards now say "link" instead of "token" (for example **Create Invitation Link** and **Share link**), in all six languages.
+
+### Fixed
+- The **Invite links** tab under Members now has a **Create invite link** button. Before, the only way to create one was People → Add person.
+
 ## [2.39.0] - 2026-11-17
 
 ### Added
