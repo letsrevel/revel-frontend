@@ -215,8 +215,13 @@
 	function commitChanges() {
 		showBanConfirm = false;
 
-		// `awaiting_payment` is system-set and never a valid staff choice.
-		if (hasStatusChanged && selectedStatus !== 'awaiting_payment') {
+		// Never submit `awaiting_payment` (system-set) or a stale staged status
+		// the select no longer offers.
+		if (
+			hasStatusChanged &&
+			selectedStatus !== 'awaiting_payment' &&
+			statuses.includes(selectedStatus)
+		) {
 			onUpdateStatus(selectedStatus);
 		}
 
@@ -379,9 +384,7 @@
 					</Select>
 					<!-- Status Explanation -->
 					<p class="text-sm text-muted-foreground">
-						{#if isAwaiting && selectedStatus === 'awaiting_payment'}
-							{m['manageMemberModal.statusExplanation.awaiting_payment']()}
-						{:else if selectedStatus === 'awaiting_payment'}
+						{#if selectedStatus === 'awaiting_payment'}
 							{m['manageMemberModal.statusExplanation.awaiting_payment']()}
 						{:else if selectedStatus === 'active'}
 							{m['manageMemberModal.statusExplanation.active']()}
