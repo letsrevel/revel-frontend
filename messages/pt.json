@@ -11860,5 +11860,9 @@
 	"membershipRequestCard.planPrefix": "Plano",
 	"approveMembershipModal.descriptionOffline": "Ao aprovar, {name} fica como membro a aguardar pagamento e recebe as tuas instruções de pagamento. A subscrição fica ativa quando registares o primeiro pagamento.",
 	"approveMembershipModal.descriptionOnline": "Ao aprovar, {name} pode concluir o pagamento. A subscrição começa assim que o pagamento for concluído.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este valor é diferente do preço do plano ({price}). O período completo será concedido na mesma."
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este valor é diferente do preço do plano ({price}). O período completo será concedido na mesma.",
+	"memberPeople.awaiting.title": "A aguardar o primeiro pagamento ({count})",
+	"memberPeople.awaiting.helper": "Passam a ser membros quando registares o primeiro pagamento.",
+	"memberPeople.awaiting.record": "Registar pagamento",
+	"memberPeople.awaiting.recordFor": "Registar pagamento de {name}"
 }

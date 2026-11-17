@@ -11860,5 +11860,9 @@
 	"membershipRequestCard.planPrefix": "Piano",
 	"approveMembershipModal.descriptionOffline": "Con l'approvazione, {name} risulta come socio in attesa di pagamento e riceve le tue istruzioni di pagamento. L'iscrizione diventa attiva quando registri il primo pagamento.",
 	"approveMembershipModal.descriptionOnline": "Con l'approvazione, {name} può completare il pagamento. L'iscrizione inizia quando il pagamento va a buon fine.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Questo importo è diverso dal prezzo del piano ({price}). Verrà comunque concesso l'intero periodo."
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Questo importo è diverso dal prezzo del piano ({price}). Verrà comunque concesso l'intero periodo.",
+	"memberPeople.awaiting.title": "In attesa del primo pagamento ({count})",
+	"memberPeople.awaiting.helper": "L'iscrizione parte non appena registri il primo pagamento.",
+	"memberPeople.awaiting.record": "Registra pagamento",
+	"memberPeople.awaiting.recordFor": "Registra pagamento per {name}"
 }

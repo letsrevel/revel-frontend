@@ -11860,5 +11860,9 @@
 	"membershipRequestCard.planPrefix": "Plan",
 	"approveMembershipModal.descriptionOffline": "Al aprobar, {name} queda como miembro pendiente de pago y recibe tus instrucciones de pago. La membresía pasa a estar activa cuando registres el primer pago.",
 	"approveMembershipModal.descriptionOnline": "Al aprobar, {name} puede completar el pago. La membresía comienza cuando el pago se procesa.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo."
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo.",
+	"memberPeople.awaiting.title": "Pendientes del primer pago ({count})",
+	"memberPeople.awaiting.helper": "Pasan a ser miembros cuando registres su primer pago.",
+	"memberPeople.awaiting.record": "Registrar pago",
+	"memberPeople.awaiting.recordFor": "Registrar pago de {name}"
 }

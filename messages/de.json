@@ -11860,5 +11860,9 @@
 	"membershipRequestCard.planPrefix": "Tarif",
 	"approveMembershipModal.descriptionOffline": "Mit der Genehmigung wird {name} als Mitglied mit ausstehender Zahlung geführt und erhält deine Zahlungsanweisungen. Die Mitgliedschaft wird aktiv, sobald du die erste Zahlung erfasst.",
 	"approveMembershipModal.descriptionOnline": "Mit der Genehmigung kann {name} den Checkout abschließen. Die Mitgliedschaft beginnt, sobald die Zahlung eingegangen ist.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt."
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt.",
+	"memberPeople.awaiting.title": "Wartet auf erste Zahlung ({count})",
+	"memberPeople.awaiting.helper": "Sie werden Mitglieder*innen, sobald du ihre erste Zahlung erfasst.",
+	"memberPeople.awaiting.record": "Zahlung erfassen",
+	"memberPeople.awaiting.recordFor": "Zahlung für {name} erfassen"
 }
