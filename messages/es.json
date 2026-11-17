@@ -3193,7 +3193,7 @@
 		"statusExplanation": {
 			"active": "Miembros pueden ver y participar en todos los eventos de la organización.",
 			"activeBillingNote": "Restablecer la membresía no reinicia la facturación: las suscripciones se retoman por separado, desde la pestaña «Suscripciones».",
-			"awaiting_payment": "Esta persona pasa a ser miembro cuando registres el primer pago. El estado se establece automáticamente y no se puede cambiar a mano.",
+			"awaiting_payment": "Esta persona todavía no ha pagado. Puedes cancelar su solicitud o banearla. Para activarla, registra su primer pago.",
 			"paused": "Miembros pueden ver eventos, pero no participar ni confirmar asistencia.",
 			"pausedBillingNote": "Mientras la membresía esté en pausa no se cobrará ningún pago adicional.",
 			"pausedScheduledEndNote": "Su suscripción ya está programada para finalizar, así que no se pone en pausa: sigue facturando hasta que termine el periodo actual.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Registrar pago",
 	"memberPeople.awaiting.recordFor": "Registrar pago de {name}",
 	"memberPeople.awaiting.truncated": "Se muestran los primeros {shown}.",
-	"memberPeople.awaiting.seeAll": "Ver todos en Suscripciones"
+	"memberPeople.awaiting.seeAll": "Ver todos en Suscripciones",
+	"manageMemberModal.awaitingCancelConfirmTitle": "¿Cancelar esta solicitud?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Al cancelar también se cancela su solicitud de membresía pendiente.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Sí, cancelar solicitud",
+	"manageMemberModal.awaitingBanRequestNote": "Al banear también se cierra su solicitud de membresía pendiente."
 }

@@ -15,7 +15,7 @@
 	import { Loader2, UserCog, UserX, AlertTriangle, Ban, CreditCard } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
-	import { SELECTABLE_MEMBER_STATUSES } from '$lib/utils/member-status';
+	import { statusOptionsFor } from '$lib/utils/member-status';
 
 	interface Props {
 		member: OrganizationMemberSchema | null;
@@ -35,6 +35,8 @@
 		onManageSubscription?: () => void;
 		/** The backend's refusal of a tier change (409 `tier_follows_subscription`). */
 		tierLockDetail?: string | null;
+		/** The backend's (already translated) refusal of a status change, shown in the dialog. */
+		statusErrorDetail?: string | null;
 		isUpdating?: boolean;
 		isPromoting?: boolean;
 		isRemoving?: boolean;
@@ -54,6 +56,7 @@
 		onBlacklist,
 		onManageSubscription,
 		tierLockDetail = null,
+		statusErrorDetail = null,
 		isUpdating = false,
 		isPromoting = false,
 		isRemoving = false,
@@ -148,10 +151,10 @@
 	const hasChanges = $derived(hasStatusChanged || hasTierChanged);
 
 	// Statuses staff may pick. `awaiting_payment` is system-set (the first recorded
-	// payment moves the member to active), so it is never a choice: a member who holds
-	// it sees it read-only instead.
-	const statuses = SELECTABLE_MEMBER_STATUSES;
-	const statusIsSystemSet = $derived(member?.status === 'awaiting_payment');
+	// payment moves the member to active), so a member who holds it may only be
+	// cancelled or banned; "Awaiting payment" stays listed as the no-change option.
+	const statuses = $derived(statusOptionsFor(member?.status));
+	const isAwaiting = $derived(member?.status === 'awaiting_payment');
 
 	// Ban / blacklist / remove cancel the member's subscription and stop billing
 	// server-side — and since BE `d3773257` (`_mirror_status_to_subscriptions`) so
@@ -177,6 +180,10 @@
 	const isBanTransition = $derived(
 		!!member && selectedStatus === 'banned' && member.status !== 'banned'
 	);
+	// Cancelling an unpaid member also cancels their pending request, which is not
+	// undoable by flipping a select back, so it is confirmed like a ban.
+	const isAwaitingCancelTransition = $derived(isAwaiting && selectedStatus === 'cancelled');
+	const needsStatusConfirm = $derived(isBanTransition || isAwaitingCancelTransition);
 
 	// The billing side-effects below belong to the *transition*, not to the status
 	// the member already sits in: re-opening the modal on an already-paused member
@@ -197,7 +204,7 @@
 	function handleSaveChanges() {
 		if (!member) return;
 
-		if (isBanTransition && !showBanConfirm) {
+		if (needsStatusConfirm && !showBanConfirm) {
 			showBanConfirm = true;
 			return;
 		}
@@ -357,7 +364,7 @@
 							// Re-picking a status invalidates a pending ban confirmation.
 							showBanConfirm = false;
 						}}
-						disabled={isProcessing || statusIsSystemSet}
+						disabled={isProcessing}
 					>
 						<SelectTrigger id="status" aria-label={m['manageMemberModal.statusLabel']()}>
 							{m[`memberStatus.${selectedStatus}`]()}
@@ -372,7 +379,9 @@
 					</Select>
 					<!-- Status Explanation -->
 					<p class="text-sm text-muted-foreground">
-						{#if selectedStatus === 'awaiting_payment'}
+						{#if isAwaiting && selectedStatus === 'awaiting_payment'}
+							{m['manageMemberModal.statusExplanation.awaiting_payment']()}
+						{:else if selectedStatus === 'awaiting_payment'}
 							{m['manageMemberModal.statusExplanation.awaiting_payment']()}
 						{:else if selectedStatus === 'active'}
 							{m['manageMemberModal.statusExplanation.active']()}
@@ -406,6 +415,15 @@
 					{:else if isCancelTransition}
 						{@render billingNotice('text-sm text-muted-foreground')}
 					{/if}
+					{#if statusErrorDetail}
+						<p
+							role="alert"
+							class="text-sm font-medium text-destructive"
+							data-testid="member-status-error"
+						>
+							{statusErrorDetail}
+						</p>
+					{/if}
 					{#if selectedStatus === 'banned'}
 						<!-- dark:bg-destructive/25 (AutoEvalRecommendation's pattern): a /10
 						     red wash is nearly invisible on the dark surface, so dark
@@ -426,6 +444,9 @@
 								     while that panel is closed — never the same sentence twice. -->
 								{#if isBanTransition && !showBanConfirm}
 									{@render billingNotice('')}
+								{/if}
+								{#if isBanTransition && isAwaiting && !showBanConfirm}
+									<p>{m['manageMemberModal.awaitingBanRequestNote']()}</p>
 								{/if}
 							</div>
 						</div>
@@ -485,17 +506,30 @@
 
 				<!-- Save Changes Button / Ban Confirmation -->
 				{#if hasChanges}
-					{#if showBanConfirm && isBanTransition}
+					{#if showBanConfirm && needsStatusConfirm}
 						<div class="space-y-2 rounded-lg border border-destructive bg-destructive/10 p-4">
 							<div class="flex gap-2">
 								<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" />
 								<div class="flex-1 space-y-2">
 									<p role="heading" aria-level="4" class="text-sm font-medium text-foreground">
-										{m['manageMemberModal.banConfirmTitle']({ name: displayName })}
+										{#if isAwaitingCancelTransition}
+											{m['manageMemberModal.awaitingCancelConfirmTitle']()}
+										{:else}
+											{m['manageMemberModal.banConfirmTitle']({ name: displayName })}
+										{/if}
 									</p>
 									<p class="text-sm text-foreground">
-										{m['manageMemberModal.banConfirmMessage']()}
+										{#if isAwaitingCancelTransition}
+											{m['manageMemberModal.awaitingCancelConfirmMessage']()}
+										{:else}
+											{m['manageMemberModal.banConfirmMessage']()}
+										{/if}
 									</p>
+									{#if isBanTransition && isAwaiting}
+										<p class="text-sm text-foreground">
+											{m['manageMemberModal.awaitingBanRequestNote']()}
+										</p>
+									{/if}
 									{@render billingNotice('text-sm text-foreground')}
 									<div class="flex gap-2">
 										<Button
@@ -508,7 +542,11 @@
 											{#if isUpdating}
 												<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 											{/if}
-											{m['manageMemberModal.confirmBan']()}
+											{#if isAwaitingCancelTransition}
+												{m['manageMemberModal.awaitingCancelConfirmButton']()}
+											{:else}
+												{m['manageMemberModal.confirmBan']()}
+											{/if}
 										</Button>
 										<Button
 											variant="outline"

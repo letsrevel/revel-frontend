@@ -3193,7 +3193,7 @@
 		"statusExplanation": {
 			"active": "I membri possono visualizzare e partecipare a tutti gli eventi dell'organizzazione.",
 			"activeBillingNote": "Ripristinare l'iscrizione non riavvia la fatturazione: gli abbonamenti si riprendono separatamente, dalla scheda «Subscriptions».",
-			"awaiting_payment": "Questa persona diventa membro quando registri il primo pagamento. Lo stato viene impostato automaticamente e non può essere modificato a mano.",
+			"awaiting_payment": "Questa persona non ha ancora pagato. Puoi annullare la sua richiesta o bannarla. Per attivarla, registra il suo primo pagamento.",
 			"paused": "I membri possono visualizzare gli eventi ma non partecipare o confermare.",
 			"pausedBillingNote": "Finché l'iscrizione è in pausa non viene incassato nessun altro pagamento.",
 			"pausedScheduledEndNote": "L'abbonamento è già programmato per terminare, quindi non viene messo in pausa: continua a fatturare fino alla chiusura del periodo in corso.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Registra pagamento",
 	"memberPeople.awaiting.recordFor": "Registra pagamento per {name}",
 	"memberPeople.awaiting.truncated": "Vengono mostrati i primi {shown}.",
-	"memberPeople.awaiting.seeAll": "Vedi tutti in Abbonamenti"
+	"memberPeople.awaiting.seeAll": "Vedi tutti in Abbonamenti",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Annullare questa richiesta?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Annullare significa annullare anche la sua richiesta di adesione in sospeso.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Sì, annulla la richiesta",
+	"manageMemberModal.awaitingBanRequestNote": "Bannare chiude anche la sua richiesta di adesione in sospeso."
 }

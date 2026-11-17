@@ -60,3 +60,24 @@ export const SELECTABLE_MEMBER_STATUSES: readonly MembershipStatus[] = [
 	'cancelled',
 	'banned'
 ];
+
+/**
+ * What staff may do with a member who has not paid yet: the backend only accepts
+ * cancelling or banning (it also closes the unpaid request). "Awaiting payment"
+ * stays listed, selected, as the read-only no-change option; activating happens by
+ * recording the first payment.
+ */
+const AWAITING_PAYMENT_STATUS_OPTIONS: readonly MembershipStatus[] = [
+	'awaiting_payment',
+	'cancelled',
+	'banned'
+];
+
+/** The status options offered for a member currently holding `current`. */
+export function statusOptionsFor(
+	current: MembershipStatus | undefined
+): readonly MembershipStatus[] {
+	return current === 'awaiting_payment'
+		? AWAITING_PAYMENT_STATUS_OPTIONS
+		: SELECTABLE_MEMBER_STATUSES;
+}

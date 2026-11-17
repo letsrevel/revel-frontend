@@ -14,9 +14,10 @@ function makeMember(status: MembershipStatus): OrganizationMemberSchema {
 	} as unknown as OrganizationMemberSchema;
 }
 
-function setup(status: MembershipStatus) {
+function setup(status: MembershipStatus, extra: Record<string, unknown> = {}) {
 	const onUpdateStatus = vi.fn();
 	const props = {
+		...extra,
 		member: makeMember(status),
 		tiers: [],
 		isStaff: false,
@@ -77,5 +78,54 @@ describe('ManageMemberModal status sync', () => {
 		await serverMoves('paused');
 
 		expect(statusTrigger()).toHaveTextContent(m['memberStatus.cancelled']());
+	});
+
+	async function optionNames(): Promise<string[]> {
+		await fireEvent.keyDown(statusTrigger(), { key: 'ArrowDown' });
+		await screen.findAllByRole('option');
+		return screen.getAllByRole('option').map((o) => o.textContent?.trim() ?? '');
+	}
+
+	it('offers an awaiting member exactly awaiting / cancelled / banned', async () => {
+		setup('awaiting_payment');
+		expect(statusTrigger()).not.toBeDisabled();
+		expect(await optionNames()).toEqual([
+			m['memberStatus.awaiting_payment'](),
+			m['memberStatus.cancelled'](),
+			m['memberStatus.banned']()
+		]);
+	});
+
+	it('leaves the options of an active member unchanged', async () => {
+		setup('active');
+		expect(await optionNames()).toEqual([
+			m['memberStatus.active'](),
+			m['memberStatus.paused'](),
+			m['memberStatus.cancelled'](),
+			m['memberStatus.banned']()
+		]);
+	});
+
+	it('confirms, then sends cancelled for an awaiting member', async () => {
+		const { onUpdateStatus } = setup('awaiting_payment');
+		await fireEvent.keyDown(statusTrigger(), { key: 'ArrowDown' });
+		const option = await screen.findByRole('option', { name: m['memberStatus.cancelled']() });
+		await fireEvent.pointerUp(option, { pointerType: 'mouse' });
+		await fireEvent.click(option);
+		await fireEvent.click(
+			await screen.findByRole('button', { name: m['manageMemberModal.saveChanges']() })
+		);
+		// The confirmation says the pending request is cancelled too.
+		expect(onUpdateStatus).not.toHaveBeenCalled();
+		expect(screen.getByText(m['manageMemberModal.awaitingCancelConfirmMessage']())).toBeTruthy();
+		await fireEvent.click(
+			screen.getByRole('button', { name: m['manageMemberModal.awaitingCancelConfirmButton']() })
+		);
+		expect(onUpdateStatus).toHaveBeenCalledWith('cancelled');
+	});
+
+	it('renders the backend detail of a refused status change', () => {
+		setup('awaiting_payment', { statusErrorDetail: 'Cannot activate: no payment yet.' });
+		expect(screen.getByRole('alert')).toHaveTextContent('Cannot activate: no payment yet.');
 	});
 });

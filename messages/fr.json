@@ -2995,7 +2995,7 @@
 		"statusExplanation": {
 			"active": "Les membres peuvent voir et participer à tous les événements de l'organisation.",
 			"activeBillingNote": "Rétablir l'adhésion ne relance pas la facturation : les abonnements se reprennent séparément, depuis l'onglet « Abonnements ».",
-			"awaiting_payment": "Cette personne devient membre lorsque vous enregistrez le premier paiement. Le statut est défini automatiquement et ne peut pas être modifié à la main.",
+			"awaiting_payment": "Cette personne n'a pas encore payé. Vous pouvez annuler sa demande ou la bannir. Pour l'activer, enregistrez son premier paiement.",
 			"paused": "Les membres peuvent voir les événements mais ne peuvent pas participer ni confirmer leur présence.",
 			"pausedBillingNote": "Aucun autre paiement n'est prélevé tant que l'adhésion est en pause.",
 			"pausedScheduledEndNote": "Son abonnement est déjà programmé pour prendre fin : il n'est donc pas mis en pause et continue d'être facturé jusqu'à la clôture de la période en cours.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Enregistrer le paiement",
 	"memberPeople.awaiting.recordFor": "Enregistrer le paiement de {name}",
 	"memberPeople.awaiting.truncated": "Affichage des {shown} premiers.",
-	"memberPeople.awaiting.seeAll": "Tout voir dans Abonnements"
+	"memberPeople.awaiting.seeAll": "Tout voir dans Abonnements",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Annuler cette demande ?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "L'annulation annule aussi sa demande d'adhésion en attente.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Oui, annuler la demande",
+	"manageMemberModal.awaitingBanRequestNote": "Le bannissement clôt aussi sa demande d'adhésion en attente."
 }

@@ -3193,7 +3193,7 @@
 		"statusExplanation": {
 			"active": "Membros podem ver e participar em todos os eventos da organização.",
 			"activeBillingNote": "Restaurar a adesão não reinicia a faturação — as subscrições são retomadas separadamente, a partir do separador «Subscrições».",
-			"awaiting_payment": "Esta pessoa passa a ser membro quando registares o primeiro pagamento. O estado é definido automaticamente e não pode ser alterado manualmente.",
+			"awaiting_payment": "Esta pessoa ainda não pagou. Podes cancelar o pedido ou bani-la. Para a ativar, regista o primeiro pagamento.",
 			"paused": "Membros podem ver eventos, mas não podem participar nem confirmar presença.",
 			"pausedBillingNote": "Não são cobrados mais pagamentos enquanto a adesão estiver em pausa.",
 			"pausedScheduledEndNote": "A subscrição já está agendada para terminar, por isso não é colocada em pausa — continua a ser faturada até ao fim do período atual.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Registar pagamento",
 	"memberPeople.awaiting.recordFor": "Registar pagamento de {name}",
 	"memberPeople.awaiting.truncated": "A mostrar os primeiros {shown}.",
-	"memberPeople.awaiting.seeAll": "Ver todos em Subscrições"
+	"memberPeople.awaiting.seeAll": "Ver todos em Subscrições",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Cancelar este pedido?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Ao cancelar, o pedido de adesão pendente também é cancelado.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Sim, cancelar pedido",
+	"manageMemberModal.awaitingBanRequestNote": "Ao banir, o pedido de adesão pendente também é encerrado."
 }

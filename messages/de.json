@@ -3193,7 +3193,7 @@
 		"statusExplanation": {
 			"active": "Mitglieder können alle Organisationsveranstaltungen ansehen und daran teilnehmen.",
 			"activeBillingNote": "Das Wiederherstellen der Mitgliedschaft startet die Abrechnung nicht neu – Abonnements werden separat im Tab „Subscriptions“ fortgesetzt.",
-			"awaiting_payment": "Diese Person wird Mitglied, sobald du die erste Zahlung erfasst. Der Status wird automatisch gesetzt und kann nicht von Hand geändert werden.",
+			"awaiting_payment": "Diese Person hat noch nicht bezahlt. Du kannst ihre Anfrage stornieren oder sie sperren. Um sie zu aktivieren, erfasse ihre erste Zahlung.",
 			"paused": "Mitglieder können Veranstaltungen ansehen, aber nicht teilnehmen oder zusagen.",
 			"pausedBillingNote": "Solange die Mitgliedschaft pausiert ist, werden keine weiteren Zahlungen eingezogen.",
 			"pausedScheduledEndNote": "Das Abonnement ist bereits zur Kündigung vorgemerkt und wird deshalb nicht pausiert – es wird bis zum Ende des laufenden Zeitraums weiter abgerechnet.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Zahlung erfassen",
 	"memberPeople.awaiting.recordFor": "Zahlung für {name} erfassen",
 	"memberPeople.awaiting.truncated": "Es werden die ersten {shown} angezeigt.",
-	"memberPeople.awaiting.seeAll": "Alle in Abonnements ansehen"
+	"memberPeople.awaiting.seeAll": "Alle in Abonnements ansehen",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Diese Anfrage stornieren?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Beim Stornieren wird auch die offene Mitgliedschaftsanfrage storniert.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Ja, Anfrage stornieren",
+	"manageMemberModal.awaitingBanRequestNote": "Beim Sperren wird auch die offene Mitgliedschaftsanfrage geschlossen."
 }

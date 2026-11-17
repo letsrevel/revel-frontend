@@ -298,17 +298,14 @@ describe('Manage membership: the tier follows the subscription plan', () => {
 });
 
 describe('Manage membership: awaiting_payment is system-set', () => {
-	it('shows the status read-only and never offers it as a choice', async () => {
-		const user = userEvent.setup();
+	it('shows the status selected, enabled, with the cancel-or-ban guidance', async () => {
 		renderActions(makeMember({ status: 'awaiting_payment' }));
 		const status = await screen.findByLabelText('Membership Status');
-		expect(status).toBeDisabled();
+		expect(status).not.toBeDisabled();
 		expect(status).toHaveTextContent('Awaiting payment');
 		expect(
-			screen.getByText(/becomes a member when you record the first payment/i)
+			screen.getByText(/hasn't paid yet\. You can cancel their request or ban them/i)
 		).toBeInTheDocument();
-		await user.click(status);
-		expect(document.querySelector('[data-select-content]')).toBeNull();
 	});
 
 	it('does not offer awaiting_payment when picking a status for an active member', async () => {

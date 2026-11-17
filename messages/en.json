@@ -3193,7 +3193,7 @@
 		"statusExplanation": {
 			"active": "Members can view and participate in all organization events.",
 			"activeBillingNote": "Restoring membership does not restart billing — subscriptions are resumed separately, from the Subscriptions tab.",
-			"awaiting_payment": "This person becomes a member when you record the first payment. The status is set automatically and can't be changed by hand.",
+			"awaiting_payment": "This person hasn't paid yet. You can cancel their request or ban them. To activate them, record their first payment.",
 			"paused": "Members can view events but cannot participate or RSVP.",
 			"pausedBillingNote": "No further payments are collected while their membership is paused.",
 			"pausedScheduledEndNote": "Their subscription is already scheduled to end, so it is not paused — it keeps billing until the current period closes.",
@@ -11866,5 +11866,9 @@
 	"memberPeople.awaiting.record": "Record payment",
 	"memberPeople.awaiting.recordFor": "Record payment for {name}",
 	"memberPeople.awaiting.truncated": "Showing the first {shown}.",
-	"memberPeople.awaiting.seeAll": "See all in Subscriptions"
+	"memberPeople.awaiting.seeAll": "See all in Subscriptions",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Cancel this request?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Cancelling also cancels their pending membership request.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Yes, cancel request",
+	"manageMemberModal.awaitingBanRequestNote": "Banning also closes their pending membership request."
 }
