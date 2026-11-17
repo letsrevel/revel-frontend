@@ -150,7 +150,9 @@ async function expectAwaitingCard(
 	await waitForClientAuth(page);
 	const card = membershipCard(page, org.name);
 	await expect(card).toBeVisible({ timeout: 15_000 });
-	await expect(card.getByTestId('membership-subscription-status')).toContainText(/pending/i);
+	await expect(card.getByTestId('membership-subscription-status')).toContainText(
+		/awaiting payment/i
+	);
 	const awaiting = card.getByTestId('membership-awaiting-payment');
 	await expect(awaiting).toBeVisible();
 	await expect(
