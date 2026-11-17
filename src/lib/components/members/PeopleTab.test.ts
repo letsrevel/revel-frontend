@@ -65,7 +65,7 @@ const organization = {
 	timezone: 'Europe/Rome'
 } as unknown as OrganizationAdminDetailSchema;
 
-function renderTab(active: boolean) {
+function renderTab(active: boolean, canManageSubscriptions = false) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -73,6 +73,7 @@ function renderTab(active: boolean) {
 			componentProps: {
 				organization,
 				isOwner: true,
+				canManageSubscriptions,
 				active,
 				onOpenApplications: vi.fn(),
 				onCreateInviteLink: vi.fn(),
@@ -114,7 +115,7 @@ describe('PeopleTab awaiting-payment section', () => {
 				]
 			}
 		} as never);
-		renderTab(true);
+		renderTab(true, true);
 		expect(await screen.findByText('Ada Held')).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: /Awaiting first payment/ })).toBeInTheDocument();
 	});

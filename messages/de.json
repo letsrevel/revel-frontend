@@ -11864,5 +11864,6 @@
 	"memberPeople.awaiting.title": "Wartet auf erste Zahlung ({count})",
 	"memberPeople.awaiting.helper": "Sie werden Mitglieder*innen, sobald du ihre erste Zahlung erfasst.",
 	"memberPeople.awaiting.record": "Zahlung erfassen",
-	"memberPeople.awaiting.recordFor": "Zahlung für {name} erfassen"
+	"memberPeople.awaiting.recordFor": "Zahlung für {name} erfassen",
+	"memberPeople.awaiting.truncated": "Es werden die ersten {shown} angezeigt."
 }

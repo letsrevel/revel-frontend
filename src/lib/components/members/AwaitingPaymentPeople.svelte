@@ -16,11 +16,14 @@
 		organization: OrganizationAdminDetailSchema;
 		/** False while another tab is showing: no request fires. */
 		active?: boolean;
+		/** The drawer needs `manage_subscriptions`; without it the section is absent. */
+		canManageSubscriptions?: boolean;
 	}
 
-	const { organization, active = true }: Props = $props();
+	const { organization, active = true, canManageSubscriptions = false }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 	const headingId = $props.id();
+	const PAGE_SIZE = 100;
 
 	// People held as `awaiting_payment` have no register entry yet (the backend
 	// opens one at the first recorded payment), so the register list cannot show
@@ -32,13 +35,13 @@
 		queryFn: async () => {
 			const res = await organizationadminmembersListMembers({
 				path: { slug: organization.slug },
-				query: { status: 'awaiting_payment', page_size: 100 },
+				query: { status: 'awaiting_payment', page_size: PAGE_SIZE },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load members awaiting payment');
 			return res.data;
 		},
-		enabled: !!accessToken && active
+		enabled: !!accessToken && active && canManageSubscriptions
 	}));
 
 	$effect(() => {
@@ -48,14 +51,15 @@
 	const people = $derived<OrganizationMemberSchema[]>(
 		(query.data?.results ?? []).filter((p) => !!p.subscription_id)
 	);
+	const total = $derived(query.data?.count ?? people.length);
 	let drawerSubId = $state<string | null>(null);
 </script>
 
-{#if people.length > 0}
+{#if canManageSubscriptions && people.length > 0}
 	<section aria-labelledby={headingId} class="space-y-3 rounded-lg border bg-card p-4">
 		<SectionHeader
 			id={headingId}
-			title={m['memberPeople.awaiting.title']({ count: people.length })}
+			title={m['memberPeople.awaiting.title']({ count: total })}
 			subtitle={m['memberPeople.awaiting.helper']()}
 		/>
 		<ul class="divide-y">
@@ -86,6 +90,11 @@
 				</li>
 			{/each}
 		</ul>
+		{#if total > people.length}
+			<p class="text-sm text-muted-foreground">
+				{m['memberPeople.awaiting.truncated']({ shown: people.length })}
+			</p>
+		{/if}
 	</section>
 {/if}
 

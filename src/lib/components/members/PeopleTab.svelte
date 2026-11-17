@@ -333,7 +333,7 @@
 </script>
 
 <div class="space-y-4">
-	<AwaitingPaymentPeople {organization} {active} />
+	<AwaitingPaymentPeople {organization} {active} {canManageSubscriptions} />
 	<NeedsAttention
 		duplicatesCount={duplicates.length}
 		applicationsCount={pendingApplications}

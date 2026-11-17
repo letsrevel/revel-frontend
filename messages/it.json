@@ -11864,5 +11864,6 @@
 	"memberPeople.awaiting.title": "In attesa del primo pagamento ({count})",
 	"memberPeople.awaiting.helper": "L'iscrizione parte non appena registri il primo pagamento.",
 	"memberPeople.awaiting.record": "Registra pagamento",
-	"memberPeople.awaiting.recordFor": "Registra pagamento per {name}"
+	"memberPeople.awaiting.recordFor": "Registra pagamento per {name}",
+	"memberPeople.awaiting.truncated": "Vengono mostrati i primi {shown}."
 }

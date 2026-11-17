@@ -14,7 +14,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 vi.mock('./SubscriptionDrawer.svelte', async () => ({
-	default: (await import('./SubscriptionDrawerStub.svelte')).default
+	default: (await import('$lib/test-utils/SubscriptionDrawerStub.svelte')).default
 }));
 
 import AwaitingPaymentPeople from './AwaitingPaymentPeople.svelte';
@@ -31,12 +31,12 @@ function member(id: string, name: string, subId: string | null): OrganizationMem
 	} as unknown as OrganizationMemberSchema;
 }
 
-function renderIt() {
+function renderIt(canManageSubscriptions = true) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: AwaitingPaymentPeople,
-			componentProps: { organization }
+			componentProps: { organization, canManageSubscriptions }
 		}
 	});
 }
@@ -64,8 +64,25 @@ describe('AwaitingPaymentPeople', () => {
 		sdk.listMembers.mockResolvedValue({ data: { count: 0, results: [] } });
 		const { container } = renderIt();
 		await waitFor(() => expect(sdk.listMembers).toHaveBeenCalled());
-		await Promise.resolve();
+		await waitFor(() => expect(sdk.listMembers.mock.results[0].value).resolves.toBeDefined());
 		expect(container.querySelector('section')).toBeNull();
+	});
+
+	it('fires no request and renders nothing without subscription rights', async () => {
+		sdk.listMembers.mockResolvedValue({ data: { count: 1, results: [member('u1', 'Ada', 's1')] } });
+		const { container } = renderIt(false);
+		await new Promise((r) => setTimeout(r, 50));
+		expect(sdk.listMembers).not.toHaveBeenCalled();
+		expect(container.querySelector('section')).toBeNull();
+	});
+
+	it('uses the server count and notes truncation', async () => {
+		sdk.listMembers.mockResolvedValue({
+			data: { count: 130, results: [member('u1', 'Ada', 's1')] }
+		});
+		renderIt();
+		expect(await screen.findByRole('heading', { name: /\(130\)/ })).toBeInTheDocument();
+		expect(screen.getByText('Showing the first 1.')).toBeInTheDocument();
 	});
 
 	it('renders nothing and warns on error', async () => {
