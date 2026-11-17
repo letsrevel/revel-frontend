@@ -13,7 +13,11 @@ import type {
 	MembershipEligibilitySchema
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
-import { MY_MEMBERSHIPS_KEY, myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
+import {
+	MY_MEMBERSHIPS_KEY,
+	MY_SUBSCRIPTIONS_KEY,
+	myOrgSubscriptionKey
+} from '$lib/utils/subscription-cache';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsApply: vi.fn()
@@ -468,6 +472,7 @@ describe('ApplyDialog', () => {
 				expect(spy).toHaveBeenCalledWith({ queryKey: myOrgSubscriptionKey('org-1') });
 			});
 			expect(spy).toHaveBeenCalledWith({ queryKey: MY_MEMBERSHIPS_KEY });
+			expect(spy).toHaveBeenCalledWith({ queryKey: MY_SUBSCRIPTIONS_KEY });
 		});
 	});
 

@@ -3757,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} wartet auf die erste Zahlung",
+							"countPlural=*": "{count} warten auf die erste Zahlung"
+						}
+					}
+				],
 				"open": "Veranstaltungen öffnen",
 				"allClear": "Im Moment braucht nichts deine Aufmerksamkeit."
 			},
@@ -6185,7 +6195,6 @@
 		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei.",
 		"joinCta": "Beitreten",
 		"awaitingPaymentHelper": "Deine Mitgliedschaft beginnt, sobald {orgName} deine Zahlung bestätigt.",
-		"awaitingPaymentLink": "Zahlungsdetails ansehen",
 		"awaitingOtherPlanHelper": "Du hast eine Mitgliedschaft bei {orgName}, die noch auf Zahlung wartet.",
 		"offlineGuestNote": "Die Zahlung erfolgt nach dem Beitritt direkt an {orgName}.",
 		"applyOfflineHelper": "Sobald {orgName} dich annimmt, erhältst du die Zahlungsdetails."
@@ -7950,8 +7959,7 @@
 			"requires_invitation": "Der Beitritt erfolgt per Einladung — frag die Organisator*innen nach einem Einladungslink.",
 			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
 			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
-			"generic": "Du kannst derzeit nicht beitreten.",
-			"awaiting_offline_payment": "Deine Mitgliedschaft beginnt, sobald die Organisation deine Zahlung bestätigt."
+			"generic": "Du kannst derzeit nicht beitreten."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
@@ -7961,7 +7969,6 @@
 		"joinTier": "{tier} beitreten",
 		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten.",
 		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung.",
-		"awaitingPayment": "Zahlung ausstehend",
 		"seePaymentDetails": "Zahlungsdetails ansehen"
 	},
 	"membershipApply": {
@@ -8107,8 +8114,7 @@
 			"confirmCta": "Beitreten",
 			"title": "Fast geschafft, du bist dabei.",
 			"body": "Bezahle {orgName}, um deine Mitgliedschaft zu aktivieren.",
-			"fallback": "{orgName} teilt dir mit, wie du bezahlen kannst.",
-			"link": "Zahlungsdetails ansehen"
+			"fallback": "{orgName} teilt dir mit, wie du bezahlen kannst."
 		}
 	},
 	"waitlistSettings.title": "Erweiterte Wartelisteneinstellungen",
@@ -11481,7 +11487,6 @@
 	"memberPeople.sendInviteHelp": "Schickt einen Link per E-Mail, damit die Person die Mitgliedschaft mit ihrem Konto übernehmen kann.",
 	"memberPeople.inviteAfterCreateFailed": "Eintrag hinzugefügt, aber die Einladung wurde nicht gesendet. Sende sie über das Zeilenmenü.",
 	"memberPeople.status.paused": "Pausiert",
-	"memberPeople.status.awaitingPayment": "Zahlung ausstehend",
 	"memberPeople.row.open": "{name} öffnen",
 	"memberPeople.row.hasNote": "Hat eine Teamnotiz",
 	"memberPeople.subscription.renews": "Abonniert · verlängert sich am {date}",
@@ -11854,6 +11859,5 @@
 	"membershipRequestCard.planPrefix": "Tarif",
 	"approveMembershipModal.descriptionOffline": "Mit der Genehmigung wird {name} als Mitglied mit ausstehender Zahlung geführt und erhält deine Zahlungsanweisungen. Die Mitgliedschaft wird aktiv, sobald du die erste Zahlung erfasst.",
 	"approveMembershipModal.descriptionOnline": "Mit der Genehmigung kann {name} den Checkout abschließen. Die Mitgliedschaft beginnt, sobald die Zahlung eingegangen ist.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt.",
-	"orgAdmin.dashboard.attention.awaitingPayment": "{count} warten auf die erste Zahlung"
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt."
 }

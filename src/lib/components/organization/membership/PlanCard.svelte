@@ -14,6 +14,7 @@
 		canSwitchToPlan,
 		formatPlanPrice,
 		isFreePlan,
+		isAwaitingOfflinePayment,
 		isLifetimePlan
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
@@ -133,9 +134,7 @@
 	 * A guest is untouched: nobody has asked the backend about them, and "Log in
 	 * to subscribe" is true whatever their eligibility turns out to be.
 	 */
-	const awaitingOffline = $derived(
-		subscription?.status === 'pending' && subscription.plan?.payment_method === 'offline'
-	);
+	const awaitingOffline = $derived(isAwaitingOfflinePayment(subscription));
 
 	const action = $derived.by(() => {
 		if (subscription) {
@@ -301,7 +300,7 @@
 				href={membershipsHref}
 				class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
-				{m['membershipPlans.awaitingPaymentLink']()}<span aria-hidden="true"> →</span>
+				{m['membershipEligibility.seePaymentDetails']()}<span aria-hidden="true"> →</span>
 			</a>
 			{#if canContactOrganization}
 				<OrgContactButton

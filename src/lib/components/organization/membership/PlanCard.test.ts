@@ -185,7 +185,7 @@ describe('PlanCard', () => {
 				screen.getByText(m['membershipPlans.awaitingPaymentHelper']({ orgName: 'Acme' }))
 			).toBeInTheDocument();
 			expect(
-				screen.getByRole('link', { name: m['membershipPlans.awaitingPaymentLink']() })
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
 			).toHaveAttribute('href', '/account/memberships');
 			// Not the member's live plan yet, and no Stripe resume copy.
 			expect(screen.queryByText(m['membershipPlans.yourPlan']())).toBeNull();

@@ -3757,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} in attesa del primo pagamento",
+							"countPlural=*": "{count} in attesa del primo pagamento"
+						}
+					}
+				],
 				"open": "Apri eventi",
 				"allClear": "Al momento niente richiede la tua attenzione."
 			},
@@ -6185,7 +6195,6 @@
 		"applyJoinHelper": "L'organizzazione esamina le richieste: entrerai una volta approvata.",
 		"joinCta": "Iscriviti",
 		"awaitingPaymentHelper": "La tua iscrizione inizia quando {orgName} conferma il tuo pagamento.",
-		"awaitingPaymentLink": "Vedi i dettagli del pagamento",
 		"awaitingOtherPlanHelper": "Hai un'iscrizione in attesa di pagamento con {orgName}.",
 		"offlineGuestNote": "Si paga direttamente a {orgName} dopo l'iscrizione.",
 		"applyOfflineHelper": "Quando {orgName} ti accetta, riceverai i dettagli per il pagamento."
@@ -7950,8 +7959,7 @@
 			"requires_invitation": "Si entra su invito — chiedi all'organizzazione un link di invito.",
 			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
 			"membership_paused": "La tua iscrizione è attualmente in pausa.",
-			"generic": "Non puoi unirti al momento.",
-			"awaiting_offline_payment": "La tua iscrizione inizia quando l'organizzazione conferma il tuo pagamento."
+			"generic": "Non puoi unirti al momento."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Il tuo questionario è in fase di valutazione — ti avviseremo appena sarà esaminato.",
@@ -7961,7 +7969,6 @@
 		"joinTier": "Iscriviti a {tier}",
 		"choosePlan": "Hai i requisiti: scegli un piano qui sotto per iscriverti.",
 		"applyChoosePlan": "Scegli un piano per fare richiesta: l'organizzazione esamina le richieste prima del pagamento.",
-		"awaitingPayment": "In attesa di pagamento",
 		"seePaymentDetails": "Vedi i dettagli del pagamento"
 	},
 	"membershipApply": {
@@ -8107,8 +8114,7 @@
 			"confirmCta": "Iscriviti",
 			"title": "Ci sei quasi.",
 			"body": "Paga {orgName} per attivare la tua iscrizione.",
-			"fallback": "{orgName} ti dirà come pagare.",
-			"link": "Vedi i dettagli del pagamento"
+			"fallback": "{orgName} ti dirà come pagare."
 		}
 	},
 	"waitlistSettings.title": "Impostazioni avanzate della lista d'attesa",
@@ -11481,7 +11487,6 @@
 	"memberPeople.sendInviteHelp": "Invia un link via email così la persona può rivendicare questa iscrizione con il suo account.",
 	"memberPeople.inviteAfterCreateFailed": "Voce aggiunta, ma l'invito non è stato inviato. Invialo dal menu della riga.",
 	"memberPeople.status.paused": "In pausa",
-	"memberPeople.status.awaitingPayment": "In attesa di pagamento",
 	"memberPeople.row.open": "Apri {name}",
 	"memberPeople.row.hasNote": "Ha una nota dello staff",
 	"memberPeople.subscription.renews": "Abbonamento attivo · si rinnova il {date}",
@@ -11854,6 +11859,5 @@
 	"membershipRequestCard.planPrefix": "Piano",
 	"approveMembershipModal.descriptionOffline": "Con l'approvazione, {name} risulta come socio in attesa di pagamento e riceve le tue istruzioni di pagamento. L'iscrizione diventa attiva quando registri il primo pagamento.",
 	"approveMembershipModal.descriptionOnline": "Con l'approvazione, {name} può completare il pagamento. L'iscrizione inizia quando il pagamento va a buon fine.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Questo importo è diverso dal prezzo del piano ({price}). Verrà comunque concesso l'intero periodo.",
-	"orgAdmin.dashboard.attention.awaitingPayment": "{count} in attesa del primo pagamento"
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Questo importo è diverso dal prezzo del piano ({price}). Verrà comunque concesso l'intero periodo."
 }

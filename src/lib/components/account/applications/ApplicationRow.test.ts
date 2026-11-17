@@ -449,13 +449,31 @@ describe('ApplicationRow', () => {
 			}) as MembershipApplicationSchema['plan'];
 
 		it('labels an approved offline application as awaiting payment and points to memberships', () => {
-			renderRow(makeApplication({ status: 'approved', plan: plan('offline') }));
+			renderRow(
+				makeApplication({
+					status: 'approved',
+					plan: plan('offline'),
+					subscription_status: 'pending'
+				})
+			);
 
 			expect(screen.getByText('Accepted, awaiting payment')).toBeInTheDocument();
 			expect(
 				screen.getByText('See the payment details on your membership card.')
 			).toBeInTheDocument();
 		});
+
+		it.each(['active', null] as const)(
+			'keeps the plain label for an approved offline application whose subscription is %s',
+			(subscription_status) => {
+				renderRow(
+					makeApplication({ status: 'approved', plan: plan('offline'), subscription_status })
+				);
+
+				expect(screen.getByText('Approved')).toBeInTheDocument();
+				expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			}
+		);
 
 		it('keeps the plain label for an approved online application', () => {
 			renderRow(makeApplication({ status: 'approved', plan: plan('online') }));

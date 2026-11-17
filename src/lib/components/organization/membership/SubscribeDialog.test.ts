@@ -534,10 +534,9 @@ describe('SubscribeDialog', () => {
 			).toBeInTheDocument();
 			expect(screen.getByText('IBAN IT00 1234')).toBeInTheDocument();
 			expect(screen.queryByText(/welcome, member/i)).toBeNull();
-			expect(screen.getByRole('link', { name: m['subscribe.offline.link']() })).toHaveAttribute(
-				'href',
-				'/account/memberships'
-			);
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
 			expect(window.location.href).toBe('');
 		});
 
@@ -555,7 +554,9 @@ describe('SubscribeDialog', () => {
 			// Only the short title + body sentence is a live region.
 			expect(heading.parentElement).toHaveAttribute('role', 'status');
 			expect(
-				screen.getByRole('link', { name: m['subscribe.offline.link']() }).closest('[role="status"]')
+				screen
+					.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+					.closest('[role="status"]')
 			).toBeNull();
 		});
 

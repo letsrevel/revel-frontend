@@ -14,7 +14,11 @@
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import { backendMessage } from '$lib/utils/api-error-detail';
-	import { MY_MEMBERSHIPS_KEY, myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
+	import {
+		MY_MEMBERSHIPS_KEY,
+		MY_SUBSCRIPTIONS_KEY,
+		myOrgSubscriptionKey
+	} from '$lib/utils/subscription-cache';
 	import {
 		Dialog,
 		DialogContent,
@@ -205,6 +209,7 @@
 			// and account hub cache is stale.
 			if (data.eligibility.next_step === 'wait_for_offline_payment') {
 				queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+				queryClient.invalidateQueries({ queryKey: MY_SUBSCRIPTIONS_KEY });
 				queryClient.invalidateQueries({
 					queryKey: myOrgSubscriptionKey(data.application.organization_id)
 				});

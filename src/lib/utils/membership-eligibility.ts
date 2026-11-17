@@ -415,7 +415,7 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 	duplicate_active_subscription: () =>
 		m['membershipEligibility.reason.duplicate_active_subscription'](),
 	membership_paused: () => m['membershipEligibility.reason.membership_paused'](),
-	awaiting_offline_payment: () => m['membershipEligibility.reason.awaiting_offline_payment']()
+	awaiting_offline_payment: () => m['membershipEligibility.wait.offline_payment']()
 };
 
 /**

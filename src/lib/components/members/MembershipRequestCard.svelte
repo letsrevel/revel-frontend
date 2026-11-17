@@ -18,6 +18,7 @@
 	import { formatRelativeTime } from '$lib/utils/date';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RegisterMatchHint from '$lib/components/member-register/RegisterMatchHint.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
@@ -175,15 +176,15 @@
 								<span class="sr-only">{m['membershipRequestCard.planPrefix']()}</span>
 								<span class="font-medium text-foreground">{request.plan.name}</span>
 								<span class="text-muted-foreground">{formatPlanPrice(request.plan)}</span>
-								<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-									{#if request.plan.payment_method === 'online'}
-										{m['orgAdmin.members.plans.badge.online']()}
-									{:else if request.plan.payment_method === 'free'}
-										{m['orgAdmin.members.plans.badge.free']()}
-									{:else}
-										{m['orgAdmin.members.plans.badge.offline']()}
-									{/if}
-								</span>
+								<StatusBadge
+									tone="neutral"
+									size="sm"
+									label={request.plan.payment_method === 'online'
+										? m['orgAdmin.members.plans.badge.online']()
+										: request.plan.payment_method === 'free'
+											? m['orgAdmin.members.plans.badge.free']()
+											: m['orgAdmin.members.plans.badge.offline']()}
+								/>
 							</p>
 						{/if}
 					</div>

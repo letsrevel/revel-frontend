@@ -3757,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} awaiting first payment",
+							"countPlural=*": "{count} awaiting first payment"
+						}
+					}
+				],
 				"open": "Open events",
 				"allClear": "Nothing needs your attention right now."
 			},
@@ -6185,7 +6195,6 @@
 		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved.",
 		"joinCta": "Join",
 		"awaitingPaymentHelper": "Your membership starts once {orgName} confirms your payment.",
-		"awaitingPaymentLink": "See payment details",
 		"awaitingOtherPlanHelper": "You have a membership awaiting payment with {orgName}.",
 		"offlineGuestNote": "Paid directly to {orgName} after you join.",
 		"applyOfflineHelper": "Once {orgName} accepts, you'll get payment details."
@@ -7950,8 +7959,7 @@
 			"requires_invitation": "Joining is by invitation — ask the organization for an invite link.",
 			"duplicate_active_subscription": "You already have an active subscription with this organization.",
 			"membership_paused": "Your membership is currently paused.",
-			"generic": "You can't join right now.",
-			"awaiting_offline_payment": "Your membership starts once the organization confirms your payment."
+			"generic": "You can't join right now."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
@@ -7961,7 +7969,6 @@
 		"joinTier": "Join {tier}",
 		"choosePlan": "You're eligible — choose a plan below to join.",
 		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment.",
-		"awaitingPayment": "Awaiting payment",
 		"seePaymentDetails": "See payment details"
 	},
 	"membershipApply": {
@@ -8107,8 +8114,7 @@
 			"confirmCta": "Join",
 			"title": "You're in, almost.",
 			"body": "Pay {orgName} to activate your membership.",
-			"fallback": "{orgName} will tell you how to pay.",
-			"link": "See payment details"
+			"fallback": "{orgName} will tell you how to pay."
 		}
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
@@ -11481,7 +11487,6 @@
 	"memberPeople.sendInviteHelp": "Emails a link so they can claim this membership with their account.",
 	"memberPeople.inviteAfterCreateFailed": "Entry added, but the invite wasn't sent. Send it from the row menu.",
 	"memberPeople.status.paused": "Paused",
-	"memberPeople.status.awaitingPayment": "Awaiting payment",
 	"memberPeople.row.open": "Open {name}",
 	"memberPeople.row.hasNote": "Has a staff note",
 	"memberPeople.subscription.renews": "Subscribed · renews {date}",
@@ -11854,6 +11859,5 @@
 	"membershipRequestCard.planPrefix": "Plan",
 	"approveMembershipModal.descriptionOffline": "Approving holds {name} as a member awaiting payment and sends them your payment instructions. They become active when you record the first payment.",
 	"approveMembershipModal.descriptionOnline": "Approving lets {name} complete checkout. They become a member once the payment goes through.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "This is different from the plan price ({price}). The full period will still be granted.",
-	"orgAdmin.dashboard.attention.awaitingPayment": "{count} awaiting first payment"
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "This is different from the plan price ({price}). The full period will still be granted."
 }

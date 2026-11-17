@@ -20,7 +20,7 @@
 			case 'paused':
 				return m['memberPeople.status.paused']();
 			case 'awaiting-payment':
-				return m['memberPeople.status.awaitingPayment']();
+				return m['memberStatus.awaiting_payment']();
 			case 'day-member':
 				return m['memberPeople.status.dayMember']();
 			case 'ended':

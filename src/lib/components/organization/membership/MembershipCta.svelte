@@ -397,7 +397,7 @@
 				{#if eligibility?.next_step === 'wait_for_questionnaire_evaluation'}
 					{m['membershipEligibility.questionnaireUnderReview']()}
 				{:else if eligibility?.next_step === 'wait_for_offline_payment'}
-					{m['membershipEligibility.awaitingPayment']()}
+					{m['memberStatus.awaiting_payment']()}
 				{:else}
 					{m['membershipEligibility.waiting']()}
 				{/if}
@@ -407,7 +407,7 @@
 			{#if eligibility?.next_step === 'wait_for_offline_payment'}
 				<a
 					href={membershipsHref}
-					class="text-sm font-medium text-primary underline-offset-4 hover:underline"
+					class="rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					{m['membershipEligibility.seePaymentDetails']()}
 				</a>

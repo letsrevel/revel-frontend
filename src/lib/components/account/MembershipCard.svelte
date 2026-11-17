@@ -27,6 +27,7 @@
 		formatPlanPrice,
 		getDateLine,
 		getMemberActions,
+		isAwaitingOfflinePayment,
 		needsMembershipSuspendedNotice
 	} from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
@@ -55,13 +56,27 @@
 
 	/**
 	 * An offline-paid join the organizer has not yet confirmed: the member row is
-	 * `awaiting_payment` and its subscription is PENDING. Either signal suffices —
-	 * the row status alone covers a membership listed without its subscription.
-	 * Such a member holds no credential yet, so the member card (and with it the
-	 * wallet buttons it hosts) is withheld: the backend would refuse both.
+	 * `awaiting_payment`. Such a member holds no credential yet, so the member card
+	 * (and with it the wallet buttons it hosts) and member-since are withheld, and
+	 * the badge says what is awaited. Row status alone covers a membership listed
+	 * without its subscription.
 	 */
-	const awaitingPayment = $derived(
-		membership.status === 'awaiting_payment' || (isOffline && sub?.status === 'pending')
+	const heldMember = $derived(membership.status === 'awaiting_payment');
+	/**
+	 * A pending OFFLINE subscription. Distinct from `heldMember`: an ACTIVE member
+	 * upgrading to an offline paid plan (or a legacy row) also has one, keeps their
+	 * card, and still needs the payment instructions.
+	 */
+	const awaitingOffline = $derived(isAwaitingOfflinePayment(sub));
+	const showAwaitingBlock = $derived(heldMember || awaitingOffline);
+	/**
+	 * Withdraw cancels the subscription. Only safe when that cannot cancel a real
+	 * membership: the row is held, or the pending sub targets a different tier than
+	 * the member's current one (upgrade). A legacy row at the plan's own tier is
+	 * the member's actual membership, which the backend would close.
+	 */
+	const canWithdraw = $derived(
+		awaitingOffline && !!sub && (heldMember || membership.tier?.id !== sub.plan.tier_id)
 	);
 	const instructions = $derived(sub?.payment_instructions?.trim() || null);
 
@@ -92,7 +107,7 @@
 			if (res.error || !res.data) throw new Error('Failed to load organization');
 			return res.data;
 		},
-		enabled: awaitingPayment && !instructions
+		enabled: showAwaitingBlock && !instructions
 	}));
 	// Stricter than `contact_method !== 'none'`: the button's email branch also
 	// needs an address, and promising a button that never renders is a dead end.
@@ -357,7 +372,7 @@
 					     payment-history table further down this card renders status pills
 					     too, and a pending PAYMENT would otherwise answer a lookup meant for
 					     a pending SUBSCRIPTION (j23 revival.spec.ts). #795 -->
-					{#if awaitingPayment}
+					{#if heldMember}
 						<!-- The row is PENDING, but "Pending" reads like a technical state the
 						     member can do nothing about. The member-status label says what is
 						     actually being waited for. -->
@@ -405,7 +420,7 @@
 					</p>
 				{/if}
 
-				{#if !awaitingPayment}
+				{#if !heldMember}
 					<p class="mt-2 text-sm">
 						{#if line.kind === 'renewal'}
 							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
@@ -444,9 +459,11 @@
 				<!-- OFFLINE subscriptions are staff-run: say so instead of offering
 				     buttons the backend would refuse. -->
 				{#if isOffline}
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['account.memberships.managedBy']({ org: membership.organization_name })}
-					</p>
+					{#if !showAwaitingBlock}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['account.memberships.managedBy']({ org: membership.organization_name })}
+						</p>
+					{/if}
 					{#if sub.status === 'past_due'}
 						<p class="mt-1 text-xs text-muted-foreground">
 							{m['account.memberships.contactOrg']()}
@@ -466,13 +483,13 @@
 						</details>
 					{/if}
 				{/if}
-			{:else if !awaitingPayment}
+			{:else if !heldMember}
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['account.memberships.memberSince']({ date: fmtDate(membership.member_since) })}
 				</p>
 			{/if}
 
-			{#if awaitingPayment}
+			{#if showAwaitingBlock}
 				<div class="mt-3 space-y-2 text-sm" data-testid="membership-awaiting-payment">
 					<p>
 						{m['membershipPlans.awaitingPaymentHelper']({ orgName: membership.organization_name })}
@@ -517,7 +534,7 @@
 					resume payment), and two competing primaries would flatten that
 					hierarchy exactly when it matters.
 				-->
-				{#if !awaitingPayment}
+				{#if !heldMember}
 					<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
 						{m['membershipCard.showCard']()}
 					</Button>
@@ -569,7 +586,7 @@
 						{m['subscriptions.actions.resumePayment']()}
 					</Button>
 				{/if}
-				{#if awaitingPayment}
+				{#if canWithdraw}
 					<Button
 						variant="ghost"
 						size="sm"

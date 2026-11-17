@@ -314,7 +314,7 @@
 					href={membershipsHref}
 					class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					{m['subscribe.offline.link']()}
+					{m['membershipEligibility.seePaymentDetails']()}
 				</a>
 			</div>
 		{:else if joined}

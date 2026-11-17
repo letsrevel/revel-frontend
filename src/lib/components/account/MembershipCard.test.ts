@@ -435,9 +435,9 @@ describe('MembershipCard', () => {
 		renderCard(makeMembership(makeOfflineSub({ status: 'pending' })));
 
 		expect(screen.queryByRole('button', { name: /resume payment/i })).toBeNull();
-		expect(
-			screen.getByText('Managed by Test Org — contact them to make changes.')
-		).toBeInTheDocument();
+		// The awaiting block replaces the generic "managed by" line.
+		expect(screen.queryByText(/contact them to make changes/i)).toBeNull();
+		expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
 	});
 
 	/**
@@ -667,6 +667,46 @@ describe('MembershipCard', () => {
 
 				expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
 			});
+		});
+
+		describe('an ACTIVE member holding a pending offline subscription', () => {
+			const pendingSub = () =>
+				makeOfflineSub({ status: 'pending', payment_instructions: 'Pay **now**' });
+			const activeIn = (tierId: string) => ({
+				...makeMembership(pendingSub(), 'active'),
+				tier: { id: tierId, name: 'Tier', kind: 'member' } as MyMembershipSchema['tier']
+			});
+
+			it('upgrade to another tier: keeps card, shows instructions, offers withdraw', () => {
+				renderCard(activeIn('other-tier'));
+
+				expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
+				expect(screen.getByRole('button', { name: 'Withdraw request' })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-subscription-status')).not.toHaveTextContent(
+					'Awaiting payment'
+				);
+			});
+
+			it('legacy row on the plan tier: keeps card, shows instructions, offers NO withdraw', () => {
+				renderCard(activeIn('t1'));
+
+				expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
+				expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
+			});
+
+			it('hides the managed-by line while the instructions show', () => {
+				renderCard(activeIn('other-tier'));
+
+				expect(screen.queryByText(/contact them to make changes/i)).toBeNull();
+			});
+		});
+
+		it('an awaiting_payment member with no inlined subscription gets no withdraw', () => {
+			renderCard(makeMembership(null, 'awaiting_payment'));
+
+			expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
 		});
 
 		it('still offers the member card on an active offline membership', () => {

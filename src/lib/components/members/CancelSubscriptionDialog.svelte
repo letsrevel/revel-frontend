@@ -8,6 +8,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { AlertTriangle, Loader2 } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/date';
+	import { isAwaitingOfflinePayment } from '$lib/utils/subscriptions';
 
 	interface Props {
 		subscription: SubscriptionSchema;
@@ -36,9 +37,7 @@
 	// An offline subscription that never got its first payment: the member holds
 	// nothing yet (no access, no paid period), so the period-end / immediate split
 	// is meaningless. There is exactly one outcome: the request goes away.
-	const isAwaitingPayment = $derived(
-		subscription.status === 'pending' && subscription.plan?.payment_method === 'offline'
-	);
+	const isAwaitingPayment = $derived(isAwaitingOfflinePayment(subscription));
 
 	const canSubmit = $derived(isAwaitingPayment || mode === 'period_end' || immediateAck);
 

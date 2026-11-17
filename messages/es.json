@@ -3757,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} pendiente del primer pago",
+							"countPlural=*": "{count} pendientes del primer pago"
+						}
+					}
+				],
 				"open": "Abrir eventos",
 				"allClear": "Ahora mismo nada requiere tu atención."
 			},
@@ -6185,7 +6195,6 @@
 		"applyJoinHelper": "La organización revisa las solicitudes: te unirás una vez te aprueben.",
 		"joinCta": "Unirte",
 		"awaitingPaymentHelper": "Tu membresía empieza cuando {orgName} confirme tu pago.",
-		"awaitingPaymentLink": "Ver los detalles del pago",
 		"awaitingOtherPlanHelper": "Tienes una membresía pendiente de pago con {orgName}.",
 		"offlineGuestNote": "Se paga directamente a {orgName} después de unirte.",
 		"applyOfflineHelper": "Cuando {orgName} te acepte, recibirás los detalles del pago."
@@ -7950,8 +7959,7 @@
 			"requires_invitation": "Solo se puede entrar por invitación — pide a la organización un enlace de invitación.",
 			"duplicate_active_subscription": "Ya tienes una suscripción activa con esta organización.",
 			"membership_paused": "Tu membresía está actualmente en pausa.",
-			"generic": "No puedes unirte por ahora.",
-			"awaiting_offline_payment": "Tu membresía empieza cuando la organización confirme tu pago."
+			"generic": "No puedes unirte por ahora."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Tu cuestionario está en revisión — te avisaremos en cuanto lo evaluemos.",
@@ -7961,7 +7969,6 @@
 		"joinTier": "Únete a {tier}",
 		"choosePlan": "Cumples los requisitos — elige un plan abajo para unirte.",
 		"applyChoosePlan": "Elige un plan para solicitarlo — la organización revisa las solicitudes antes del pago.",
-		"awaitingPayment": "Pago pendiente",
 		"seePaymentDetails": "Ver los detalles del pago"
 	},
 	"membershipApply": {
@@ -8107,8 +8114,7 @@
 			"confirmCta": "Unirte",
 			"title": "Casi estás dentro.",
 			"body": "Paga a {orgName} para activar tu membresía.",
-			"fallback": "{orgName} te dirá cómo pagar.",
-			"link": "Ver los detalles del pago"
+			"fallback": "{orgName} te dirá cómo pagar."
 		}
 	},
 	"waitlistSettings.title": "Ajustes avanzados de la lista de espera",
@@ -11481,7 +11487,6 @@
 	"memberPeople.sendInviteHelp": "Envía un enlace por correo para que la persona reclame esta membresía con su cuenta.",
 	"memberPeople.inviteAfterCreateFailed": "Entrada añadida, pero no se envió la invitación. Envíala desde el menú de la fila.",
 	"memberPeople.status.paused": "En pausa",
-	"memberPeople.status.awaitingPayment": "Pendiente de pago",
 	"memberPeople.row.open": "Abrir {name}",
 	"memberPeople.row.hasNote": "Tiene una nota del equipo",
 	"memberPeople.subscription.renews": "Con suscripción · se renueva el {date}",
@@ -11854,6 +11859,5 @@
 	"membershipRequestCard.planPrefix": "Plan",
 	"approveMembershipModal.descriptionOffline": "Al aprobar, {name} queda como miembro pendiente de pago y recibe tus instrucciones de pago. La membresía pasa a estar activa cuando registres el primer pago.",
 	"approveMembershipModal.descriptionOnline": "Al aprobar, {name} puede completar el pago. La membresía comienza cuando el pago se procesa.",
-	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo.",
-	"orgAdmin.dashboard.attention.awaitingPayment": "{count} pendientes del primer pago"
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo."
 }

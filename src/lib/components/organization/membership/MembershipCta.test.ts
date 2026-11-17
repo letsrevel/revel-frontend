@@ -251,7 +251,7 @@ describe('MembershipCta', () => {
 		renderCta();
 
 		expect(
-			await screen.findByRole('button', { name: m['membershipEligibility.awaitingPayment']() })
+			await screen.findByRole('button', { name: m['memberStatus.awaiting_payment']() })
 		).toBeDisabled();
 		expect(
 			screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })

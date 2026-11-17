@@ -12,7 +12,8 @@ import {
 	isWithinRevivalWindow,
 	monthlyEquivalent,
 	needsMembershipSuspendedNotice,
-	classifyPlanChange
+	classifyPlanChange,
+	isAwaitingOfflinePayment
 } from './subscriptions';
 import type { MySubscriptionSchema, PlanSchema } from '$lib/api/generated/types.gen';
 
@@ -785,5 +786,22 @@ describe('classifyPlanChange (mirrors BE monthly-equivalent rule)', () => {
 		expect(
 			classifyPlanChange(monthly10, { price: '120.00', period_unit: 'year', period_count: 1 })
 		).toBe('downgrade');
+	});
+});
+
+describe('isAwaitingOfflinePayment', () => {
+	const sub = (status: string, payment_method: string | undefined) =>
+		({ status, plan: payment_method ? { payment_method } : undefined }) as never;
+
+	it('is true only for a pending offline subscription', () => {
+		expect(isAwaitingOfflinePayment(sub('pending', 'offline'))).toBe(true);
+		expect(isAwaitingOfflinePayment(sub('pending', 'online'))).toBe(false);
+		expect(isAwaitingOfflinePayment(sub('active', 'offline'))).toBe(false);
+		expect(isAwaitingOfflinePayment(sub('pending', undefined))).toBe(false);
+	});
+
+	it('is false without a subscription', () => {
+		expect(isAwaitingOfflinePayment(null)).toBe(false);
+		expect(isAwaitingOfflinePayment(undefined)).toBe(false);
 	});
 });

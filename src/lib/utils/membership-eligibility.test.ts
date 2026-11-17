@@ -234,7 +234,7 @@ describe('offline payment wait', () => {
 		const msg = getMembershipStatusMessage({ ...pair, reason: 'Backend sentence' });
 		expect(msg).toBe(m['membershipEligibility.wait.offline_payment']());
 		expect(getMembershipStatusMessage({ ...base, reason_code: 'awaiting_offline_payment' })).toBe(
-			m['membershipEligibility.reason.awaiting_offline_payment']()
+			m['membershipEligibility.wait.offline_payment']()
 		);
 	});
 

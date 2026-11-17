@@ -319,20 +319,21 @@
 					<p id="plan-payment-instructions-help" class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
 					</p>
-					<!-- Mounted whether or not there is anything to say, so the warning
-					     is announced when it appears rather than missed on insertion. -->
-					<div role="status">
-						{#if missingInstructions}
-							<p
-								class="flex items-start gap-2 text-xs text-highlight-foreground dark:text-highlight"
-							>
-								<AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-								{m['orgAdmin.members.plans.form.paymentInstructionsMissing']()}
-							</p>
-						{/if}
-					</div>
 				</div>
 			{/if}
+
+			<!-- Mounted whether or not there is anything to say (and independent of
+			     the offline branch above), so the warning is announced when it
+			     appears rather than missed on insertion. `empty:!mt-0` keeps the
+			     idle region from adding a gap in the form's vertical rhythm. -->
+			<div role="status" class="empty:!mt-0">
+				{#if isOffline && missingInstructions}
+					<p class="flex items-start gap-2 text-xs text-highlight-foreground dark:text-highlight">
+						<AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+						{m['orgAdmin.members.plans.form.paymentInstructionsMissing']()}
+					</p>
+				{/if}
+			</div>
 
 			<div class="grid grid-cols-2 gap-3">
 				<div class="space-y-1">

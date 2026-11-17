@@ -106,10 +106,14 @@
 	const isOpen = $derived(!TERMINAL.has(app.status));
 	const logoUrl = $derived(getImageUrl(app.organization_logo_url));
 
-	/** Approved onto an offline-paid plan: the member still owes the organizer a
-	 * payment, and the instructions live on the membership card, not here. */
+	/** Approved onto an offline-paid plan whose subscription is still PENDING: the
+	 * member owes the organizer a payment, and the instructions live on the
+	 * membership card, not here. Once the payment is recorded the subscription
+	 * leaves PENDING and the row reads as a plain approval again. */
 	const awaitingOfflinePayment = $derived(
-		app.status === 'approved' && app.plan?.payment_method === 'offline'
+		app.status === 'approved' &&
+			app.plan?.payment_method === 'offline' &&
+			app.subscription_status === 'pending'
 	);
 
 	const statusLabel = $derived(

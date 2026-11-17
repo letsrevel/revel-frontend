@@ -15,8 +15,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // The backend has no end-based filter, so "running now" is found by looking back this far
 // for events that already started. An event running longer than this is not surfaced as live.
 const LIVE_LOOKBACK_DAYS = 14;
-// Pending subscriptions fetched to count the offline ones. Past this many the exact offline
-// count is unknowable without a server filter, so the pending total is shown instead.
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, params, cookies }) => {
 	const { organization, isOwner } = await parent();
