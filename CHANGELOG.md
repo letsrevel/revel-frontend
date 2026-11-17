@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.39.0] - 2026-11-17
+
+### Added
+- **Offline-paid memberships**: tiers whose plans are paid by bank transfer or cash can now be joined or applied for in the app. Before, these plans only said "Managed manually by the organization".
+  - If the tier doesn't need staff approval, people click **Join** after the membership questionnaire. If it does, they **Apply** and staff approve.
+  - Either way the person is held as "awaiting payment" and sees how to pay, how much, and by when (30 days) in the join dialog and on `/account/memberships`. They can withdraw the request. The membership starts when staff record the first payment.
+  - Organizers can write payment instructions on each offline plan, with an organization-wide default in Settings. A warning appears when neither is set.
+  - Staff see the chosen plan and price on each application, and approving a paid application asks for confirmation. The dashboard shows how many people are awaiting their first payment, Members → People has an "Awaiting first payment" section with **Record payment**, and Subscriptions can be filtered by payment method.
+  - People awaiting payment can only be cancelled or banned by staff; they become active by recording their payment.
+  - Recording a payment that differs from the plan price shows a warning.
+- Active members on an offline plan can see how to pay their renewal on `/account/memberships`.
+
+### Changed
+- After filling in a membership questionnaire you return to the membership tiers (the tier you came from), not the organization's home page.
+
+### Fixed
+- Resource cards no longer overflow the screen on mobile when a file name or link is long.
+
 ## [2.38.0] - 2026-11-16
 
 ### Security
