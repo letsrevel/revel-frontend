@@ -402,6 +402,7 @@
 		"typeMembershipRequestCreated": "Membership request",
 		"typeMembershipRequestApproved": "Membership request approved",
 		"typeMembershipRequestRejected": "Membership request rejected",
+		"typeMembershipPaymentRequested": "Payment requested for membership",
 		"typeOrgAnnouncement": "Organization announcement",
 		"typeOrgContactMessageReceived": "Contact message received",
 		"typeOrgCustomDomainActive": "Custom domain active",
@@ -3190,6 +3191,7 @@
 		"statusExplanation": {
 			"active": "Members can view and participate in all organization events.",
 			"activeBillingNote": "Restoring membership does not restart billing — subscriptions are resumed separately, from the Subscriptions tab.",
+			"awaiting_payment": "This person becomes a member when you record the first payment. The status is set automatically and can't be changed by hand.",
 			"paused": "Members can view events but cannot participate or RSVP.",
 			"pausedBillingNote": "No further payments are collected while their membership is paused.",
 			"pausedScheduledEndNote": "Their subscription is already scheduled to end, so it is not paused — it keeps billing until the current period closes.",
@@ -3216,6 +3218,7 @@
 		"memberSince": "Member since"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Awaiting payment",
 		"active": "Active",
 		"paused": "Paused",
 		"cancelled": "Cancelled",
@@ -4135,6 +4138,8 @@
 					"paymentOffline": "Offline — you record payments",
 					"paymentOnline": "Online — Stripe auto-billing",
 					"paymentMethodHelp": "Online plans bill members automatically through Stripe. Offline plans are recorded by you (cash, bank transfer, …).",
+					"paymentInstructions": "Payment instructions",
+					"paymentInstructionsHelp": "Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default.",
 					"paymentOnlineNeedsStripe": "Connect Stripe in Billing settings to offer online plans.",
 					"paymentMethodImmutable": "Payment method can't be changed — archive and recreate the plan to switch.",
 					"maxSubscriptions": "Maximum subscriptions",
@@ -4171,6 +4176,7 @@
 					"notes": "Notes",
 					"submit": "Create",
 					"onlineExcluded": "Online (Stripe) plans aren't listed — members subscribe to those themselves so they can approve the payment.",
+					"offlineBecomesMember": "{name} becomes a member when you record the first payment.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"
@@ -9936,6 +9942,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Refund policy",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Describe your refund terms for paid memberships.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "e.g. Full refund within 14 days of your first payment.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Default payment instructions for offline plans",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Used by offline plans that have no instructions of their own. Shown to people after they join or are accepted, and in payment reminders.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "e.g. Bank transfer to IBAN ... with your name as the reference.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Manage ticket sales across your events",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Discount Codes",
@@ -11436,6 +11445,7 @@
 	"memberPeople.sendInviteHelp": "Emails a link so they can claim this membership with their account.",
 	"memberPeople.inviteAfterCreateFailed": "Entry added, but the invite wasn't sent. Send it from the row menu.",
 	"memberPeople.status.paused": "Paused",
+	"memberPeople.status.awaitingPayment": "Awaiting payment",
 	"memberPeople.row.open": "Open {name}",
 	"memberPeople.row.hasNote": "Has a staff note",
 	"memberPeople.subscription.renews": "Subscribed · renews {date}",

@@ -15,6 +15,7 @@
 	import { Loader2, UserCog, UserX, AlertTriangle, Ban, CreditCard } from '@lucide/svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { SELECTABLE_MEMBER_STATUSES } from '$lib/utils/member-status';
 
 	interface Props {
 		member: OrganizationMemberSchema | null;
@@ -132,8 +133,11 @@
 	);
 	const hasChanges = $derived(hasStatusChanged || hasTierChanged);
 
-	// Statuses
-	const statuses: MembershipStatus[] = ['active', 'paused', 'cancelled', 'banned'];
+	// Statuses staff may pick. `awaiting_payment` is system-set (the first recorded
+	// payment moves the member to active), so it is never a choice: a member who holds
+	// it sees it read-only instead.
+	const statuses = SELECTABLE_MEMBER_STATUSES;
+	const statusIsSystemSet = $derived(member?.status === 'awaiting_payment');
 
 	// Ban / blacklist / remove cancel the member's subscription and stop billing
 	// server-side — and since BE `d3773257` (`_mirror_status_to_subscriptions`) so
@@ -338,7 +342,7 @@
 							// Re-picking a status invalidates a pending ban confirmation.
 							showBanConfirm = false;
 						}}
-						disabled={isProcessing}
+						disabled={isProcessing || statusIsSystemSet}
 					>
 						<SelectTrigger id="status" aria-label={m['manageMemberModal.statusLabel']()}>
 							{m[`memberStatus.${selectedStatus}`]()}
@@ -353,7 +357,9 @@
 					</Select>
 					<!-- Status Explanation -->
 					<p class="text-sm text-muted-foreground">
-						{#if selectedStatus === 'active'}
+						{#if selectedStatus === 'awaiting_payment'}
+							{m['manageMemberModal.statusExplanation.awaiting_payment']()}
+						{:else if selectedStatus === 'active'}
 							{m['manageMemberModal.statusExplanation.active']()}
 						{:else if selectedStatus === 'paused'}
 							{m['manageMemberModal.statusExplanation.paused']()}

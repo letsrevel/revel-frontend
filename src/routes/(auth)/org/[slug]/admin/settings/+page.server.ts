@@ -147,6 +147,12 @@ export const actions: Actions = {
 				(formData.get('membership_refund_policy') as string) ?? '';
 		}
 
+		// Default payment instructions for offline plans: same guarded rule as the refund policy.
+		if (formData.has('membership_payment_instructions')) {
+			updateData.membership_payment_instructions =
+				(formData.get('membership_payment_instructions') as string) ?? '';
+		}
+
 		// Revival window: same rule as the two fields above.
 		if (formData.has('membership_subscription_revival_window_days')) {
 			const revivalRaw = formData.get('membership_subscription_revival_window_days') as string;

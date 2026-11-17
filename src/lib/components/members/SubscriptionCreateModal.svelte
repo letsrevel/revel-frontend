@@ -91,6 +91,18 @@
 		(plansQuery.data ?? []).some((p) => p.payment_method === 'online')
 	);
 
+	// An offline plan without a recorded first payment holds the person as an
+	// awaiting-payment member; they only become a member once that payment is recorded.
+	const selectedPlan = $derived(selectablePlans.find((p) => p.id === planId) ?? null);
+	const showAwaitingNote = $derived(
+		!!selectedPlan && selectedPlan.payment_method === 'offline' && !recordInitial
+	);
+	const memberDisplayName = $derived(
+		selectedMember
+			? getUserDisplayName(selectedMember.user, m['manageMemberModal.unknownUser']())
+			: ''
+	);
+
 	// Group plans by tier (preserves backend order: tier asc, plan asc).
 	const plansByTier = $derived(groupPlansByTier(selectablePlans));
 
@@ -201,6 +213,14 @@
 					</p>
 				{/if}
 			</div>
+
+			{#if showAwaitingNote}
+				<p class="text-sm text-muted-foreground" data-testid="subscription-awaiting-note">
+					{m['orgAdmin.members.subscriptions.create.offlineBecomesMember']({
+						name: memberDisplayName
+					})}
+				</p>
+			{/if}
 
 			<div class="flex items-center gap-2">
 				<Checkbox

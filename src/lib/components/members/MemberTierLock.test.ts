@@ -296,3 +296,30 @@ describe('Manage membership: the tier follows the subscription plan', () => {
 		expect(screen.queryByTestId('member-tier-lock-manage-subscription')).not.toBeInTheDocument();
 	});
 });
+
+describe('Manage membership: awaiting_payment is system-set', () => {
+	it('shows the status read-only and never offers it as a choice', async () => {
+		const user = userEvent.setup();
+		renderActions(makeMember({ status: 'awaiting_payment' }));
+		const status = await screen.findByLabelText('Membership Status');
+		expect(status).toBeDisabled();
+		expect(status).toHaveTextContent('Awaiting payment');
+		expect(
+			screen.getByText(/becomes a member when you record the first payment/i)
+		).toBeInTheDocument();
+		await user.click(status);
+		expect(document.querySelector('[data-select-content]')).toBeNull();
+	});
+
+	it('does not offer awaiting_payment when picking a status for an active member', async () => {
+		const user = userEvent.setup();
+		renderActions(makeMember());
+		await user.click(await screen.findByLabelText('Membership Status'));
+		const content = await waitFor(() => {
+			const el = document.querySelector('[data-select-content]');
+			if (!el) throw new Error('the select popover never opened');
+			return el;
+		});
+		expect(content.textContent).not.toMatch(/awaiting payment/i);
+	});
+});

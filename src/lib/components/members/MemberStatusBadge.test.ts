@@ -29,4 +29,14 @@ describe('members/MemberStatusBadge', () => {
 		const { container } = render(MemberStatusBadge, { props: { status: 'active' } });
 		expect(container.querySelector('span')?.className).toContain('bg-success');
 	});
+
+	it('labels awaiting_payment "Awaiting payment" and maps it to the warning tone', () => {
+		const { container } = render(MemberStatusBadge, { props: { status: 'awaiting_payment' } });
+		expect(screen.getByTestId('status-badge')).toHaveTextContent('Awaiting payment');
+		expect(container.querySelector('span')?.className).toContain('bg-highlight');
+	});
+
+	it('lists awaiting_payment among the member statuses', () => {
+		expect(MEMBER_STATUS_ORDER).toContain('awaiting_payment');
+	});
 });

@@ -19,6 +19,8 @@
 				return m['memberPeople.status.active']();
 			case 'paused':
 				return m['memberPeople.status.paused']();
+			case 'awaiting-payment':
+				return m['memberPeople.status.awaitingPayment']();
 			case 'day-member':
 				return m['memberPeople.status.dayMember']();
 			case 'ended':

@@ -1,5 +1,5 @@
 /**
- * Presentation of one `MembershipStatus` (active/paused/cancelled/banned): its
+ * Presentation of one `MembershipStatus` (active/paused/cancelled/banned/awaiting_payment): its
  * `Tone` and its localized label. Single source for `members/MemberCard` (the
  * roster pill) and `members/ManageMemberModal` (the status select), following
  * the same split-out pattern as `subscription-status.ts` — one map, not a copy
@@ -19,7 +19,9 @@ const TONE_MAP: Record<MembershipStatus, Tone> = {
 	active: 'success',
 	paused: 'warning',
 	cancelled: 'neutral',
-	banned: 'danger'
+	banned: 'danger',
+	// System-set while an offline member is held until the first payment is recorded.
+	awaiting_payment: 'warning'
 };
 
 export function getMemberStatusTone(status: MembershipStatus): Tone {
@@ -30,7 +32,8 @@ const STATUS_LABELS: Record<MembershipStatus, () => string> = {
 	active: () => m['memberStatus.active'](),
 	paused: () => m['memberStatus.paused'](),
 	cancelled: () => m['memberStatus.cancelled'](),
-	banned: () => m['memberStatus.banned']()
+	banned: () => m['memberStatus.banned'](),
+	awaiting_payment: () => m['memberStatus.awaiting_payment']()
 };
 
 export function getMemberStatusLabel(status: MembershipStatus): string {
@@ -39,6 +42,19 @@ export function getMemberStatusLabel(status: MembershipStatus): string {
 
 /** Every `MembershipStatus`, exhaustive by construction (mirrors STATUS_ORDER). */
 export const MEMBER_STATUS_ORDER: readonly MembershipStatus[] = [
+	'active',
+	'paused',
+	'cancelled',
+	'banned',
+	'awaiting_payment'
+];
+
+/**
+ * The statuses staff may set by hand. `awaiting_payment` is system-set (it ends when
+ * the first payment is recorded), so it is never offered as a choice; a member who
+ * already holds it is shown it read-only.
+ */
+export const SELECTABLE_MEMBER_STATUSES: readonly MembershipStatus[] = [
 	'active',
 	'paused',
 	'cancelled',

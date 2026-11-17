@@ -162,7 +162,14 @@ const _keyIsNotARequest: KeyIsNotARequest = true;
 
 /** One status per row. Precedence is the order of the checks in `getPersonStatus`. */
 export type PersonStatusId =
-	'active' | 'paused' | 'day-member' | 'ended' | 'upcoming' | 'no-account' | 'invited';
+	| 'active'
+	| 'paused'
+	| 'awaiting-payment'
+	| 'day-member'
+	| 'ended'
+	| 'upcoming'
+	| 'no-account'
+	| 'invited';
 
 export interface PersonStatus {
 	id: PersonStatusId;
@@ -172,6 +179,7 @@ export interface PersonStatus {
 const STATUS_TONE: Record<PersonStatusId, Tone> = {
 	active: 'success',
 	paused: 'warning',
+	'awaiting-payment': 'warning',
 	'day-member': 'info',
 	ended: 'neutral',
 	upcoming: 'neutral',
@@ -216,6 +224,7 @@ export function getPersonStatus(record: PersonStatusInput, now: Date = new Date(
 	else if (record.member_status === 'banned' || record.member_status === 'cancelled') id = 'ended';
 	else if (record.kind === 'temporary') id = 'day-member';
 	else if (!record.has_account) id = record.invite_status === 'invited' ? 'invited' : 'no-account';
+	else if (record.member_status === 'awaiting_payment') id = 'awaiting-payment';
 	else if (record.member_status === 'paused') id = 'paused';
 	else id = 'active';
 	return { id, tone: STATUS_TONE[id] };

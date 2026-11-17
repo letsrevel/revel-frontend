@@ -2995,6 +2995,7 @@
 		"statusExplanation": {
 			"active": "Les membres peuvent voir et participer à tous les événements de l'organisation.",
 			"activeBillingNote": "Rétablir l'adhésion ne relance pas la facturation : les abonnements se reprennent séparément, depuis l'onglet « Abonnements ».",
+			"awaiting_payment": "Cette personne devient membre lorsque vous enregistrez le premier paiement. Le statut est défini automatiquement et ne peut pas être modifié à la main.",
 			"paused": "Les membres peuvent voir les événements mais ne peuvent pas participer ni confirmer leur présence.",
 			"pausedBillingNote": "Aucun autre paiement n'est prélevé tant que l'adhésion est en pause.",
 			"pausedScheduledEndNote": "Son abonnement est déjà programmé pour prendre fin : il n'est donc pas mis en pause et continue d'être facturé jusqu'à la clôture de la période en cours.",
@@ -3021,6 +3022,7 @@
 		"memberSince": "Membre depuis"
 	},
 	"memberStatus": {
+		"awaiting_payment": "En attente de paiement",
 		"active": "Actif",
 		"paused": "En pause",
 		"cancelled": "Annulé",
@@ -3432,6 +3434,7 @@
 		"typeMembershipRequestCreated": "Demande d'adhésion",
 		"typeMembershipRequestApproved": "Demande d'adhésion approuvée",
 		"typeMembershipRequestRejected": "Demande d'adhésion refusée",
+		"typeMembershipPaymentRequested": "Paiement demandé pour l'adhésion",
 		"typeOrgAnnouncement": "Annonce de l'organisation",
 		"typeOrgContactMessageReceived": "Message de contact reçu",
 		"typeOrgCustomDomainActive": "Domaine personnalisé actif",
@@ -4105,6 +4108,8 @@
 					"paymentOffline": "Hors ligne — vous enregistrez les paiements",
 					"paymentOnline": "En ligne — facturation automatique via Stripe",
 					"paymentMethodHelp": "Les forfaits en ligne facturent automatiquement les membres via Stripe. Les forfaits hors ligne sont enregistrés par vous (espèces, virement, …).",
+					"paymentInstructions": "Instructions de paiement",
+					"paymentInstructionsHelp": "Affichées aux personnes après leur inscription ou leur acceptation, et dans les rappels de paiement. Laissez vide pour utiliser celles par défaut de l'organisation.",
 					"paymentOnlineNeedsStripe": "Connectez Stripe dans les paramètres de facturation pour proposer des forfaits en ligne.",
 					"paymentMethodImmutable": "La méthode de paiement ne peut pas être modifiée — archivez ce forfait et créez-en un nouveau pour en changer.",
 					"maxSubscriptions": "Abonnements maximum",
@@ -4141,6 +4146,7 @@
 					"notes": "Notes",
 					"submit": "Créer",
 					"onlineExcluded": "Les forfaits en ligne (Stripe) ne sont pas listés — les membres s'y abonnent eux-mêmes afin de pouvoir autoriser le paiement.",
+					"offlineBecomesMember": "{name} devient membre lorsque vous enregistrez le premier paiement.",
 					"errors": {
 						"userRequired": "Choisis un membre",
 						"planRequired": "Choisis un forfait"
@@ -9936,6 +9942,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Décrivez vos conditions de remboursement pour les adhésions payantes.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex. Remboursement intégral dans les 14 jours suivant le premier paiement.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Instructions de paiement par défaut pour les formules hors ligne",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Utilisées par les formules hors ligne qui n'ont pas d'instructions propres. Affichées aux personnes après leur inscription ou leur acceptation, et dans les rappels de paiement.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "ex. Virement sur l'IBAN ... avec votre nom en référence.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Billets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gérer les ventes de billets de vos événements",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Codes de réduction",
@@ -11436,6 +11445,7 @@
 	"memberPeople.sendInviteHelp": "Envoie un lien par e-mail pour que la personne reprenne cette adhésion avec son compte.",
 	"memberPeople.inviteAfterCreateFailed": "Entrée ajoutée, mais l'invitation n'a pas été envoyée. Envoie-la depuis le menu de la ligne.",
 	"memberPeople.status.paused": "En pause",
+	"memberPeople.status.awaitingPayment": "En attente de paiement",
 	"memberPeople.row.open": "Ouvrir {name}",
 	"memberPeople.row.hasNote": "A une note de l'équipe",
 	"memberPeople.subscription.renews": "Abonnement · se renouvelle le {date}",

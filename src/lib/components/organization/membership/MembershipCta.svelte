@@ -127,7 +127,8 @@
 		active: 'success',
 		paused: 'warning',
 		cancelled: 'neutral',
-		banned: 'danger'
+		banned: 'danger',
+		awaiting_payment: 'warning'
 	};
 
 	const accessToken = $derived(authStore.accessToken);

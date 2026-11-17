@@ -402,6 +402,7 @@
 		"typeMembershipRequestCreated": "Mitgliedschaftsanfrage",
 		"typeMembershipRequestApproved": "Mitgliedschaftsanfrage genehmigt",
 		"typeMembershipRequestRejected": "Mitgliedschaftsanfrage abgelehnt",
+		"typeMembershipPaymentRequested": "Zahlung für Mitgliedschaft angefordert",
 		"typeOrgAnnouncement": "Mitteilung der Organisation",
 		"typeOrgContactMessageReceived": "Kontaktnachricht erhalten",
 		"typeOrgCustomDomainActive": "Eigene Domain aktiv",
@@ -3190,6 +3191,7 @@
 		"statusExplanation": {
 			"active": "Mitglieder können alle Organisationsveranstaltungen ansehen und daran teilnehmen.",
 			"activeBillingNote": "Das Wiederherstellen der Mitgliedschaft startet die Abrechnung nicht neu – Abonnements werden separat im Tab „Subscriptions“ fortgesetzt.",
+			"awaiting_payment": "Diese Person wird Mitglied, sobald du die erste Zahlung erfasst. Der Status wird automatisch gesetzt und kann nicht von Hand geändert werden.",
 			"paused": "Mitglieder können Veranstaltungen ansehen, aber nicht teilnehmen oder zusagen.",
 			"pausedBillingNote": "Solange die Mitgliedschaft pausiert ist, werden keine weiteren Zahlungen eingezogen.",
 			"pausedScheduledEndNote": "Das Abonnement ist bereits zur Kündigung vorgemerkt und wird deshalb nicht pausiert – es wird bis zum Ende des laufenden Zeitraums weiter abgerechnet.",
@@ -3216,6 +3218,7 @@
 		"memberSince": "Mitglied seit"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Zahlung ausstehend",
 		"active": "Aktiv",
 		"paused": "Pausiert",
 		"cancelled": "Gekündigt",
@@ -4135,6 +4138,8 @@
 					"paymentOffline": "Offline — du erfasst die Zahlungen",
 					"paymentOnline": "Online — automatische Abrechnung über Stripe",
 					"paymentMethodHelp": "Online-Pläne rechnen Mitglieder automatisch über Stripe ab. Offline-Pläne erfasst du selbst (bar, Überweisung, …).",
+					"paymentInstructions": "Zahlungsanweisungen",
+					"paymentInstructionsHelp": "Wird Personen nach dem Beitritt oder der Aufnahme sowie in Zahlungserinnerungen angezeigt. Leer lassen, um den Standard der Organisation zu verwenden.",
 					"paymentOnlineNeedsStripe": "Verbinde Stripe in den Abrechnungseinstellungen, um Online-Pläne anzubieten.",
 					"paymentMethodImmutable": "Die Zahlungsmethode kann nicht geändert werden — archiviere den Plan und erstelle einen neuen, um zu wechseln.",
 					"maxSubscriptions": "Maximale Abonnements",
@@ -4171,6 +4176,7 @@
 					"notes": "Notizen",
 					"submit": "Erstellen",
 					"onlineExcluded": "Online-Pläne (Stripe) werden hier nicht aufgeführt — Mitglieder abonnieren diese selbst, damit sie die Zahlung freigeben können.",
+					"offlineBecomesMember": "{name} wird Mitglied, sobald du die erste Zahlung erfasst.",
 					"errors": {
 						"userRequired": "Wähle ein Mitglied aus",
 						"planRequired": "Wähle einen Plan aus"
@@ -9936,6 +9942,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Rückerstattungsrichtlinie",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Beschreibe deine Rückerstattungsbedingungen für kostenpflichtige Mitgliedschaften.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "z. B. Volle Rückerstattung innerhalb von 14 Tagen nach der ersten Zahlung.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Standard-Zahlungsanweisungen für Offline-Pläne",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Gilt für Offline-Pläne ohne eigene Anweisungen. Wird Personen nach dem Beitritt oder der Aufnahme sowie in Zahlungserinnerungen angezeigt.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "z. B. Überweisung auf IBAN ... mit deinem Namen als Verwendungszweck.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Ticketverkäufe für alle Veranstaltungen verwalten",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Rabattcodes",
@@ -11436,6 +11445,7 @@
 	"memberPeople.sendInviteHelp": "Schickt einen Link per E-Mail, damit die Person die Mitgliedschaft mit ihrem Konto übernehmen kann.",
 	"memberPeople.inviteAfterCreateFailed": "Eintrag hinzugefügt, aber die Einladung wurde nicht gesendet. Sende sie über das Zeilenmenü.",
 	"memberPeople.status.paused": "Pausiert",
+	"memberPeople.status.awaitingPayment": "Zahlung ausstehend",
 	"memberPeople.row.open": "{name} öffnen",
 	"memberPeople.row.hasNote": "Hat eine Teamnotiz",
 	"memberPeople.subscription.renews": "Abonniert · verlängert sich am {date}",

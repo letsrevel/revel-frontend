@@ -32,6 +32,8 @@
 
 	let name = $state('');
 	let description = $state('');
+	// Offline plans only: how to pay (markdown). Empty falls back to the org default.
+	let paymentInstructions = $state('');
 	let price = $state('0.00');
 	let currency = $state<string>('EUR');
 	let periodUnit = $state<PeriodUnit>('month');
@@ -53,6 +55,7 @@
 		if (plan) {
 			name = plan.name;
 			description = plan.description ?? '';
+			paymentInstructions = plan.payment_instructions ?? '';
 			price = String(plan.price);
 			currency = plan.currency;
 			periodUnit = plan.period_unit;
@@ -64,6 +67,7 @@
 		} else {
 			name = '';
 			description = '';
+			paymentInstructions = '';
 			price = '0.00';
 			currency = 'EUR';
 			periodUnit = 'month';
@@ -89,6 +93,7 @@
 	);
 	const isFree = $derived(effectiveMethod === 'free');
 	const isOnline = $derived(effectiveMethod === 'online');
+	const isOffline = $derived(effectiveMethod === 'offline');
 	const isLifetime = $derived(periodUnit === 'lifetime');
 
 	/**
@@ -178,7 +183,9 @@
 			is_active: isActive,
 			sales_status: salesPaused ? 'paused' : 'open',
 			max_subscriptions: normalizedCap(),
-			...(plan ? {} : { payment_method: paymentMethod })
+			...(plan ? {} : { payment_method: paymentMethod }),
+			// Only an offline plan has instructions to show; online/free never carry them.
+			...(isOffline ? { payment_instructions: paymentInstructions } : {})
 		} as PlanCreateSchema);
 	}
 </script>
@@ -285,6 +292,24 @@
 				<Label for="plan-desc">{m['orgAdmin.members.plans.form.description']()}</Label>
 				<Textarea id="plan-desc" bind:value={description} rows={2} disabled={isSaving} />
 			</div>
+
+			{#if isOffline}
+				<div class="space-y-1">
+					<Label for="plan-payment-instructions">
+						{m['orgAdmin.members.plans.form.paymentInstructions']()}
+					</Label>
+					<Textarea
+						id="plan-payment-instructions"
+						bind:value={paymentInstructions}
+						rows={4}
+						disabled={isSaving}
+						aria-describedby="plan-payment-instructions-hint"
+					/>
+					<p id="plan-payment-instructions-hint" class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
+					</p>
+				</div>
+			{/if}
 
 			<div class="grid grid-cols-2 gap-3">
 				<div class="space-y-1">

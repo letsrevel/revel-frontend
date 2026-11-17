@@ -402,6 +402,7 @@
 		"typeMembershipRequestCreated": "Pedido de adesão",
 		"typeMembershipRequestApproved": "Pedido de adesão aprovado",
 		"typeMembershipRequestRejected": "Pedido de adesão recusado",
+		"typeMembershipPaymentRequested": "Pagamento solicitado para a adesão",
 		"typeOrgAnnouncement": "Anúncio da organização",
 		"typeOrgContactMessageReceived": "Mensagem de contacto recebida",
 		"typeOrgCustomDomainActive": "Domínio personalizado ativo",
@@ -3190,6 +3191,7 @@
 		"statusExplanation": {
 			"active": "Membros podem ver e participar em todos os eventos da organização.",
 			"activeBillingNote": "Restaurar a adesão não reinicia a faturação — as subscrições são retomadas separadamente, a partir do separador «Subscrições».",
+			"awaiting_payment": "Esta pessoa passa a ser membro quando registares o primeiro pagamento. O estado é definido automaticamente e não pode ser alterado manualmente.",
 			"paused": "Membros podem ver eventos, mas não podem participar nem confirmar presença.",
 			"pausedBillingNote": "Não são cobrados mais pagamentos enquanto a adesão estiver em pausa.",
 			"pausedScheduledEndNote": "A subscrição já está agendada para terminar, por isso não é colocada em pausa — continua a ser faturada até ao fim do período atual.",
@@ -3216,6 +3218,7 @@
 		"memberSince": "Membro desde"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Aguarda pagamento",
 		"active": "Ativo",
 		"paused": "Em pausa",
 		"cancelled": "Cancelado",
@@ -4135,6 +4138,8 @@
 					"paymentOffline": "Offline — regista tu os pagamentos",
 					"paymentOnline": "Online — faturação automática via Stripe",
 					"paymentMethodHelp": "Os planos online faturam os membros automaticamente através do Stripe. Os planos offline são registados por ti (dinheiro, transferência bancária, …).",
+					"paymentInstructions": "Instruções de pagamento",
+					"paymentInstructionsHelp": "Mostradas às pessoas depois de aderirem ou serem aceites, e nos lembretes de pagamento. Deixa vazio para usar as predefinidas da organização.",
 					"paymentOnlineNeedsStripe": "Liga o Stripe nas definições de faturação para oferecer planos online.",
 					"paymentMethodImmutable": "O método de pagamento não pode ser alterado — arquiva e recria o plano para o mudar.",
 					"maxSubscriptions": "Subscrições máximas",
@@ -4171,6 +4176,7 @@
 					"notes": "Notas",
 					"submit": "Criar",
 					"onlineExcluded": "Os planos online (Stripe) não aparecem na lista — são os próprios membros que subscrevem, para poderem aprovar o pagamento.",
+					"offlineBecomesMember": "{name} passa a ser membro quando registares o primeiro pagamento.",
 					"errors": {
 						"userRequired": "Escolhe um membro",
 						"planRequired": "Escolhe um plano"
@@ -9936,6 +9942,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Política de reembolso",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Descreve as tuas condições de reembolso para adesões pagas.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex.: reembolso total nos 14 dias seguintes ao teu primeiro pagamento.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Instruções de pagamento predefinidas para os planos offline",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Usadas pelos planos offline que não têm instruções próprias. Mostradas às pessoas depois de aderirem ou serem aceites, e nos lembretes de pagamento.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "ex.: transferência para o IBAN ... com o teu nome como referência.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Bilhetes",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gere as vendas de bilhetes de todos os teus eventos",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Códigos de desconto",
@@ -11436,6 +11445,7 @@
 	"memberPeople.sendInviteHelp": "Envia um link por email para a pessoa assumir esta adesão com a sua conta.",
 	"memberPeople.inviteAfterCreateFailed": "Entrada adicionada, mas o convite não foi enviado. Envia-o a partir do menu da linha.",
 	"memberPeople.status.paused": "Em pausa",
+	"memberPeople.status.awaitingPayment": "Aguarda pagamento",
 	"memberPeople.row.open": "Abrir {name}",
 	"memberPeople.row.hasNote": "Tem uma nota da equipa",
 	"memberPeople.subscription.renews": "Com subscrição · renova a {date}",

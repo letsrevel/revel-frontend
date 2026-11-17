@@ -45,6 +45,7 @@ const EXHAUSTIVE: Record<NotificationType, true> = {
 	membership_request_created: true,
 	membership_request_approved: true,
 	membership_request_rejected: true,
+	membership_payment_requested: true,
 	staff_member_record_auto_linked: true,
 	org_announcement: true,
 	org_contact_message_received: true,
@@ -126,7 +127,7 @@ describe('notificationTypeLabels (#996)', () => {
 	});
 
 	it('covers every NotificationType with a label', () => {
-		expect(ALL_TYPES.length).toBe(66);
+		expect(ALL_TYPES.length).toBe(67);
 		for (const type of ALL_TYPES) {
 			expect(hasNotificationTypeLabel(type), type).toBe(true);
 			expect(getNotificationTypeLabel(type, 'en').length, type).toBeGreaterThan(0);
