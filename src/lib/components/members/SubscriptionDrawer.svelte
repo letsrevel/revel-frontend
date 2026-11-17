@@ -192,8 +192,9 @@
 		});
 		// A first offline payment opens the member's register entry (awaiting
 		// members have none), and cancel/pause change its status: the People
-		// register list and total must follow.
-		void invalidateRegister(queryClient, organization.slug, false);
+		// register list and total must follow. The new or reopened entry can also
+		// pair with an unlinked one, so refresh the duplicates scan too.
+		void invalidateRegister(queryClient, organization.slug, true);
 	}
 
 	// A plan change moves the member's tier: the register and the person sheet's
