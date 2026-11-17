@@ -12,6 +12,7 @@
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { MY_MEMBERSHIPS_KEY, myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
 	import {
 		Dialog,
 		DialogContent,
@@ -172,6 +173,15 @@
 			if (data.application.status === 'completed') {
 				invalidateAll();
 			}
+			// Accepted, payment outstanding: the backend has (or is about to have)
+			// held the member as awaiting payment, so the subscription the org page
+			// and account hub cache is stale.
+			if (data.eligibility.next_step === 'wait_for_offline_payment') {
+				queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+				queryClient.invalidateQueries({
+					queryKey: myOrgSubscriptionKey(data.application.organization_id)
+				});
+			}
 		},
 		onError: (err: Error) => {
 			// The already-member outcome replaces the form with its own panel, so a
@@ -183,6 +193,8 @@
 
 	const isBusy = $derived(applyMutation.isPending);
 	const completed = $derived(result?.application.status === 'completed');
+	/** Keyed on the verdict's `next_step`, never on localized text. */
+	const awaitingPayment = $derived(result?.eligibility.next_step === 'wait_for_offline_payment');
 	/** Both terminal states replace the form with a read-only panel. */
 	const showOutcome = $derived(!!result || alreadyMember);
 	const showMemberBadge = $derived(alreadyMember || completed);
@@ -192,6 +204,7 @@
 			return m['membershipApply.alreadyMemberTitle']();
 		}
 		if (result) {
+			if (awaitingPayment) return m['membershipApply.awaitingPaymentTitle']();
 			return completed
 				? m['membershipApply.completedTitle']()
 				: m['membershipApply.pendingTitle']();
@@ -237,6 +250,8 @@
 			<DialogDescription>
 				{#if alreadyMember}
 					{m['membershipApply.alreadyMemberBody']({ orgName: organizationName })}
+				{:else if awaitingPayment}
+					{m['membershipApply.awaitingPaymentBody']({ orgName: organizationName })}
 				{:else if result}
 					{completed
 						? m['membershipApply.completedBody']({ orgName: organizationName })
@@ -260,6 +275,24 @@
 						<CheckCircle2 class="h-5 w-5" aria-hidden="true" />
 						{m['membershipEligibility.memberBadge']()}
 					</p>
+					{#if alreadyMember}
+						<!-- A 409 carries no machine code, so "already a member" cannot be told
+						     apart from "accepted, awaiting offline payment" — the hub is where
+						     either state is spelled out. -->
+						<a
+							href={membershipsHref}
+							class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+						>
+							{m['subscribe.return.checkAccount']()}
+						</a>
+					{/if}
+				{:else if awaitingPayment}
+					<a
+						href={membershipsHref}
+						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+					>
+						{m['membershipEligibility.seePaymentDetails']()}
+					</a>
 				{:else if result}
 					<p class="text-sm text-muted-foreground">
 						{getApplicationPendingMessage(result.eligibility)}

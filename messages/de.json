@@ -6175,7 +6175,13 @@
 		"reapplyCta": "Erneut beantragen",
 		"reapplyCtaAria": "Erneut mit {plan} beantragen",
 		"applySubscribeHelper": "Die Organisation prüft Anträge — du zahlst erst nach der Zusage.",
-		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei."
+		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei.",
+		"joinCta": "Beitreten",
+		"awaitingPaymentHelper": "Deine Mitgliedschaft beginnt, sobald {orgName} deine Zahlung bestätigt.",
+		"awaitingPaymentLink": "Zahlungsdetails ansehen",
+		"awaitingOtherPlanHelper": "Du hast eine Mitgliedschaft bei {orgName}, die noch auf Zahlung wartet.",
+		"offlineGuestNote": "Die Zahlung erfolgt nach dem Beitritt direkt an {orgName}.",
+		"applyOfflineHelper": "Sobald {orgName} dich annimmt, erhältst du die Zahlungsdetails."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -7930,15 +7936,19 @@
 			"requires_invitation": "Der Beitritt erfolgt per Einladung — frag die Organisator*innen nach einem Einladungslink.",
 			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
 			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
-			"generic": "Du kannst derzeit nicht beitreten."
+			"generic": "Du kannst derzeit nicht beitreten.",
+			"awaiting_offline_payment": "Deine Mitgliedschaft beginnt, sobald die Organisation deine Zahlung bestätigt."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
-			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
+			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist.",
+			"offline_payment": "Deine Mitgliedschaft beginnt, sobald die Organisation deine Zahlung bestätigt."
 		},
 		"joinTier": "{tier} beitreten",
 		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten.",
-		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung."
+		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung.",
+		"awaitingPayment": "Zahlung ausstehend",
+		"seePaymentDetails": "Zahlungsdetails ansehen"
 	},
 	"membershipApply": {
 		"title": "{orgName} beitreten",
@@ -7959,7 +7969,9 @@
 		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal.",
 		"titleTier": "{tier} beitreten",
 		"reapplyTitleTier": "Erneut für {tier} bewerben",
-		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}."
+		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}.",
+		"awaitingPaymentTitle": "Angenommen, Zahlung ausstehend",
+		"awaitingPaymentBody": "{orgName} hat deine Bewerbung angenommen. Deine Mitgliedschaft beginnt, sobald die Zahlung bestätigt wurde."
 	},
 	"membershipTiers": {
 		"heading": "Mitgliedschaft",
@@ -8075,7 +8087,15 @@
 		"titleFree": "{plan} beitreten",
 		"freeNoCharge": "Es fällt nichts an. Deine Mitgliedschaft startet, sobald du bestätigst.",
 		"neverRenews": "Diese Mitgliedschaft läuft nie ab und wird nie verlängert oder erneut berechnet.",
-		"confirmFreeCta": "Jetzt beitreten"
+		"confirmFreeCta": "Jetzt beitreten",
+		"offline": {
+			"intro": "Du zahlst direkt an {orgName}, außerhalb von Revel. Deine Mitgliedschaft beginnt, sobald die Zahlung bestätigt wurde.",
+			"confirmCta": "Beitreten",
+			"title": "Fast geschafft, du bist dabei.",
+			"body": "Bezahle {orgName}, um deine Mitgliedschaft zu aktivieren.",
+			"fallback": "{orgName} teilt dir mit, wie du bezahlen kannst.",
+			"link": "Zahlungsdetails ansehen"
+		}
 	},
 	"waitlistSettings.title": "Erweiterte Wartelisteneinstellungen",
 	"waitlistSettings.description": "Lege fest, wie Plätze an Personen auf der Warteliste angeboten werden.",

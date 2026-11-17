@@ -6145,7 +6145,13 @@
 		"reapplyCta": "Refaire une demande",
 		"reapplyCtaAria": "Refaire une demande avec {plan}",
 		"applySubscribeHelper": "L'organisation examine les demandes — vous paierez une fois votre demande acceptée.",
-		"applyJoinHelper": "L'organisation examine les demandes — vous adhérerez une fois votre demande acceptée."
+		"applyJoinHelper": "L'organisation examine les demandes — vous adhérerez une fois votre demande acceptée.",
+		"joinCta": "Rejoindre",
+		"awaitingPaymentHelper": "Votre adhésion commence dès que {orgName} confirme votre paiement.",
+		"awaitingPaymentLink": "Voir les détails du paiement",
+		"awaitingOtherPlanHelper": "Vous avez une adhésion en attente de paiement auprès de {orgName}.",
+		"offlineGuestNote": "Paiement directement à {orgName} après votre adhésion.",
+		"applyOfflineHelper": "Une fois que {orgName} vous aura accepté, vous recevrez les détails du paiement."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois te connecter pour demander une vérification",
@@ -7900,15 +7906,19 @@
 			"requires_invitation": "L'adhésion se fait sur invitation — demande un lien d'invitation à l'organisation.",
 			"duplicate_active_subscription": "Tu as déjà un abonnement actif avec cette organisation.",
 			"membership_paused": "Ton adhésion est actuellement en pause.",
-			"generic": "Tu ne peux pas rejoindre pour le moment."
+			"generic": "Tu ne peux pas rejoindre pour le moment.",
+			"awaiting_offline_payment": "Votre adhésion commence dès que l'organisation confirme votre paiement."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Ton questionnaire est en cours d'évaluation — nous te préviendrons dès qu'il sera examiné.",
-			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé."
+			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé.",
+			"offline_payment": "Votre adhésion commence dès que l'organisation confirme votre paiement."
 		},
 		"joinTier": "Rejoindre {tier}",
 		"choosePlan": "Vous êtes éligible : choisissez une formule ci-dessous pour adhérer.",
-		"applyChoosePlan": "Choisissez une formule pour faire une demande — l'organisation examine les demandes avant le paiement."
+		"applyChoosePlan": "Choisissez une formule pour faire une demande — l'organisation examine les demandes avant le paiement.",
+		"awaitingPayment": "Paiement en attente",
+		"seePaymentDetails": "Voir les détails du paiement"
 	},
 	"membershipApply": {
 		"title": "Rejoindre {orgName}",
@@ -7929,7 +7939,9 @@
 		"error": "Impossible d'envoyer ta demande. Réessaie.",
 		"titleTier": "Rejoindre {tier}",
 		"reapplyTitleTier": "Postuler à nouveau pour {tier}",
-		"forPlan": "{orgName} — demande avec la formule {plan}."
+		"forPlan": "{orgName} — demande avec la formule {plan}.",
+		"awaitingPaymentTitle": "Acceptée, paiement en attente",
+		"awaitingPaymentBody": "{orgName} a accepté votre demande. Votre adhésion commence dès que le paiement est confirmé."
 	},
 	"membershipTiers": {
 		"heading": "Adhésion",
@@ -8045,7 +8057,15 @@
 		"titleFree": "Rejoindre {plan}",
 		"freeNoCharge": "Il n'y a rien à payer. Votre adhésion démarre dès la confirmation.",
 		"neverRenews": "Cette adhésion n'expire jamais et n'est jamais renouvelée ni refacturée.",
-		"confirmFreeCta": "Rejoindre"
+		"confirmFreeCta": "Rejoindre",
+		"offline": {
+			"intro": "Vous payez {orgName} directement, en dehors de Revel. Votre adhésion commence dès que le paiement est confirmé.",
+			"confirmCta": "Rejoindre",
+			"title": "Presque terminé.",
+			"body": "Réglez {orgName} pour activer votre adhésion.",
+			"fallback": "{orgName} vous indiquera comment payer.",
+			"link": "Voir les détails du paiement"
+		}
 	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",
 	"waitlistSettings.description": "Configure la façon dont les places sont proposées aux personnes en liste d'attente.",

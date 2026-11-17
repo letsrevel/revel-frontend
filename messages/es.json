@@ -6175,7 +6175,13 @@
 		"reapplyCta": "Volver a solicitar",
 		"reapplyCtaAria": "Volver a solicitar con {plan}",
 		"applySubscribeHelper": "La organización revisa las solicitudes: pagarás una vez te aprueben.",
-		"applyJoinHelper": "La organización revisa las solicitudes: te unirás una vez te aprueben."
+		"applyJoinHelper": "La organización revisa las solicitudes: te unirás una vez te aprueben.",
+		"joinCta": "Unirte",
+		"awaitingPaymentHelper": "Tu membresía empieza cuando {orgName} confirme tu pago.",
+		"awaitingPaymentLink": "Ver los detalles del pago",
+		"awaitingOtherPlanHelper": "Tienes una membresía pendiente de pago con {orgName}.",
+		"offlineGuestNote": "Se paga directamente a {orgName} después de unirte.",
+		"applyOfflineHelper": "Cuando {orgName} te acepte, recibirás los detalles del pago."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Debes haber iniciado sesión para solicitar la verificación",
@@ -7930,15 +7936,19 @@
 			"requires_invitation": "Solo se puede entrar por invitación — pide a la organización un enlace de invitación.",
 			"duplicate_active_subscription": "Ya tienes una suscripción activa con esta organización.",
 			"membership_paused": "Tu membresía está actualmente en pausa.",
-			"generic": "No puedes unirte por ahora."
+			"generic": "No puedes unirte por ahora.",
+			"awaiting_offline_payment": "Tu membresía empieza cuando la organización confirme tu pago."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Tu cuestionario está en revisión — te avisaremos en cuanto lo evaluemos.",
-			"approval": "Tu solicitud está siendo revisada por la organización. Te avisaremos en cuanto decidan."
+			"approval": "Tu solicitud está siendo revisada por la organización. Te avisaremos en cuanto decidan.",
+			"offline_payment": "Tu membresía empieza cuando la organización confirme tu pago."
 		},
 		"joinTier": "Únete a {tier}",
 		"choosePlan": "Cumples los requisitos — elige un plan abajo para unirte.",
-		"applyChoosePlan": "Elige un plan para solicitarlo — la organización revisa las solicitudes antes del pago."
+		"applyChoosePlan": "Elige un plan para solicitarlo — la organización revisa las solicitudes antes del pago.",
+		"awaitingPayment": "Pago pendiente",
+		"seePaymentDetails": "Ver los detalles del pago"
 	},
 	"membershipApply": {
 		"title": "Unirse a {orgName}",
@@ -7959,7 +7969,9 @@
 		"error": "No se ha podido enviar tu solicitud. Vuelve a intentarlo.",
 		"titleTier": "Unirse a {tier}",
 		"reapplyTitleTier": "Volver a solicitar en {tier}",
-		"forPlan": "{orgName} — solicitud con el plan {plan}."
+		"forPlan": "{orgName} — solicitud con el plan {plan}.",
+		"awaitingPaymentTitle": "Aceptada, pago pendiente",
+		"awaitingPaymentBody": "{orgName} ha aceptado tu solicitud. Tu membresía empieza cuando confirmen tu pago."
 	},
 	"membershipTiers": {
 		"heading": "Membresía",
@@ -8075,7 +8087,15 @@
 		"titleFree": "Unirte a {plan}",
 		"freeNoCharge": "No hay nada que pagar. Tu membresía empieza en cuanto confirmes.",
 		"neverRenews": "Esta membresía no caduca nunca y no vuelve a renovarse ni a cobrarse.",
-		"confirmFreeCta": "Unirte ahora"
+		"confirmFreeCta": "Unirte ahora",
+		"offline": {
+			"intro": "Pagas directamente a {orgName}, fuera de Revel. Tu membresía empieza cuando confirmen tu pago.",
+			"confirmCta": "Unirte",
+			"title": "Casi estás dentro.",
+			"body": "Paga a {orgName} para activar tu membresía.",
+			"fallback": "{orgName} te dirá cómo pagar.",
+			"link": "Ver los detalles del pago"
+		}
 	},
 	"waitlistSettings.title": "Ajustes avanzados de la lista de espera",
 	"waitlistSettings.description": "Configura cómo se ofrecen las plazas a quienes están en la lista de espera.",

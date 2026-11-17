@@ -6175,7 +6175,13 @@
 		"reapplyCta": "Richiedi di nuovo",
 		"reapplyCtaAria": "Richiedi di nuovo con {plan}",
 		"applySubscribeHelper": "L'organizzazione esamina le richieste: pagherai una volta approvata.",
-		"applyJoinHelper": "L'organizzazione esamina le richieste: entrerai una volta approvata."
+		"applyJoinHelper": "L'organizzazione esamina le richieste: entrerai una volta approvata.",
+		"joinCta": "Iscriviti",
+		"awaitingPaymentHelper": "La tua iscrizione inizia quando {orgName} conferma il tuo pagamento.",
+		"awaitingPaymentLink": "Vedi i dettagli del pagamento",
+		"awaitingOtherPlanHelper": "Hai un'iscrizione in attesa di pagamento con {orgName}.",
+		"offlineGuestNote": "Si paga direttamente a {orgName} dopo l'iscrizione.",
+		"applyOfflineHelper": "Quando {orgName} ti accetta, riceverai i dettagli per il pagamento."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",
@@ -7930,15 +7936,19 @@
 			"requires_invitation": "Si entra su invito — chiedi all'organizzazione un link di invito.",
 			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
 			"membership_paused": "La tua iscrizione è attualmente in pausa.",
-			"generic": "Non puoi unirti al momento."
+			"generic": "Non puoi unirti al momento.",
+			"awaiting_offline_payment": "La tua iscrizione inizia quando l'organizzazione conferma il tuo pagamento."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Il tuo questionario è in fase di valutazione — ti avviseremo appena sarà esaminato.",
-			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso."
+			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso.",
+			"offline_payment": "La tua iscrizione inizia quando l'organizzazione conferma il tuo pagamento."
 		},
 		"joinTier": "Iscriviti a {tier}",
 		"choosePlan": "Hai i requisiti: scegli un piano qui sotto per iscriverti.",
-		"applyChoosePlan": "Scegli un piano per fare richiesta: l'organizzazione esamina le richieste prima del pagamento."
+		"applyChoosePlan": "Scegli un piano per fare richiesta: l'organizzazione esamina le richieste prima del pagamento.",
+		"awaitingPayment": "In attesa di pagamento",
+		"seePaymentDetails": "Vedi i dettagli del pagamento"
 	},
 	"membershipApply": {
 		"title": "Unisciti a {orgName}",
@@ -7959,7 +7969,9 @@
 		"error": "Non è stato possibile inviare la tua richiesta. Riprova.",
 		"titleTier": "Iscriviti a {tier}",
 		"reapplyTitleTier": "Invia una nuova richiesta per {tier}",
-		"forPlan": "{orgName} — richiesta con il piano {plan}."
+		"forPlan": "{orgName} — richiesta con il piano {plan}.",
+		"awaitingPaymentTitle": "Accettata, in attesa di pagamento",
+		"awaitingPaymentBody": "{orgName} ha accettato la tua richiesta. La tua iscrizione inizia quando confermano il pagamento."
 	},
 	"membershipTiers": {
 		"heading": "Iscrizione",
@@ -8075,7 +8087,15 @@
 		"titleFree": "Iscriviti a {plan}",
 		"freeNoCharge": "Non c'è nulla da pagare. L'iscrizione parte appena confermi.",
 		"neverRenews": "Questa iscrizione non scade mai e non viene mai rinnovata né riaddebitata.",
-		"confirmFreeCta": "Iscriviti ora"
+		"confirmFreeCta": "Iscriviti ora",
+		"offline": {
+			"intro": "Paghi direttamente a {orgName}, fuori da Revel. La tua iscrizione inizia quando confermano il pagamento.",
+			"confirmCta": "Iscriviti",
+			"title": "Ci sei quasi.",
+			"body": "Paga {orgName} per attivare la tua iscrizione.",
+			"fallback": "{orgName} ti dirà come pagare.",
+			"link": "Vedi i dettagli del pagamento"
+		}
 	},
 	"waitlistSettings.title": "Impostazioni avanzate della lista d'attesa",
 	"waitlistSettings.description": "Configura come vengono offerti i posti a chi è in lista d'attesa.",

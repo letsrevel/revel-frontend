@@ -13,6 +13,7 @@ import type {
 	MembershipEligibilitySchema
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
+import { MY_MEMBERSHIPS_KEY, myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsApply: vi.fn()
@@ -418,6 +419,55 @@ describe('ApplyDialog', () => {
 		});
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: ['org', 'acme', 'join-eligibility']
+		});
+	});
+
+	// An OFFLINE plan whose application is already approved: the backend answers
+	// /apply with the existing application and a wait verdict, not a new pending one.
+	describe('when the verdict is waiting for offline payment', () => {
+		const waitResult = () =>
+			makeResult(
+				{ status: 'approved' },
+				{
+					allowed: false,
+					next_step: 'wait_for_offline_payment',
+					reason_code: 'awaiting_offline_payment'
+				}
+			);
+
+		it('reports the accepted application with a link to the payment details', async () => {
+			const user = userEvent.setup();
+			mockApplySuccess(waitResult());
+			renderDialog({ planId: 'plan-1', planName: 'Card' });
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.awaitingPaymentTitle']() })
+			).toBeVisible();
+			expect(
+				screen.getByText(m['membershipApply.awaitingPaymentBody']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
+			// Not the under-review story, and not a membership yet.
+			expect(screen.queryByText(m['membershipApply.pendingTitle']())).toBeNull();
+			expect(screen.queryByText(m['membershipEligibility.memberBadge']())).toBeNull();
+		});
+
+		it('refreshes the member subscription caches', async () => {
+			const user = userEvent.setup();
+			const spy = vi.spyOn(queryClient, 'invalidateQueries');
+			mockApplySuccess(waitResult());
+			renderDialog({ planId: 'plan-1' });
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			await waitFor(() => {
+				expect(spy).toHaveBeenCalledWith({ queryKey: myOrgSubscriptionKey('org-1') });
+			});
+			expect(spy).toHaveBeenCalledWith({ queryKey: MY_MEMBERSHIPS_KEY });
 		});
 	});
 

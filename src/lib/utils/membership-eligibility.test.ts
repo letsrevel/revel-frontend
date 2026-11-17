@@ -219,6 +219,36 @@ describe('getMembershipStatusMessage', () => {
 	});
 });
 
+describe('offline payment wait', () => {
+	const pair = {
+		...base,
+		next_step: 'wait_for_offline_payment',
+		reason_code: 'awaiting_offline_payment'
+	} as const;
+
+	it('maps wait_for_offline_payment to waiting', () => {
+		expect(getMembershipCtaKind(pair)).toBe('waiting');
+	});
+
+	it('speaks first-person copy instead of backend prose or the generic denial', () => {
+		const msg = getMembershipStatusMessage({ ...pair, reason: 'Backend sentence' });
+		expect(msg).toBe(m['membershipEligibility.wait.offline_payment']());
+		expect(getMembershipStatusMessage({ ...base, reason_code: 'awaiting_offline_payment' })).toBe(
+			m['membershipEligibility.reason.awaiting_offline_payment']()
+		);
+	});
+
+	it('is not a gate the viewer can clear, so no plan card withdraws or offers anything', () => {
+		expect(isBlockedByMembershipGate(pair)).toBe(false);
+		expect(getMembershipGateAction(pair)).toBeNull();
+	});
+
+	it('proves the questionnaire and approval requirements are already satisfied', () => {
+		expect(getMembershipRequirementState('questionnaire', pair)).toBe('satisfied');
+		expect(getMembershipRequirementState('approval', pair)).toBe('satisfied');
+	});
+});
+
 describe('wait_* next-step messages', () => {
 	it('maps wait_for_approval when no reason_code is set', () => {
 		const msg = getMembershipStatusMessage({ ...base, next_step: 'wait_for_approval' });

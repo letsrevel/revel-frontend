@@ -240,6 +240,27 @@ describe('MembershipCta', () => {
 		).not.toBeInTheDocument();
 	});
 
+	it('labels an accepted application awaiting offline payment and links to the payment details', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				next_step: 'wait_for_offline_payment',
+				reason_code: 'awaiting_offline_payment'
+			})
+		);
+		renderCta();
+
+		expect(
+			await screen.findByRole('button', { name: m['membershipEligibility.awaitingPayment']() })
+		).toBeDisabled();
+		expect(
+			screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+		).toHaveAttribute('href', '/account/memberships');
+		expect(
+			screen.queryByRole('link', { name: m['membershipEligibility.trackApplication']() })
+		).toBeNull();
+	});
+
 	it('shows a disabled pending state and a way to track the application while waiting', async () => {
 		mockEligibility(
 			makeEligibility({

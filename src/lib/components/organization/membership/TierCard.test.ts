@@ -429,9 +429,10 @@ describe('TierCard', () => {
 			});
 		});
 
-		// The offline plan's own copy is right in every state; the fix must not
-		// disturb it, and the verdict must not withdraw a CTA that was never there.
-		it('leaves the offline plan card exactly as it was', async () => {
+		// An offline plan is joinable now, so it follows the tier's gate like any
+		// other plan: a viewer still behind the questionnaire gets the gated note,
+		// not a Join button that /subscribe would refuse.
+		it('gates the offline plan card like any other plan', async () => {
 			mockEligibility({
 				allowed: false,
 				reason_code: 'membership_questionnaire_pending',
@@ -439,10 +440,10 @@ describe('TierCard', () => {
 			});
 			renderCard({ tier: offlineOnlyTier() });
 
-			expect(await screen.findByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
 			expect(
-				screen.queryByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
-			).toBeNull();
+				await screen.findByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+			).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: m['membershipPlans.joinCta']() })).toBeNull();
 		});
 	});
 

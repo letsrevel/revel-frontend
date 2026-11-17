@@ -6175,7 +6175,13 @@
 		"reapplyCta": "Apply again",
 		"reapplyCtaAria": "Apply again with {plan}",
 		"applySubscribeHelper": "The organization reviews applications — you'll pay once you're approved.",
-		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved."
+		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved.",
+		"joinCta": "Join",
+		"awaitingPaymentHelper": "Your membership starts once {orgName} confirms your payment.",
+		"awaitingPaymentLink": "See payment details",
+		"awaitingOtherPlanHelper": "You have a membership awaiting payment with {orgName}.",
+		"offlineGuestNote": "Paid directly to {orgName} after you join.",
+		"applyOfflineHelper": "Once {orgName} accepts, you'll get payment details."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
@@ -7930,15 +7936,19 @@
 			"requires_invitation": "Joining is by invitation — ask the organization for an invite link.",
 			"duplicate_active_subscription": "You already have an active subscription with this organization.",
 			"membership_paused": "Your membership is currently paused.",
-			"generic": "You can't join right now."
+			"generic": "You can't join right now.",
+			"awaiting_offline_payment": "Your membership starts once the organization confirms your payment."
 		},
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
-			"approval": "Your application is with the organization for review. You'll hear back once they decide."
+			"approval": "Your application is with the organization for review. You'll hear back once they decide.",
+			"offline_payment": "Your membership starts once the organization confirms your payment."
 		},
 		"joinTier": "Join {tier}",
 		"choosePlan": "You're eligible — choose a plan below to join.",
-		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment."
+		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment.",
+		"awaitingPayment": "Awaiting payment",
+		"seePaymentDetails": "See payment details"
 	},
 	"membershipApply": {
 		"title": "Join {orgName}",
@@ -7959,7 +7969,9 @@
 		"error": "Could not send your application. Please try again.",
 		"titleTier": "Join {tier}",
 		"reapplyTitleTier": "Re-apply to {tier}",
-		"forPlan": "{orgName} — applying with the {plan} plan."
+		"forPlan": "{orgName} — applying with the {plan} plan.",
+		"awaitingPaymentTitle": "Accepted, awaiting payment",
+		"awaitingPaymentBody": "{orgName} has accepted your application. Your membership starts once they confirm your payment."
 	},
 	"membershipTiers": {
 		"heading": "Membership",
@@ -8075,7 +8087,15 @@
 		"titleFree": "Join {plan}",
 		"freeNoCharge": "There's nothing to pay. Your membership starts as soon as you confirm.",
 		"neverRenews": "This membership never expires and is never renewed or charged again.",
-		"confirmFreeCta": "Join now"
+		"confirmFreeCta": "Join now",
+		"offline": {
+			"intro": "You pay {orgName} directly, outside of Revel. Your membership starts once they confirm your payment.",
+			"confirmCta": "Join",
+			"title": "You're in, almost.",
+			"body": "Pay {orgName} to activate your membership.",
+			"fallback": "{orgName} will tell you how to pay.",
+			"link": "See payment details"
+		}
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
