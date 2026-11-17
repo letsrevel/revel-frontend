@@ -110,11 +110,11 @@
 	 * member owes the organizer a payment, and the instructions live on the
 	 * membership card, not here. Once the payment is recorded the subscription
 	 * leaves PENDING and the row reads as a plain approval again. */
-	const awaitingOfflinePayment = $derived(
-		app.status === 'approved' &&
-			app.plan?.payment_method === 'offline' &&
-			app.subscription_status === 'pending'
-	);
+	const isAwaitingOffline = (a: typeof app): boolean =>
+		a.status === 'approved' &&
+		a.plan?.payment_method === 'offline' &&
+		a.subscription_status === 'pending';
+	const awaitingOfflinePayment = $derived(isAwaitingOffline(app));
 
 	/** Approved onto an offline plan whose held subscription was cancelled or expired
 	 * unpaid: the approval no longer leads anywhere, so the chip says so (neutral). */
@@ -171,10 +171,6 @@
 	 * Once-guarded: `invalidated` latches, so the refetches this triggers can
 	 * never loop back through the effect.
 	 */
-	const isAwaitingOffline = (a: typeof app): boolean =>
-		a.status === 'approved' &&
-		a.plan?.payment_method === 'offline' &&
-		a.subscription_status === 'pending';
 	// An approval onto an offline plan creates the held (awaiting_payment)
 	// membership too, so that transition needs the same refresh as `completed`.
 	const becameMember = $derived(
