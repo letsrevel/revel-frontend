@@ -7,6 +7,10 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import { mesubscriptionsSubscribe } from '$lib/api/generated/sdk.gen';
 import { invalidateAll } from '$app/navigation';
 import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
+import { myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
+import { formatPlanPrice } from '$lib/utils/subscriptions';
+import { formatDate } from '$lib/utils/date';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsSubscribe: vi.fn()
@@ -475,6 +479,157 @@ describe('SubscribeDialog', () => {
 				expect(screen.getByRole('alert')).toHaveTextContent('This plan is sold out.');
 			});
 			expect(screen.queryByRole('status')).toBeNull();
+		});
+	});
+
+	// An OFFLINE plan answers 201 with `checkout_url: null` and a PENDING row: the
+	// member is held as awaiting payment, which is not the free "you're in" outcome.
+	describe('an offline plan', () => {
+		const offlinePlan = () => makePlan({ name: 'Card', payment_method: 'offline' });
+
+		function mockOfflineSubscribe(
+			paymentInstructions: string | null,
+			paymentDueBy: string | null = null
+		) {
+			vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
+				data: {
+					subscription: {
+						id: 's1',
+						organization_id: 'org-1',
+						plan_id: 'plan-1',
+						status: 'pending',
+						payment_instructions: paymentInstructions,
+						payment_due_by: paymentDueBy
+					},
+					checkout_url: null
+				},
+				error: undefined,
+				response: { ok: true } as unknown as Response
+			} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
+		}
+
+		it('drops the Stripe and renewal claims and offers Join', () => {
+			renderDialog({ plan: offlinePlan() });
+
+			expect(screen.queryByText(/you'll be charged/i)).toBeNull();
+			expect(screen.queryByText(/renews automatically/i)).toBeNull();
+			expect(screen.queryByText(/processed securely by stripe/i)).toBeNull();
+			expect(
+				screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() })
+			).toBeInTheDocument();
+		});
+
+		it('reports the held membership with the payment instructions, not the free welcome', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire to **IBAN IT00 1234**.');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await waitFor(() => {
+				expect(screen.getByText(m['subscribe.offline.title']())).toBeInTheDocument();
+			});
+			expect(
+				screen.getByText(m['subscribe.offline.body']({ orgName: 'Test Org' }))
+			).toBeInTheDocument();
+			expect(screen.getByText('IBAN IT00 1234')).toBeInTheDocument();
+			expect(screen.queryByText(/welcome, member/i)).toBeNull();
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
+			expect(window.location.href).toBe('');
+		});
+
+		it('refreshes server data on the held path and keeps the outcome panel visible', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await waitFor(() => {
+				expect(vi.mocked(invalidateAll)).toHaveBeenCalledTimes(1);
+			});
+			expect(screen.getByText(m['subscribe.offline.title']())).toBeInTheDocument();
+			expect(screen.getByText('Wire it.')).toBeInTheDocument();
+		});
+
+		it('moves focus to the outcome heading once the offline subscribe resolves', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			const heading = await screen.findByRole('heading', {
+				name: m['subscribe.offline.title']()
+			});
+			await waitFor(() => expect(heading).toHaveFocus());
+			// Only the short title + body sentence is a live region.
+			expect(heading.parentElement).toHaveAttribute('role', 'status');
+			expect(
+				screen
+					.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+					.closest('[role="status"]')
+			).toBeNull();
+		});
+
+		it('shows the amount, period and payment deadline in the outcome', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.', '2026-09-15T00:00:00Z');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await screen.findByText(m['subscribe.offline.title']());
+			expect(screen.getByText(formatPlanPrice(offlinePlan()))).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					m['account.memberships.awaitingDeadline']({ date: formatDate('2026-09-15T00:00:00Z') })
+				)
+			).toBeInTheDocument();
+		});
+
+		it('omits the deadline line when the backend sends no payment_due_by', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe('Wire it.', null);
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await screen.findByText(m['subscribe.offline.title']());
+			expect(screen.getByText(formatPlanPrice(offlinePlan()))).toBeInTheDocument();
+			expect(screen.queryByText(/if no payment is recorded by/i)).toBeNull();
+		});
+
+		it('falls back to a plain sentence when no instructions are set', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe(null);
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await waitFor(() => {
+				expect(
+					screen.getByText(m['subscribe.offline.fallback']({ orgName: 'Test Org' }))
+				).toBeInTheDocument();
+			});
+		});
+
+		it('refreshes the member subscription and eligibility caches', async () => {
+			const user = userEvent.setup();
+			mockOfflineSubscribe(null);
+			const spy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderDialog({ plan: offlinePlan() });
+
+			await user.click(screen.getByRole('button', { name: m['subscribe.offline.confirmCta']() }));
+
+			await waitFor(() => {
+				expect(spy).toHaveBeenCalledWith({ queryKey: myOrgSubscriptionKey('org-1') });
+			});
+			expect(spy).toHaveBeenCalledWith({
+				queryKey: ['org', 'test-org', 'join-eligibility']
+			});
 		});
 	});
 

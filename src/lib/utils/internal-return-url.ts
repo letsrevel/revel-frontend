@@ -1,5 +1,5 @@
 import { page } from '$app/state';
-import { safeReturnUrl } from '$lib/utils/safe-redirect';
+import { safeReturnUrl, withReturnUrl } from '$lib/utils/safe-redirect';
 
 /** Query param a questionnaire page adds to the return URL (`done` | `pending`). */
 export const QUESTIONNAIRE_RETURN_PARAM = 'questionnaire';
@@ -69,4 +69,25 @@ export function currentPageReturnPath(): string {
 	url.searchParams.delete(QUESTIONNAIRE_RETURN_PARAM);
 	url.searchParams.delete(QUESTIONNAIRE_PASS_PARAM);
 	return url.pathname + url.search;
+}
+
+/** DOM id of a membership tier card; the `#tier-{id}` anchor targets it. */
+export function tierAnchorId(tierId: string): string {
+	return `tier-${tierId}`;
+}
+
+/**
+ * Where a membership questionnaire sends the applicant back to: the
+ * membership page (`membershipPath`, a resolved path), anchored on the tier
+ * they were looking at when given. The page's own `?returnUrl=` (e.g. the
+ * members-only event they came from) is kept nested, so it survives the trip.
+ */
+export function membershipReturnPath(membershipPath: string, tierId?: string): string {
+	const base = withReturnUrl(membershipPath, safeInternalReturnUrl());
+	return tierId ? `${base}#${tierAnchorId(tierId)}` : base;
+}
+
+/** True when `url` is the membership page of `slug` (any query or hash). */
+export function isMembershipReturnTarget(url: string | null | undefined, slug: string): boolean {
+	return !!url && pathnameOf(url) === `/org/${slug}/membership`;
 }

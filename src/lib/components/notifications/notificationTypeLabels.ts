@@ -135,6 +135,14 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 	membership_request_rejected: {
 		label: (locale) => m['notificationPreferences.typeMembershipRequestRejected']({}, { locale })
 	},
+	membership_payment_requested: {
+		label: (locale) => m['notificationPreferences.typeMembershipPaymentRequested']({}, { locale })
+	},
+	membership_offline_joined: {
+		label: (locale) => m['notificationPreferences.typeMembershipOfflineJoined']({}, { locale }),
+		description: (locale) =>
+			m['notificationPreferences.typeMembershipOfflineJoinedDescription']({}, { locale })
+	},
 	staff_member_record_auto_linked: {
 		label: (locale) => m['notificationPreferences.typeStaffMemberRecordAutoLinked']({}, { locale }),
 		description: (locale) =>

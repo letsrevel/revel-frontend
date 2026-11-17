@@ -1,7 +1,8 @@
 import * as m from '$lib/paraglide/messages.js';
 import {
 	eventpublicdiscoveryListEvents,
-	organizationadminmembershiprequestsListMembershipRequests
+	organizationadminmembershiprequestsListMembershipRequests,
+	organizationadminsubscriptionsListSubscriptions
 } from '$lib/api/generated/sdk.gen';
 import type { EventInListSchema } from '$lib/api/generated/types.gen';
 import type { PageServerLoad } from './$types';
@@ -38,45 +39,59 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 	const fail = (err: unknown) => ({ data: undefined, error: err });
 	const base = { fetch, headers } as const;
 
-	const [liveResult, upcomingResult, draftsResult, requestsResult, setupCounts, hasPublished] =
-		await Promise.all([
-			// In-progress candidates: already started within the lookback window. The client keeps
-			// those whose `end` is still in the future (the model does this filtering).
-			eventpublicdiscoveryListEvents({
-				...base,
-				query: {
-					organization: organization.id,
-					include_past: true,
-					start_after: lookbackIso,
-					start_before: nowIso,
-					order_by: '-start',
-					page_size: 20
-				}
-			}).catch(fail),
-			// Upcoming: without include_past the backend applies its default `start >= now`.
-			eventpublicdiscoveryListEvents({
-				...base,
-				query: { organization: organization.id, order_by: 'start', page_size: 12 }
-			}).catch(fail),
-			// Drafts that have not started yet; only the total is needed.
-			eventpublicdiscoveryListEvents({
-				...base,
-				query: { organization: organization.id, status: 'draft', page_size: 1 }
-			}).catch(fail),
-			organizationadminmembershiprequestsListMembershipRequests({
-				...base,
-				path: { slug: params.slug },
-				query: { status: 'pending', page_size: 1 }
-			}).catch(fail),
-			// Owners only: feeds the setup card. Never throws.
-			isOwner && !hiddenCookie
-				? loadSetupCounts({ orgId: organization.id, accessToken, fetch })
-				: Promise.resolve(null),
-			// Hidden: the collapsed line is only worth keeping while nothing is published.
-			hiddenCookie
-				? loadHasPublishedEvent({ orgId: organization.id, accessToken, fetch })
-				: Promise.resolve(null)
-		]);
+	const [
+		liveResult,
+		upcomingResult,
+		draftsResult,
+		requestsResult,
+		pendingSubsResult,
+		setupCounts,
+		hasPublished
+	] = await Promise.all([
+		// In-progress candidates: already started within the lookback window. The client keeps
+		// those whose `end` is still in the future (the model does this filtering).
+		eventpublicdiscoveryListEvents({
+			...base,
+			query: {
+				organization: organization.id,
+				include_past: true,
+				start_after: lookbackIso,
+				start_before: nowIso,
+				order_by: '-start',
+				page_size: 20
+			}
+		}).catch(fail),
+		// Upcoming: without include_past the backend applies its default `start >= now`.
+		eventpublicdiscoveryListEvents({
+			...base,
+			query: { organization: organization.id, order_by: 'start', page_size: 12 }
+		}).catch(fail),
+		// Drafts that have not started yet; only the total is needed.
+		eventpublicdiscoveryListEvents({
+			...base,
+			query: { organization: organization.id, status: 'draft', page_size: 1 }
+		}).catch(fail),
+		organizationadminmembershiprequestsListMembershipRequests({
+			...base,
+			path: { slug: params.slug },
+			query: { status: 'pending', page_size: 1 }
+		}).catch(fail),
+		// Awaiting payment = PENDING subscriptions on OFFLINE plans. The server filters
+		// by `payment_method`, so one row is enough: only `.count` is read.
+		organizationadminsubscriptionsListSubscriptions({
+			...base,
+			path: { slug: params.slug },
+			query: { status: 'pending', payment_method: 'offline', page_size: 1 }
+		}).catch(fail),
+		// Owners only: feeds the setup card. Never throws.
+		isOwner && !hiddenCookie
+			? loadSetupCounts({ orgId: organization.id, accessToken, fetch })
+			: Promise.resolve(null),
+		// Hidden: the collapsed line is only worth keeping while nothing is published.
+		hiddenCookie
+			? loadHasPublishedEvent({ orgId: organization.id, accessToken, fetch })
+			: Promise.resolve(null)
+	]);
 
 	// Published already: the card no longer applies, so drop the stale cookie too.
 	const published = hiddenCookie && hasPublished === true;
@@ -115,5 +130,18 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 	const pendingRequestCount: number | null =
 		requestsResult.error || !requestsResult.data ? null : requestsResult.data.count;
 
-	return { dashboardEvents, draftCount, pendingRequestCount, setupCounts, setupHidden };
+	// PENDING subscriptions on OFFLINE plans: people waiting on a first payment (awaiting
+	// members, legacy rows, upgrading free members). Null (hidden) on error or no permission.
+	const awaitingPaymentCount: number | null = pendingSubsResult.data
+		? pendingSubsResult.data.count
+		: null;
+
+	return {
+		dashboardEvents,
+		draftCount,
+		pendingRequestCount,
+		awaitingPaymentCount,
+		setupCounts,
+		setupHidden
+	};
 };

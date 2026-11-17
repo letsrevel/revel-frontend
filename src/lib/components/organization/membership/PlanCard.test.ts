@@ -7,6 +7,15 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/membership${pageUrl.search}`);
+		}
+	}
+}));
+
 // The offline branch mounts OrgContactButton, which reads the token for its
 // contact-form mutation.
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -102,6 +111,7 @@ function renderCard(props: Record<string, unknown> = {}) {
 
 describe('PlanCard', () => {
 	beforeEach(() => {
+		pageUrl.search = '';
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
@@ -116,75 +126,128 @@ describe('PlanCard', () => {
 		expect(screen.getByText(/two lines/i)).toBeInTheDocument();
 	});
 
-	// Offline plans are settled with the organizers directly — there is no
-	// checkout to send the member to, so the card states the constraint and, when
-	// the org has somewhere to be reached, offers a way to reach them.
+	// An OFFLINE plan is paid to the organizers directly, but joining it is still
+	// self-serve: the gate drives Join/Apply like any other plan, and the member
+	// is held as awaiting payment until staff record it.
 	describe('an offline plan', () => {
 		const offlinePlan = () => makePlan({ payment_method: 'offline' });
-
-		it('offers the contact form when the org takes messages that way', () => {
-			const { onSubscribe } = renderCard({
-				plan: offlinePlan(),
-				contactMethod: 'form'
+		const awaitingSub = (overrides: Partial<MySubscriptionSchema> = {}) =>
+			makeSub({
+				status: 'pending',
+				plan: { ...makeSub().plan, payment_method: 'offline' },
+				...overrides
 			});
 
-			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
-			// Named for the org: "Contact organizer" alone does not say who, and
-			// these repeat down a page of plans.
-			expect(
-				screen.getByRole('button', {
-					name: m['orgContactButton.contactAriaLabel']({ organizationName: 'Acme' })
-				})
-			).toBeInTheDocument();
-			// Still no checkout — the CTA contacts, it does not subscribe.
+		it('offers Join, not Subscribe, when no approval stands in the way', async () => {
+			const user = userEvent.setup();
+			const { onSubscribe } = renderCard({ plan: offlinePlan() });
+
 			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
-			expect(onSubscribe).not.toHaveBeenCalled();
+			await user.click(screen.getByRole('button', { name: m['membershipPlans.joinCta']() }));
+
+			expect(onSubscribe).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }));
 		});
 
-		it('offers a mailto link when the org publishes an address', () => {
-			renderCard({
-				plan: offlinePlan(),
-				contactMethod: 'email',
-				contactEmail: 'hello@acme.test'
-			});
+		it('tells a logged-in user the plan is paid directly to the org', () => {
+			renderCard({ plan: offlinePlan() });
 
-			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
-			const link = screen.getByRole('link', {
-				name: m['orgContactButton.contactAriaLabel']({ organizationName: 'Acme' })
-			});
-			expect(link).toHaveAttribute('href', 'mailto:hello@acme.test');
+			expect(
+				screen.getByText(m['membershipPlans.offlineGuestNote']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
 		});
 
-		// The trap this guards: `contact_method === 'email'` with no address on
-		// file renders nothing at all, so gating the copy on the method alone
-		// would promise a button that never arrives.
-		it('says only what is true when the email method has no address on file', () => {
-			renderCard({
-				plan: offlinePlan(),
-				contactMethod: 'email',
-				contactEmail: null
-			});
+		it('words the blocked-gate note as joining, not subscribing', () => {
+			renderCard({ plan: offlinePlan(), gateAction: 'blocked' });
 
-			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			expect(
+				screen.getByText(m['membershipPlans.gatedJoinHelper'](), { exact: false })
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlans.gatedSubscribeHelper']())).toBeNull();
+		});
+
+		it('offers Apply when the tier needs approval', async () => {
+			const user = userEvent.setup();
+			const { onApply } = renderCard({ plan: offlinePlan(), gateAction: 'apply' });
+
+			await user.click(
+				screen.getByRole('button', { name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' }) })
+			);
+
+			expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }), 'join');
+			expect(
+				screen.getByText(m['membershipPlans.applyOfflineHelper']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+		});
+
+		it('tells a guest the plan is paid directly, behind a login link', () => {
+			renderCard({ plan: offlinePlan(), isAuthenticated: false });
+
+			expect(
+				screen.getByText(m['membershipPlans.offlineGuestNote']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(screen.getByRole('link', { name: /log in to join/i })).toBeInTheDocument();
+		});
+
+		it('keeps the page returnUrl nested in the guest login link', () => {
+			pageUrl.search = `?returnUrl=${encodeURIComponent('/events/acme/gala')}`;
+			renderCard({ plan: offlinePlan(), isAuthenticated: false });
+
+			const link = screen.getByRole('link', { name: /log in to join/i });
+			expect(link).toHaveAttribute(
+				'href',
+				`/login?returnUrl=${encodeURIComponent(
+					`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+				)}`
+			);
+		});
+
+		it('drops an unsafe page returnUrl from the guest login link', () => {
+			pageUrl.search = `?returnUrl=${encodeURIComponent('//evil.com')}`;
+			renderCard({ plan: offlinePlan(), isAuthenticated: false });
+
+			expect(screen.getByRole('link', { name: /log in to join/i })).toHaveAttribute(
+				'href',
+				'/login?returnUrl=%2Forg%2Facme%2Fmembership'
+			);
+		});
+
+		it('shows an awaiting-payment block for a pending offline subscription on this plan', () => {
+			renderCard({ plan: offlinePlan(), subscription: awaitingSub() });
+
+			expect(
+				screen.getByText(m['membershipPlans.awaitingPaymentHelper']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
+			// Not the member's live plan yet, and no Stripe resume copy.
+			expect(screen.queryByText(m['membershipPlans.yourPlan']())).toBeNull();
+			expect(screen.queryByText(m['membershipPlans.yourPlanHelper']())).toBeNull();
+			expect(screen.queryByText(m['membershipPlans.pendingCheckoutHelper']())).toBeNull();
 			expect(screen.queryByRole('button')).toBeNull();
-			expect(screen.queryByRole('link')).toBeNull();
 		});
 
-		it('states the constraint alone when the org accepts no contact', () => {
-			const { onSubscribe } = renderCard({ plan: offlinePlan(), contactMethod: 'none' });
+		it('keeps "Your plan" and the resume-checkout helper for a pending ONLINE subscription', () => {
+			renderCard({ subscription: makeSub({ plan_id: 'plan-1', status: 'pending' }) });
 
-			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
-			expect(screen.queryByRole('button')).toBeNull();
-			expect(screen.queryByRole('link')).toBeNull();
-			expect(onSubscribe).not.toHaveBeenCalled();
+			expect(screen.getByText(m['membershipPlans.yourPlan']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.pendingCheckoutHelper']())).toBeInTheDocument();
+			expect(
+				screen.queryByText(m['membershipPlans.awaitingPaymentHelper']({ orgName: 'Acme' }))
+			).toBeNull();
 		});
 
-		// The copy must not tell anybody to make contact it cannot offer — the
-		// dead end the CTA replaced.
-		it('never instructs the viewer to make contact in the sentence itself', () => {
-			renderCard({ plan: offlinePlan(), contactMethod: 'none' });
+		it('gives the other plans neutral copy and no change-plan link while awaiting', () => {
+			renderCard({
+				plan: makePlan({ id: 'plan-2', name: 'Yearly' }),
+				subscription: awaitingSub()
+			});
 
-			expect(screen.queryByText(/contact them/i)).toBeNull();
+			expect(
+				screen.getByText(m['membershipPlans.awaitingOtherPlanHelper']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlans.alreadySubscribed']())).toBeNull();
+			expect(screen.queryByRole('link')).toBeNull();
 		});
 	});
 
@@ -523,7 +586,7 @@ describe('PlanCard', () => {
 			expect(screen.getByText('Free')).toBeInTheDocument();
 			expect(screen.getByText('Never expires')).toBeInTheDocument();
 			expect(screen.queryByText(/€0\.00/)).toBeNull();
-			expect(screen.queryByText(m['membershipPlans.offlineManaged']())).toBeNull();
+			expect(screen.queryByText('Managed manually by the organization.')).toBeNull();
 		});
 
 		it('offers a join CTA that hands the plan to the caller', async () => {

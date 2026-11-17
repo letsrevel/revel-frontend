@@ -341,7 +341,9 @@ test.describe('j27 requests admin @p2', () => {
 			.getByRole('radio', { name: MEMBERSHIP_QUESTION.automatic.correct, exact: true })
 			.click();
 		await memberPage.getByRole('button', { name: 'Submit Questionnaire' }).click();
-		await memberPage.waitForURL(`**/org/${org.slug}`, { timeout: 20_000 });
+		await memberPage.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 20_000
+		});
 		await memberPage.context().close();
 
 		const submissionId = await submissionPendingReview(org.owner, wrapper.id, applicant.email);

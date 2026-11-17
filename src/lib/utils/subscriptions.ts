@@ -491,3 +491,9 @@ export function isSubscriptionActivationPending(error: unknown): boolean {
 	const { code }: { code: unknown } = error;
 	return code === ACTIVATION_PENDING_CODE;
 }
+
+type HasOfflinePlan = { status: SubscriptionStatus; plan?: { payment_method?: string } };
+
+/** PENDING on an OFFLINE plan: the one definition of "awaiting offline payment". */
+export const isAwaitingOfflinePayment = (sub: HasOfflinePlan | null | undefined): boolean =>
+	sub?.status === 'pending' && sub.plan?.payment_method === 'offline';

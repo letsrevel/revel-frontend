@@ -28,7 +28,7 @@
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
-	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
+	import { membershipReturnPath, safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		organizationSlug: string;
@@ -127,7 +127,8 @@
 		active: 'success',
 		paused: 'warning',
 		cancelled: 'neutral',
-		banned: 'danger'
+		banned: 'danger',
+		awaiting_payment: 'warning'
 	};
 
 	const accessToken = $derived(authStore.accessToken);
@@ -226,7 +227,7 @@
 		if (!id) return null;
 		return withReturnUrl(
 			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
-			safeInternalReturnUrl()
+			membershipReturnPath(membershipHref, tierId ?? undefined)
 		);
 	});
 
@@ -393,13 +394,24 @@
 		{:else if ctaKind === 'waiting'}
 			<Button variant="secondary" disabled>
 				<Clock class="h-4 w-4" aria-hidden="true" />
-				{eligibility?.next_step === 'wait_for_questionnaire_evaluation'
-					? m['membershipEligibility.questionnaireUnderReview']()
-					: m['membershipEligibility.waiting']()}
+				{#if eligibility?.next_step === 'wait_for_questionnaire_evaluation'}
+					{m['membershipEligibility.questionnaireUnderReview']()}
+				{:else if eligibility?.next_step === 'wait_for_offline_payment'}
+					{m['memberStatus.awaiting_payment']()}
+				{:else}
+					{m['membershipEligibility.waiting']()}
+				{/if}
 			</Button>
 			<!-- A questionnaire under review is not an application yet, so the hub's
 			     Applications list would be empty: no tracking link for that state. -->
-			{#if eligibility?.next_step !== 'wait_for_questionnaire_evaluation'}
+			{#if eligibility?.next_step === 'wait_for_offline_payment'}
+				<a
+					href={membershipsHref}
+					class="rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['membershipEligibility.seePaymentDetails']()}
+				</a>
+			{:else if eligibility?.next_step !== 'wait_for_questionnaire_evaluation'}
 				<a
 					href={membershipsHref}
 					class="text-sm font-medium text-primary underline-offset-4 hover:underline"

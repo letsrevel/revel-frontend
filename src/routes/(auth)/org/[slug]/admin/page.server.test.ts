@@ -2,13 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { load } from './+page.server';
 import {
 	eventpublicdiscoveryListEvents,
-	organizationadminmembershiprequestsListMembershipRequests
+	organizationadminmembershiprequestsListMembershipRequests,
+	organizationadminsubscriptionsListSubscriptions
 } from '$lib/api/generated/sdk.gen';
 import { loadHasPublishedEvent, loadSetupCounts } from '$lib/server/org-setup';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
-	organizationadminmembershiprequestsListMembershipRequests: vi.fn()
+	organizationadminmembershiprequestsListMembershipRequests: vi.fn(),
+	organizationadminsubscriptionsListSubscriptions: vi.fn()
 }));
 vi.mock('$lib/server/org-setup', () => ({
 	loadSetupCounts: vi.fn(),
@@ -18,6 +20,7 @@ vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);
 const listRequests = vi.mocked(organizationadminmembershiprequestsListMembershipRequests);
+const listSubs = vi.mocked(organizationadminsubscriptionsListSubscriptions);
 
 type LoadArg = Parameters<typeof load>[0];
 type Result = Awaited<ReturnType<typeof load>>;
@@ -72,6 +75,8 @@ beforeEach(() => {
 	listEvents.mockReset();
 	listRequests.mockReset();
 	listRequests.mockResolvedValue({ data: { count: 3 }, error: undefined } as never);
+	listSubs.mockReset();
+	listSubs.mockResolvedValue({ data: { count: 0, results: [] }, error: undefined } as never);
 });
 
 describe('admin dashboard loader', () => {
@@ -173,5 +178,40 @@ describe('admin dashboard loader', () => {
 		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
 		const res = await run(false, '1');
 		expect(res.setupHidden).toBe(false);
+	});
+});
+
+describe('admin dashboard awaitingPaymentCount', () => {
+	const noEvents = () =>
+		mockEvents({
+			live: { results: [], count: 0 },
+			upcoming: { results: [], count: 0 },
+			drafts: { results: [], count: 0 }
+		});
+
+	it('takes the count of pending OFFLINE subscriptions from the server filter', async () => {
+		noEvents();
+		listSubs.mockResolvedValue({
+			data: { count: 250, results: [{}] },
+			error: undefined
+		} as never);
+		const res = await run();
+		expect(res.awaitingPaymentCount).toBe(250);
+		expect(listSubs.mock.calls[0][0]).toMatchObject({
+			path: { slug: 'org' },
+			query: { status: 'pending', payment_method: 'offline', page_size: 1 }
+		});
+	});
+
+	it('is zero (row hidden) when nobody is awaiting', async () => {
+		noEvents();
+		listSubs.mockResolvedValue({ data: { count: 0, results: [] }, error: undefined } as never);
+		expect((await run()).awaitingPaymentCount).toBe(0);
+	});
+
+	it('is null when the call fails', async () => {
+		noEvents();
+		listSubs.mockRejectedValue(new Error('403'));
+		expect((await run()).awaitingPaymentCount).toBeNull();
 	});
 });

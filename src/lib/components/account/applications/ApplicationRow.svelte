@@ -106,14 +106,36 @@
 	const isOpen = $derived(!TERMINAL.has(app.status));
 	const logoUrl = $derived(getImageUrl(app.organization_logo_url));
 
+	/** Approved onto an offline-paid plan whose subscription is still PENDING: the
+	 * member owes the organizer a payment, and the instructions live on the
+	 * membership card, not here. Once the payment is recorded the subscription
+	 * leaves PENDING and the row reads as a plain approval again. */
+	const isAwaitingOffline = (a: typeof app): boolean =>
+		a.status === 'approved' &&
+		a.plan?.payment_method === 'offline' &&
+		a.subscription_status === 'pending';
+	const awaitingOfflinePayment = $derived(isAwaitingOffline(app));
+
+	/** Approved onto an offline plan whose held subscription was cancelled or expired
+	 * unpaid: the approval no longer leads anywhere, so the chip says so (neutral). */
+	const requestLapsed = $derived(
+		app.status === 'approved' &&
+			app.plan?.payment_method === 'offline' &&
+			(app.subscription_status === 'cancelled' || app.subscription_status === 'expired')
+	);
+
 	const statusLabel = $derived(
-		{
-			pending: m['applications.status.pending'](),
-			approved: m['applications.status.approved'](),
-			completed: m['applications.status.completed'](),
-			rejected: m['applications.status.rejected'](),
-			cancelled: m['applications.status.cancelled']()
-		}[app.status]
+		awaitingOfflinePayment
+			? m['applications.status.approvedOffline']()
+			: requestLapsed
+				? m['applications.status.lapsed']()
+				: {
+						pending: m['applications.status.pending'](),
+						approved: m['applications.status.approved'](),
+						completed: m['applications.status.completed'](),
+						rejected: m['applications.status.rejected'](),
+						cancelled: m['applications.status.cancelled']()
+					}[app.status]
 	);
 
 	/**
@@ -149,7 +171,12 @@
 	 * Once-guarded: `invalidated` latches, so the refetches this triggers can
 	 * never loop back through the effect.
 	 */
-	const becameMember = $derived(app.status === 'completed' && application.status !== 'completed');
+	// An approval onto an offline plan creates the held (awaiting_payment)
+	// membership too, so that transition needs the same refresh as `completed`.
+	const becameMember = $derived(
+		(app.status === 'completed' && application.status !== 'completed') ||
+			(isAwaitingOffline(app) && !isAwaitingOffline(application))
+	);
 	let invalidated = $state(false);
 	$effect(() => {
 		if (!becameMember || invalidated) return;
@@ -277,7 +304,7 @@
 			</div>
 		</div>
 		<StatusBadge
-			tone={REQUEST_STATUS_TONES[app.status]}
+			tone={requestLapsed ? 'neutral' : REQUEST_STATUS_TONES[app.status]}
 			label={statusLabel}
 			size="sm"
 			class="shrink-0"
@@ -296,6 +323,10 @@
 		     during this very read. Same `role="status"` treatment as `becameMember`
 		     above: the row changed under the member without them acting. -->
 		<p role="status" class="mt-3 text-sm">{autoRejectedLine}</p>
+	{/if}
+
+	{#if awaitingOfflinePayment}
+		<p class="mt-2 text-sm">{m['applications.awaitingPaymentSeeAbove']()}</p>
 	{/if}
 
 	{#if nextStepLine}

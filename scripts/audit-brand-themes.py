@@ -261,6 +261,10 @@ COMPOSITED_PAIRS = [
     ("foreground", 1, "destructive", 0.20, "card", 4.5, BOTH, "DietarySummary allergen cell"),
     ("foreground", 1, "destructive", 0.10, "card", 4.5, BOTH, "DietarySummary restriction cell"),
     ("foreground", 1, "highlight", 0.10, "card", 4.5, BOTH, "DietarySummary / EventActionSidebar note"),
+    # Offline-membership flow (PR #1247): payment-instruction boxes and the amount warning.
+    ("foreground", 1, "muted", 0.40, "card", 4.5, BOTH, "MembershipCard payment instructions box"),
+    ("foreground", 1, "muted", 0.40, "background", 4.5, BOTH, "SubscribeDialog instruction boxes (dialog surface)"),
+    ("foreground", 1, "highlight", 0.10, "background", 4.5, BOTH, "RecordPaymentModal amount/currency warning (dialog surface)"),
     ("foreground", 1, "highlight", 0.20, "card", 4.5, BOTH, "create-org already-owner notice body"),
     # ComplianceCallout (#1001): body copy is text-foreground on the soft tint, on
     # cards (billing, tier cards) and dialogs/pages (tier editor, ticket modal).

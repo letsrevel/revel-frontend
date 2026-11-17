@@ -2995,6 +2995,7 @@
 		"statusExplanation": {
 			"active": "Les membres peuvent voir et participer à tous les événements de l'organisation.",
 			"activeBillingNote": "Rétablir l'adhésion ne relance pas la facturation : les abonnements se reprennent séparément, depuis l'onglet « Abonnements ».",
+			"awaiting_payment": "Cette personne n'a pas encore payé. Vous pouvez annuler sa demande ou la bannir. Pour l'activer, enregistrez son premier paiement.",
 			"paused": "Les membres peuvent voir les événements mais ne peuvent pas participer ni confirmer leur présence.",
 			"pausedBillingNote": "Aucun autre paiement n'est prélevé tant que l'adhésion est en pause.",
 			"pausedScheduledEndNote": "Son abonnement est déjà programmé pour prendre fin : il n'est donc pas mis en pause et continue d'être facturé jusqu'à la clôture de la période en cours.",
@@ -3021,6 +3022,7 @@
 		"memberSince": "Membre depuis"
 	},
 	"memberStatus": {
+		"awaiting_payment": "En attente de paiement",
 		"active": "Actif",
 		"paused": "En pause",
 		"cancelled": "Annulé",
@@ -3432,6 +3434,9 @@
 		"typeMembershipRequestCreated": "Demande d'adhésion",
 		"typeMembershipRequestApproved": "Demande d'adhésion approuvée",
 		"typeMembershipRequestRejected": "Demande d'adhésion refusée",
+		"typeMembershipPaymentRequested": "Paiement demandé pour l'adhésion",
+		"typeMembershipOfflineJoined": "Alerte équipe : adhésion en attente de paiement",
+		"typeMembershipOfflineJoinedDescription": "Une personne a rejoint directement un plan hors ligne et attend l'enregistrement de son premier paiement.",
 		"typeOrgAnnouncement": "Annonce de l'organisation",
 		"typeOrgContactMessageReceived": "Message de contact reçu",
 		"typeOrgCustomDomainActive": "Domaine personnalisé actif",
@@ -3719,6 +3724,16 @@
 						"match": {
 							"countPlural=one": "{count} événement à venir est encore un brouillon",
 							"countPlural=*": "{count} événements à venir sont encore des brouillons"
+						}
+					}
+				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} en attente du premier paiement",
+							"countPlural=*": "{count} en attente du premier paiement"
 						}
 					}
 				],
@@ -4105,6 +4120,8 @@
 					"paymentOffline": "Hors ligne — vous enregistrez les paiements",
 					"paymentOnline": "En ligne — facturation automatique via Stripe",
 					"paymentMethodHelp": "Les forfaits en ligne facturent automatiquement les membres via Stripe. Les forfaits hors ligne sont enregistrés par vous (espèces, virement, …).",
+					"paymentInstructions": "Instructions de paiement",
+					"paymentInstructionsHelp": "Affichées aux personnes après leur inscription ou leur acceptation, et dans les rappels de paiement. Laissez vide pour utiliser celles par défaut de l'organisation.",
 					"paymentOnlineNeedsStripe": "Connectez Stripe dans les paramètres de facturation pour proposer des forfaits en ligne.",
 					"paymentMethodImmutable": "La méthode de paiement ne peut pas être modifiée — archivez ce forfait et créez-en un nouveau pour en changer.",
 					"maxSubscriptions": "Abonnements maximum",
@@ -4116,7 +4133,8 @@
 					"paymentFreeHelp": "Les formules gratuites n'ont pas de prix et n'expirent jamais. Les membres s'inscrivent eux-mêmes, sans étape de paiement.",
 					"periodLifetime": "à vie (sans renouvellement)",
 					"freeShapeLocked": "Les formules gratuites sont toujours au prix de 0 et à vie : ces champs ne sont pas modifiables.",
-					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir."
+					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir.",
+					"paymentInstructionsMissing": "Les personnes qui postulent ne verront pas comment payer. Ajoutez des instructions ici ou définissez celles par défaut de l'organisation dans les Paramètres."
 				},
 				"errors": {
 					"createFailed": "Échec de la création du forfait : {detail}",
@@ -4129,7 +4147,8 @@
 				"title": "Abonnements",
 				"searchPlaceholder": "Rechercher par nom ou e-mail…",
 				"filter": {
-					"all": "Tous les statuts"
+					"all": "Tous les statuts",
+					"allMethods": "Tous les modes de paiement"
 				},
 				"create": {
 					"title": "Créer un abonnement",
@@ -4141,6 +4160,7 @@
 					"notes": "Notes",
 					"submit": "Créer",
 					"onlineExcluded": "Les forfaits en ligne (Stripe) ne sont pas listés — les membres s'y abonnent eux-mêmes afin de pouvoir autoriser le paiement.",
+					"offlineBecomesMember": "{name} devient membre lorsque vous enregistrez le premier paiement.",
 					"errors": {
 						"userRequired": "Choisis un membre",
 						"planRequired": "Choisis un forfait"
@@ -4223,7 +4243,11 @@
 					"immediateConfirm": "Je comprends que l'accès est révoqué immédiatement.",
 					"pendingSwitchDropped": "Le changement de forfait programmé sera annulé.",
 					"keep": "Conserver l'abonnement",
-					"confirm": "Confirmer l'annulation"
+					"confirm": "Confirmer l'annulation",
+					"requestTitle": "Annuler la demande",
+					"requestDesc": "{name} n'a pas encore payé. L'annulation supprime son adhésion en attente ; la personne pourra adhérer à nouveau plus tard.",
+					"requestKeep": "Conserver la demande",
+					"requestConfirm": "Annuler la demande"
 				},
 				"recordPayment": {
 					"title": "Enregistrer un paiement",
@@ -6126,7 +6150,6 @@
 		"soldOutHelper": "Toutes les places sont prises — une peut se libérer si une adhésion prend fin.",
 		"paused": "Inscriptions en pause",
 		"pausedHelper": "L'organisation a temporairement fermé les inscriptions.",
-		"offlineManaged": "Géré manuellement par l'organisation.",
 		"refundPolicy": "Politique de remboursement",
 		"viewMembership": "Voir les options d'adhésion",
 		"joinFreeCta": "Rejoindre gratuitement",
@@ -6139,7 +6162,12 @@
 		"reapplyCta": "Refaire une demande",
 		"reapplyCtaAria": "Refaire une demande avec {plan}",
 		"applySubscribeHelper": "L'organisation examine les demandes — vous paierez une fois votre demande acceptée.",
-		"applyJoinHelper": "L'organisation examine les demandes — vous adhérerez une fois votre demande acceptée."
+		"applyJoinHelper": "L'organisation examine les demandes — vous adhérerez une fois votre demande acceptée.",
+		"joinCta": "Rejoindre",
+		"awaitingPaymentHelper": "Votre adhésion commence dès que {orgName} confirme votre paiement.",
+		"awaitingOtherPlanHelper": "Vous avez une adhésion en attente de paiement auprès de {orgName}.",
+		"offlineGuestNote": "Paiement directement à {orgName} après votre adhésion.",
+		"applyOfflineHelper": "Une fois que {orgName} vous aura accepté, vous recevrez les détails du paiement."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois te connecter pour demander une vérification",
@@ -7845,6 +7873,13 @@
 			"contactOrg": "Contacte l'organisation pour renouveler.",
 			"memberSince": "Membre depuis le {date}",
 			"managedBy": "Géré par {org} — contacte-les pour toute modification.",
+			"awaitingDeadline": "Si aucun paiement n'est enregistré d'ici le {date}, cette demande est annulée.",
+			"withdraw": "Retirer la demande",
+			"withdrawTitle": "Retirer ta demande d'adhésion ?",
+			"withdrawMessage": "Tu pourras rejoindre à nouveau plus tard.",
+			"withdrawSuccess": "Ta demande a été retirée.",
+			"withdrawError": "Impossible de retirer ta demande. Réessaie.",
+			"howToPay": "Comment payer {orgName}",
 			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page.",
 			"loadErrorRejoin": "Impossible de vérifier quelles adhésions tu peux renouveler. Essaie de recharger la page."
 		}
@@ -7898,11 +7933,13 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Ton questionnaire est en cours d'évaluation — nous te préviendrons dès qu'il sera examiné.",
-			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé."
+			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé.",
+			"offline_payment": "Votre adhésion commence dès que l'organisation confirme votre paiement."
 		},
 		"joinTier": "Rejoindre {tier}",
 		"choosePlan": "Vous êtes éligible : choisissez une formule ci-dessous pour adhérer.",
-		"applyChoosePlan": "Choisissez une formule pour faire une demande — l'organisation examine les demandes avant le paiement."
+		"applyChoosePlan": "Choisissez une formule pour faire une demande — l'organisation examine les demandes avant le paiement.",
+		"seePaymentDetails": "Voir les détails du paiement"
 	},
 	"membershipApply": {
 		"title": "Rejoindre {orgName}",
@@ -7923,7 +7960,9 @@
 		"error": "Impossible d'envoyer ta demande. Réessaie.",
 		"titleTier": "Rejoindre {tier}",
 		"reapplyTitleTier": "Postuler à nouveau pour {tier}",
-		"forPlan": "{orgName} — demande avec la formule {plan}."
+		"forPlan": "{orgName} — demande avec la formule {plan}.",
+		"awaitingPaymentTitle": "Acceptée, paiement en attente",
+		"awaitingPaymentBody": "{orgName} a accepté votre demande. Votre adhésion commence dès que le paiement est confirmé."
 	},
 	"membershipTiers": {
 		"heading": "Adhésion",
@@ -8039,7 +8078,14 @@
 		"titleFree": "Rejoindre {plan}",
 		"freeNoCharge": "Il n'y a rien à payer. Votre adhésion démarre dès la confirmation.",
 		"neverRenews": "Cette adhésion n'expire jamais et n'est jamais renouvelée ni refacturée.",
-		"confirmFreeCta": "Rejoindre"
+		"confirmFreeCta": "Rejoindre",
+		"offline": {
+			"intro": "Vous payez {orgName} directement, en dehors de Revel. Votre adhésion commence dès que le paiement est confirmé.",
+			"confirmCta": "Rejoindre",
+			"title": "Presque terminé.",
+			"body": "Réglez {orgName} pour activer votre adhésion.",
+			"fallback": "{orgName} vous indiquera comment payer."
+		}
 	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",
 	"waitlistSettings.description": "Configure la façon dont les places sont proposées aux personnes en liste d'attente.",
@@ -9936,6 +9982,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Décrivez vos conditions de remboursement pour les adhésions payantes.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex. Remboursement intégral dans les 14 jours suivant le premier paiement.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Instructions de paiement par défaut pour les formules hors ligne",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Utilisées par les formules hors ligne qui n'ont pas d'instructions propres. Affichées aux personnes après leur inscription ou leur acceptation, et dans les rappels de paiement.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "ex. Virement sur l'IBAN ... avec votre nom en référence.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Billets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gérer les ventes de billets de vos événements",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Codes de réduction",
@@ -10129,9 +10178,12 @@
 			"approved": "Approuvée",
 			"completed": "Terminée",
 			"rejected": "Refusée",
-			"cancelled": "Annulée"
+			"cancelled": "Annulée",
+			"approvedOffline": "Acceptée, en attente de paiement",
+			"lapsed": "Demande caduque"
 		},
 		"continueCta": "Continuer le questionnaire",
+		"awaitingPaymentSeeAbove": "Retrouve les détails de paiement sur ta carte d'adhésion.",
 		"becameMember": "Tu es maintenant membre de {org} !",
 		"statusAriaLabel": "Statut de la candidature : {status}",
 		"cancelCta": "Annuler la candidature",
@@ -11804,5 +11856,19 @@
 	"demoAccounts.description.pendingPayment": "Paiement en attente",
 	"demoAccounts.description.memberOfBothOrgs": "Membre des DEUX organisations",
 	"demoAccounts.description.cancelledTicket": "A un billet annulé",
-	"demoAccounts.description.waitlistsAndInvited": "Sur des listes d'attente, avec des invitations à des événements"
+	"demoAccounts.description.waitlistsAndInvited": "Sur des listes d'attente, avec des invitations à des événements",
+	"membershipRequestCard.planPrefix": "Formule",
+	"approveMembershipModal.descriptionOffline": "L'approbation place {name} comme membre en attente de paiement et lui envoie vos instructions de paiement. L'adhésion devient active lorsque vous enregistrez le premier paiement.",
+	"approveMembershipModal.descriptionOnline": "L'approbation permet à {name} de finaliser le paiement. L'adhésion commence une fois le paiement effectué.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Ce montant diffère du prix de la formule ({price}). La période complète sera tout de même accordée.",
+	"memberPeople.awaiting.title": "En attente du premier paiement ({count})",
+	"memberPeople.awaiting.helper": "L'adhésion démarre dès que vous enregistrez le premier paiement.",
+	"memberPeople.awaiting.record": "Enregistrer le paiement",
+	"memberPeople.awaiting.recordFor": "Enregistrer le paiement de {name}",
+	"memberPeople.awaiting.truncated": "Affichage des {shown} premiers.",
+	"memberPeople.awaiting.seeAll": "Tout voir dans Abonnements",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Annuler cette demande ?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "L'annulation annule aussi sa demande d'adhésion en attente.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Oui, annuler la demande",
+	"manageMemberModal.awaitingBanRequestNote": "Le bannissement clôt aussi sa demande d'adhésion en attente."
 }

@@ -7,10 +7,19 @@
 		placeholder?: string;
 		rows?: number;
 		disabled?: boolean;
+		describedBy?: string;
 		[key: string]: unknown;
 	}
-	let { id, label, value = $bindable(''), placeholder, rows, disabled }: Props = $props();
+	let {
+		id,
+		label,
+		value = $bindable(''),
+		placeholder,
+		rows,
+		disabled,
+		describedBy
+	}: Props = $props();
 </script>
 
 <label for={id}>{label}</label>
-<textarea {id} {placeholder} {rows} {disabled} bind:value></textarea>
+<textarea {id} {placeholder} {rows} {disabled} aria-describedby={describedBy} bind:value></textarea>

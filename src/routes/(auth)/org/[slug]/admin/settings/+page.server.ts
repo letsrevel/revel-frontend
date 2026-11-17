@@ -1,4 +1,5 @@
 import * as m from '$lib/paraglide/messages.js';
+import { z } from 'zod';
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
@@ -145,6 +146,20 @@ export const actions: Actions = {
 		if (formData.has('membership_refund_policy')) {
 			updateData.membership_refund_policy =
 				(formData.get('membership_refund_policy') as string) ?? '';
+		}
+
+		// Default payment instructions for offline plans: same guarded rule as the refund policy.
+		// A non-string entry (a File) is a malformed submission, not empty text.
+		if (formData.has('membership_payment_instructions')) {
+			const parsed = z.string().safeParse(formData.get('membership_payment_instructions'));
+			if (!parsed.success) {
+				return fail(400, {
+					errors: {
+						form: m['serverErrors.admin.updateSettingsFailed']()
+					}
+				});
+			}
+			updateData.membership_payment_instructions = parsed.data;
 		}
 
 		// Revival window: same rule as the two fields above.

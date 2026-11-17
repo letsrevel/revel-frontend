@@ -2,9 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
+		mesubscriptionsCancelSubscription,
 		mesubscriptionsCreateBillingPortalSession,
 		mesubscriptionsSubscribe,
 		mesubscriptionsUncancelSubscription,
+		organizationGetOrganization,
 		organizationListMembershipPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type { MyMembershipSchema } from '$lib/api/generated/types.gen';
@@ -13,18 +15,25 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import SubscriptionStatusBadge from '$lib/components/members/SubscriptionStatusBadge.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import CancelSubscriptionDialog from './subscription-actions/CancelSubscriptionDialog.svelte';
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
 	import MembershipCardModal from './MembershipCardModal.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import {
 		formatPlanPrice,
 		getDateLine,
 		getMemberActions,
+		isAwaitingOfflinePayment,
 		needsMembershipSuspendedNotice
 	} from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { getMemberStatusLabel, getMemberStatusTone } from '$lib/utils/member-status';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
+	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -46,7 +55,67 @@
 	const actions = $derived(sub ? getMemberActions(sub, new Date(), membership.status) : null);
 	const isOffline = $derived(sub?.plan.payment_method === 'offline');
 
+	/**
+	 * An offline-paid join the organizer has not yet confirmed: the member row is
+	 * `awaiting_payment`. Such a member holds no credential yet, so the member card
+	 * (and with it the wallet buttons it hosts) and member-since are withheld, and
+	 * the badge says what is awaited. Row status alone covers a membership listed
+	 * without its subscription.
+	 */
+	const heldMember = $derived(membership.status === 'awaiting_payment');
+	/**
+	 * A pending OFFLINE subscription. Distinct from `heldMember`: an ACTIVE member
+	 * upgrading to an offline paid plan (or a legacy row) also has one, keeps their
+	 * card, and still needs the payment instructions.
+	 */
+	const awaitingOffline = $derived(isAwaitingOfflinePayment(sub));
+	const showAwaitingBlock = $derived(heldMember || awaitingOffline);
+	/**
+	 * Withdraw cancels the subscription. Only safe when that cannot cancel a real
+	 * membership: the row is held, or the pending sub targets a different tier than
+	 * the member's current one (upgrade). A legacy row at the plan's own tier is
+	 * the member's actual membership, which the backend would close.
+	 */
+	const canWithdraw = $derived(
+		awaitingOffline && !!sub && (heldMember || membership.tier?.id !== sub.plan.tier_id)
+	);
+	const instructions = $derived(sub?.payment_instructions?.trim() || null);
+
+	/**
+	 * When the backend auto-cancels an unpaid request. The server owns the
+	 * window (`payment_due_by`), so nothing is derived client-side: without the
+	 * field the deadline line is simply omitted.
+	 */
+	const awaitingDeadline = $derived(sub?.payment_due_by ? formatDate(sub.payment_due_by) : null);
+
+	/**
+	 * Instructions for a membership that is already paid but renews by hand
+	 * (OFFLINE ACTIVE / PAST_DUE). The awaiting block renders its own copy of
+	 * them, so this is only the renewal path.
+	 */
+	const renewalInstructions = $derived(
+		isOffline && (sub?.status === 'active' || sub?.status === 'past_due') ? instructions : null
+	);
+
+	// Contact details are only needed for the no-instructions fallback, so the
+	// (shared, cached) public org read is skipped whenever instructions exist.
+	const orgQuery = createQuery(() => ({
+		queryKey: ['org', membership.organization_slug, 'public-detail'],
+		queryFn: async () => {
+			const res = await organizationGetOrganization({
+				path: { slug: membership.organization_slug }
+			});
+			if (res.error || !res.data) throw new Error('Failed to load organization');
+			return res.data;
+		},
+		enabled: showAwaitingBlock && !instructions
+	}));
+	const contactable = $derived(
+		orgQuery.data ? canContactOrg(orgQuery.data.contact_method, orgQuery.data.contact_email) : false
+	);
+
 	let cancelOpen = $state(false);
+	let withdrawOpen = $state(false);
 	let changePlanOpen = $state(false);
 	let cardOpen = $state(false);
 	// Set on success and never cleared: the browser is on its way to Stripe, so
@@ -249,6 +318,42 @@
 	}));
 
 	const uncancelBusy = $derived(uncancelMutation.isPending);
+
+	/**
+	 * Withdraw an unpaid offline request. It is the ordinary member cancel: the
+	 * backend ends a never-paid OFFLINE row immediately; `immediate` says so
+	 * explicitly. The confirmation dialog is the only guard, hence no optimistic UI.
+	 */
+	const withdrawMutation = createMutation(() => ({
+		mutationFn: async () => {
+			const res = await mesubscriptionsCancelSubscription({
+				path: { org_id: membership.organization_id },
+				body: { immediate: true },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (res.error || !res.data) {
+				throw new Error(backendMessage(res.error) || m['account.memberships.withdrawError']());
+			}
+			return res.data;
+		},
+		onSuccess: (data) => {
+			withdrawOpen = false;
+			void settleSubscriptionCaches(queryClient, data);
+			toast.success(m['account.memberships.withdrawSuccess']());
+		},
+		onError: (err: Error) => {
+			withdrawOpen = false;
+			toast.error(err.message || m['account.memberships.withdrawError']());
+		}
+	}));
+	const withdrawBusy = $derived(withdrawMutation.isPending);
+
+	// The request can stop being withdrawable under an open dialog (a refetch
+	// records the payment). Close it, but never mid-flight: the mutation's own
+	// settle handlers own the close then.
+	$effect(() => {
+		if (!canWithdraw && withdrawOpen && !withdrawBusy) withdrawOpen = false;
+	});
 </script>
 
 <Card>
@@ -270,12 +375,24 @@
 					     payment-history table further down this card renders status pills
 					     too, and a pending PAYMENT would otherwise answer a lookup meant for
 					     a pending SUBSCRIPTION (j23 revival.spec.ts). #795 -->
-					<SubscriptionStatusBadge
-						status={sub.status}
-						data-testid="membership-subscription-status"
-					/>
+					{#if heldMember}
+						<!-- The row is PENDING, but "Pending" reads like a technical state the
+						     member can do nothing about. The member-status label says what is
+						     actually being waited for. -->
+						<StatusBadge
+							tone={getMemberStatusTone('awaiting_payment')}
+							label={getMemberStatusLabel('awaiting_payment')}
+							size="sm"
+							data-testid="membership-subscription-status"
+						/>
+					{:else}
+						<SubscriptionStatusBadge
+							status={sub.status}
+							data-testid="membership-subscription-status"
+						/>
+					{/if}
 				{:else}
-					<Badge variant="secondary" class="capitalize">{membership.status}</Badge>
+					<Badge variant="secondary">{getMemberStatusLabel(membership.status)}</Badge>
 				{/if}
 			</div>
 
@@ -306,21 +423,23 @@
 					</p>
 				{/if}
 
-				<p class="mt-2 text-sm">
-					{#if line.kind === 'renewal'}
-						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'cancels'}
-						{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'period_ends'}
-						{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'paused_since'}
-						{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'ended'}
-						{m['subscriptions.dateLine.ended']({ date: fmtDate(line.date) })}
-					{:else if line.kind === 'pending'}
-						{m['subscriptions.dateLine.pending']()}
-					{/if}
-				</p>
+				{#if !heldMember}
+					<p class="mt-2 text-sm">
+						{#if line.kind === 'renewal'}
+							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'cancels'}
+							{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'period_ends'}
+							{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'paused_since'}
+							{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'ended'}
+							{m['subscriptions.dateLine.ended']({ date: fmtDate(line.date) })}
+						{:else if line.kind === 'pending'}
+							{m['subscriptions.dateLine.pending']()}
+						{/if}
+					</p>
+				{/if}
 
 				<!-- Two different truths, told apart by whether the way back is actually
 				     on offer: a member who can un-cancel is pointed at the button below,
@@ -343,19 +462,67 @@
 				<!-- OFFLINE subscriptions are staff-run: say so instead of offering
 				     buttons the backend would refuse. -->
 				{#if isOffline}
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['account.memberships.managedBy']({ org: membership.organization_name })}
-					</p>
+					{#if !showAwaitingBlock}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['account.memberships.managedBy']({ org: membership.organization_name })}
+						</p>
+					{/if}
 					{#if sub.status === 'past_due'}
 						<p class="mt-1 text-xs text-muted-foreground">
 							{m['account.memberships.contactOrg']()}
 						</p>
 					{/if}
+					{#if renewalInstructions}
+						<details
+							class="mt-2 rounded-lg border p-3"
+							data-testid="membership-renewal-instructions"
+						>
+							<summary
+								class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							>
+								{m['account.memberships.howToPay']({ orgName: membership.organization_name })}
+							</summary>
+							<MarkdownContent content={renewalInstructions} class="mt-2 text-sm" />
+						</details>
+					{/if}
 				{/if}
-			{:else}
+			{:else if !heldMember}
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['account.memberships.memberSince']({ date: fmtDate(membership.member_since) })}
 				</p>
+			{/if}
+
+			{#if showAwaitingBlock}
+				<div class="mt-3 space-y-2 text-sm" data-testid="membership-awaiting-payment">
+					<p>
+						{m['membershipPlans.awaitingPaymentHelper']({ orgName: membership.organization_name })}
+					</p>
+					{#if instructions}
+						<MarkdownContent
+							content={instructions}
+							class="rounded-lg border bg-muted/40 p-3 text-sm"
+						/>
+						<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on muted/0.40 over card, 14.98 light / 15.90 dark -->
+					{:else}
+						<p class="text-muted-foreground">
+							{m['subscribe.offline.fallback']({ orgName: membership.organization_name })}
+						</p>
+						{#if contactable && orgQuery.data}
+							<OrgContactButton
+								organizationSlug={membership.organization_slug}
+								organizationName={membership.organization_name}
+								contactMethod={orgQuery.data.contact_method}
+								contactEmail={orgQuery.data.contact_email}
+								isAuthenticated={!!accessToken}
+							/>
+						{/if}
+					{/if}
+					{#if awaitingDeadline}
+						<p class="text-xs text-muted-foreground">
+							{m['account.memberships.awaitingDeadline']({ date: awaitingDeadline })}
+						</p>
+					{/if}
+				</div>
 			{/if}
 
 			<div class="mt-3 flex flex-wrap gap-2">
@@ -371,9 +538,11 @@
 					resume payment), and two competing primaries would flatten that
 					hierarchy exactly when it matters.
 				-->
-				<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
-					{m['membershipCard.showCard']()}
-				</Button>
+				{#if !heldMember}
+					<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
+						{m['membershipCard.showCard']()}
+					</Button>
+				{/if}
 				<Button href="/org/{membership.organization_slug}" variant="outline" size="sm">
 					{m['account.memberships.viewOrg']()}
 				</Button>
@@ -421,6 +590,16 @@
 						{m['subscriptions.actions.resumePayment']()}
 					</Button>
 				{/if}
+				{#if canWithdraw}
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => (withdrawOpen = true)}
+						disabled={withdrawBusy}
+					>
+						{m['account.memberships.withdraw']()}
+					</Button>
+				{/if}
 				{#if actions?.changePlan}
 					<Button variant="outline" size="sm" onclick={() => (changePlanOpen = true)}>
 						{m['subscriptions.actions.changePlan']()}
@@ -442,6 +621,23 @@
 		</article>
 	</CardContent>
 </Card>
+
+<!-- Outside the card for the same reason as the two dialogs below: the success
+     rewrites the memberships cache and the awaiting block unmounts with it. -->
+<ConfirmDialog
+	isOpen={withdrawOpen}
+	title={m['account.memberships.withdrawTitle']()}
+	message={m['account.memberships.withdrawMessage']()}
+	confirmText={m['account.memberships.withdraw']()}
+	confirmDisabled={withdrawBusy}
+	variant="warning"
+	onConfirm={() => {
+		if (canWithdraw) withdrawMutation.mutate();
+	}}
+	onCancel={() => {
+		if (!withdrawBusy) withdrawOpen = false;
+	}}
+/>
 
 <!--
 	Deliberately outside the status chain and the action row above: both dialogs

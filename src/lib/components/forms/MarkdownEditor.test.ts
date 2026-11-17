@@ -109,3 +109,45 @@ describe('MarkdownEditor expandable dialog', () => {
 		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 });
+
+describe('MarkdownEditor describedBy', () => {
+	beforeAll(() => {
+		const empty = { length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] };
+		const rect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 };
+		Range.prototype.getClientRects = () => empty as unknown as DOMRectList;
+		Range.prototype.getBoundingClientRect = () => rect as DOMRect;
+	});
+
+	const editable = (container: HTMLElement) =>
+		container.querySelector('[contenteditable="true"]') as HTMLElement | null;
+
+	it('points the textarea fallback at the hint', () => {
+		render(MarkdownEditor, { props: { id: 'd', label: 'L', describedBy: 'hint-1' } });
+		expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'hint-1');
+	});
+
+	it('points the editable surface at the hint', async () => {
+		const { container } = render(MarkdownEditor, {
+			props: { id: 'd', label: 'L', describedBy: 'hint-1' }
+		});
+		await screen.findByRole('toolbar');
+		await waitFor(() => expect(editable(container)).not.toBeNull());
+		expect(editable(container)).toHaveAttribute('aria-describedby', 'hint-1');
+	});
+
+	it('lists the hint before the error when both exist', async () => {
+		const { container } = render(MarkdownEditor, {
+			props: { id: 'd', label: 'L', describedBy: 'hint-1', error: 'Required' }
+		});
+		await screen.findByRole('toolbar');
+		await waitFor(() => expect(editable(container)).not.toBeNull());
+		expect(editable(container)).toHaveAttribute('aria-describedby', 'hint-1 d-error');
+	});
+
+	it('leaves aria-describedby off when there is neither hint nor error', async () => {
+		const { container } = render(MarkdownEditor, { props: { id: 'd', label: 'L' } });
+		await screen.findByRole('toolbar');
+		await waitFor(() => expect(editable(container)).not.toBeNull());
+		expect(editable(container)).not.toHaveAttribute('aria-describedby');
+	});
+});

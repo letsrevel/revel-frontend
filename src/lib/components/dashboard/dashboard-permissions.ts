@@ -65,7 +65,8 @@ const MEMBERSHIP_STATUSES: readonly MembershipStatus[] = [
 	'active',
 	'paused',
 	'cancelled',
-	'banned'
+	'banned',
+	'awaiting_payment'
 ];
 
 // Helper to get membership status for an organization
@@ -114,5 +115,6 @@ export const statusTones: Record<MembershipStatus, Tone> = {
 	active: 'success',
 	paused: 'warning',
 	cancelled: 'neutral',
-	banned: 'danger'
+	banned: 'danger',
+	awaiting_payment: 'warning'
 };

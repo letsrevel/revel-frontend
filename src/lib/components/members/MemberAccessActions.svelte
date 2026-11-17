@@ -50,13 +50,18 @@
 	/** The 409 `tier_follows_subscription`: the tier belongs to a live subscription. */
 	class TierLockedError extends Error {}
 	let tierLockDetail = $state<string | null>(null);
+	/** The backend's refusal of a status change for a member awaiting payment (400). */
+	let statusErrorDetail = $state<string | null>(null);
 
 	// A 409 lock belongs to one editing session of one person: drop it whenever the
 	// dialog is closed (by ANY path, including a successful save) or the member
 	// changes. Keyed on the user id, so a refreshed object for the same member keeps it.
 	$effect(() => {
 		void member?.user.id;
-		if (!open) tierLockDetail = null;
+		if (!open) {
+			tierLockDetail = null;
+			statusErrorDetail = null;
+		}
 	});
 	let lockedFor: string | null | undefined;
 	$effect(() => {
@@ -64,12 +69,14 @@
 		if (id !== lockedFor) {
 			lockedFor = id;
 			tierLockDetail = null;
+			statusErrorDetail = null;
 		}
 	});
 
 	/** Every way out of the dialog resets the session lock. */
 	function finish(): void {
 		tierLockDetail = null;
+		statusErrorDetail = null;
 		onClose();
 	}
 
@@ -128,7 +135,12 @@
 			refreshAll();
 			finish();
 		},
-		onError: (error: Error) => {
+		onError: (error: Error, variables) => {
+			if (variables.status && variables.target.status === 'awaiting_payment') {
+				// The backend's own, translated refusal (never matched on), shown in the dialog.
+				statusErrorDetail = error.message;
+				return;
+			}
 			if (error instanceof TierLockedError) {
 				// Not a failure to report: the form locks and says why. Refresh so the
 				// member row carries the flag from now on.
@@ -204,7 +216,11 @@
 	onClose={handleClose}
 	{onManageSubscription}
 	{tierLockDetail}
-	onUpdateStatus={(status) => member && updateMutation.mutate({ target: member, status })}
+	{statusErrorDetail}
+	onUpdateStatus={(status) => {
+		statusErrorDetail = null;
+		if (member) updateMutation.mutate({ target: member, status });
+	}}
 	onUpdateTier={(tierId) => member && updateMutation.mutate({ target: member, tierId })}
 	onMakeStaff={() => member && promoteMutation.mutate(member)}
 	onRemove={() => member && removeMutation.mutate(member)}

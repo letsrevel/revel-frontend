@@ -18,8 +18,11 @@
 	import { formatRelativeTime } from '$lib/utils/date';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RegisterMatchHint from '$lib/components/member-register/RegisterMatchHint.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { planPaymentMethodLabel } from '$lib/utils/plan-payment-method';
+	import { formatPlanPrice } from '$lib/utils/subscriptions';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
@@ -168,6 +171,18 @@
 						</div>
 						{#if request.user.pronouns}
 							<p class="text-sm text-muted-foreground">({request.user.pronouns})</p>
+						{/if}
+						{#if request.plan}
+							<p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+								<span class="sr-only">{m['membershipRequestCard.planPrefix']()}</span>
+								<span class="font-medium text-foreground">{request.plan.name}</span>
+								<span class="text-muted-foreground">{formatPlanPrice(request.plan)}</span>
+								<StatusBadge
+									tone="neutral"
+									size="sm"
+									label={planPaymentMethodLabel(request.plan.payment_method)}
+								/>
+							</p>
 						{/if}
 					</div>
 				</div>

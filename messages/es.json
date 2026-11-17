@@ -402,6 +402,9 @@
 		"typeMembershipRequestCreated": "Solicitud de membresía",
 		"typeMembershipRequestApproved": "Solicitud de membresía aprobada",
 		"typeMembershipRequestRejected": "Solicitud de membresía rechazada",
+		"typeMembershipPaymentRequested": "Pago solicitado para la membresía",
+		"typeMembershipOfflineJoined": "Aviso al equipo: nueva adhesión, pago pendiente",
+		"typeMembershipOfflineJoinedDescription": "Una persona se unió directamente a un plan offline y espera que se registre su primer pago.",
 		"typeOrgAnnouncement": "Anuncio de la organización",
 		"typeOrgContactMessageReceived": "Mensaje de contacto recibido",
 		"typeOrgCustomDomainActive": "Dominio personalizado activo",
@@ -3190,6 +3193,7 @@
 		"statusExplanation": {
 			"active": "Miembros pueden ver y participar en todos los eventos de la organización.",
 			"activeBillingNote": "Restablecer la membresía no reinicia la facturación: las suscripciones se retoman por separado, desde la pestaña «Suscripciones».",
+			"awaiting_payment": "Esta persona todavía no ha pagado. Puedes cancelar su solicitud o banearla. Para activarla, registra su primer pago.",
 			"paused": "Miembros pueden ver eventos, pero no participar ni confirmar asistencia.",
 			"pausedBillingNote": "Mientras la membresía esté en pausa no se cobrará ningún pago adicional.",
 			"pausedScheduledEndNote": "Su suscripción ya está programada para finalizar, así que no se pone en pausa: sigue facturando hasta que termine el periodo actual.",
@@ -3216,6 +3220,7 @@
 		"memberSince": "Miembro desde"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Pendiente de pago",
 		"active": "Activo",
 		"paused": "Pausado",
 		"cancelled": "Cancelado",
@@ -3752,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} pendiente del primer pago",
+							"countPlural=*": "{count} pendientes del primer pago"
+						}
+					}
+				],
 				"open": "Abrir eventos",
 				"allClear": "Ahora mismo nada requiere tu atención."
 			},
@@ -4135,6 +4150,8 @@
 					"paymentOffline": "Offline — tú registras los pagos",
 					"paymentOnline": "Online — facturación automática con Stripe",
 					"paymentMethodHelp": "Los planes online facturan automáticamente a los miembros a través de Stripe. Los planes offline los registras tú (efectivo, transferencia bancaria, …).",
+					"paymentInstructions": "Instrucciones de pago",
+					"paymentInstructionsHelp": "Se muestran a las personas después de unirse o ser aceptadas, y en los recordatorios de pago. Déjalo vacío para usar las predeterminadas de la organización.",
 					"paymentOnlineNeedsStripe": "Conecta Stripe en los ajustes de facturación para ofrecer planes online.",
 					"paymentMethodImmutable": "El método de pago no se puede cambiar — archiva el plan y crea uno nuevo para cambiarlo.",
 					"maxSubscriptions": "Suscripciones máximas",
@@ -4146,7 +4163,8 @@
 					"paymentFreeHelp": "Los planes gratuitos no tienen precio y no caducan nunca. Cualquiera puede unirse por su cuenta, sin ningún paso de pago.",
 					"periodLifetime": "de por vida (no se renueva nunca)",
 					"freeShapeLocked": "Los planes gratuitos siempre tienen precio 0 y duran de por vida, así que estos campos no se pueden cambiar.",
-					"lifetimeNoCount": "Un plan de por vida no se renueva nunca, así que no hay una frecuencia de facturación que configurar."
+					"lifetimeNoCount": "Un plan de por vida no se renueva nunca, así que no hay una frecuencia de facturación que configurar.",
+					"paymentInstructionsMissing": "Quienes soliciten no verán cómo pagar. Añade instrucciones aquí o define las predeterminadas de la organización en Ajustes."
 				},
 				"errors": {
 					"createFailed": "No se ha podido crear el plan: {detail}",
@@ -4159,7 +4177,8 @@
 				"title": "Suscripciones",
 				"searchPlaceholder": "Buscar por nombre o correo electrónico…",
 				"filter": {
-					"all": "Todos los estados"
+					"all": "Todos los estados",
+					"allMethods": "Todos los métodos de pago"
 				},
 				"create": {
 					"title": "Crear suscripción",
@@ -4171,6 +4190,7 @@
 					"notes": "Notas",
 					"submit": "Crear",
 					"onlineExcluded": "Los planes online (Stripe) no aparecen aquí — quien se suscribe a ellos lo hace por su cuenta, para poder autorizar el pago.",
+					"offlineBecomesMember": "{name} pasa a ser miembro cuando registres el primer pago.",
 					"errors": {
 						"userRequired": "Elige un miembro",
 						"planRequired": "Elige un plan"
@@ -4253,7 +4273,11 @@
 					"immediateConfirm": "Entiendo que el acceso se revoca de inmediato.",
 					"pendingSwitchDropped": "Se anulará su cambio de plan programado.",
 					"keep": "Mantener la suscripción",
-					"confirm": "Confirmar la cancelación"
+					"confirm": "Confirmar la cancelación",
+					"requestTitle": "Cancelar solicitud",
+					"requestDesc": "{name} todavía no ha pagado. Al cancelar se elimina su membresía pendiente; podrá unirse de nuevo más adelante.",
+					"requestKeep": "Mantener la solicitud",
+					"requestConfirm": "Cancelar solicitud"
 				},
 				"recordPayment": {
 					"title": "Registrar pago",
@@ -6156,7 +6180,6 @@
 		"soldOutHelper": "No quedan plazas: puede que se libere alguna si termina una membresía.",
 		"paused": "Inscripciones en pausa",
 		"pausedHelper": "La organización ha cerrado temporalmente las inscripciones.",
-		"offlineManaged": "Gestionado manualmente por la organización.",
 		"refundPolicy": "Política de reembolso",
 		"viewMembership": "Ver opciones de membresía",
 		"joinFreeCta": "Unirse gratis",
@@ -6169,7 +6192,12 @@
 		"reapplyCta": "Volver a solicitar",
 		"reapplyCtaAria": "Volver a solicitar con {plan}",
 		"applySubscribeHelper": "La organización revisa las solicitudes: pagarás una vez te aprueben.",
-		"applyJoinHelper": "La organización revisa las solicitudes: te unirás una vez te aprueben."
+		"applyJoinHelper": "La organización revisa las solicitudes: te unirás una vez te aprueben.",
+		"joinCta": "Unirte",
+		"awaitingPaymentHelper": "Tu membresía empieza cuando {orgName} confirme tu pago.",
+		"awaitingOtherPlanHelper": "Tienes una membresía pendiente de pago con {orgName}.",
+		"offlineGuestNote": "Se paga directamente a {orgName} después de unirte.",
+		"applyOfflineHelper": "Cuando {orgName} te acepte, recibirás los detalles del pago."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Debes haber iniciado sesión para solicitar la verificación",
@@ -7875,6 +7903,13 @@
 			"contactOrg": "Contacta con quien organiza para renovarla.",
 			"memberSince": "Miembro desde {date}",
 			"managedBy": "Gestionada por {org} — contacta para hacer cambios.",
+			"awaitingDeadline": "Si no se registra ningún pago antes del {date}, esta solicitud se cancela.",
+			"withdraw": "Retirar solicitud",
+			"withdrawTitle": "¿Retirar tu solicitud de membresía?",
+			"withdrawMessage": "Podrás unirte de nuevo más tarde.",
+			"withdrawSuccess": "Tu solicitud fue retirada.",
+			"withdrawError": "No se pudo retirar la solicitud. Inténtalo de nuevo.",
+			"howToPay": "Cómo pagar a {orgName}",
 			"loadError": "No se han podido cargar tus membresías. Intenta recargar la página.",
 			"loadErrorRejoin": "No se ha podido comprobar qué membresías puedes renovar. Intenta recargar la página."
 		}
@@ -7928,11 +7963,13 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Tu cuestionario está en revisión — te avisaremos en cuanto lo evaluemos.",
-			"approval": "Tu solicitud está siendo revisada por la organización. Te avisaremos en cuanto decidan."
+			"approval": "Tu solicitud está siendo revisada por la organización. Te avisaremos en cuanto decidan.",
+			"offline_payment": "Tu membresía empieza cuando la organización confirme tu pago."
 		},
 		"joinTier": "Únete a {tier}",
 		"choosePlan": "Cumples los requisitos — elige un plan abajo para unirte.",
-		"applyChoosePlan": "Elige un plan para solicitarlo — la organización revisa las solicitudes antes del pago."
+		"applyChoosePlan": "Elige un plan para solicitarlo — la organización revisa las solicitudes antes del pago.",
+		"seePaymentDetails": "Ver los detalles del pago"
 	},
 	"membershipApply": {
 		"title": "Unirse a {orgName}",
@@ -7953,7 +7990,9 @@
 		"error": "No se ha podido enviar tu solicitud. Vuelve a intentarlo.",
 		"titleTier": "Unirse a {tier}",
 		"reapplyTitleTier": "Volver a solicitar en {tier}",
-		"forPlan": "{orgName} — solicitud con el plan {plan}."
+		"forPlan": "{orgName} — solicitud con el plan {plan}.",
+		"awaitingPaymentTitle": "Aceptada, pago pendiente",
+		"awaitingPaymentBody": "{orgName} ha aceptado tu solicitud. Tu membresía empieza cuando confirmen tu pago."
 	},
 	"membershipTiers": {
 		"heading": "Membresía",
@@ -8069,7 +8108,14 @@
 		"titleFree": "Unirte a {plan}",
 		"freeNoCharge": "No hay nada que pagar. Tu membresía empieza en cuanto confirmes.",
 		"neverRenews": "Esta membresía no caduca nunca y no vuelve a renovarse ni a cobrarse.",
-		"confirmFreeCta": "Unirte ahora"
+		"confirmFreeCta": "Unirte ahora",
+		"offline": {
+			"intro": "Pagas directamente a {orgName}, fuera de Revel. Tu membresía empieza cuando confirmen tu pago.",
+			"confirmCta": "Unirte",
+			"title": "Casi estás dentro.",
+			"body": "Paga a {orgName} para activar tu membresía.",
+			"fallback": "{orgName} te dirá cómo pagar."
+		}
 	},
 	"waitlistSettings.title": "Ajustes avanzados de la lista de espera",
 	"waitlistSettings.description": "Configura cómo se ofrecen las plazas a quienes están en la lista de espera.",
@@ -9936,6 +9982,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Política de reembolso",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Describe tus condiciones de reembolso para las membresías de pago.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "p. ej. Reembolso completo en los 14 días posteriores a tu primer pago.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Instrucciones de pago predeterminadas para los planes offline",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Las usan los planes offline que no tienen instrucciones propias. Se muestran a las personas después de unirse o ser aceptadas, y en los recordatorios de pago.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "p. ej. Transferencia al IBAN ... con tu nombre como concepto.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Entradas",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Gestiona las ventas de entradas de tus eventos",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Códigos de descuento",
@@ -10129,9 +10178,12 @@
 			"approved": "Aprobada",
 			"completed": "Completada",
 			"rejected": "Rechazada",
-			"cancelled": "Cancelada"
+			"cancelled": "Cancelada",
+			"approvedOffline": "Aceptada, pendiente de pago",
+			"lapsed": "Solicitud caducada"
 		},
 		"continueCta": "Continuar el cuestionario",
+		"awaitingPaymentSeeAbove": "Consulta los datos de pago en tu tarjeta de membresía.",
 		"becameMember": "¡Ya eres miembro de {org}!",
 		"statusAriaLabel": "Estado de la candidatura: {status}",
 		"cancelCta": "Cancelar candidatura",
@@ -11804,5 +11856,19 @@
 	"demoAccounts.description.pendingPayment": "Pago pendiente",
 	"demoAccounts.description.memberOfBothOrgs": "Miembro de AMBAS organizaciones",
 	"demoAccounts.description.cancelledTicket": "Tiene una entrada cancelada",
-	"demoAccounts.description.waitlistsAndInvited": "En listas de espera, con invitaciones a eventos"
+	"demoAccounts.description.waitlistsAndInvited": "En listas de espera, con invitaciones a eventos",
+	"membershipRequestCard.planPrefix": "Plan",
+	"approveMembershipModal.descriptionOffline": "Al aprobar, {name} queda como miembro pendiente de pago y recibe tus instrucciones de pago. La membresía pasa a estar activa cuando registres el primer pago.",
+	"approveMembershipModal.descriptionOnline": "Al aprobar, {name} puede completar el pago. La membresía comienza cuando el pago se procesa.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo.",
+	"memberPeople.awaiting.title": "Pendientes del primer pago ({count})",
+	"memberPeople.awaiting.helper": "Pasan a ser miembros cuando registres su primer pago.",
+	"memberPeople.awaiting.record": "Registrar pago",
+	"memberPeople.awaiting.recordFor": "Registrar pago de {name}",
+	"memberPeople.awaiting.truncated": "Se muestran los primeros {shown}.",
+	"memberPeople.awaiting.seeAll": "Ver todos en Suscripciones",
+	"manageMemberModal.awaitingCancelConfirmTitle": "¿Cancelar esta solicitud?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Al cancelar también se cancela su solicitud de membresía pendiente.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Sí, cancelar solicitud",
+	"manageMemberModal.awaitingBanRequestNote": "Al banear también se cierra su solicitud de membresía pendiente."
 }

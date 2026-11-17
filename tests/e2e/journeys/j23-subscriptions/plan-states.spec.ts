@@ -14,7 +14,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J23 (USER_JOURNEYS.md) — member-facing plan AVAILABILITY states on the public
 // membership page: sold out (cap occupied), sales paused, offline
-// (staff-managed) and the guest CTA. No payment happens anywhere in this file.
+// (paid directly to the organization) and the guest CTA. No payment happens anywhere in this file.
 //
 // The plan grid moved off the org landing page onto /org/[slug]/membership
 // (#720) — the landing page keeps only a pointer at it — so every navigation
@@ -101,11 +101,11 @@ test.describe('J23 plan availability states @p2', () => {
 		).toBeVisible();
 		await expect(paused.getByRole('button', { name: 'Subscribe' })).toHaveCount(0);
 
-		// OFFLINE — displayed for information; joining is arranged with staff.
+		// OFFLINE — joined directly (no Stripe, so never "Subscribe"); the card says
+		// how it is paid instead of the old "Managed manually" copy.
 		const offline = planCard(page, offlinePlan.name);
-		// Reworded in #743 — the instruction to "contact them" moved into a CTA
-		// that only renders when the org actually has a contact method.
-		await expect(offline.getByText('Managed manually by the organization.')).toBeVisible();
+		await expect(offline.getByText(/Paid directly to .+ after you join\./)).toBeVisible();
+		await expect(offline.getByRole('button', { name: 'Join' })).toBeVisible();
 		await expect(offline.getByRole('button', { name: 'Subscribe' })).toHaveCount(0);
 		await expect(offline.getByText('Sold out')).toHaveCount(0);
 

@@ -19,6 +19,8 @@
 		required?: boolean;
 		disabled?: boolean;
 		error?: string;
+		/** id(s) of hint text elsewhere on the page, announced after the field's name. */
+		describedBy?: string;
 		class?: string;
 		/** Show a toolbar button that opens a near-full-screen editing dialog. */
 		expandable?: boolean;
@@ -36,6 +38,7 @@
 		required = false,
 		disabled = false,
 		error,
+		describedBy,
 		class: className,
 		expandable = false,
 		fill = false,
@@ -55,6 +58,11 @@
 
 	// Derived
 	const inputId = $derived(id || `markdown-${Math.random().toString(36).slice(2, 11)}`);
+
+	/** Hint id(s) first, the error last: the order a reader should hear them in. */
+	const describedByValue = $derived(
+		[describedBy, error ? `${inputId}-error` : undefined].filter(Boolean).join(' ') || undefined
+	);
 
 	// Functions
 	function emit(next: string): void {
@@ -121,6 +129,7 @@
 						// is the correct role for a rich-text editing surface.
 						role: 'textbox',
 						'aria-multiline': 'true',
+						...(describedByValue ? { 'aria-describedby': describedByValue } : {}),
 						...(label
 							? { 'aria-labelledby': `${inputId}-label` }
 							: { 'aria-label': placeholder || m['markdownEditor.placeholderDefault']() })
@@ -173,13 +182,10 @@
 			dom.setAttribute('aria-label', placeholder || m['markdownEditor.placeholderDefault']());
 			dom.removeAttribute('aria-labelledby');
 		}
-		if (error) {
-			dom.setAttribute('aria-invalid', 'true');
-			dom.setAttribute('aria-describedby', `${inputId}-error`);
-		} else {
-			dom.removeAttribute('aria-invalid');
-			dom.removeAttribute('aria-describedby');
-		}
+		if (error) dom.setAttribute('aria-invalid', 'true');
+		else dom.removeAttribute('aria-invalid');
+		if (describedByValue) dom.setAttribute('aria-describedby', describedByValue);
+		else dom.removeAttribute('aria-describedby');
 	});
 </script>
 
@@ -235,7 +241,7 @@
 			{required}
 			{disabled}
 			aria-invalid={!!error}
-			aria-describedby={error ? `${inputId}-error` : undefined}
+			aria-describedby={describedByValue}
 			class={cn(
 				'w-full resize-y rounded-md border-2 px-3 py-2 text-sm',
 				'bg-background text-foreground',

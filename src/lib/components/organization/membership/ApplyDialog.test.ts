@@ -13,6 +13,11 @@ import type {
 	MembershipEligibilitySchema
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
+import {
+	MY_MEMBERSHIPS_KEY,
+	MY_SUBSCRIPTIONS_KEY,
+	myOrgSubscriptionKey
+} from '$lib/utils/subscription-cache';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsApply: vi.fn()
@@ -421,6 +426,56 @@ describe('ApplyDialog', () => {
 		});
 	});
 
+	// An OFFLINE plan whose application is already approved: the backend answers
+	// /apply with the existing application and a wait verdict, not a new pending one.
+	describe('when the verdict is waiting for offline payment', () => {
+		const waitResult = () =>
+			makeResult(
+				{ status: 'approved' },
+				{
+					allowed: false,
+					next_step: 'wait_for_offline_payment',
+					reason_code: 'awaiting_offline_payment'
+				}
+			);
+
+		it('reports the accepted application with a link to the payment details', async () => {
+			const user = userEvent.setup();
+			mockApplySuccess(waitResult());
+			renderDialog({ planId: 'plan-1', planName: 'Card' });
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.awaitingPaymentTitle']() })
+			).toBeVisible();
+			expect(
+				screen.getByText(m['membershipApply.awaitingPaymentBody']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
+			// Not the under-review story, and not a membership yet.
+			expect(screen.queryByText(m['membershipApply.pendingTitle']())).toBeNull();
+			expect(screen.queryByText(m['membershipEligibility.memberBadge']())).toBeNull();
+		});
+
+		it('refreshes the member subscription caches', async () => {
+			const user = userEvent.setup();
+			const spy = vi.spyOn(queryClient, 'invalidateQueries');
+			mockApplySuccess(waitResult());
+			renderDialog({ planId: 'plan-1' });
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			await waitFor(() => {
+				expect(spy).toHaveBeenCalledWith({ queryKey: myOrgSubscriptionKey('org-1') });
+			});
+			expect(spy).toHaveBeenCalledWith({ queryKey: MY_MEMBERSHIPS_KEY });
+			expect(spy).toHaveBeenCalledWith({ queryKey: MY_SUBSCRIPTIONS_KEY });
+		});
+	});
+
 	// The apply endpoint answers 409 (`already_active_member`) for a caller who is
 	// already ACTIVE at the target tier, instead of minting a junk application row.
 	// The eligibility verdict covers that case and hides the Join CTA, so a 409 only
@@ -440,6 +495,21 @@ describe('ApplyDialog', () => {
 			expect(screen.queryByLabelText(/message \(optional\)/i)).toBeNull();
 			expect(screen.queryByRole('alert')).toBeNull();
 			expect(screen.queryByRole('button', { name: /send application/i })).toBeNull();
+			// The way out of the panel: the hub spells out the member's state.
+			expect(
+				screen.getByRole('link', { name: m['subscribe.return.checkAccount']() })
+			).toHaveAttribute('href', '/account/memberships');
+		});
+
+		it('moves focus to the outcome heading when the form is replaced', async () => {
+			const user = userEvent.setup();
+			mockApplyError({ detail: 'You are already a member at this tier.' }, 409);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			const heading = await screen.findByRole('heading', { name: "You're already a member" });
+			await waitFor(() => expect(heading).toHaveFocus());
 		});
 
 		it('refreshes the stale verdict and the page that rendered the Join CTA', async () => {
@@ -458,6 +528,99 @@ describe('ApplyDialog', () => {
 			// The server-rendered page behind the dialog still thinks the user is not a
 			// member — same refresh an instant join performs.
 			expect(vi.mocked(invalidateAll)).toHaveBeenCalled();
+		});
+	});
+
+	// The 409 body is `ApplyConflictSchema`: it carries a machine `reason_code`, which
+	// is the only thing the dialog branches on (never the localized `detail`).
+	describe('classifying the 409 by its reason code', () => {
+		it('reads already_active_member as the already-member panel', async () => {
+			const user = userEvent.setup();
+			mockApplyError(
+				{
+					detail: 'whatever the server says',
+					reason_code: 'already_active_member',
+					next_step: 'already_member'
+				},
+				409
+			);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.alreadyMemberTitle']() })
+			).toBeVisible();
+			expect(screen.getByText(m['membershipEligibility.memberBadge']())).toBeInTheDocument();
+		});
+
+		it('reads awaiting_offline_payment as the accepted, awaiting-payment outcome', async () => {
+			const user = userEvent.setup();
+			const spy = vi.spyOn(queryClient, 'invalidateQueries');
+			mockApplyError(
+				{
+					detail: 'Awaiting payment.',
+					reason_code: 'awaiting_offline_payment',
+					next_step: 'wait_for_offline_payment'
+				},
+				409
+			);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			const heading = await screen.findByRole('heading', {
+				name: m['membershipApply.awaitingPaymentTitle']()
+			});
+			expect(heading).toBeVisible();
+			await waitFor(() => expect(heading).toHaveFocus());
+			expect(
+				screen.getByText(m['membershipApply.awaitingPaymentBody']({ orgName: 'Acme' }))
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+			).toHaveAttribute('href', '/account/memberships');
+			// Not a member yet, and not an error.
+			expect(screen.queryByText(m['membershipEligibility.memberBadge']())).toBeNull();
+			expect(screen.queryByText(m['membershipApply.alreadyMemberTitle']())).toBeNull();
+			expect(screen.queryByRole('alert')).toBeNull();
+			await waitFor(() => {
+				expect(spy).toHaveBeenCalledWith({ queryKey: MY_MEMBERSHIPS_KEY });
+			});
+			expect(spy).toHaveBeenCalledWith({ queryKey: ['org', 'acme', 'join-eligibility'] });
+			// The 409 carries no organization id, so the per-org caches go by prefix.
+			expect(spy).toHaveBeenCalledWith({ queryKey: ['me', 'org'] });
+		});
+
+		it('trusts reason_code over a contradictory next_step', async () => {
+			const user = userEvent.setup();
+			mockApplyError(
+				{
+					detail: 'whatever',
+					reason_code: 'already_active_member',
+					next_step: 'wait_for_offline_payment'
+				},
+				409
+			);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.alreadyMemberTitle']() })
+			).toBeVisible();
+		});
+
+		it('falls back to the already-member panel for an unexpected 409 body', async () => {
+			const user = userEvent.setup();
+			mockApplyError({ reason_code: 'something_new', next_step: 42 }, 409);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(
+				await screen.findByRole('heading', { name: m['membershipApply.alreadyMemberTitle']() })
+			).toBeVisible();
 		});
 	});
 

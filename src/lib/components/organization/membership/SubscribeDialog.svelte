@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateAll } from '$app/navigation';
@@ -24,7 +25,9 @@
 		isSubscriptionActivationPending
 	} from '$lib/utils/subscriptions';
 	import { formatMoney } from '$lib/utils/format';
+	import { formatDate } from '$lib/utils/date';
 	import { Loader2 } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		open: boolean;
@@ -106,6 +109,22 @@
 	// ACTIVE and the membership granted. There is nowhere to redirect to, so the
 	// dialog itself has to report the result.
 	let joined = $state(false);
+
+	// The OFFLINE outcome: `checkout_url` is null too, but the row is PENDING —
+	// the member is held as awaiting payment until staff record it. Reporting it
+	// with the free "you're in" copy would claim a membership that does not exist.
+	let awaitingPayment = $state(false);
+	/** `MySubscriptionSchema.payment_instructions`, only set while awaiting. */
+	let paymentInstructions = $state<string | null>(null);
+	/** `MySubscriptionSchema.payment_due_by`: when the unpaid request lapses. */
+	let paymentDueBy = $state<string | null>(null);
+	/** Focus target once the outcome replaces the (now removed) Join button. */
+	let offlineHeading = $state<HTMLElement | null>(null);
+
+	// Local predicate on purpose: the /subscribe response has no `plan`, so the
+	// prop is the only source for the payment method.
+	const isOffline = $derived(plan.payment_method === 'offline');
+	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
 	const priceLine = $derived(m['subscribe.priceLine']({ price: formatPlanPrice(plan) }));
 
@@ -195,6 +214,19 @@
 				queryClient.invalidateQueries({
 					queryKey: ['org', organizationSlug, 'join-eligibility']
 				});
+				const held = isOffline && res.data.subscription.status === 'pending';
+				if (held) {
+					paymentInstructions = res.data.subscription.payment_instructions ?? null;
+					paymentDueBy = res.data.subscription.payment_due_by ?? null;
+					awaitingPayment = true;
+					// The Join button that held focus is gone; keep focus inside the dialog.
+					await tick();
+					offlineHeading?.focus();
+					// Refresh the server-rendered isMember/membershipStatus. Done after the
+					// panel state is set so the outcome stays visible while the page reloads.
+					await invalidateAll();
+					return null;
+				}
 				await invalidateAll();
 				joined = true;
 				return null;
@@ -202,7 +234,7 @@
 			return { ...res.data, checkout_url: res.data.checkout_url };
 		},
 		onSuccess: (data) => {
-			// `null` is the activation-pending or the free-join answer: either way
+			// `null` is the activation-pending, free-join or offline-hold answer: either way
 			// there is no Checkout session to go to, and the body already says so.
 			if (!data) return;
 			redirecting = true;
@@ -240,7 +272,7 @@
 	>
 		<DialogHeader>
 			<DialogTitle>
-				{isFree
+				{isFree || isOffline
 					? m['subscribe.titleFree']({ plan: plan.name })
 					: m['subscribe.title']({ plan: plan.name })}
 			</DialogTitle>
@@ -257,6 +289,41 @@
 					<p class="text-sm text-muted-foreground">{activationDetail}</p>
 				{/if}
 			</div>
+		{:else if awaitingPayment}
+			<div class="space-y-3">
+				<div class="space-y-1" role="status" aria-live="polite">
+					<h3 bind:this={offlineHeading} tabindex="-1" class="text-lg font-semibold outline-none">
+						{m['subscribe.offline.title']()}
+					</h3>
+					<p class="text-sm text-muted-foreground">
+						{m['subscribe.offline.body']({ orgName: organizationName })}
+					</p>
+				</div>
+				<p class="text-sm font-medium">{formatPlanPrice(plan)}</p>
+				<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on muted/0.40 over the dialog
+				     surface (background), 14.75 dark / 15.91 light. The intro box below is the same recipe. -->
+				{#if paymentInstructions}
+					<MarkdownContent
+						content={paymentInstructions}
+						class="rounded-lg border bg-muted/40 p-3 text-sm"
+					/>
+				{:else}
+					<p class="text-sm text-muted-foreground">
+						{m['subscribe.offline.fallback']({ orgName: organizationName })}
+					</p>
+				{/if}
+				{#if paymentDueBy}
+					<p class="text-xs text-muted-foreground">
+						{m['account.memberships.awaitingDeadline']({ date: formatDate(paymentDueBy) })}
+					</p>
+				{/if}
+				<a
+					href={membershipsHref}
+					class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['membershipEligibility.seePaymentDetails']()}
+				</a>
+			</div>
 		{:else if joined}
 			<!-- The free join is already done server-side; this is the only place it
 			     can be reported, since there is no Stripe return page to land on. -->
@@ -270,26 +337,34 @@
 					<p class="text-sm text-muted-foreground">{organizationName}</p>
 					<p class="text-lg font-semibold">{priceLine}</p>
 					<p class="mt-1 text-sm text-muted-foreground">
-						{isFree
-							? m['subscribe.freeNoCharge']()
-							: m['subscribe.firstCharge']({ price: firstChargeAmount })}
+						{#if isFree}
+							{m['subscribe.freeNoCharge']()}
+						{:else if isOffline}
+							{m['subscribe.offline.intro']({ orgName: organizationName })}
+						{:else}
+							{m['subscribe.firstCharge']({ price: firstChargeAmount })}
+						{/if}
 					</p>
 				</div>
 
-				<p class="text-sm text-muted-foreground">
-					{#if neverExpires}
-						{m['subscribe.neverRenews']()}
-					{:else}
-						{m['subscribe.autoRenew']({ cadence })}
-					{/if}
-				</p>
+				<!-- Offline: no auto-renewal is billed, the intro above already says
+				     how it is paid. -->
+				{#if !isOffline}
+					<p class="text-sm text-muted-foreground">
+						{#if neverExpires}
+							{m['subscribe.neverRenews']()}
+						{:else}
+							{m['subscribe.autoRenew']({ cadence })}
+						{/if}
+					</p>
+				{/if}
 
 				<!-- The one canonical billing disclosure. Collapsed by default, and
 				     deliberately not repeated on any other membership surface.
 				     Withdrawn for a FREE plan: all four bullets describe renewals,
 				     failed payments and revival windows that can never happen when
 				     nothing is ever charged. -->
-				{#if !isFree}
+				{#if !isFree && !isOffline}
 					<details class="rounded-lg border p-3">
 						<summary
 							class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -319,7 +394,7 @@
 
 				<!-- No Stripe object is involved in a free plan; saying otherwise would
 				     imply a payment step that never comes. -->
-				{#if !isFree}
+				{#if !isFree && !isOffline}
 					<p class="text-xs text-muted-foreground">{m['subscribe.stripeDisclaimer']()}</p>
 				{/if}
 
@@ -330,7 +405,7 @@
 		{/if}
 
 		<DialogFooter class="gap-2">
-			{#if activationPending || joined}
+			{#if activationPending || joined || awaitingPayment}
 				<!-- Nothing left to press: a second attempt can only hit the same 409
 				     until the webhook lands, and a completed free join would only be
 				     refused as a duplicate subscription. -->
@@ -345,7 +420,13 @@
 					{#if isBusy}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}
-					{isFree ? m['subscribe.confirmFreeCta']() : m['subscribe.confirmCta']()}
+					{#if isFree}
+						{m['subscribe.confirmFreeCta']()}
+					{:else if isOffline}
+						{m['subscribe.offline.confirmCta']()}
+					{:else}
+						{m['subscribe.confirmCta']()}
+					{/if}
 				</Button>
 			{/if}
 		</DialogFooter>

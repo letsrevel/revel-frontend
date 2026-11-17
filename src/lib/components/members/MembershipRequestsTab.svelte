@@ -221,6 +221,12 @@
 				queryKey: ['organization', organization.slug, 'member-register']
 			});
 			if (variables.linkRecordId) void invalidateDuplicates(queryClient, organization.slug);
+			// An approval can create a subscription (offline: a pending one awaiting
+			// payment), so the admin subscriptions list is stale too, and so is the
+			// server-loaded dashboard (awaiting-payment count, attention list).
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
 		},
 		onError: (error: Error, variables: ApproveVariables) => {
 			// Offer the override only when the backend says it can bypass the refusal
@@ -308,7 +314,21 @@
 	});
 
 	// Handlers
+	/** A plan-bearing application whose tier is known: confirmed, never one-click. */
+	function isPlanBearing(request: OrganizationMembershipRequestRetrieve): boolean {
+		return !!request.plan && !!request.tier?.id;
+	}
+
 	function handleApproveRequest(request: OrganizationMembershipRequestRetrieve) {
+		// An application for a plan always goes through the confirmation, which
+		// explains what approving does for that plan's payment method (offline:
+		// holds the member awaiting payment; online: unlocks checkout).
+		if (isPlanBearing(request)) {
+			requestToApprove = request;
+			approveMembershipModalOpen = true;
+			return;
+		}
+
 		// New-flow applications carry the tier they applied for — approve straight
 		// through and let the backend use it, whatever the org's tier count is.
 		if (request.tier) {
@@ -344,6 +364,14 @@
 	): Promise<void> {
 		const linkRecordId = record.id;
 		if (!linkRecordId) return;
+
+		// Plan-bearing applications are confirmed first, like plain approve.
+		if (isPlanBearing(request)) {
+			requestToApprove = request;
+			linkRecordToApprove = linkRecordId;
+			approveMembershipModalOpen = true;
+			return;
+		}
 
 		let tierId: string | null = null;
 		if (!request.tier) {
@@ -383,7 +411,9 @@
 		if (requestToApprove) {
 			approveRequestMutation.mutate({
 				request: requestToApprove,
-				tierId,
+				// The tier is locked to the application's own, which the backend
+				// resolves itself, so no override is sent.
+				tierId: isPlanBearing(requestToApprove) ? null : tierId,
 				...(linkRecordToApprove ? { linkRecordId: linkRecordToApprove } : {})
 			});
 		}

@@ -19,15 +19,17 @@ const plansMock = vi.hoisted(() => vi.fn());
 const subscribeMock = vi.hoisted(() => vi.fn());
 const uncancelMock = vi.hoisted(() => vi.fn());
 const paymentsMock = vi.hoisted(() => vi.fn());
+const orgMock = vi.hoisted(() => vi.fn());
+const cancelMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCreateBillingPortalSession: portalMock,
 	organizationListMembershipPlans: plansMock,
 	mesubscriptionsSubscribe: subscribeMock,
 	mesubscriptionsUncancelSubscription: uncancelMock,
 	mesubscriptionsListMySubscriptionPayments: paymentsMock,
-	mesubscriptionsCancelSubscription: vi.fn(),
+	mesubscriptionsCancelSubscription: cancelMock,
 	mesubscriptionsChangePlan: vi.fn(),
-	organizationGetOrganization: vi.fn()
+	organizationGetOrganization: orgMock
 }));
 
 const toastErrorMock = vi.hoisted(() => vi.fn());
@@ -149,9 +151,18 @@ describe('MembershipCard', () => {
 	});
 
 	function renderCard(membership: MyMembershipSchema) {
-		return render(QueryClientTestWrapper, {
+		const result = render(QueryClientTestWrapper, {
 			props: { client: queryClient, component: MembershipCard, componentProps: { membership } }
 		});
+		return {
+			...result,
+			update: (next: MyMembershipSchema) =>
+				result.rerender({
+					client: queryClient,
+					component: MembershipCard,
+					componentProps: { membership: next }
+				})
+		};
 	}
 
 	it('offers all three self-serve actions on an online active subscription', () => {
@@ -433,9 +444,9 @@ describe('MembershipCard', () => {
 		renderCard(makeMembership(makeOfflineSub({ status: 'pending' })));
 
 		expect(screen.queryByRole('button', { name: /resume payment/i })).toBeNull();
-		expect(
-			screen.getByText('Managed by Test Org — contact them to make changes.')
-		).toBeInTheDocument();
+		// The awaiting block replaces the generic "managed by" line.
+		expect(screen.queryByText(/contact them to make changes/i)).toBeNull();
+		expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
 	});
 
 	/**
@@ -511,5 +522,261 @@ describe('MembershipCard', () => {
 
 		expect(screen.getByText(/member since/i)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /manage billing/i })).toBeNull();
+	});
+
+	describe('awaiting payment (offline)', () => {
+		function awaiting(overrides: Partial<MySubscriptionSchema> = {}) {
+			return makeMembership(
+				makeOfflineSub({ status: 'pending', created_at: '2026-08-01T00:00:00Z', ...overrides }),
+				'awaiting_payment'
+			);
+		}
+
+		it('renders the payment instructions as markdown, the deadline and the helper', () => {
+			renderCard(
+				awaiting({
+					payment_instructions: 'Send **EUR 10** by bank transfer.',
+					payment_due_by: '2026-09-15T00:00:00Z'
+				})
+			);
+
+			expect(screen.getByText('EUR 10').tagName).toBe('STRONG');
+			expect(
+				screen.getByText('Your membership starts once Test Org confirms your payment.')
+			).toBeInTheDocument();
+			// Server-owned `payment_due_by`, not created_at + 30 days
+			expect(
+				screen.getByText(
+					`If no payment is recorded by ${formatDate('2026-09-15T00:00:00Z')}, this request is cancelled.`
+				)
+			).toBeInTheDocument();
+			expect(screen.queryByText(/will tell you how to pay/i)).toBeNull();
+		});
+
+		it('falls back to the organization contact when there are no instructions', async () => {
+			orgMock.mockResolvedValue({
+				data: { contact_method: 'email', contact_email: 'hi@org.test' },
+				error: undefined
+			});
+			renderCard(awaiting({ payment_instructions: null }));
+
+			expect(screen.getByText('Test Org will tell you how to pay.')).toBeInTheDocument();
+			await waitFor(() =>
+				expect(screen.getByRole('link', { name: 'Email Test Org' })).toBeInTheDocument()
+			);
+		});
+
+		it('offers no contact button when the organization has no contact method', async () => {
+			orgMock.mockResolvedValue({
+				data: { contact_method: 'none', contact_email: null },
+				error: undefined
+			});
+			renderCard(awaiting({ payment_instructions: null }));
+
+			await waitFor(() => expect(orgMock).toHaveBeenCalled());
+			expect(screen.queryByRole('link', { name: 'Email Test Org' })).toBeNull();
+			expect(screen.queryByRole('button', { name: /contact/i })).toBeNull();
+		});
+
+		it('hides the member card button while awaiting', () => {
+			renderCard(awaiting({ payment_instructions: 'x' }));
+
+			expect(screen.queryByRole('button', { name: /card/i })).toBeNull();
+			expect(screen.getByRole('link', { name: /view org/i })).toBeInTheDocument();
+		});
+
+		it('labels the badge "Awaiting payment" when no subscription is inlined', () => {
+			renderCard(makeMembership(null, 'awaiting_payment'));
+
+			expect(screen.getByText('Awaiting payment')).toBeInTheDocument();
+			expect(screen.queryByText('awaiting_payment')).toBeNull();
+		});
+
+		it('does not treat an ONLINE pending subscription as awaiting payment', () => {
+			renderCard(makeMembership(makeSub({ status: 'pending' }), 'active'));
+
+			expect(screen.queryByText(/your membership starts once/i)).toBeNull();
+			expect(screen.queryByText(/will tell you how to pay/i)).toBeNull();
+			expect(screen.getByRole('button', { name: /resume payment/i })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+		});
+
+		it('omits the deadline when the backend sends no payment_due_by', () => {
+			renderCard(awaiting({ payment_instructions: 'x', payment_due_by: null }));
+
+			expect(screen.queryByText(/if no payment is recorded by/i)).toBeNull();
+		});
+
+		it('badges the awaiting state "Awaiting payment" instead of the subscription "Pending"', () => {
+			renderCard(awaiting({ payment_instructions: 'x' }));
+
+			const badge = screen.getByTestId('membership-subscription-status');
+			expect(badge).toHaveTextContent('Awaiting payment');
+			expect(badge).not.toHaveTextContent(/^pending$/i);
+		});
+
+		describe('withdrawing the request', () => {
+			const openDialog = async (user: ReturnType<typeof userEvent.setup>) => {
+				await user.click(screen.getByRole('button', { name: 'Withdraw request' }));
+				return screen.findByTestId('confirm-dialog');
+			};
+
+			it('confirms first, then cancels with an empty body and settles the caches', async () => {
+				const user = userEvent.setup();
+				const sub = makeOfflineSub({ status: 'cancelled', cancelled_at: '2026-08-02T00:00:00Z' });
+				cancelMock.mockResolvedValue({ data: sub, error: undefined });
+				const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+				renderCard(awaiting({ payment_instructions: 'x' }));
+
+				const dialog = await openDialog(user);
+				expect(cancelMock).not.toHaveBeenCalled();
+				expect(dialog).toHaveTextContent('Withdraw your membership request?');
+				expect(dialog).toHaveTextContent('You can join again later.');
+
+				await user.click(screen.getByTestId('confirm-dialog-confirm'));
+
+				await waitFor(() => expect(cancelMock).toHaveBeenCalledTimes(1));
+				expect(cancelMock.mock.calls[0][0]).toMatchObject({
+					path: { org_id: 'org-1' },
+					body: { immediate: true }
+				});
+				await waitFor(() =>
+					expect(toastSuccessMock).toHaveBeenCalledWith('Your request was withdrawn.')
+				);
+				const keys = invalidate.mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
+				expect(keys).toContain(JSON.stringify(['me', 'memberships']));
+				expect(keys).toContain(JSON.stringify(['me', 'subscriptions']));
+				expect(keys).toContain(JSON.stringify(['me', 'org', 'org-1', 'subscription']));
+			});
+
+			it('closes the dialog when the request stops being withdrawable under it', async () => {
+				const user = userEvent.setup();
+				const card = renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await card.update(makeMembership(makeOfflineSub({ status: 'cancelled' }), 'active'));
+
+				await waitFor(() => expect(screen.queryByTestId('confirm-dialog')).toBeNull());
+				expect(cancelMock).not.toHaveBeenCalled();
+			});
+
+			it('keeps the dialog open while the withdrawal is in flight', async () => {
+				const user = userEvent.setup();
+				let release!: (v: unknown) => void;
+				cancelMock.mockReturnValue(new Promise((r) => (release = r)));
+				const card = renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await user.click(screen.getByTestId('confirm-dialog-confirm'));
+				await waitFor(() => expect(cancelMock).toHaveBeenCalledTimes(1));
+				await card.update(makeMembership(makeOfflineSub({ status: 'cancelled' }), 'active'));
+
+				expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
+				release({ data: makeOfflineSub({ status: 'cancelled' }), error: undefined });
+			});
+
+			it('does nothing when the confirmation is dismissed', async () => {
+				const user = userEvent.setup();
+				renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await user.click(screen.getByTestId('confirm-dialog-cancel'));
+
+				expect(cancelMock).not.toHaveBeenCalled();
+			});
+
+			it('reports a refusal and keeps the card', async () => {
+				const user = userEvent.setup();
+				cancelMock.mockResolvedValue({ data: undefined, error: { detail: 'Nope' } });
+				renderCard(awaiting({ payment_instructions: 'x' }));
+
+				await openDialog(user);
+				await user.click(screen.getByTestId('confirm-dialog-confirm'));
+
+				await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Nope'));
+				expect(toastSuccessMock).not.toHaveBeenCalled();
+			});
+
+			it('offers no withdraw on a paid (active) offline membership', () => {
+				renderCard(makeMembership(makeOfflineSub()));
+
+				expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
+			});
+		});
+
+		describe('an ACTIVE member holding a pending offline subscription', () => {
+			const pendingSub = () =>
+				makeOfflineSub({ status: 'pending', payment_instructions: 'Pay **now**' });
+			const activeIn = (tierId: string) => ({
+				...makeMembership(pendingSub(), 'active'),
+				tier: { id: tierId, name: 'Tier', kind: 'member' } as MyMembershipSchema['tier']
+			});
+
+			it('upgrade to another tier: keeps card, shows instructions, offers withdraw', () => {
+				renderCard(activeIn('other-tier'));
+
+				expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
+				expect(screen.getByRole('button', { name: 'Withdraw request' })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-subscription-status')).not.toHaveTextContent(
+					'Awaiting payment'
+				);
+			});
+
+			it('legacy row on the plan tier: keeps card, shows instructions, offers NO withdraw', () => {
+				renderCard(activeIn('t1'));
+
+				expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+				expect(screen.getByTestId('membership-awaiting-payment')).toBeInTheDocument();
+				expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
+			});
+
+			it('hides the managed-by line while the instructions show', () => {
+				renderCard(activeIn('other-tier'));
+
+				expect(screen.queryByText(/contact them to make changes/i)).toBeNull();
+			});
+		});
+
+		it('an awaiting_payment member with no inlined subscription gets no withdraw', () => {
+			renderCard(makeMembership(null, 'awaiting_payment'));
+
+			expect(screen.queryByRole('button', { name: 'Withdraw request' })).toBeNull();
+		});
+
+		it('still offers the member card on an active offline membership', () => {
+			renderCard(makeMembership(makeOfflineSub()));
+
+			expect(screen.getByRole('button', { name: /card/i })).toBeInTheDocument();
+		});
+	});
+
+	describe('payment instructions on a paid offline membership', () => {
+		it.each(['active', 'past_due'] as const)(
+			'shows collapsible instructions while %s',
+			(status) => {
+				renderCard(
+					makeMembership(
+						makeOfflineSub({ status, payment_instructions: 'Renew by **bank transfer**.' })
+					)
+				);
+
+				const summary = screen.getByText('How to pay Test Org');
+				expect(summary.closest('details')).not.toBeNull();
+				expect(screen.getByText('bank transfer').tagName).toBe('STRONG');
+			}
+		);
+
+		it('shows nothing when there are no instructions', () => {
+			renderCard(makeMembership(makeOfflineSub({ payment_instructions: null })));
+
+			expect(screen.queryByText('How to pay Test Org')).toBeNull();
+		});
+
+		it('never shows the collapsible on an online subscription', () => {
+			renderCard(makeMembership(makeSub({ payment_instructions: 'x' })));
+
+			expect(screen.queryByText('How to pay Test Org')).toBeNull();
+		});
 	});
 });

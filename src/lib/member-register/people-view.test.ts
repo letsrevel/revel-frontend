@@ -189,6 +189,22 @@ describe('status vocabulary', () => {
 	});
 });
 
+describe('awaiting_payment member status', () => {
+	it('reads an awaiting_payment access row as its own warning status, not Active', () => {
+		const NOW = new Date('2026-11-09T12:00:00Z');
+		const record: PersonStatusInput = {
+			valid_from: '2026-01-01T00:00:00Z',
+			valid_until: null,
+			kind: 'standard',
+			has_account: true,
+			invite_status: 'linked',
+			is_current: true,
+			member_status: 'awaiting_payment'
+		};
+		expect(getPersonStatus(record, NOW)).toEqual({ id: 'awaiting-payment', tone: 'warning' });
+	});
+});
+
 describe('backend status fields (is_current / member_status)', () => {
 	const NOW = new Date('2026-11-09T12:00:00Z');
 	const base: PersonStatusInput = {

@@ -21,7 +21,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
-	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
+	import { membershipReturnPath, tierAnchorId } from '$lib/utils/internal-return-url';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
@@ -260,7 +260,14 @@
 			(sentenceInRequirements || showVerdictNote) &&
 			isNoteOnlyMembershipCta(gateVerdict, !!ctaPlanId && hasPlans)
 	);
-	const showCta = $derived(showJoinCta && !!tierId && !ctaSentenceElsewhere);
+	// A viewer with a live (non-terminal) subscription gets the state explained
+	// by the plan cards; the tier CTA would only contradict them, e.g. "You
+	// already have an active subscription" beside "awaiting payment". Plan-less
+	// tiers have no plan cards, so they keep their own CTA verdict.
+	const hasLiveSubscription = $derived(!!subscription);
+	const showCta = $derived(
+		showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans)
+	);
 
 	/**
 	 * The plan a pressed Apply button belongs to. One dialog per TIER rather than
@@ -335,7 +342,10 @@
 											slug: organizationSlug,
 											id: tier.questionnaire_id
 										}),
-										safeInternalReturnUrl()
+										membershipReturnPath(
+											resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }),
+											tier.id ?? undefined
+										)
 									)}
 									aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
 									class="font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -402,7 +412,11 @@
      look is one design across buyer tickets, organizer config and membership) —
      this tier has no single price of its own, so the price slot stays empty and
      the plan cards carry the numbers. -->
-<article class="h-full" aria-labelledby={headingId}>
+<article
+	id={tier.id ? tierAnchorId(tier.id) : undefined}
+	class="h-full scroll-mt-24"
+	aria-labelledby={headingId}
+>
 	<PricingCard
 		name={tier.name}
 		{headingId}

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { load } from './+page.server';
+import { actions, load } from './+page.server';
+import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
 import { loadSetupCounts } from '$lib/server/org-setup';
 
 vi.mock('$lib/api/generated', () => ({
@@ -60,5 +61,50 @@ describe('settings load: continueSetupHref', () => {
 		const r = await run({ isOwner: false });
 		expect(counts).not.toHaveBeenCalled();
 		expect(r).toMatchObject({ continueSetupHref: null });
+	});
+});
+
+describe('settings action: membership_payment_instructions', () => {
+	const update = vi.mocked(organizationadmincoreUpdateOrganization);
+
+	async function submit(fields: Record<string, string | Blob>) {
+		const fd = new FormData();
+		for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+		const arg = {
+			request: { formData: async () => fd },
+			params: { slug: 'acme' },
+			cookies: { get: () => 'tok' }
+		};
+		return (actions.default as unknown as (a: typeof arg) => Promise<unknown>)(arg);
+	}
+
+	beforeEach(() => {
+		update.mockReset();
+		update.mockResolvedValue({ data: { slug: 'acme' }, error: undefined } as never);
+	});
+
+	const sentBody = () => update.mock.calls[0][0].body as Record<string, unknown>;
+
+	it('omits the field when it was not submitted', async () => {
+		await submit({ visibility: 'public' });
+		expect(sentBody()).not.toHaveProperty('membership_payment_instructions');
+	});
+
+	it('sends the text as submitted, and an empty string to clear', async () => {
+		await submit({ membership_payment_instructions: 'IBAN 123' });
+		expect(sentBody().membership_payment_instructions).toBe('IBAN 123');
+
+		update.mockClear();
+		await submit({ membership_payment_instructions: '' });
+		expect(sentBody().membership_payment_instructions).toBe('');
+	});
+
+	it('rejects a non-string entry with a 400 and never calls the API', async () => {
+		const result = await submit({
+			membership_payment_instructions: new File(['x'], 'x.txt')
+		});
+
+		expect(result).toMatchObject({ status: 400, data: { errors: { form: expect.any(String) } } });
+		expect(update).not.toHaveBeenCalled();
 	});
 });

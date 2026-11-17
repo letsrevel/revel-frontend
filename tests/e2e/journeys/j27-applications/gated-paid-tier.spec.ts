@@ -98,11 +98,10 @@ const QUESTIONNAIRE_POLICY = 'A membership questionnaire is required.';
 /** …and what it says once their submission is with the organization. */
 const QUESTIONNAIRE_PENDING =
 	"Your questionnaire is being reviewed — we'll let you know once it's evaluated.";
-/** `PlanCard`'s offline branch — correct in every state, and left alone.
- *  Reworded in #743: the sentence no longer tells the viewer to make contact,
- *  because whether there is any way to do so depends on the org's contact
- *  method, and the CTA beneath now carries that. */
-const OFFLINE_MANAGED = 'Managed manually by the organization.';
+/** `PlanCard`'s offline gated helper: an offline plan is joined, never
+ *  subscribed to, so the sentence uses "join" (the old "Managed manually by the
+ *  organization." copy is gone). Correct in every gated state. */
+const OFFLINE_MANAGED = "You can join once this tier's requirements are met.";
 
 test.describe('j27 gated + paid tier @p2', () => {
 	test('a gated priced tier withholds its plan CTA, and hands it back once the gate clears', async ({
@@ -216,7 +215,9 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await expect(
 			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
-		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
+		await page.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 15_000
+		});
 
 		// ── Direction 2: gate cleared ⇒ the CTA comes back ─────────────────────
 		// Grading is asynchronous and the verdict is a cached client query, so the
@@ -426,8 +427,8 @@ test.describe('j27 gated + paid tier @p2', () => {
 	//
 	// An OFFLINE plan, not a free or online one, because that is the shape that
 	// fetched nothing — and the shape whose plan card can carry no state of its
-	// own either ("Managed manually by the organization." is all it ever says,
-	// plus a contact CTA that says nothing about eligibility), leaving the
+	// own either (its gated helper is all it ever says, and says nothing about the
+	// member's own standing), leaving the
 	// tier's requirement line as the ONLY place the member's standing can appear.
 	//
 	// A MANUAL questionnaire because it parks: manual mode enqueues no evaluation
@@ -492,7 +493,9 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await expect(
 			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
-		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
+		await page.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 15_000
+		});
 
 		// ── …and the card says so, in the place that used to deny it ───────────
 		await gotoHydrated(page, membershipPath(org.slug));

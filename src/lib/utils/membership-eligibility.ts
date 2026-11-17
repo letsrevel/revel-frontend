@@ -45,6 +45,8 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'wait_for_questionnaire_evaluation':
 		case 'wait_for_approval':
 		case 'wait_for_whitelist_approval':
+		case 'wait_for_offline_payment':
+			// wait_for_offline_payment: nothing to press; the hub has the details.
 			return 'waiting';
 		case 'wait_to_retake_questionnaire':
 			return 'retry_later';
@@ -281,7 +283,8 @@ const APPROVAL_STEPS: readonly MembershipNextStep[] = [
  */
 const PAYMENT_READINESS_REASON_CODES: readonly MembershipReasonCode[] = [
 	'plan_not_online',
-	'org_not_stripe_connected'
+	'org_not_stripe_connected',
+	'awaiting_offline_payment' // held member: all requirement gates cleared
 ];
 
 /** Did this verdict come from a gate BELOW both requirement gates? */
@@ -411,7 +414,8 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 	requires_approval: () => m['membershipEligibility.reason.requires_approval'](),
 	duplicate_active_subscription: () =>
 		m['membershipEligibility.reason.duplicate_active_subscription'](),
-	membership_paused: () => m['membershipEligibility.reason.membership_paused']()
+	membership_paused: () => m['membershipEligibility.reason.membership_paused'](),
+	awaiting_offline_payment: () => m['membershipEligibility.wait.offline_payment']()
 };
 
 /**
@@ -433,7 +437,8 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
 	wait_for_questionnaire_evaluation: () =>
 		m['membershipEligibility.wait.questionnaire_evaluation'](),
-	wait_for_approval: () => m['membershipEligibility.wait.approval']()
+	wait_for_approval: () => m['membershipEligibility.wait.approval'](),
+	wait_for_offline_payment: () => m['membershipEligibility.wait.offline_payment']()
 };
 
 /**

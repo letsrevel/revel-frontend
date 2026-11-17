@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -22,6 +22,9 @@ import {
 	organizationadminmembershiprequestsRejectMembershipRequest,
 	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
 } from '$lib/api/generated/sdk.gen';
+
+vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn(), goto: vi.fn() }));
+import { invalidateAll } from '$app/navigation';
 
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 import { toast } from 'svelte-sonner';
@@ -651,6 +654,83 @@ describe('MembershipRequestsTab approve tier resolution', () => {
 	});
 });
 
+describe('MembershipRequestsTab plan-bearing approval', () => {
+	const planRequest = (method: 'offline' | 'online') =>
+		({
+			...pendingRequest,
+			tier: { id: 'tier-2', name: 'Silver' },
+			plan: { id: 'p1', name: 'Yearly', payment_method: method }
+		}) as unknown as OrganizationMembershipRequestRetrieve;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: {},
+			error: undefined
+		} as never);
+	});
+
+	it('opens the confirmation with the plan copy and a locked tier instead of approving at once', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([planRequest('offline')]) as never
+		);
+		renderTab();
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		const dialog = await screen.findByRole('dialog');
+		expect(dialog).toHaveTextContent(/awaiting payment/i);
+		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
+		const tier = dialog.querySelector('#tier') as HTMLElement;
+		expect(tier).toHaveAttribute('data-disabled');
+		expect(tier).toHaveTextContent('Silver');
+	});
+
+	it('approves without a tier override and refreshes subscriptions and the dashboard', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([planRequest('online')]) as never
+		);
+		const { client } = renderTab();
+		const spy = vi.spyOn(client, 'invalidateQueries');
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+		await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /approve/i }));
+
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalled();
+		});
+		const call = vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mock
+			.calls[0][0] as { body: Record<string, unknown> };
+		expect(call.body).toEqual({});
+		await waitFor(() => {
+			expect(spy).toHaveBeenCalledWith({ queryKey: ['organization', 'test-org', 'subscriptions'] });
+		});
+		expect(vi.mocked(invalidateAll)).not.toHaveBeenCalled();
+	});
+
+	it('keeps the one-click approve for a tier-only application', async () => {
+		const user = userEvent.setup();
+		const tierOnly = {
+			...pendingRequest,
+			tier: { id: 'tier-1', name: 'Gold' }
+		} as unknown as OrganizationMembershipRequestRetrieve;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([tierOnly]) as never
+		);
+		renderTab();
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalled();
+		});
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+});
+
 describe('MembershipRequestsTab approve and link', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -726,6 +806,38 @@ describe('MembershipRequestsTab approve and link', () => {
 			error: undefined
 		} as never);
 	}
+
+	it('routes a plan-bearing application through the confirmation and keeps the link', async () => {
+		const user = userEvent.setup();
+		const planned = {
+			...pendingRequest,
+			tier: { id: 'tier-1', name: 'Gold' },
+			plan: { id: 'p1', name: 'Yearly', payment_method: 'offline' }
+		} as unknown as OrganizationMembershipRequestRetrieve;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([planned]) as never
+		);
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await screen.findByText('This may be register entry Ada L.');
+		await user.click(screen.getByTestId('approve-and-link'));
+
+		const dialog = await screen.findByRole('dialog', { name: /approve/i });
+		expect(dialog).toHaveTextContent(/awaiting payment/i);
+		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
+
+		await user.click(within(dialog).getByRole('button', { name: /^approve/i }));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({ body: expect.objectContaining({ link_record_id: 'rec-9' }) })
+			);
+		});
+	});
 
 	it('defaults the tier to the register entry tier when several tiers exist', async () => {
 		const user = userEvent.setup();

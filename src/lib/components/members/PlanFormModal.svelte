@@ -13,7 +13,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2 } from '@lucide/svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import { AlertTriangle, Loader2 } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { currencyOptions } from '$lib/utils/currencies';
 
@@ -32,6 +33,8 @@
 
 	let name = $state('');
 	let description = $state('');
+	// Offline plans only: how to pay (markdown). Empty falls back to the org default.
+	let paymentInstructions = $state('');
 	let price = $state('0.00');
 	let currency = $state<string>('EUR');
 	let periodUnit = $state<PeriodUnit>('month');
@@ -53,6 +56,7 @@
 		if (plan) {
 			name = plan.name;
 			description = plan.description ?? '';
+			paymentInstructions = plan.payment_instructions ?? '';
 			price = String(plan.price);
 			currency = plan.currency;
 			periodUnit = plan.period_unit;
@@ -64,6 +68,7 @@
 		} else {
 			name = '';
 			description = '';
+			paymentInstructions = '';
 			price = '0.00';
 			currency = 'EUR';
 			periodUnit = 'month';
@@ -89,7 +94,19 @@
 	);
 	const isFree = $derived(effectiveMethod === 'free');
 	const isOnline = $derived(effectiveMethod === 'online');
+	const isOffline = $derived(effectiveMethod === 'offline');
 	const isLifetime = $derived(periodUnit === 'lifetime');
+
+	// An offline plan with no instructions of its own AND no organization default
+	// leaves applicants with nothing about how to pay. Read from the admin org
+	// already in hand, so there is no extra fetch. Every operand is read
+	// unconditionally (`&&` in a `$derived` would leave the skipped one untracked).
+	const missingInstructions = $derived.by(() => {
+		const offline = isOffline;
+		const own = paymentInstructions.trim() !== '';
+		const orgDefault = (organization.membership_payment_instructions ?? '').trim() !== '';
+		return offline && !own && !orgDefault;
+	});
 
 	/**
 	 * Keep the (method, price, cadence) triple coherent as the organizer types.
@@ -178,7 +195,9 @@
 			is_active: isActive,
 			sales_status: salesPaused ? 'paused' : 'open',
 			max_subscriptions: normalizedCap(),
-			...(plan ? {} : { payment_method: paymentMethod })
+			...(plan ? {} : { payment_method: paymentMethod }),
+			// Only an offline plan has instructions to show; online/free never carry them.
+			...(isOffline ? { payment_instructions: paymentInstructions } : {})
 		} as PlanCreateSchema);
 	}
 </script>
@@ -284,6 +303,36 @@
 			<div class="space-y-1">
 				<Label for="plan-desc">{m['orgAdmin.members.plans.form.description']()}</Label>
 				<Textarea id="plan-desc" bind:value={description} rows={2} disabled={isSaving} />
+			</div>
+
+			{#if isOffline}
+				<div class="space-y-1">
+					<!-- The same markdown editor the organization default uses. -->
+					<MarkdownEditor
+						id="plan-payment-instructions"
+						bind:value={paymentInstructions}
+						label={m['orgAdmin.members.plans.form.paymentInstructions']()}
+						rows={4}
+						disabled={isSaving}
+						describedBy="plan-payment-instructions-help"
+					/>
+					<p id="plan-payment-instructions-help" class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.plans.form.paymentInstructionsHelp']()}
+					</p>
+				</div>
+			{/if}
+
+			<!-- Mounted whether or not there is anything to say (and independent of
+			     the offline branch above), so the warning is announced when it
+			     appears rather than missed on insertion. `empty:!mt-0` keeps the
+			     idle region from adding a gap in the form's vertical rhythm. -->
+			<div role="status" class="empty:!mt-0">
+				{#if isOffline && missingInstructions}
+					<p class="flex items-start gap-2 text-xs text-highlight-foreground dark:text-highlight">
+						<AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+						{m['orgAdmin.members.plans.form.paymentInstructionsMissing']()}
+					</p>
+				{/if}
 			</div>
 
 			<div class="grid grid-cols-2 gap-3">

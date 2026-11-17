@@ -430,4 +430,104 @@ describe('ApplicationRow', () => {
 			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
 		});
 	});
+
+	describe('approved applications', () => {
+		const plan = (payment_method: 'offline' | 'online') =>
+			({
+				id: 'p1',
+				tier_id: 't1',
+				tier_name: 'Gold',
+				name: 'Monthly',
+				description: null,
+				price: '10.00',
+				currency: 'EUR',
+				period_unit: 'month',
+				period_count: 1,
+				payment_method,
+				sales_status: 'open',
+				is_active: true
+			}) as MembershipApplicationSchema['plan'];
+
+		it('labels an approved offline application as awaiting payment and points to memberships', () => {
+			renderRow(
+				makeApplication({
+					status: 'approved',
+					plan: plan('offline'),
+					subscription_status: 'pending'
+				})
+			);
+
+			expect(screen.getByText('Accepted, awaiting payment')).toBeInTheDocument();
+			expect(
+				screen.getByText('See the payment details on your membership card.')
+			).toBeInTheDocument();
+		});
+
+		it('refreshes both member lists when the read turns an approval into an awaiting-payment offline request', async () => {
+			const offlinePlan = plan('offline');
+			mockAdvance({
+				application: makeApplication({
+					status: 'approved',
+					plan: offlinePlan,
+					subscription_status: 'pending'
+				}),
+				eligibility: makeEligibility()
+			});
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderRow(makeApplication({ status: 'pending' }));
+
+			await screen.findByText('Accepted, awaiting payment');
+			await waitFor(() => {
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me', 'memberships'] });
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me', 'subscriptions'] });
+			});
+		});
+
+		it('does not refresh when the approval already arrived awaiting payment', async () => {
+			const row = makeApplication({
+				status: 'approved',
+				plan: plan('offline'),
+				subscription_status: 'pending'
+			});
+			mockAdvance({ application: row, eligibility: makeEligibility() });
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderRow(row);
+
+			await waitFor(() => expect(getApplicationMock).toHaveBeenCalled());
+			await screen.findByText('Accepted, awaiting payment');
+			expect(invalidateSpy).not.toHaveBeenCalled();
+		});
+
+		it.each(['cancelled', 'expired'] as const)(
+			'labels an approved offline application whose subscription is %s as lapsed',
+			(subscription_status) => {
+				renderRow(
+					makeApplication({ status: 'approved', plan: plan('offline'), subscription_status })
+				);
+
+				expect(screen.getByText('Request lapsed')).toBeInTheDocument();
+				expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			}
+		);
+
+		it.each(['active', null] as const)(
+			'keeps the plain label for an approved offline application whose subscription is %s',
+			(subscription_status) => {
+				renderRow(
+					makeApplication({ status: 'approved', plan: plan('offline'), subscription_status })
+				);
+
+				expect(screen.getByText('Approved')).toBeInTheDocument();
+				expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			}
+		);
+
+		it('keeps the plain label for an approved online application', () => {
+			renderRow(makeApplication({ status: 'approved', plan: plan('online') }));
+
+			expect(screen.getByText('Approved')).toBeInTheDocument();
+			expect(screen.queryByText(/awaiting payment/i)).toBeNull();
+			expect(screen.queryByText(/payment details/i)).toBeNull();
+		});
+	});
 });

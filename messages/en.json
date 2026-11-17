@@ -402,6 +402,9 @@
 		"typeMembershipRequestCreated": "Membership request",
 		"typeMembershipRequestApproved": "Membership request approved",
 		"typeMembershipRequestRejected": "Membership request rejected",
+		"typeMembershipPaymentRequested": "Payment requested for membership",
+		"typeMembershipOfflineJoined": "Staff alert: member joined, payment pending",
+		"typeMembershipOfflineJoinedDescription": "Someone joined an offline plan directly and is waiting for their first payment to be recorded.",
 		"typeOrgAnnouncement": "Organization announcement",
 		"typeOrgContactMessageReceived": "Contact message received",
 		"typeOrgCustomDomainActive": "Custom domain active",
@@ -3190,6 +3193,7 @@
 		"statusExplanation": {
 			"active": "Members can view and participate in all organization events.",
 			"activeBillingNote": "Restoring membership does not restart billing — subscriptions are resumed separately, from the Subscriptions tab.",
+			"awaiting_payment": "This person hasn't paid yet. You can cancel their request or ban them. To activate them, record their first payment.",
 			"paused": "Members can view events but cannot participate or RSVP.",
 			"pausedBillingNote": "No further payments are collected while their membership is paused.",
 			"pausedScheduledEndNote": "Their subscription is already scheduled to end, so it is not paused — it keeps billing until the current period closes.",
@@ -3216,6 +3220,7 @@
 		"memberSince": "Member since"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Awaiting payment",
 		"active": "Active",
 		"paused": "Paused",
 		"cancelled": "Cancelled",
@@ -3752,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} awaiting first payment",
+							"countPlural=*": "{count} awaiting first payment"
+						}
+					}
+				],
 				"open": "Open events",
 				"allClear": "Nothing needs your attention right now."
 			},
@@ -4135,6 +4150,8 @@
 					"paymentOffline": "Offline — you record payments",
 					"paymentOnline": "Online — Stripe auto-billing",
 					"paymentMethodHelp": "Online plans bill members automatically through Stripe. Offline plans are recorded by you (cash, bank transfer, …).",
+					"paymentInstructions": "Payment instructions",
+					"paymentInstructionsHelp": "Shown to people after they join or are accepted, and in payment reminders. Leave empty to use the organization default.",
 					"paymentOnlineNeedsStripe": "Connect Stripe in Billing settings to offer online plans.",
 					"paymentMethodImmutable": "Payment method can't be changed — archive and recreate the plan to switch.",
 					"maxSubscriptions": "Maximum subscriptions",
@@ -4146,7 +4163,8 @@
 					"paymentFreeHelp": "Free plans have no price and never expire. Members join themselves, with no payment step.",
 					"periodLifetime": "lifetime (never renews)",
 					"freeShapeLocked": "Free plans are always priced 0 and always last a lifetime, so these can't be changed.",
-					"lifetimeNoCount": "A lifetime plan never renews, so there's no billing frequency to set."
+					"lifetimeNoCount": "A lifetime plan never renews, so there's no billing frequency to set.",
+					"paymentInstructionsMissing": "Applicants won't see how to pay. Add instructions here or set an organization default in Settings."
 				},
 				"errors": {
 					"createFailed": "Failed to create plan: {detail}",
@@ -4159,7 +4177,8 @@
 				"title": "Subscriptions",
 				"searchPlaceholder": "Search by name or email…",
 				"filter": {
-					"all": "All statuses"
+					"all": "All statuses",
+					"allMethods": "All payment methods"
 				},
 				"create": {
 					"title": "Create subscription",
@@ -4171,6 +4190,7 @@
 					"notes": "Notes",
 					"submit": "Create",
 					"onlineExcluded": "Online (Stripe) plans aren't listed — members subscribe to those themselves so they can approve the payment.",
+					"offlineBecomesMember": "{name} becomes a member when you record the first payment.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"
@@ -4253,7 +4273,11 @@
 					"immediateConfirm": "I understand access is revoked immediately.",
 					"pendingSwitchDropped": "Their scheduled plan change will be dropped.",
 					"keep": "Keep subscription",
-					"confirm": "Confirm cancellation"
+					"confirm": "Confirm cancellation",
+					"requestTitle": "Cancel request",
+					"requestDesc": "{name} hasn't paid yet. Cancelling removes their pending membership; they can join again later.",
+					"requestKeep": "Keep request",
+					"requestConfirm": "Cancel request"
 				},
 				"recordPayment": {
 					"title": "Record payment",
@@ -6156,7 +6180,6 @@
 		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
 		"paused": "Sales paused",
 		"pausedHelper": "The organization has temporarily closed sign-ups.",
-		"offlineManaged": "Managed manually by the organization.",
 		"refundPolicy": "Refund policy",
 		"viewMembership": "View membership options",
 		"joinFreeCta": "Join for free",
@@ -6169,7 +6192,12 @@
 		"reapplyCta": "Apply again",
 		"reapplyCtaAria": "Apply again with {plan}",
 		"applySubscribeHelper": "The organization reviews applications — you'll pay once you're approved.",
-		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved."
+		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved.",
+		"joinCta": "Join",
+		"awaitingPaymentHelper": "Your membership starts once {orgName} confirms your payment.",
+		"awaitingOtherPlanHelper": "You have a membership awaiting payment with {orgName}.",
+		"offlineGuestNote": "Paid directly to {orgName} after you join.",
+		"applyOfflineHelper": "Once {orgName} accepts, you'll get payment details."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
@@ -7875,6 +7903,13 @@
 			"contactOrg": "Reach out to the organizer to renew.",
 			"memberSince": "Member since {date}",
 			"managedBy": "Managed by {org} — contact them to make changes.",
+			"awaitingDeadline": "If no payment is recorded by {date}, this request is cancelled.",
+			"withdraw": "Withdraw request",
+			"withdrawTitle": "Withdraw your membership request?",
+			"withdrawMessage": "You can join again later.",
+			"withdrawSuccess": "Your request was withdrawn.",
+			"withdrawError": "Could not withdraw your request. Please try again.",
+			"howToPay": "How to pay {orgName}",
 			"loadError": "Could not load your memberships. Try reloading the page.",
 			"loadErrorRejoin": "Could not check which memberships you can renew. Try reloading the page."
 		}
@@ -7928,11 +7963,13 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
-			"approval": "Your application is with the organization for review. You'll hear back once they decide."
+			"approval": "Your application is with the organization for review. You'll hear back once they decide.",
+			"offline_payment": "Your membership starts once the organization confirms your payment."
 		},
 		"joinTier": "Join {tier}",
 		"choosePlan": "You're eligible — choose a plan below to join.",
-		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment."
+		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment.",
+		"seePaymentDetails": "See payment details"
 	},
 	"membershipApply": {
 		"title": "Join {orgName}",
@@ -7953,7 +7990,9 @@
 		"error": "Could not send your application. Please try again.",
 		"titleTier": "Join {tier}",
 		"reapplyTitleTier": "Re-apply to {tier}",
-		"forPlan": "{orgName} — applying with the {plan} plan."
+		"forPlan": "{orgName} — applying with the {plan} plan.",
+		"awaitingPaymentTitle": "Accepted, awaiting payment",
+		"awaitingPaymentBody": "{orgName} has accepted your application. Your membership starts once they confirm your payment."
 	},
 	"membershipTiers": {
 		"heading": "Membership",
@@ -8069,7 +8108,14 @@
 		"titleFree": "Join {plan}",
 		"freeNoCharge": "There's nothing to pay. Your membership starts as soon as you confirm.",
 		"neverRenews": "This membership never expires and is never renewed or charged again.",
-		"confirmFreeCta": "Join now"
+		"confirmFreeCta": "Join now",
+		"offline": {
+			"intro": "You pay {orgName} directly, outside of Revel. Your membership starts once they confirm your payment.",
+			"confirmCta": "Join",
+			"title": "You're in, almost.",
+			"body": "Pay {orgName} to activate your membership.",
+			"fallback": "{orgName} will tell you how to pay."
+		}
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
@@ -9936,6 +9982,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Refund policy",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Describe your refund terms for paid memberships.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "e.g. Full refund within 14 days of your first payment.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Default payment instructions for offline plans",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Used by offline plans that have no instructions of their own. Shown to people after they join or are accepted, and in payment reminders.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "e.g. Bank transfer to IBAN ... with your name as the reference.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Manage ticket sales across your events",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Discount Codes",
@@ -10129,9 +10178,12 @@
 			"approved": "Approved",
 			"completed": "Completed",
 			"rejected": "Rejected",
-			"cancelled": "Cancelled"
+			"cancelled": "Cancelled",
+			"approvedOffline": "Accepted, awaiting payment",
+			"lapsed": "Request lapsed"
 		},
 		"continueCta": "Continue questionnaire",
+		"awaitingPaymentSeeAbove": "See the payment details on your membership card.",
 		"becameMember": "You're now a member of {org}!",
 		"statusAriaLabel": "Application status: {status}",
 		"cancelCta": "Cancel application",
@@ -11804,5 +11856,19 @@
 	"demoAccounts.description.pendingPayment": "Pending payment",
 	"demoAccounts.description.memberOfBothOrgs": "Member of BOTH organizations",
 	"demoAccounts.description.cancelledTicket": "Has cancelled ticket",
-	"demoAccounts.description.waitlistsAndInvited": "On waitlists, invited to events"
+	"demoAccounts.description.waitlistsAndInvited": "On waitlists, invited to events",
+	"membershipRequestCard.planPrefix": "Plan",
+	"approveMembershipModal.descriptionOffline": "Approving holds {name} as a member awaiting payment and sends them your payment instructions. They become active when you record the first payment.",
+	"approveMembershipModal.descriptionOnline": "Approving lets {name} complete checkout. They become a member once the payment goes through.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "This is different from the plan price ({price}). The full period will still be granted.",
+	"memberPeople.awaiting.title": "Awaiting first payment ({count})",
+	"memberPeople.awaiting.helper": "They join as members once you record their first payment.",
+	"memberPeople.awaiting.record": "Record payment",
+	"memberPeople.awaiting.recordFor": "Record payment for {name}",
+	"memberPeople.awaiting.truncated": "Showing the first {shown}.",
+	"memberPeople.awaiting.seeAll": "See all in Subscriptions",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Cancel this request?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Cancelling also cancels their pending membership request.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Yes, cancel request",
+	"manageMemberModal.awaitingBanRequestNote": "Banning also closes their pending membership request."
 }

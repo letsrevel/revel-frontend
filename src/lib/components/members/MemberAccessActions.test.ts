@@ -13,6 +13,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminblacklistCreateBlacklistEntry: vi.fn()
 }));
 import {
+	organizationadminmembersUpdateMember,
 	organizationadminmembersRemoveMember,
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api/generated/sdk.gen';
@@ -498,6 +499,34 @@ describe('MemberAccessActions failure surfacing', () => {
 			);
 		});
 		expect(alertSpy).not.toHaveBeenCalled();
+	});
+});
+
+describe('MemberAccessActions awaiting-payment member', () => {
+	const awaiting = { ...member, status: 'awaiting_payment' } as unknown as OrganizationMemberSchema;
+
+	it('sends cancelled after confirming, and shows the backend detail of a 400 in the dialog', async () => {
+		const user = userEvent.setup();
+		seedMembers(awaiting);
+		vi.mocked(organizationadminmembersUpdateMember).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Backend says no.' },
+			response: { status: 400 }
+		} as never);
+		renderTab();
+
+		await openManageModal(user);
+		await pickStatus(user, 'Cancelled');
+		await user.click(await screen.findByRole('button', { name: 'Save Changes' }));
+		await user.click(await screen.findByRole('button', { name: 'Yes, cancel request' }));
+
+		await waitFor(() =>
+			expect(organizationadminmembersUpdateMember).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { status: 'cancelled', tier_id: undefined } })
+			)
+		);
+		expect(await screen.findByRole('alert')).toHaveTextContent('Backend says no.');
+		expect(toast.error).not.toHaveBeenCalled();
 	});
 });
 

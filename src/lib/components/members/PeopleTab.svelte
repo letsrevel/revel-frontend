@@ -44,6 +44,7 @@
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
 	import AddByAccountDialog from '$lib/components/member-register/AddByAccountDialog.svelte';
 	import AddPersonMenu from '$lib/components/member-register/AddPersonMenu.svelte';
+	import AwaitingPaymentPeople from './AwaitingPaymentPeople.svelte';
 	import {
 		countRegister,
 		listPeople,
@@ -332,6 +333,7 @@
 </script>
 
 <div class="space-y-4">
+	<AwaitingPaymentPeople {organization} {active} {canManageSubscriptions} />
 	<NeedsAttention
 		duplicatesCount={duplicates.length}
 		applicationsCount={pendingApplications}

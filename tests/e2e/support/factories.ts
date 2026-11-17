@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { z } from 'zod';
 import { API_URL, ApiClient, ApiError, fetchWithRetry } from './api';
 import { extractLink, waitForEmail } from './mailpit';
 import { PERSONAS, type PersonaName } from './personas';
@@ -1481,10 +1482,13 @@ export async function setOrgMembershipPolicy(
 		requiresApproval?: boolean;
 		defaultQuestionnaireId?: string | null;
 		revivalWindowDays?: number;
+		/** Org-wide payment instructions, shown for OFFLINE plans that carry none. */
+		paymentInstructions?: string;
 	}
 ): Promise<void> {
 	const api = await ApiClient.login(owner.email, owner.password);
 	const current = await api.get<{
+		membership_payment_instructions?: string | null;
 		visibility: string;
 		accept_membership_requests: boolean;
 		contact_method: string;
@@ -1504,6 +1508,18 @@ export async function setOrgMembershipPolicy(
 		default_membership_questionnaire_id?: string | null;
 		default_requires_membership_approval: boolean;
 	}>(`/api/organization-admin/${orgSlug}`);
+	// Echoed back below, so a wrong type must fail loudly rather than be PUT back.
+	const instructionsCheck = z
+		.string()
+		.nullable()
+		.optional()
+		.safeParse(current.membership_payment_instructions);
+	if (!instructionsCheck.success) {
+		throw new Error(
+			`setOrgMembershipPolicy: membership_payment_instructions from the API is not a string or null (got ${typeof current.membership_payment_instructions})`
+		);
+	}
+	const currentInstructions = instructionsCheck.data;
 	await api.put(`/api/organization-admin/${orgSlug}`, {
 		// Echoed back unchanged.
 		visibility: current.visibility,
@@ -1530,7 +1546,8 @@ export async function setOrgMembershipPolicy(
 				? policy.defaultQuestionnaireId
 				: (current.default_membership_questionnaire_id ?? null),
 		default_requires_membership_approval:
-			policy.requiresApproval ?? current.default_requires_membership_approval
+			policy.requiresApproval ?? current.default_requires_membership_approval,
+		membership_payment_instructions: policy.paymentInstructions ?? currentInstructions ?? ''
 	});
 }
 

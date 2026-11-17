@@ -24,9 +24,16 @@
 	// Selected tier
 	let selectedTierId = $state<string | null>(null);
 
+	// A plan-bearing application is for one tier: the picker shows it, locked.
+	const lockedTierId = $derived(request?.plan ? (request.tier?.id ?? null) : null);
+
 	// Reset selection when modal opens with new request
 	$effect(() => {
 		if (open && request) {
+			if (lockedTierId) {
+				selectedTierId = lockedTierId;
+				return;
+			}
 			// If there's only one tier, auto-select it
 			if (tiers.length === 1 && tiers[0].id) {
 				selectedTierId = tiers[0].id;
@@ -68,7 +75,13 @@
 
 			<div class="space-y-4 py-4">
 				<p class="text-sm text-muted-foreground">
-					{m['approveMembershipModal.description']({ name: displayName })}
+					{#if request.plan?.payment_method === 'offline'}
+						{m['approveMembershipModal.descriptionOffline']({ name: displayName })}
+					{:else if request.plan?.payment_method === 'online'}
+						{m['approveMembershipModal.descriptionOnline']({ name: displayName })}
+					{:else}
+						{m['approveMembershipModal.description']({ name: displayName })}
+					{/if}
 				</p>
 
 				<!-- Tier Selection -->
@@ -80,11 +93,12 @@
 						onValueChange={(value) => {
 							selectedTierId = value === 'none' ? null : value;
 						}}
-						disabled={isProcessing}
+						disabled={isProcessing || !!lockedTierId}
 					>
 						<SelectTrigger id="tier" aria-label={m['approveMembershipModal.tierLabel']()}>
 							{selectedTierId
 								? tiers.find((t) => t.id === selectedTierId)?.name ||
+									(lockedTierId === selectedTierId ? request?.tier?.name : null) ||
 									m['approveMembershipModal.selectTier']()
 								: m['approveMembershipModal.selectTier']()}
 						</SelectTrigger>

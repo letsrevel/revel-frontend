@@ -176,7 +176,10 @@ describe('MembershipCta', () => {
 		renderCta();
 
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
-		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		expect(link).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership')}`
+		);
 	});
 
 	it('appends a safe returnUrl to the questionnaire link', async () => {
@@ -193,7 +196,9 @@ describe('MembershipCta', () => {
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
 		expect(link).toHaveAttribute(
 			'href',
-			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent(
+				`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			)}`
 		);
 	});
 
@@ -209,7 +214,10 @@ describe('MembershipCta', () => {
 		);
 		renderCta();
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
-		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		expect(link).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership')}`
+		);
 	});
 
 	it('labels a questionnaire awaiting evaluation differently from a pending application', async () => {
@@ -230,6 +238,27 @@ describe('MembershipCta', () => {
 		expect(
 			screen.queryByRole('link', { name: m['membershipEligibility.trackApplication']() })
 		).not.toBeInTheDocument();
+	});
+
+	it('labels an accepted application awaiting offline payment and links to the payment details', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				next_step: 'wait_for_offline_payment',
+				reason_code: 'awaiting_offline_payment'
+			})
+		);
+		renderCta();
+
+		expect(
+			await screen.findByRole('button', { name: m['memberStatus.awaiting_payment']() })
+		).toBeDisabled();
+		expect(
+			screen.getByRole('link', { name: m['membershipEligibility.seePaymentDetails']() })
+		).toHaveAttribute('href', '/account/memberships');
+		expect(
+			screen.queryByRole('link', { name: m['membershipEligibility.trackApplication']() })
+		).toBeNull();
 	});
 
 	it('shows a disabled pending state and a way to track the application while waiting', async () => {
@@ -650,7 +679,10 @@ describe('MembershipCta', () => {
 
 			expect(
 				await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
-			).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+			).toHaveAttribute(
+				'href',
+				`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership#tier-tier-gold')}`
+			);
 		});
 
 		// The deferral is gated on the PLAN, not on the plans merely being on
@@ -689,6 +721,9 @@ describe('MembershipCta', () => {
 		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
 		expect(
 			await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
-		).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/org/acme/membership#tier-tier-silver')}`
+		);
 	});
 });

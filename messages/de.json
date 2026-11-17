@@ -402,6 +402,9 @@
 		"typeMembershipRequestCreated": "Mitgliedschaftsanfrage",
 		"typeMembershipRequestApproved": "Mitgliedschaftsanfrage genehmigt",
 		"typeMembershipRequestRejected": "Mitgliedschaftsanfrage abgelehnt",
+		"typeMembershipPaymentRequested": "Zahlung für Mitgliedschaft angefordert",
+		"typeMembershipOfflineJoined": "Team-Hinweis: Beitritt, Zahlung ausstehend",
+		"typeMembershipOfflineJoinedDescription": "Eine Person ist einem Offline-Tarif direkt beigetreten und wartet darauf, dass ihre erste Zahlung erfasst wird.",
 		"typeOrgAnnouncement": "Mitteilung der Organisation",
 		"typeOrgContactMessageReceived": "Kontaktnachricht erhalten",
 		"typeOrgCustomDomainActive": "Eigene Domain aktiv",
@@ -3190,6 +3193,7 @@
 		"statusExplanation": {
 			"active": "Mitglieder können alle Organisationsveranstaltungen ansehen und daran teilnehmen.",
 			"activeBillingNote": "Das Wiederherstellen der Mitgliedschaft startet die Abrechnung nicht neu – Abonnements werden separat im Tab „Subscriptions“ fortgesetzt.",
+			"awaiting_payment": "Diese Person hat noch nicht bezahlt. Du kannst ihre Anfrage stornieren oder sie sperren. Um sie zu aktivieren, erfasse ihre erste Zahlung.",
 			"paused": "Mitglieder können Veranstaltungen ansehen, aber nicht teilnehmen oder zusagen.",
 			"pausedBillingNote": "Solange die Mitgliedschaft pausiert ist, werden keine weiteren Zahlungen eingezogen.",
 			"pausedScheduledEndNote": "Das Abonnement ist bereits zur Kündigung vorgemerkt und wird deshalb nicht pausiert – es wird bis zum Ende des laufenden Zeitraums weiter abgerechnet.",
@@ -3216,6 +3220,7 @@
 		"memberSince": "Mitglied seit"
 	},
 	"memberStatus": {
+		"awaiting_payment": "Zahlung ausstehend",
 		"active": "Aktiv",
 		"paused": "Pausiert",
 		"cancelled": "Gekündigt",
@@ -3752,6 +3757,16 @@
 						}
 					}
 				],
+				"awaitingPayment": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} wartet auf die erste Zahlung",
+							"countPlural=*": "{count} warten auf die erste Zahlung"
+						}
+					}
+				],
 				"open": "Veranstaltungen öffnen",
 				"allClear": "Im Moment braucht nichts deine Aufmerksamkeit."
 			},
@@ -4135,6 +4150,8 @@
 					"paymentOffline": "Offline — du erfasst die Zahlungen",
 					"paymentOnline": "Online — automatische Abrechnung über Stripe",
 					"paymentMethodHelp": "Online-Pläne rechnen Mitglieder automatisch über Stripe ab. Offline-Pläne erfasst du selbst (bar, Überweisung, …).",
+					"paymentInstructions": "Zahlungsanweisungen",
+					"paymentInstructionsHelp": "Wird Personen nach dem Beitritt oder der Aufnahme sowie in Zahlungserinnerungen angezeigt. Leer lassen, um den Standard der Organisation zu verwenden.",
 					"paymentOnlineNeedsStripe": "Verbinde Stripe in den Abrechnungseinstellungen, um Online-Pläne anzubieten.",
 					"paymentMethodImmutable": "Die Zahlungsmethode kann nicht geändert werden — archiviere den Plan und erstelle einen neuen, um zu wechseln.",
 					"maxSubscriptions": "Maximale Abonnements",
@@ -4146,7 +4163,8 @@
 					"paymentFreeHelp": "Kostenlose Pläne haben keinen Preis und laufen nie ab. Mitglieder treten selbst bei, ohne Zahlungsschritt.",
 					"periodLifetime": "lebenslang (keine Verlängerung)",
 					"freeShapeLocked": "Kostenlose Pläne haben immer den Preis 0 und laufen lebenslang — das lässt sich nicht ändern.",
-					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus."
+					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus.",
+					"paymentInstructionsMissing": "Bewerber*innen sehen nicht, wie sie bezahlen können. Füge hier Anweisungen hinzu oder lege in den Einstellungen einen Standard für die Organisation fest."
 				},
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
@@ -4159,7 +4177,8 @@
 				"title": "Abonnements",
 				"searchPlaceholder": "Nach Name oder E-Mail suchen…",
 				"filter": {
-					"all": "Alle Status"
+					"all": "Alle Status",
+					"allMethods": "Alle Zahlungsarten"
 				},
 				"create": {
 					"title": "Abonnement erstellen",
@@ -4171,6 +4190,7 @@
 					"notes": "Notizen",
 					"submit": "Erstellen",
 					"onlineExcluded": "Online-Pläne (Stripe) werden hier nicht aufgeführt — Mitglieder abonnieren diese selbst, damit sie die Zahlung freigeben können.",
+					"offlineBecomesMember": "{name} wird Mitglied, sobald du die erste Zahlung erfasst.",
 					"errors": {
 						"userRequired": "Wähle ein Mitglied aus",
 						"planRequired": "Wähle einen Plan aus"
@@ -4253,7 +4273,11 @@
 					"immediateConfirm": "Mir ist klar, dass der Zugang sofort entzogen wird.",
 					"pendingSwitchDropped": "Der vorgemerkte Planwechsel wird verworfen.",
 					"keep": "Abonnement behalten",
-					"confirm": "Kündigung bestätigen"
+					"confirm": "Kündigung bestätigen",
+					"requestTitle": "Anfrage stornieren",
+					"requestDesc": "{name} hat noch nicht bezahlt. Beim Stornieren wird die ausstehende Mitgliedschaft entfernt; die Person kann später erneut beitreten.",
+					"requestKeep": "Anfrage behalten",
+					"requestConfirm": "Anfrage stornieren"
 				},
 				"recordPayment": {
 					"title": "Zahlung erfassen",
@@ -6156,7 +6180,6 @@
 		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
 		"paused": "Anmeldung pausiert",
 		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
-		"offlineManaged": "Wird von der Organisation manuell verwaltet.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
 		"viewMembership": "Mitgliedschaftsoptionen ansehen",
 		"joinFreeCta": "Kostenlos beitreten",
@@ -6169,7 +6192,12 @@
 		"reapplyCta": "Erneut beantragen",
 		"reapplyCtaAria": "Erneut mit {plan} beantragen",
 		"applySubscribeHelper": "Die Organisation prüft Anträge — du zahlst erst nach der Zusage.",
-		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei."
+		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei.",
+		"joinCta": "Beitreten",
+		"awaitingPaymentHelper": "Deine Mitgliedschaft beginnt, sobald {orgName} deine Zahlung bestätigt.",
+		"awaitingOtherPlanHelper": "Du hast eine Mitgliedschaft bei {orgName}, die noch auf Zahlung wartet.",
+		"offlineGuestNote": "Die Zahlung erfolgt nach dem Beitritt direkt an {orgName}.",
+		"applyOfflineHelper": "Sobald {orgName} dich annimmt, erhältst du die Zahlungsdetails."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -7875,6 +7903,13 @@
 			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
 			"memberSince": "Mitglied seit {date}",
 			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie.",
+			"awaitingDeadline": "Wenn bis zum {date} keine Zahlung verbucht ist, wird diese Anfrage storniert.",
+			"withdraw": "Anfrage zurückziehen",
+			"withdrawTitle": "Mitgliedschaftsanfrage zurückziehen?",
+			"withdrawMessage": "Du kannst später erneut beitreten.",
+			"withdrawSuccess": "Deine Anfrage wurde zurückgezogen.",
+			"withdrawError": "Die Anfrage konnte nicht zurückgezogen werden. Bitte versuche es erneut.",
+			"howToPay": "So bezahlst du {orgName}",
 			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu.",
 			"loadErrorRejoin": "Es konnte nicht geprüft werden, welche Mitgliedschaften du erneuern kannst. Lade die Seite neu."
 		}
@@ -7928,11 +7963,13 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
-			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
+			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist.",
+			"offline_payment": "Deine Mitgliedschaft beginnt, sobald die Organisation deine Zahlung bestätigt."
 		},
 		"joinTier": "{tier} beitreten",
 		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten.",
-		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung."
+		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung.",
+		"seePaymentDetails": "Zahlungsdetails ansehen"
 	},
 	"membershipApply": {
 		"title": "{orgName} beitreten",
@@ -7953,7 +7990,9 @@
 		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal.",
 		"titleTier": "{tier} beitreten",
 		"reapplyTitleTier": "Erneut für {tier} bewerben",
-		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}."
+		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}.",
+		"awaitingPaymentTitle": "Angenommen, Zahlung ausstehend",
+		"awaitingPaymentBody": "{orgName} hat deine Bewerbung angenommen. Deine Mitgliedschaft beginnt, sobald die Zahlung bestätigt wurde."
 	},
 	"membershipTiers": {
 		"heading": "Mitgliedschaft",
@@ -8069,7 +8108,14 @@
 		"titleFree": "{plan} beitreten",
 		"freeNoCharge": "Es fällt nichts an. Deine Mitgliedschaft startet, sobald du bestätigst.",
 		"neverRenews": "Diese Mitgliedschaft läuft nie ab und wird nie verlängert oder erneut berechnet.",
-		"confirmFreeCta": "Jetzt beitreten"
+		"confirmFreeCta": "Jetzt beitreten",
+		"offline": {
+			"intro": "Du zahlst direkt an {orgName}, außerhalb von Revel. Deine Mitgliedschaft beginnt, sobald die Zahlung bestätigt wurde.",
+			"confirmCta": "Beitreten",
+			"title": "Fast geschafft, du bist dabei.",
+			"body": "Bezahle {orgName}, um deine Mitgliedschaft zu aktivieren.",
+			"fallback": "{orgName} teilt dir mit, wie du bezahlen kannst."
+		}
 	},
 	"waitlistSettings.title": "Erweiterte Wartelisteneinstellungen",
 	"waitlistSettings.description": "Lege fest, wie Plätze an Personen auf der Warteliste angeboten werden.",
@@ -9936,6 +9982,9 @@
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Rückerstattungsrichtlinie",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Beschreibe deine Rückerstattungsbedingungen für kostenpflichtige Mitgliedschaften.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "z. B. Volle Rückerstattung innerhalb von 14 Tagen nach der ersten Zahlung.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel": "Standard-Zahlungsanweisungen für Offline-Pläne",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp": "Gilt für Offline-Pläne ohne eigene Anweisungen. Wird Personen nach dem Beitritt oder der Aufnahme sowie in Zahlungserinnerungen angezeigt.",
+	"orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder": "z. B. Überweisung auf IBAN ... mit deinem Namen als Verwendungszweck.",
 	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
 	"orgAdmin.dashboard.quickActions.tickets.description": "Ticketverkäufe für alle Veranstaltungen verwalten",
 	"orgAdmin.dashboard.quickActions.discountCodes.title": "Rabattcodes",
@@ -10129,9 +10178,12 @@
 			"approved": "Angenommen",
 			"completed": "Abgeschlossen",
 			"rejected": "Abgelehnt",
-			"cancelled": "Zurückgezogen"
+			"cancelled": "Zurückgezogen",
+			"approvedOffline": "Angenommen, Zahlung ausstehend",
+			"lapsed": "Anfrage verfallen"
 		},
 		"continueCta": "Fragebogen fortsetzen",
+		"awaitingPaymentSeeAbove": "Die Zahlungsdetails findest du auf deiner Mitgliedskarte.",
 		"becameMember": "Du bist jetzt Mitglied bei {org}!",
 		"statusAriaLabel": "Bewerbungsstatus: {status}",
 		"cancelCta": "Bewerbung zurückziehen",
@@ -11804,5 +11856,19 @@
 	"demoAccounts.description.pendingPayment": "Zahlung ausstehend",
 	"demoAccounts.description.memberOfBothOrgs": "Mitglied in BEIDEN Organisationen",
 	"demoAccounts.description.cancelledTicket": "Hat ein storniertes Ticket",
-	"demoAccounts.description.waitlistsAndInvited": "Auf Wartelisten, zu Veranstaltungen eingeladen"
+	"demoAccounts.description.waitlistsAndInvited": "Auf Wartelisten, zu Veranstaltungen eingeladen",
+	"membershipRequestCard.planPrefix": "Tarif",
+	"approveMembershipModal.descriptionOffline": "Mit der Genehmigung wird {name} als Mitglied mit ausstehender Zahlung geführt und erhält deine Zahlungsanweisungen. Die Mitgliedschaft wird aktiv, sobald du die erste Zahlung erfasst.",
+	"approveMembershipModal.descriptionOnline": "Mit der Genehmigung kann {name} den Checkout abschließen. Die Mitgliedschaft beginnt, sobald die Zahlung eingegangen ist.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt.",
+	"memberPeople.awaiting.title": "Wartet auf erste Zahlung ({count})",
+	"memberPeople.awaiting.helper": "Sie werden Mitglieder*innen, sobald du ihre erste Zahlung erfasst.",
+	"memberPeople.awaiting.record": "Zahlung erfassen",
+	"memberPeople.awaiting.recordFor": "Zahlung für {name} erfassen",
+	"memberPeople.awaiting.truncated": "Es werden die ersten {shown} angezeigt.",
+	"memberPeople.awaiting.seeAll": "Alle in Abonnements ansehen",
+	"manageMemberModal.awaitingCancelConfirmTitle": "Diese Anfrage stornieren?",
+	"manageMemberModal.awaitingCancelConfirmMessage": "Beim Stornieren wird auch die offene Mitgliedschaftsanfrage storniert.",
+	"manageMemberModal.awaitingCancelConfirmButton": "Ja, Anfrage stornieren",
+	"manageMemberModal.awaitingBanRequestNote": "Beim Sperren wird auch die offene Mitgliedschaftsanfrage geschlossen."
 }

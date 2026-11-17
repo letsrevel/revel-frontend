@@ -10,6 +10,7 @@
 	import { currencyOptions } from '$lib/utils/currencies';
 	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import type { EditableStatus } from './paymentEdit';
+	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -38,6 +39,16 @@
 		}
 	});
 
+	// Numeric compare, so "10" equals "10.00". Only a succeeded payment grants the
+	// period, so only then does a different amount deserve a heads-up.
+	// A cleared number input binds `null` at runtime despite the string type.
+	const amountWarning = $derived(
+		status === 'succeeded' &&
+			(amount as string | null) != null &&
+			String(amount).trim() !== '' &&
+			Number(amount) !== Number(subscription.plan.price)
+	);
+
 	const currencyWarning = $derived(currency !== subscription.plan.currency);
 
 	function handleSubmit(e: Event) {
@@ -65,7 +76,15 @@
 			<div class="grid grid-cols-2 gap-3">
 				<div class="space-y-1">
 					<Label for="rp-amt">{m['orgAdmin.members.subscriptions.recordPayment.amount']()}</Label>
-					<Input id="rp-amt" type="number" min="0" step="0.01" bind:value={amount} required />
+					<Input
+						id="rp-amt"
+						type="number"
+						min="0"
+						step="0.01"
+						bind:value={amount}
+						required
+						aria-describedby={amountWarning ? 'rp-amt-warning' : undefined}
+					/>
 				</div>
 				<div class="space-y-1">
 					<Label for="rp-cur">{m['orgAdmin.members.subscriptions.recordPayment.currency']()}</Label>
@@ -81,6 +100,8 @@
 				</div>
 			</div>
 
+			<!-- audit-brand-themes COMPOSITED_PAIRS: foreground on highlight/0.10 over the dialog
+			     surface (background), 14.28 light / 14.55 dark. Both warnings share the recipe. -->
 			{#if currencyWarning}
 				<p
 					class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
@@ -91,6 +112,21 @@
 					})}
 				</p>
 			{/if}
+
+			<!-- Persistent live region: a role="status" element mounted already filled
+			     is not reliably announced, so only its content comes and goes. -->
+			<div role="status" class="empty:!mt-0">
+				{#if amountWarning}
+					<p
+						id="rp-amt-warning"
+						class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
+					>
+						{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
+							price: formatPlanPrice(subscription.plan)
+						})}
+					</p>
+				{/if}
+			</div>
 
 			<div class="space-y-1">
 				<Label for="rp-status">{m['orgAdmin.members.subscriptions.recordPayment.status']()}</Label>

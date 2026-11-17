@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
 	import type {
+		ApplyConflictSchema,
 		ApplyResponseSchema,
 		MembershipEligibilitySchema
 	} from '$lib/api/generated/types.gen';
@@ -12,6 +14,11 @@
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import {
+		MY_MEMBERSHIPS_KEY,
+		MY_SUBSCRIPTIONS_KEY,
+		myOrgSubscriptionKey
+	} from '$lib/utils/subscription-cache';
 	import {
 		Dialog,
 		DialogContent,
@@ -81,13 +88,17 @@
 	let errorMessage = $state<string | null>(null);
 	let result = $state<ApplyResponseSchema | null>(null);
 	/**
-	 * The backend answers 409 (`Reasons.ALREADY_ACTIVE_MEMBER`) when the caller is
-	 * already an ACTIVE member at the target tier — it refuses rather than minting a
-	 * junk application row. The eligibility verdict reports that case too and hides
-	 * the Join CTA, so a 409 only ever lands on a stale verdict: this is a race
-	 * backstop, not something a retry can fix.
+	 * The backend answers 409 (`ApplyConflictSchema`) instead of minting a junk
+	 * application row, and the machine `reason_code` says why. `already_active_member`:
+	 * the caller is already ACTIVE at the target tier. `awaiting_offline_payment`:
+	 * the application was accepted and payment is outstanding. The eligibility
+	 * verdict reports both and hides the Join CTA, so a 409 only ever lands on a
+	 * stale verdict: a race backstop, not something a retry can fix. Any other or
+	 * unparseable body falls back to "already a member".
 	 */
 	let alreadyMember = $state(false);
+	/** The 409 flavour meaning "accepted, payment outstanding" — not a membership yet. */
+	let conflictAwaitingPayment = $state(false);
 
 	// Unique per instance: the dialog can sit next to other labelled controls.
 	const uid = $props.id();
@@ -109,6 +120,18 @@
 			typeof error === 'object' &&
 			typeof (error as { allowed?: unknown }).allowed === 'boolean'
 		);
+	}
+
+	// Classify a 409 body by its machine code only, never by the localized `detail`.
+	// `reason_code` wins when present; `next_step` is only a fallback for bodies
+	// that carry no reason code.
+	function isAwaitingPaymentConflict(error: unknown): boolean {
+		if (!error || typeof error !== 'object') return false;
+		const body = error as Partial<ApplyConflictSchema>;
+		if (body.reason_code !== undefined && body.reason_code !== null) {
+			return body.reason_code === 'awaiting_offline_payment';
+		}
+		return body.next_step === 'wait_for_offline_payment';
 	}
 
 	const applyMutation = createMutation(() => ({
@@ -135,7 +158,16 @@
 					// Terminal, and positive: there is nothing to apply for. Show the
 					// outcome panel instead of a form-level error, so the user is not
 					// invited to press a button that will keep 409ing.
-					alreadyMember = true;
+					if (isAwaitingPaymentConflict(res.error)) {
+						conflictAwaitingPayment = true;
+						// Intentionally broader than the 200 wait verdict's refresh: the 409
+						// carries no organization id, so the per-org subscription caches go by
+						// their shared prefix rather than by a specific org key.
+						queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+						queryClient.invalidateQueries({ queryKey: ['me', 'org'] });
+					} else {
+						alreadyMember = true;
+					}
 					// Everything that let the Join CTA appear is provably stale: the
 					// cached verdict…
 					queryClient.invalidateQueries({
@@ -172,25 +204,40 @@
 			if (data.application.status === 'completed') {
 				invalidateAll();
 			}
+			// Accepted, payment outstanding: the backend has (or is about to have)
+			// held the member as awaiting payment, so the subscription the org page
+			// and account hub cache is stale.
+			if (data.eligibility.next_step === 'wait_for_offline_payment') {
+				queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+				queryClient.invalidateQueries({ queryKey: MY_SUBSCRIPTIONS_KEY });
+				queryClient.invalidateQueries({
+					queryKey: myOrgSubscriptionKey(data.application.organization_id)
+				});
+			}
 		},
 		onError: (err: Error) => {
 			// The already-member outcome replaces the form with its own panel, so a
 			// form-level alert would never be reachable.
-			if (alreadyMember) return;
+			if (alreadyMember || conflictAwaitingPayment) return;
 			errorMessage = err.message || m['membershipApply.error']();
 		}
 	}));
 
 	const isBusy = $derived(applyMutation.isPending);
 	const completed = $derived(result?.application.status === 'completed');
-	/** Both terminal states replace the form with a read-only panel. */
-	const showOutcome = $derived(!!result || alreadyMember);
+	/** Keyed on the verdict's `next_step`, never on localized text. */
+	const awaitingPayment = $derived(
+		conflictAwaitingPayment || result?.eligibility.next_step === 'wait_for_offline_payment'
+	);
+	/** Every terminal state replaces the form with a read-only panel. */
+	const showOutcome = $derived(!!result || alreadyMember || conflictAwaitingPayment);
 	const showMemberBadge = $derived(alreadyMember || completed);
 
 	const heading = $derived.by(() => {
 		if (alreadyMember) {
 			return m['membershipApply.alreadyMemberTitle']();
 		}
+		if (awaitingPayment) return m['membershipApply.awaitingPaymentTitle']();
 		if (result) {
 			return completed
 				? m['membershipApply.completedTitle']()
@@ -208,6 +255,14 @@
 			: m['membershipApply.title']({ orgName: organizationName });
 	});
 
+	// The submit button that held focus disappears when an outcome replaces the
+	// form, which would drop focus out of the dialog: park it on the new heading.
+	let titleEl = $state<HTMLElement | null>(null);
+	$effect(() => {
+		if (!showOutcome) return;
+		void tick().then(() => titleEl?.focus());
+	});
+
 	// A reopened dialog must start from a blank form — reset on open, so the
 	// outgoing content stays intact during the close animation.
 	$effect(() => {
@@ -216,6 +271,7 @@
 		errorMessage = null;
 		result = null;
 		alreadyMember = false;
+		conflictAwaitingPayment = false;
 	});
 
 	function handleOpenChange(next: boolean): void {
@@ -233,10 +289,12 @@
 		showCloseButton={!isBusy}
 	>
 		<DialogHeader>
-			<DialogTitle>{heading}</DialogTitle>
+			<DialogTitle bind:ref={titleEl} tabindex={-1} class="outline-none">{heading}</DialogTitle>
 			<DialogDescription>
 				{#if alreadyMember}
 					{m['membershipApply.alreadyMemberBody']({ orgName: organizationName })}
+				{:else if awaitingPayment}
+					{m['membershipApply.awaitingPaymentBody']({ orgName: organizationName })}
 				{:else if result}
 					{completed
 						? m['membershipApply.completedBody']({ orgName: organizationName })
@@ -260,13 +318,29 @@
 						<CheckCircle2 class="h-5 w-5" aria-hidden="true" />
 						{m['membershipEligibility.memberBadge']()}
 					</p>
+					{#if alreadyMember}
+						<!-- The hub spells out the member's state. -->
+						<a
+							href={membershipsHref}
+							class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							{m['subscribe.return.checkAccount']()}
+						</a>
+					{/if}
+				{:else if awaitingPayment}
+					<a
+						href={membershipsHref}
+						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						{m['membershipEligibility.seePaymentDetails']()}
+					</a>
 				{:else if result}
 					<p class="text-sm text-muted-foreground">
 						{getApplicationPendingMessage(result.eligibility)}
 					</p>
 					<a
 						href={membershipsHref}
-						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+						class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{m['membershipApply.trackLink']()}
 					</a>

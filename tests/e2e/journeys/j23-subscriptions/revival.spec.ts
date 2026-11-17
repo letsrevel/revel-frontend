@@ -258,7 +258,7 @@ test.describe('J23 revival window + past due @p2', () => {
 		// what renders: org name, tier, a `cancelled` badge, "Member since", and
 		// no management actions at all.
 		await expect(card).toBeVisible({ timeout: 20_000 });
-		await expect(card.getByText('cancelled', { exact: true })).toBeVisible();
+		await expect(card.getByText('Cancelled', { exact: true })).toBeVisible();
 		await expect(card.getByText(TIER_NAME)).toBeVisible();
 		await expect(card.getByText(new RegExp(`^Member since ${DATE}$`))).toBeVisible();
 

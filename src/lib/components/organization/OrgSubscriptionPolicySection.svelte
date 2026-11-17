@@ -10,7 +10,7 @@
 
 	const { organization }: Props = $props();
 
-	// All three fields always render and always post — the number inputs via their
+	// All four fields always render and always post — the number inputs via their
 	// `name`, the markdown body via a hidden input — and the settings action includes
 	// each one only when it actually arrived (`formData.has()`).
 	//
@@ -24,12 +24,14 @@
 		organization.membership_subscription_revival_window_days ?? 30
 	);
 	let refundPolicy = $state(organization.membership_refund_policy || '');
+	let paymentInstructions = $state(organization.membership_payment_instructions || '');
 
 	// Re-sync once a save has refreshed the organization.
 	$effect(() => {
 		gracePeriodDays = organization.membership_grace_period_days ?? 7;
 		revivalWindowDays = organization.membership_subscription_revival_window_days ?? 30;
 		refundPolicy = organization.membership_refund_policy || '';
+		paymentInstructions = organization.membership_payment_instructions || '';
 	});
 </script>
 
@@ -86,10 +88,26 @@
 			label={m['orgSettingsPage.subscriptionPolicy.refundPolicyLabel']()}
 			placeholder={m['orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder']()}
 			rows={6}
+			describedBy="refund-policy-help"
 		/>
 		<input type="hidden" name="membership_refund_policy" value={refundPolicy} />
-		<p class="mt-1 text-xs text-muted-foreground">
+		<p id="refund-policy-help" class="mt-1 text-xs text-muted-foreground">
 			{m['orgSettingsPage.subscriptionPolicy.refundPolicyHelp']()}
+		</p>
+	</div>
+
+	<!-- Default payment instructions for offline plans (markdown) -->
+	<div>
+		<MarkdownEditor
+			bind:value={paymentInstructions}
+			label={m['orgSettingsPage.subscriptionPolicy.paymentInstructionsLabel']()}
+			placeholder={m['orgSettingsPage.subscriptionPolicy.paymentInstructionsPlaceholder']()}
+			rows={6}
+			describedBy="payment-instructions-help"
+		/>
+		<input type="hidden" name="membership_payment_instructions" value={paymentInstructions} />
+		<p id="payment-instructions-help" class="mt-1 text-xs text-muted-foreground">
+			{m['orgSettingsPage.subscriptionPolicy.paymentInstructionsHelp']()}
 		</p>
 	</div>
 </section>

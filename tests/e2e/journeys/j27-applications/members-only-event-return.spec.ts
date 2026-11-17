@@ -73,7 +73,12 @@ test.describe('j27 members-only event round trip @p2', () => {
 		await page.getByLabel(MEMBERSHIP_QUESTION.manual.question).fill('E2E: from the event.');
 		await page.getByRole('button', { name: 'Submit Questionnaire' }).click();
 
-		// Pending review → back on the EVENT, not the org page.
+		// Pending review → the membership page (questionnaires return to the tiers,
+		// b5330d16), which still carries the event to come back to.
+		await page.waitForURL((url) => url.pathname === `/org/${org.slug}/membership`, {
+			timeout: 15_000
+		});
+		await page.getByRole('link', { name: 'Back to the event' }).click();
 		await page.waitForURL((url) => url.pathname === event.path, { timeout: 15_000 });
 		await waitForClientAuth(page);
 		await expect(

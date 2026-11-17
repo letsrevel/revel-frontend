@@ -328,7 +328,11 @@
 
 		{#if canManageSubscriptions}
 			<TabsContent value="subscriptions" class="space-y-4">
-				<SubscriptionsTab {organization} />
+				<SubscriptionsTab
+					{organization}
+					initialStatus={$page.url.searchParams.get('status')}
+					initialPaymentMethod={$page.url.searchParams.get('payment_method')}
+				/>
 			</TabsContent>
 
 			<!-- Org-wide membership payment ledger (reconciliation surface) -->

@@ -1,5 +1,5 @@
 /**
- * Presentation of one `MembershipStatus` (active/paused/cancelled/banned): its
+ * Presentation of one `MembershipStatus` (active/paused/cancelled/banned/awaiting_payment): its
  * `Tone` and its localized label. Single source for `members/MemberCard` (the
  * roster pill) and `members/ManageMemberModal` (the status select), following
  * the same split-out pattern as `subscription-status.ts` — one map, not a copy
@@ -19,7 +19,9 @@ const TONE_MAP: Record<MembershipStatus, Tone> = {
 	active: 'success',
 	paused: 'warning',
 	cancelled: 'neutral',
-	banned: 'danger'
+	banned: 'danger',
+	// System-set while an offline member is held until the first payment is recorded.
+	awaiting_payment: 'warning'
 };
 
 export function getMemberStatusTone(status: MembershipStatus): Tone {
@@ -30,7 +32,8 @@ const STATUS_LABELS: Record<MembershipStatus, () => string> = {
 	active: () => m['memberStatus.active'](),
 	paused: () => m['memberStatus.paused'](),
 	cancelled: () => m['memberStatus.cancelled'](),
-	banned: () => m['memberStatus.banned']()
+	banned: () => m['memberStatus.banned'](),
+	awaiting_payment: () => m['memberStatus.awaiting_payment']()
 };
 
 export function getMemberStatusLabel(status: MembershipStatus): string {
@@ -42,5 +45,39 @@ export const MEMBER_STATUS_ORDER: readonly MembershipStatus[] = [
 	'active',
 	'paused',
 	'cancelled',
+	'banned',
+	'awaiting_payment'
+];
+
+/**
+ * The statuses staff may set by hand. `awaiting_payment` is system-set (it ends when
+ * the first payment is recorded), so it is never offered as a choice; a member who
+ * already holds it is shown it read-only.
+ */
+export const SELECTABLE_MEMBER_STATUSES: readonly MembershipStatus[] = [
+	'active',
+	'paused',
+	'cancelled',
 	'banned'
 ];
+
+/**
+ * What staff may do with a member who has not paid yet: the backend only accepts
+ * cancelling or banning (it also closes the unpaid request). "Awaiting payment"
+ * stays listed, selected, as the read-only no-change option; activating happens by
+ * recording the first payment.
+ */
+const AWAITING_PAYMENT_STATUS_OPTIONS: readonly MembershipStatus[] = [
+	'awaiting_payment',
+	'cancelled',
+	'banned'
+];
+
+/** The status options offered for a member currently holding `current`. */
+export function statusOptionsFor(
+	current: MembershipStatus | undefined
+): readonly MembershipStatus[] {
+	return current === 'awaiting_payment'
+		? AWAITING_PAYMENT_STATUS_OPTIONS
+		: SELECTABLE_MEMBER_STATUSES;
+}

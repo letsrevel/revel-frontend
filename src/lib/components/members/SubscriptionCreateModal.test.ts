@@ -138,3 +138,36 @@ describe('SubscriptionCreateModal initial payment date', () => {
 		);
 	});
 });
+
+describe('SubscriptionCreateModal offline note', () => {
+	it('says the person becomes a member on the first payment, for an offline plan without one', async () => {
+		renderModal();
+		await fillRequired();
+		expect(
+			screen.getByText(/becomes a member when you record the first payment\./)
+		).toBeInTheDocument();
+	});
+
+	it('drops the note once an initial payment is being recorded', async () => {
+		renderModal();
+		await fillRequired();
+		await userEvent.click(screen.getByLabelText('Record initial payment'));
+		expect(screen.queryByText(/becomes a member when you record the first payment/)).toBeNull();
+	});
+
+	it('shows no note until a member is selected, never an "unknown user" name', async () => {
+		renderModal();
+		const select = await screen.findByLabelText('Plan');
+		await waitFor(() =>
+			expect(screen.getByRole('option', { name: /Monthly/ })).toBeInTheDocument()
+		);
+		await userEvent.selectOptions(select, 'plan-1');
+		expect(screen.queryByText(/becomes a member when you record the first payment/)).toBeNull();
+	});
+
+	it('shows no note before a plan is chosen', async () => {
+		renderModal();
+		await screen.findByLabelText('Plan');
+		expect(screen.queryByText(/becomes a member when you record the first payment/)).toBeNull();
+	});
+});

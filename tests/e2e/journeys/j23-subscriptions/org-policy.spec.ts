@@ -28,6 +28,17 @@ function policySection(page: Page): Locator {
 }
 
 /**
+ * The refund-policy editor. The section holds TWO contenteditable editors (refund
+ * policy + the default offline payment instructions), so a bare
+ * `[contenteditable]` locator is a strict-mode violation: pick by accessible name.
+ */
+function refundEditor(page: Page): Locator {
+	return policySection(page)
+		.getByRole('textbox', { name: 'Refund policy', exact: true })
+		.and(page.locator('[contenteditable="true"]'));
+}
+
+/**
  * Fill a Tiptap (contenteditable) editor and confirm the text landed. Tiptap
  * can drop the first programmatic fill before it has finished mounting, so we
  * re-fill until the content sticks (the pr-607 outcome-keyed pattern).
@@ -60,14 +71,13 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		await expect(page.getByRole('heading', { name: 'Organization Settings' })).toBeVisible();
 
 		const graceInput = page.locator('#membership_grace_period_days');
-		const refundEditor = policySection(page).locator('[contenteditable="true"]');
 
 		// A fresh org carries the backend defaults.
 		await expect(graceInput).toHaveValue('7');
 
 		const refundText = `E2E refund terms ${org.slug}`;
 		await graceInput.fill('21');
-		await fillEditor(refundEditor, refundText);
+		await fillEditor(refundEditor(page), refundText);
 
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 		await expect(page.getByText(SAVED)).toBeVisible({ timeout: 15_000 });
@@ -76,7 +86,7 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
 		await waitForClientAuth(page);
 		await expect(page.locator('#membership_grace_period_days')).toHaveValue('21');
-		await expect(policySection(page).locator('[contenteditable="true"]')).toContainText(refundText);
+		await expect(refundEditor(page)).toContainText(refundText);
 
 		await context.close();
 	});
@@ -96,7 +106,7 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		// Set a NON-default policy first, through the UI.
 		const refundText = `E2E keep-me ${org.slug}`;
 		await page.locator('#membership_grace_period_days').fill('30');
-		await fillEditor(policySection(page).locator('[contenteditable="true"]'), refundText);
+		await fillEditor(refundEditor(page), refundText);
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 		await expect(page.getByText(SAVED)).toBeVisible({ timeout: 15_000 });
 
@@ -117,7 +127,7 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		await waitForClientAuth(page);
 		await expect(page.locator('#address')).toHaveValue(newAddress);
 		await expect(page.locator('#membership_grace_period_days')).toHaveValue('30');
-		await expect(policySection(page).locator('[contenteditable="true"]')).toContainText(refundText);
+		await expect(refundEditor(page)).toContainText(refundText);
 
 		await context.close();
 	});

@@ -5,6 +5,7 @@
 		MySubscriptionSchema,
 		PublicPlanSchema
 	} from '$lib/api/generated/types.gen';
+	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import type { MembershipGateAction } from '$lib/utils/membership-eligibility';
 	import PricingCard from '$lib/components/common/PricingCard.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
@@ -14,10 +15,12 @@
 		canSwitchToPlan,
 		formatPlanPrice,
 		isFreePlan,
+		isAwaitingOfflinePayment,
 		isLifetimePlan
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
-	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
+	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		plan: PublicPlanSchema;
@@ -96,7 +99,8 @@
 
 	/**
 	 * What the card offers, in precedence order:
-	 * already subscribed → offline → sold out → paused → gated → subscribe/login.
+	 * already subscribed (or awaiting offline payment) → sold out → paused → gated →
+	 * subscribe/login.
 	 *
 	 * The membership check comes first because it is a fact about the *viewer*,
 	 * and it outranks every fact about the plan: an existing member cannot buy
@@ -105,10 +109,10 @@
 	 * `none` covers a plan the backend exposes without an id: it cannot be
 	 * subscribed to, and a CTA would only produce a failed checkout.
 	 *
-	 * Only OFFLINE is a dead end. A FREE plan is un-billed too, but it is
-	 * *member* self-serve — `POST …/subscribe` accepts it and activates the
-	 * subscription on the spot — so it takes the ordinary join path, with the
-	 * label and dialog copy adjusted for the absent charge.
+	 * FREE and OFFLINE plans are un-billed by Stripe but still member self-serve:
+	 * `POST …/subscribe` accepts both. FREE activates on the spot; OFFLINE holds
+	 * the member as awaiting payment until staff record it. Both take the
+	 * ordinary join/apply path, with label and dialog copy adjusted.
 	 *
 	 * The gate branches sit second-to-last, below every plan-level stop and above
 	 * the viewer's own CTA (#733). Since BE #831 a tier can be gated AND priced,
@@ -132,11 +136,16 @@
 	 * A guest is untouched: nobody has asked the backend about them, and "Log in
 	 * to subscribe" is true whatever their eligibility turns out to be.
 	 */
+	const awaitingOffline = $derived(isAwaitingOfflinePayment(subscription));
+
 	const action = $derived.by(() => {
 		if (subscription) {
-			return plan.id && plan.id === subscription.plan_id ? 'current' : 'member';
+			const isThisPlan = !!plan.id && plan.id === subscription.plan_id;
+			// A held offline membership is not "your plan" yet (nothing is paid or
+			// active) and not a Stripe checkout to resume either.
+			if (awaitingOffline) return isThisPlan ? 'awaiting_payment' : 'awaiting_other';
+			return isThisPlan ? 'current' : 'member';
 		}
-		if (plan.payment_method === 'offline') return 'offline';
 		if (plan.sold_out) return 'none';
 		if (plan.sales_status === 'paused') return 'none';
 		if (!plan.id) return 'none';
@@ -182,25 +191,10 @@
 	 */
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
 
-	/**
-	 * Whether `OrgContactButton` would really render something for this org.
-	 *
-	 * Deliberately stricter than the `method !== 'none'` test used elsewhere: the
-	 * button's own `email` branch also requires an address, so a method of
-	 * `email` with none on file renders NOTHING. Gating the copy on the looser
-	 * test would leave the offline card promising a button that never arrives —
-	 * the same dead end this replaces, one step further along.
-	 */
-	const canContactOrganization = $derived.by(() => {
-		// Both operands read unconditionally: `&&`/`||` inside a `$derived` would
-		// leave the skipped one untracked.
-		const method = contactMethod;
-		const hasEmail = !!contactEmail;
-		if (method === 'email') return hasEmail;
-		return method === 'form';
-	});
+	const canContactOrganization = $derived(canContactOrg(contactMethod, contactEmail));
 
 	const isFree = $derived(isFreePlan(plan));
+	const isOffline = $derived(plan.payment_method === 'offline');
 	/** A non-renewing term — said in words, because the price line no longer
 	    carries a cadence to imply it. */
 	const neverExpires = $derived(isLifetimePlan(plan));
@@ -213,8 +207,15 @@
 	// longer shows the plan they were about to take is the whole point of a
 	// returnUrl going wrong. TierCard's own CTA already resolves to this route, so
 	// the two agree.
+	// The page's own safe `?returnUrl=` (e.g. the members-only event the visitor
+	// came from) rides inside the login return target, exactly as MembershipCta does.
 	const loginHref = $derived(
-		buildLoginHref(resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }))
+		buildLoginHref(
+			withReturnUrl(
+				resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }),
+				safeInternalReturnUrl()
+			)
+		)
 	);
 
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
@@ -279,24 +280,22 @@
 					{m['membershipPlans.changePlanCta']()}<span aria-hidden="true"> →</span>
 				</a>
 			{/if}
-		{:else if action === 'offline'}
-			<!-- The one branch with no self-serve path at all: the plan is settled
-				     with the organizers, so the sentence states that constraint and
-				     the CTA beneath it is how you reach them. The sentence stands
-				     alone when there is nobody to reach — it says what is true of the
-				     plan and stops, rather than telling the viewer to make contact
-				     they have no means of making.
-
-				     A whole button rather than a link spliced into the sentence: the
-				     org's two contact channels (mailto and a dialog) already live in
-				     OrgContactButton, and splicing would mean cutting a translated
-				     string around an anchor. -->
-			<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
+		{:else if action === 'awaiting_payment'}
+			<!-- Held until staff record the payment: the member's own plan in
+			     substance, but not active, so no "Your plan" and no resume-checkout.
+			     The link is the only control; the account hub carries the payment
+			     instructions. The contact button (when the org takes messages) is
+			     the way to ask about them. -->
+			<p class="text-sm text-muted-foreground">
+				{m['membershipPlans.awaitingPaymentHelper']({ orgName: organizationName })}
+			</p>
+			<a
+				href={membershipsHref}
+				class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{m['membershipEligibility.seePaymentDetails']()}<span aria-hidden="true"> →</span>
+			</a>
 			{#if canContactOrganization}
-				<!-- Named for the org, not just "Contact organizer": these buttons
-					     repeat down a page of plans and a screen-reader user hears them
-					     out of context. Full width on mobile like every other CTA here,
-					     so it cannot overflow a narrow card. -->
 				<OrgContactButton
 					{organizationSlug}
 					{organizationName}
@@ -308,6 +307,12 @@
 					class="mt-2 w-full justify-center sm:w-auto"
 				/>
 			{/if}
+		{:else if action === 'awaiting_other'}
+			<!-- Neutral on purpose: this plan is not the one held, and "already
+			     subscribed" plus change-plan would be untrue until payment lands. -->
+			<p class="text-sm text-muted-foreground">
+				{m['membershipPlans.awaitingOtherPlanHelper']({ orgName: organizationName })}
+			</p>
 		{:else if isApplyAction}
 			<!-- #735. The one branch where a blocked gate still leaves the member
 				     something to press: the backend is waiting for an application that
@@ -331,9 +336,13 @@
 				     charge (the backend's PaymentReadyGate is last), so this says so
 				     rather than letting the member expect a checkout. -->
 			<p class="mt-2 text-sm text-muted-foreground">
-				{isFree
-					? m['membershipPlans.applyJoinHelper']()
-					: m['membershipPlans.applySubscribeHelper']()}
+				{#if isFree}
+					{m['membershipPlans.applyJoinHelper']()}
+				{:else if isOffline}
+					{m['membershipPlans.applyOfflineHelper']({ orgName: organizationName })}
+				{:else}
+					{m['membershipPlans.applySubscribeHelper']()}
+				{/if}
 			</p>
 		{:else if action === 'gated'}
 			<!-- What replaces the CTA says so, rather than leaving a bare gap. The
@@ -346,23 +355,40 @@
 				class="text-sm text-muted-foreground"
 				aria-describedby={gateRequirementsId ?? undefined}
 			>
-				{isFree
+				{isFree || isOffline
 					? m['membershipPlans.gatedJoinHelper']()
 					: m['membershipPlans.gatedSubscribeHelper']()}
 			</p>
 		{:else if action === 'subscribe'}
 			<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={ctaHeld}>
-				{isFree ? m['membershipPlans.joinFreeCta']() : m['membershipPlans.subscribeCta']()}
+				{#if isFree}
+					{m['membershipPlans.joinFreeCta']()}
+				{:else if isOffline}
+					{m['membershipPlans.joinCta']()}
+				{:else}
+					{m['membershipPlans.subscribeCta']()}
+				{/if}
 			</Button>
 			{#if isFree}
 				<p class="mt-2 text-sm text-muted-foreground">{m['membershipPlans.freeHelper']()}</p>
+			{:else if isOffline}
+				<p class="mt-2 text-sm text-muted-foreground">
+					{m['membershipPlans.offlineGuestNote']({ orgName: organizationName })}
+				</p>
 			{/if}
 		{:else if action === 'login'}
 			<!-- A real link, not a scripted redirect: it survives no-JS,
 			     middle-click and "open in new tab". -->
 			<Button href={loginHref} class="w-full sm:w-auto">
-				{isFree ? m['membershipPlans.loginToJoin']() : m['membershipPlans.loginToSubscribe']()}
+				{isFree || isOffline
+					? m['membershipPlans.loginToJoin']()
+					: m['membershipPlans.loginToSubscribe']()}
 			</Button>
+			{#if isOffline}
+				<p class="mt-2 text-sm text-muted-foreground">
+					{m['membershipPlans.offlineGuestNote']({ orgName: organizationName })}
+				</p>
+			{/if}
 		{/if}
 	</div>
 {/snippet}

@@ -65,7 +65,7 @@ const organization = {
 	timezone: 'Europe/Rome'
 } as unknown as OrganizationAdminDetailSchema;
 
-function renderTab(active: boolean) {
+function renderTab(active: boolean, canManageSubscriptions = false) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -73,6 +73,7 @@ function renderTab(active: boolean) {
 			componentProps: {
 				organization,
 				isOwner: true,
+				canManageSubscriptions,
 				active,
 				onOpenApplications: vi.fn(),
 				onCreateInviteLink: vi.fn(),
@@ -97,6 +98,27 @@ beforeEach(() => {
 });
 afterEach(() => {
 	document.body.style.pointerEvents = '';
+});
+
+describe('PeopleTab awaiting-payment section', () => {
+	it('mounts the awaiting-payment section above the register when people are held', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.organizationadminmembersListMembers).mockResolvedValueOnce({
+			data: {
+				count: 1,
+				results: [
+					{
+						user: { id: 'u1', display_name: 'Ada Held', email: 'ada@example.com', bio: '' },
+						status: 'awaiting_payment',
+						subscription_id: 's1'
+					}
+				]
+			}
+		} as never);
+		renderTab(true, true);
+		expect(await screen.findByText('Ada Held')).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /Awaiting first payment/ })).toBeInTheDocument();
+	});
 });
 
 describe('PeopleTab while another tab is showing', () => {
