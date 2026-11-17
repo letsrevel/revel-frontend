@@ -20,6 +20,7 @@
 	import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
 	import RegisterMatchHint from '$lib/components/member-register/RegisterMatchHint.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { formatPlanPrice } from '$lib/utils/subscriptions';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
@@ -168,6 +169,22 @@
 						</div>
 						{#if request.user.pronouns}
 							<p class="text-sm text-muted-foreground">({request.user.pronouns})</p>
+						{/if}
+						{#if request.plan}
+							<p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+								<span class="sr-only">{m['membershipRequestCard.planPrefix']()}</span>
+								<span class="font-medium text-foreground">{request.plan.name}</span>
+								<span class="text-muted-foreground">{formatPlanPrice(request.plan)}</span>
+								<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+									{#if request.plan.payment_method === 'online'}
+										{m['orgAdmin.members.plans.badge.online']()}
+									{:else if request.plan.payment_method === 'free'}
+										{m['orgAdmin.members.plans.badge.free']()}
+									{:else}
+										{m['orgAdmin.members.plans.badge.offline']()}
+									{/if}
+								</span>
+							</p>
 						{/if}
 					</div>
 				</div>

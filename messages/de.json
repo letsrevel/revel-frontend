@@ -11837,5 +11837,10 @@
 	"demoAccounts.description.pendingPayment": "Zahlung ausstehend",
 	"demoAccounts.description.memberOfBothOrgs": "Mitglied in BEIDEN Organisationen",
 	"demoAccounts.description.cancelledTicket": "Hat ein storniertes Ticket",
-	"demoAccounts.description.waitlistsAndInvited": "Auf Wartelisten, zu Veranstaltungen eingeladen"
+	"demoAccounts.description.waitlistsAndInvited": "Auf Wartelisten, zu Veranstaltungen eingeladen",
+	"membershipRequestCard.planPrefix": "Tarif",
+	"approveMembershipModal.descriptionOffline": "Mit der Genehmigung wird {name} als Mitglied mit ausstehender Zahlung geführt und erhält deine Zahlungsanweisungen. Die Mitgliedschaft wird aktiv, sobald du die erste Zahlung erfasst.",
+	"approveMembershipModal.descriptionOnline": "Mit der Genehmigung kann {name} den Checkout abschließen. Die Mitgliedschaft beginnt, sobald die Zahlung eingegangen ist.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Das weicht vom Tarifpreis ({price}) ab. Der volle Zeitraum wird trotzdem gewährt.",
+	"orgAdmin.dashboard.attention.awaitingPayment": "{count} warten auf die erste Zahlung"
 }

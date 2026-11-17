@@ -10,6 +10,7 @@
 	import { currencyOptions } from '$lib/utils/currencies';
 	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import type { EditableStatus } from './paymentEdit';
+	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -37,6 +38,12 @@
 			occurredAt = '';
 		}
 	});
+
+	// Numeric compare, so "10" equals "10.00". Only a succeeded payment grants the
+	// period, so only then does a different amount deserve a heads-up.
+	const amountWarning = $derived(
+		status === 'succeeded' && amount !== '' && Number(amount) !== Number(subscription.plan.price)
+	);
 
 	const currencyWarning = $derived(currency !== subscription.plan.currency);
 
@@ -88,6 +95,17 @@
 					{m['orgAdmin.members.subscriptions.recordPayment.currencyWarning']({
 						planCurrency: subscription.plan.currency,
 						selected: currency
+					})}
+				</p>
+			{/if}
+
+			{#if amountWarning}
+				<p
+					role="status"
+					class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
+				>
+					{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
+						price: formatPlanPrice(subscription.plan)
 					})}
 				</p>
 			{/if}

@@ -127,6 +127,7 @@
 				pendingRequestCount={data.pendingRequestCount}
 				billingNeedsAttention={billingNeedsAttention(organization)}
 				draftCount={data.draftCount}
+				awaitingPaymentCount={data.awaitingPaymentCount}
 				orgSlug={organization.slug}
 				isOwner={data.isOwner}
 			/>

@@ -31,9 +31,11 @@
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
+		/** Pre-selected status filter (e.g. the dashboard's awaiting-payment link). */
+		initialStatus?: string | null;
 	}
 
-	const { organization }: Props = $props();
+	const { organization, initialStatus = null }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -41,7 +43,11 @@
 
 	let search = $state('');
 	let debounced = $state('');
-	let statusFilter = $state<SubscriptionStatus | 'all'>('all');
+	let statusFilter = $state<SubscriptionStatus | 'all'>(
+		(STATUS_ORDER as readonly string[]).includes(initialStatus ?? '')
+			? (initialStatus as SubscriptionStatus)
+			: 'all'
+	);
 	let pageNum = $state(1);
 	let createOpen = $state(false);
 	// The backend's refusal of the last create, shown inside the dialog that stays open.

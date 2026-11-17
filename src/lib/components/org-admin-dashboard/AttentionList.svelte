@@ -8,12 +8,20 @@
 		pendingRequestCount: number | null;
 		billingNeedsAttention: boolean;
 		draftCount: number | null;
+		/** Pending subscriptions on offline plans (people owing a first payment). */
+		awaitingPaymentCount?: number | null;
 		orgSlug: string;
 		isOwner: boolean;
 	}
 
-	const { pendingRequestCount, billingNeedsAttention, draftCount, orgSlug, isOwner }: Props =
-		$props();
+	const {
+		pendingRequestCount,
+		billingNeedsAttention,
+		draftCount,
+		awaitingPaymentCount = null,
+		orgSlug,
+		isOwner
+	}: Props = $props();
 
 	interface Item {
 		id: string;
@@ -32,6 +40,15 @@
 				text: m['orgAdmin.dashboard.attention.membershipRequests']({ count: pendingRequestCount }),
 				linkLabel: m['orgAdmin.dashboard.attention.review'](),
 				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=applications`
+			});
+		}
+		if (awaitingPaymentCount !== null && awaitingPaymentCount > 0) {
+			list.push({
+				id: 'awaiting-payment',
+				count: awaitingPaymentCount,
+				text: m['orgAdmin.dashboard.attention.awaitingPayment']({ count: awaitingPaymentCount }),
+				linkLabel: m['orgAdmin.dashboard.attention.review'](),
+				href: `${resolve('/(auth)/org/[slug]/admin/members', { slug: orgSlug })}?tab=subscriptions&status=pending`
 			});
 		}
 		if (isOwner && billingNeedsAttention) {

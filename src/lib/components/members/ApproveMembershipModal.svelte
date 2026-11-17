@@ -68,7 +68,13 @@
 
 			<div class="space-y-4 py-4">
 				<p class="text-sm text-muted-foreground">
-					{m['approveMembershipModal.description']({ name: displayName })}
+					{#if request.plan?.payment_method === 'offline'}
+						{m['approveMembershipModal.descriptionOffline']({ name: displayName })}
+					{:else if request.plan?.payment_method === 'online'}
+						{m['approveMembershipModal.descriptionOnline']({ name: displayName })}
+					{:else}
+						{m['approveMembershipModal.description']({ name: displayName })}
+					{/if}
 				</p>
 
 				<!-- Tier Selection -->

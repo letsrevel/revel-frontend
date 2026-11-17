@@ -11837,5 +11837,10 @@
 	"demoAccounts.description.pendingPayment": "Pago pendiente",
 	"demoAccounts.description.memberOfBothOrgs": "Miembro de AMBAS organizaciones",
 	"demoAccounts.description.cancelledTicket": "Tiene una entrada cancelada",
-	"demoAccounts.description.waitlistsAndInvited": "En listas de espera, con invitaciones a eventos"
+	"demoAccounts.description.waitlistsAndInvited": "En listas de espera, con invitaciones a eventos",
+	"membershipRequestCard.planPrefix": "Plan",
+	"approveMembershipModal.descriptionOffline": "Al aprobar, {name} queda como miembro pendiente de pago y recibe tus instrucciones de pago. La membresía pasa a estar activa cuando registres el primer pago.",
+	"approveMembershipModal.descriptionOnline": "Al aprobar, {name} puede completar el pago. La membresía comienza cuando el pago se procesa.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Este importe es distinto del precio del plan ({price}). Se concederá igualmente el período completo.",
+	"orgAdmin.dashboard.attention.awaitingPayment": "{count} pendientes del primer pago"
 }

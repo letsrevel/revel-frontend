@@ -213,3 +213,38 @@ describe('MembershipRequestCard relative date', () => {
 		expect(screen.getAllByText(/Requested 1 hour ago/).length).toBeGreaterThan(0);
 	});
 });
+
+describe('MembershipRequestCard plan context', () => {
+	const plan = (payment_method: 'offline' | 'online') => ({
+		id: 'plan-1',
+		name: 'Gold',
+		price: '10.00',
+		currency: 'EUR',
+		period_unit: 'month',
+		period_count: 1,
+		payment_method
+	});
+
+	it('shows the plan name, price and an offline badge', () => {
+		renderCard(
+			makeRequest({ plan: plan('offline') } as Partial<OrganizationMembershipRequestRetrieve>)
+		);
+		const card = screen.getByRole('article', { name: 'Ada Lovelace' });
+		expect(within(card).getByText('Gold')).toBeInTheDocument();
+		expect(within(card).getByText(/10\.00/)).toBeInTheDocument();
+		expect(within(card).getByText('Offline · manual')).toBeInTheDocument();
+	});
+
+	it('shows the online badge for online plans', () => {
+		renderCard(
+			makeRequest({ plan: plan('online') } as Partial<OrganizationMembershipRequestRetrieve>)
+		);
+		expect(screen.getByText('Online · Stripe')).toBeInTheDocument();
+	});
+
+	it('renders no plan block when the application has no plan', () => {
+		renderCard(makeRequest({ plan: null }));
+		expect(screen.queryByText('Offline · manual')).not.toBeInTheDocument();
+		expect(screen.queryByText('Online · Stripe')).not.toBeInTheDocument();
+	});
+});

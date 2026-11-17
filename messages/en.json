@@ -11837,5 +11837,10 @@
 	"demoAccounts.description.pendingPayment": "Pending payment",
 	"demoAccounts.description.memberOfBothOrgs": "Member of BOTH organizations",
 	"demoAccounts.description.cancelledTicket": "Has cancelled ticket",
-	"demoAccounts.description.waitlistsAndInvited": "On waitlists, invited to events"
+	"demoAccounts.description.waitlistsAndInvited": "On waitlists, invited to events",
+	"membershipRequestCard.planPrefix": "Plan",
+	"approveMembershipModal.descriptionOffline": "Approving holds {name} as a member awaiting payment and sends them your payment instructions. They become active when you record the first payment.",
+	"approveMembershipModal.descriptionOnline": "Approving lets {name} complete checkout. They become a member once the payment goes through.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "This is different from the plan price ({price}). The full period will still be granted.",
+	"orgAdmin.dashboard.attention.awaitingPayment": "{count} awaiting first payment"
 }

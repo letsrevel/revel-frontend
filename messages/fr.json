@@ -11837,5 +11837,10 @@
 	"demoAccounts.description.pendingPayment": "Paiement en attente",
 	"demoAccounts.description.memberOfBothOrgs": "Membre des DEUX organisations",
 	"demoAccounts.description.cancelledTicket": "A un billet annulé",
-	"demoAccounts.description.waitlistsAndInvited": "Sur des listes d'attente, avec des invitations à des événements"
+	"demoAccounts.description.waitlistsAndInvited": "Sur des listes d'attente, avec des invitations à des événements",
+	"membershipRequestCard.planPrefix": "Formule",
+	"approveMembershipModal.descriptionOffline": "L'approbation place {name} comme membre en attente de paiement et lui envoie vos instructions de paiement. L'adhésion devient active lorsque vous enregistrez le premier paiement.",
+	"approveMembershipModal.descriptionOnline": "L'approbation permet à {name} de finaliser le paiement. L'adhésion commence une fois le paiement effectué.",
+	"orgAdmin.members.subscriptions.recordPayment.amountWarning": "Ce montant diffère du prix de la formule ({price}). La période complète sera tout de même accordée.",
+	"orgAdmin.dashboard.attention.awaitingPayment": "{count} en attente du premier paiement"
 }
