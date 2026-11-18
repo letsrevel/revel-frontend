@@ -69,6 +69,9 @@
 	let rememberMe = $state(form?.rememberMe || false);
 	let showPassword = $state(false);
 	let isSubmitting = $state(false);
+	let isResending = $state(false);
+	// Set when the resend request itself failed (network/transport error).
+	let resendTransportError = $state(false);
 
 	// Demo account selection
 	let selectedAccountEmail = $state('');
@@ -79,6 +82,10 @@
 	let otpCode = $state('');
 
 	// Error handling - type assertion needed due to ActionData union
+	// Login refused because the account's email is not verified yet.
+	const emailNotVerified = $derived(!!form?.emailNotVerified);
+	const resendSent = $derived(!!form?.resendSent);
+	const resendError = $derived(resendTransportError || !!form?.resendError);
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	// Handle demo account selection
@@ -106,6 +113,25 @@
 	//
 	// Non-redirect results (validation errors, the 2FA-required step) are applied
 	// in-place via `applyAction` so the form updates without a reload.
+	const handleResend: SubmitFunction = ({ cancel }) => {
+		if (isResending) {
+			cancel();
+			return;
+		}
+		isResending = true;
+		resendTransportError = false;
+		return async ({ result }) => {
+			isResending = false;
+			// Transport failure: stay on the form and show the inline message
+			// instead of replacing the page with the error boundary.
+			if (result.type === 'error') {
+				resendTransportError = true;
+				return;
+			}
+			await applyAction(result);
+		};
+	};
+
 	const handleSubmit: SubmitFunction = () => {
 		// Prevent duplicate submissions
 		if (isSubmitting) return;
@@ -138,6 +164,43 @@
 			{#if errors.form}
 				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 					<p class="text-sm font-medium text-destructive">{errors.form}</p>
+				</div>
+			{/if}
+
+			{#if emailNotVerified && !requires2FA}
+				<div
+					role="alert"
+					class="space-y-3 rounded-md border border-destructive bg-destructive/10 p-4"
+				>
+					<p class="text-sm font-medium text-destructive">{m['login.emailNotVerified']()}</p>
+					<form
+						method="POST"
+						action="?/resendVerification{returnUrlSuffix}"
+						use:enhance={handleResend}
+					>
+						<input type="hidden" name="email" value={form?.email || email} />
+						<button
+							type="submit"
+							disabled={isResending}
+							class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{#if isResending}
+								<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+								<span>{m['login.resendingVerification']()}</span>
+							{:else}
+								<span>{m['login.resendVerification']()}</span>
+							{/if}
+						</button>
+					</form>
+					<div role="status" aria-live="polite">
+						{#if resendSent}
+							<p class="text-sm text-foreground">{m['login.verificationEmailSent']()}</p>
+						{:else if resendError}
+							<p class="text-sm font-medium text-destructive">
+								{m['login.resendVerificationFailed']()}
+							</p>
+						{/if}
+					</div>
 				</div>
 			{/if}
 
@@ -420,6 +483,7 @@
 					class="space-y-6"
 				>
 					<input type="hidden" name="tempToken" value={tempToken} />
+					<input type="hidden" name="email" value={form?.email || email} />
 					<input type="hidden" name="rememberMe" value={rememberMe ? 'true' : 'false'} />
 
 					<!-- 2FA Code Input -->
