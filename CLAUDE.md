@@ -180,6 +180,11 @@ When working on issues or new features:
 3. **Implement** — track progress with TodoWrite; use the appropriate subagents; validate Svelte code with `svelte-autofixer`; run the accessibility-checker subagent before completing; raise concerns immediately.
 4. **Principles** — no surprises, accessibility first, mobile-first, document decisions, ask rather than assume.
 
+End to end, this loop is `/gauntlet:implement` from the [Gauntlet](https://github.com/letsrevel/gauntlet)
+plugin (triage → plan → implement → docs → gate → fresh-context review lanes → PR → CodeRabbit).
+Its repo config is [`.claude/review/profile.md`](.claude/review/profile.md): gate, docs locations,
+security triggers and merge policy.
+
 ## Brand Palette (2026 Rebrand)
 
 The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/local_stuff/Revel_Presentation_Branding+Social-Media-Design.pdf`). **This is the single source of truth for brand colors — always derive theme values from it, never invent new hues.**
