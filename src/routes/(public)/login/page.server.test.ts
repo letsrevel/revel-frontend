@@ -220,4 +220,32 @@ describe('unverified email handling', () => {
 		expect(accountResendVerificationEmail).not.toHaveBeenCalled();
 		expect(result).toMatchObject({ status: 400, data: { resendError: true } });
 	});
+
+	it('resendVerification treats a non-text email field as empty', async () => {
+		vi.mocked(accountResendVerificationEmail).mockReset();
+		const request = {
+			formData: async () => ({ get: () => new File(['x'], 'x.txt') })
+		} as unknown as Request;
+		const result = await actions.resendVerification({
+			...event({}),
+			request
+		} as unknown as ActionEvent);
+		expect(accountResendVerificationEmail).not.toHaveBeenCalled();
+		expect(result).toMatchObject({ status: 400, data: { resendError: true } });
+	});
+
+	it('verify2FA keeps the submitted email when re-rendering the OTP form', async () => {
+		vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
+			response: { ok: false, status: 400 },
+			error: { detail: 'Bad code' }
+		} as never);
+		const result = await actions.verify2FA(
+			event({ code: '123456', tempToken: 'temp', email: 'a@example.com' })
+		);
+		expect(result).toMatchObject({ data: { requires2FA: true, email: 'a@example.com' } });
+		const invalid = await actions.verify2FA(
+			event({ code: 'x', tempToken: 'temp', email: 'a@example.com' })
+		);
+		expect(invalid).toMatchObject({ data: { requires2FA: true, email: 'a@example.com' } });
+	});
 });

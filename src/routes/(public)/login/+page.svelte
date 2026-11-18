@@ -70,6 +70,8 @@
 	let showPassword = $state(false);
 	let isSubmitting = $state(false);
 	let isResending = $state(false);
+	// Set when the resend request itself failed (network/transport error).
+	let resendTransportError = $state(false);
 
 	// Demo account selection
 	let selectedAccountEmail = $state('');
@@ -83,7 +85,7 @@
 	// Login refused because the account's email is not verified yet.
 	const emailNotVerified = $derived(!!form?.emailNotVerified);
 	const resendSent = $derived(!!form?.resendSent);
-	const resendError = $derived(!!form?.resendError);
+	const resendError = $derived(resendTransportError || !!form?.resendError);
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	// Handle demo account selection
@@ -111,11 +113,21 @@
 	//
 	// Non-redirect results (validation errors, the 2FA-required step) are applied
 	// in-place via `applyAction` so the form updates without a reload.
-	const handleResend: SubmitFunction = () => {
-		if (isResending) return;
+	const handleResend: SubmitFunction = ({ cancel }) => {
+		if (isResending) {
+			cancel();
+			return;
+		}
 		isResending = true;
+		resendTransportError = false;
 		return async ({ result }) => {
 			isResending = false;
+			// Transport failure: stay on the form and show the inline message
+			// instead of replacing the page with the error boundary.
+			if (result.type === 'error') {
+				resendTransportError = true;
+				return;
+			}
 			await applyAction(result);
 		};
 	};

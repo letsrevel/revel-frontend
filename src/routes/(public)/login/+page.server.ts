@@ -30,6 +30,12 @@ function isEmailNotVerified(response: Response | undefined, error: unknown): boo
 	);
 }
 
+/** A text form field; multipart `File` values (or a missing field) count as empty. */
+function textField(formData: FormData, name: string): string {
+	const value = formData.get(name);
+	return typeof value === 'string' ? value : '';
+}
+
 export const load: PageServerLoad = async ({ url, request, fetch, locals }) => {
 	const lang = resolveLang(request);
 	const seo = buildSeo({ kind: 'auth', url, lang, page: 'login', tenant: locals.tenant });
@@ -146,7 +152,7 @@ export const actions = {
 			code: formData.get('code') as string,
 			tempToken: formData.get('tempToken') as string,
 			rememberMe: formData.get('rememberMe') === 'true',
-			email: (formData.get('email') as string | null) ?? ''
+			email: textField(formData, 'email')
 		};
 
 		// Validate OTP code
@@ -158,7 +164,7 @@ export const actions = {
 					errors[err.path[0].toString()] = err.message;
 				}
 			});
-			return fail(400, { errors, requires2FA: true, tempToken: data.tempToken });
+			return fail(400, { errors, requires2FA: true, tempToken: data.tempToken, email: data.email });
 		}
 
 		try {
@@ -199,14 +205,16 @@ export const actions = {
 				return fail(400, {
 					errors: { code: errorMessage },
 					requires2FA: true,
-					tempToken: data.tempToken
+					tempToken: data.tempToken,
+					email: data.email
 				});
 			}
 
 			return fail(400, {
 				errors: { code: m['serverErrors.public.invalidServerResponse']() },
 				requires2FA: true,
-				tempToken: data.tempToken
+				tempToken: data.tempToken,
+				email: data.email
 			});
 		} catch (error) {
 			// Re-throw redirects immediately without logging
@@ -223,7 +231,8 @@ export const actions = {
 			return fail(500, {
 				errors: { code: errorMessage },
 				requires2FA: true,
-				tempToken: data.tempToken
+				tempToken: data.tempToken,
+				email: data.email
 			});
 		}
 	},
@@ -233,7 +242,7 @@ export const actions = {
 	// 200 (it never reveals whether the address exists).
 	resendVerification: async ({ request, fetch, url }) => {
 		const formData = await request.formData();
-		const email = ((formData.get('email') as string | null) ?? '').trim();
+		const email = textField(formData, 'email').trim();
 		if (!email) {
 			return fail(400, { emailNotVerified: true, email, resendError: true });
 		}
