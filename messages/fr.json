@@ -11875,5 +11875,10 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Annuler cette demande ?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "L'annulation annule aussi sa demande d'adhésion en attente.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Oui, annuler la demande",
-	"manageMemberModal.awaitingBanRequestNote": "Le bannissement clôt aussi sa demande d'adhésion en attente."
+	"manageMemberModal.awaitingBanRequestNote": "Le bannissement clôt aussi sa demande d'adhésion en attente.",
+	"planCalendar.calendarMonth": "Mois civil (renouvellement le 1er)",
+	"planCalendar.calendarYear": "Année civile à partir de {month}",
+	"planCalendar.differentCalendar": "Calendrier de facturation différent",
+	"planCalendar.differentCalendarHelper": "Ce forfait est facturé selon un autre calendrier. Annule ton forfait actuel et souscris à celui-ci à la place.",
+	"planCalendar.firstPeriodHint": "Première période jusqu'au {date} : prix partiel."
 }

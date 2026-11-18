@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+	canSwitchToPlan,
 	getAvailableActions,
 	canUncancel,
 	formatPlanPrice,
@@ -803,5 +804,23 @@ describe('isAwaitingOfflinePayment', () => {
 	it('is false without a subscription', () => {
 		expect(isAwaitingOfflinePayment(null)).toBe(false);
 		expect(isAwaitingOfflinePayment(undefined)).toBe(false);
+	});
+});
+
+describe('canSwitchToPlan billing calendar', () => {
+	const sub = mySub();
+	const target = {
+		id: 'b',
+		payment_method: 'online',
+		currency: 'EUR',
+		sold_out: false,
+		sales_status: 'open'
+	} as const;
+
+	it('allows rolling to rolling', () => {
+		expect(canSwitchToPlan(sub, { ...target, id: 'b', period_alignment: 'rolling' })).toBe(true);
+	});
+	it('rejects a plan on another billing calendar', () => {
+		expect(canSwitchToPlan(sub, { ...target, period_alignment: 'calendar' })).toBe(false);
 	});
 });

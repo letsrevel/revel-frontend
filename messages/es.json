@@ -11875,5 +11875,10 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "¿Cancelar esta solicitud?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Al cancelar también se cancela su solicitud de membresía pendiente.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Sí, cancelar solicitud",
-	"manageMemberModal.awaitingBanRequestNote": "Al banear también se cierra su solicitud de membresía pendiente."
+	"manageMemberModal.awaitingBanRequestNote": "Al banear también se cierra su solicitud de membresía pendiente.",
+	"planCalendar.calendarMonth": "Mes natural (se renueva el día 1)",
+	"planCalendar.calendarYear": "Año natural desde {month}",
+	"planCalendar.differentCalendar": "Calendario de facturación distinto",
+	"planCalendar.differentCalendarHelper": "Este plan se factura con un calendario distinto. Cancela tu plan actual y suscríbete a este en su lugar.",
+	"planCalendar.firstPeriodHint": "Primer periodo hasta el {date}: precio parcial."
 }

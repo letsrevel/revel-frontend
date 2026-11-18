@@ -11,6 +11,8 @@
 	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import type { EditableStatus } from './paymentEdit';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatMoney } from '$lib/utils/format';
+	import { firstPeriodQuote } from '$lib/utils/plan-calendar';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -29,9 +31,18 @@
 	let notes = $state('');
 	let occurredAt = $state('');
 
+	// A pending calendar subscription is awaiting its (partial) first payment, so
+	// the suggestion is the "join now" quote rather than the full plan price.
+	const firstPeriod = $derived(
+		subscription.status === 'pending' && subscription.plan.first_period_price != null
+			? firstPeriodQuote(subscription.plan)
+			: null
+	);
+	const expectedAmount = $derived(firstPeriod?.price ?? String(subscription.plan.price ?? '0.00'));
+
 	$effect(() => {
 		if (open) {
-			amount = String(subscription.plan.price ?? '0.00');
+			amount = expectedAmount;
 			currency = subscription.plan.currency ?? 'EUR';
 			status = 'succeeded';
 			notes = '';
@@ -46,7 +57,7 @@
 		status === 'succeeded' &&
 			(amount as string | null) != null &&
 			String(amount).trim() !== '' &&
-			Number(amount) !== Number(subscription.plan.price)
+			Number(amount) !== Number(expectedAmount)
 	);
 
 	const currencyWarning = $derived(currency !== subscription.plan.currency);
@@ -85,6 +96,11 @@
 						required
 						aria-describedby={amountWarning ? 'rp-amt-warning' : undefined}
 					/>
+					{#if firstPeriod}
+						<p class="text-xs text-muted-foreground">
+							{m['planCalendar.firstPeriodHint']({ date: firstPeriod.lastDay })}
+						</p>
+					{/if}
 				</div>
 				<div class="space-y-1">
 					<Label for="rp-cur">{m['orgAdmin.members.subscriptions.recordPayment.currency']()}</Label>
@@ -122,7 +138,9 @@
 						class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
 					>
 						{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
-							price: formatPlanPrice(subscription.plan)
+							price: firstPeriod
+								? formatMoney(firstPeriod.price, subscription.plan.currency)
+								: formatPlanPrice(subscription.plan)
 						})}
 					</p>
 				{/if}

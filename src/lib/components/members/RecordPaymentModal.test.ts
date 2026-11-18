@@ -76,3 +76,41 @@ describe('RecordPaymentModal amount warning', () => {
 		expect(screen.queryByText(warning)).not.toBeInTheDocument();
 	});
 });
+
+describe('RecordPaymentModal calendar first-period prefill', () => {
+	const calendarSub = (status: string) =>
+		({
+			id: 'sub-2',
+			status,
+			plan: {
+				price: '12.00',
+				currency: 'EUR',
+				period_alignment: 'calendar',
+				period_unit: 'month',
+				first_period_end: '2027-01-01T00:00:00Z',
+				first_period_price: '4.00'
+			}
+		}) as unknown as SubscriptionSchema;
+	const open = (sub: SubscriptionSchema) =>
+		render(RecordPaymentModal, {
+			props: { subscription: sub, open: true, onClose: vi.fn(), onSubmit: vi.fn() }
+		});
+
+	it('prefills the first-period price for a pending calendar subscription, with a hint', async () => {
+		open(calendarSub('pending'));
+		const amount = await screen.findByLabelText('Amount');
+		expect(amount).toHaveValue(4);
+		expect(screen.getByText(/First period until December 31, 2026/)).toBeInTheDocument();
+		// The suggestion is the expected amount: no warning until it is edited.
+		expect(screen.queryByText(/different from the plan price/)).not.toBeInTheDocument();
+		await userEvent.clear(amount);
+		await userEvent.type(amount, '12');
+		expect(screen.getByText(/different from the plan price/)).toBeInTheDocument();
+	});
+
+	it('uses the full plan price when the subscription is not pending', async () => {
+		open(calendarSub('active'));
+		expect(await screen.findByLabelText('Amount')).toHaveValue(12);
+		expect(screen.queryByText(/First period until/)).not.toBeInTheDocument();
+	});
+});

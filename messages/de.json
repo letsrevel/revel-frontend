@@ -11875,5 +11875,10 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Diese Anfrage stornieren?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Beim Stornieren wird auch die offene Mitgliedschaftsanfrage storniert.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Ja, Anfrage stornieren",
-	"manageMemberModal.awaitingBanRequestNote": "Beim Sperren wird auch die offene Mitgliedschaftsanfrage geschlossen."
+	"manageMemberModal.awaitingBanRequestNote": "Beim Sperren wird auch die offene Mitgliedschaftsanfrage geschlossen.",
+	"planCalendar.calendarMonth": "Kalendermonat (Verlängerung am 1.)",
+	"planCalendar.calendarYear": "Kalenderjahr ab {month}",
+	"planCalendar.differentCalendar": "Anderer Abrechnungskalender",
+	"planCalendar.differentCalendarHelper": "Dieser Tarif wird nach einem anderen Kalender abgerechnet. Kündige deinen aktuellen Tarif und schließe stattdessen diesen ab.",
+	"planCalendar.firstPeriodHint": "Erster Zeitraum bis {date}: anteiliger Preis."
 }

@@ -11875,5 +11875,10 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Annullare questa richiesta?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Annullare significa annullare anche la sua richiesta di adesione in sospeso.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Sì, annulla la richiesta",
-	"manageMemberModal.awaitingBanRequestNote": "Bannare chiude anche la sua richiesta di adesione in sospeso."
+	"manageMemberModal.awaitingBanRequestNote": "Bannare chiude anche la sua richiesta di adesione in sospeso.",
+	"planCalendar.calendarMonth": "Mese di calendario (rinnovo il 1°)",
+	"planCalendar.calendarYear": "Anno di calendario da {month}",
+	"planCalendar.differentCalendar": "Calendario di fatturazione diverso",
+	"planCalendar.differentCalendarHelper": "Questo piano è fatturato con un calendario diverso. Annulla il piano attuale e sottoscrivi questo al suo posto.",
+	"planCalendar.firstPeriodHint": "Primo periodo fino al {date}: prezzo parziale."
 }

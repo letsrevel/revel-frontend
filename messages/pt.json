@@ -11875,5 +11875,10 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Cancelar este pedido?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Ao cancelar, o pedido de adesão pendente também é cancelado.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Sim, cancelar pedido",
-	"manageMemberModal.awaitingBanRequestNote": "Ao banir, o pedido de adesão pendente também é encerrado."
+	"manageMemberModal.awaitingBanRequestNote": "Ao banir, o pedido de adesão pendente também é encerrado.",
+	"planCalendar.calendarMonth": "Mês civil (renova no dia 1)",
+	"planCalendar.calendarYear": "Ano civil a partir de {month}",
+	"planCalendar.differentCalendar": "Calendário de faturação diferente",
+	"planCalendar.differentCalendarHelper": "Este plano é faturado num calendário diferente. Cancela o teu plano atual e subscreve este em vez disso.",
+	"planCalendar.firstPeriodHint": "Primeiro período até {date}: preço parcial."
 }

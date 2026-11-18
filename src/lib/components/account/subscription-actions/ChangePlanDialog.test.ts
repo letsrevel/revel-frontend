@@ -165,6 +165,27 @@ beforeEach(() => {
 });
 
 describe('ChangePlanDialog', () => {
+	it('renders plans on another billing calendar unavailable with a helper', async () => {
+		plansMock.mockResolvedValue({
+			data: [
+				...PLANS,
+				{
+					...PLANS[0],
+					id: 'p9',
+					name: 'Calendar monthly',
+					period_alignment: 'calendar',
+					period_unit: 'month'
+				}
+			],
+			error: undefined
+		});
+		renderDialog();
+		const radio = await screen.findByRole('radio', { name: /Calendar monthly/ });
+		expect(radio).toBeDisabled();
+		expect(screen.getByText(/bills on a different calendar/)).toBeInTheDocument();
+		expect(screen.getByRole('radio', { name: /Yearly/ })).toBeEnabled();
+	});
+
 	it('lists only same-currency ONLINE plans other than the current one', async () => {
 		renderDialog();
 
