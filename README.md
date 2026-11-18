@@ -66,7 +66,7 @@ Rendering, the auth flow, the SEO landing pages and accessibility targets are de
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [CLAUDE.md](CLAUDE.md). Revel is built with AI assistance under a human-review workflow; if you contribute with AI, follow [AI_USAGE.md](https://github.com/letsrevel/revel-backend/blob/main/AI_USAGE.md). See the [open issues](https://github.com/letsrevel/revel-frontend/issues).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [CLAUDE.md](CLAUDE.md). Revel is built with AI assistance under a human-review workflow; if you contribute with AI, follow [AI_USAGE.md](https://github.com/letsrevel/revel-backend/blob/main/AI_USAGE.md). Maintainers drive changes through [Gauntlet](https://github.com/letsrevel/gauntlet), an open-source Claude Code plugin for the implement, review, security and tech-debt loop, configured for this repo in [`.claude/review/`](.claude/review). See the [open issues](https://github.com/letsrevel/revel-frontend/issues).
 
 ## License
 
