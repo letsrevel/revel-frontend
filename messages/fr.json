@@ -11899,5 +11899,10 @@
 	"planCalendar.calendarYear": "Année civile à partir de {month}",
 	"planCalendar.differentCalendar": "Calendrier de facturation différent",
 	"planCalendar.differentCalendarHelper": "Ce forfait est facturé selon un autre calendrier. Annule ton forfait actuel et souscris à celui-ci à la place.",
-	"planCalendar.firstPeriodHint": "Première période jusqu'au {date} : prix partiel."
+	"planCalendar.firstPeriodHint": "Première période jusqu'au {date} : prix partiel.",
+	"planCalendar.firstPeriodHintFull": "Période jusqu'au {date} : prix complet, quelle que soit la durée restante.",
+	"planCalendar.firstPeriodHintFree": "La première période jusqu'au {date} est gratuite.",
+	"planCalendar.quotePartial": "Première période jusqu'au {date} : {price}, un paiement partiel. Ensuite, le prix complet s'applique : {regular}.",
+	"planCalendar.quoteFree": "Gratuit jusqu'au {date}, puis {regular}.",
+	"planCalendar.quoteFull": "Cette période se termine le {date}. Rejoindre maintenant coûte le prix complet ({price}), même s'il reste peu de temps, puis {regular}."
 }

@@ -624,3 +624,58 @@ describe('PlanCard', () => {
 		expect(screen.getByText('Never expires')).toBeInTheDocument();
 	});
 });
+
+describe('PlanCard calendar quote', () => {
+	const base = {
+		period_alignment: 'calendar',
+		period_unit: 'year',
+		period_count: 1,
+		calendar_start_month: 1,
+		price: '40.00',
+		first_period_end: '2027-01-01T00:00:00Z'
+	} as Partial<PublicPlanSchema>;
+
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+	});
+
+	it('says the first charge is partial and the full price follows', () => {
+		renderCard({
+			plan: makePlan({ ...base, first_period_price: '12.50', first_period_pricing: 'prorated' })
+		});
+		expect(screen.getByText('Calendar year from January')).toBeInTheDocument();
+		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
+			/First period until December 31, 2026: €12\.50, a partial charge\. From then on the full price applies: €40\.00 \/ year\./
+		);
+	});
+
+	it('says a free first period is free until the boundary', () => {
+		renderCard({
+			plan: makePlan({ ...base, first_period_price: '0.00', first_period_pricing: 'prorated' })
+		});
+		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
+			'Free until December 31, 2026, then €40.00 / year.'
+		);
+	});
+
+	it('says late joiners still pay the full price for a full-pricing plan', () => {
+		renderCard({
+			plan: makePlan({
+				...base,
+				payment_method: 'offline',
+				first_period_price: '40.00',
+				first_period_pricing: 'full'
+			})
+		});
+		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
+			/This period ends on December 31, 2026\. Joining now costs the full price \(€40\.00\)/
+		);
+	});
+
+	it('shows nothing extra for a rolling plan', () => {
+		renderCard();
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
+});

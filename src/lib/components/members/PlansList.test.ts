@@ -210,3 +210,32 @@ describe('PlansList row labelling', () => {
 		expect(screen.queryByText('Never expires')).not.toBeInTheDocument();
 	});
 });
+
+describe('PlansList calendar plans', () => {
+	it('shows the alignment label and the current first-period quote', async () => {
+		arrangePlans([
+			makePlan({
+				period_alignment: 'calendar',
+				period_unit: 'year',
+				period_count: 1,
+				calendar_start_month: 1,
+				price: '40.00',
+				first_period_end: '2027-01-01T00:00:00Z',
+				first_period_price: '12.50',
+				first_period_pricing: 'prorated'
+			} as Partial<PlanSchema>)
+		]);
+		renderList();
+		expect(await screen.findByText('Calendar year from January')).toBeInTheDocument();
+		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
+			'First period until December 31, 2026: €12.50'
+		);
+	});
+
+	it('shows neither for a rolling plan', async () => {
+		arrangePlans([makePlan()]);
+		renderList();
+		await screen.findByText('Monthly');
+		expect(screen.queryByTestId('plan-alignment')).not.toBeInTheDocument();
+	});
+});

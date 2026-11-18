@@ -20,6 +20,7 @@
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { calendarAlignmentLabel, firstPeriodQuoteText } from '$lib/utils/plan-calendar';
 	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
@@ -192,6 +193,9 @@
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
 
 	const canContactOrganization = $derived(canContactOrg(contactMethod, contactEmail));
+
+	const alignmentLabel = $derived(calendarAlignmentLabel(plan));
+	const quoteText = $derived(firstPeriodQuoteText(plan, formatPlanPrice(plan)));
 
 	const isFree = $derived(isFreePlan(plan));
 	const isOffline = $derived(plan.payment_method === 'offline');
@@ -413,6 +417,12 @@
 	{meta}
 	{actions}
 >
+	{#if alignmentLabel}
+		<p class="text-sm font-medium text-foreground">{alignmentLabel}</p>
+	{/if}
+	{#if quoteText}
+		<p class="text-sm text-muted-foreground" data-testid="plan-first-period-quote">{quoteText}</p>
+	{/if}
 	{#if plan.description}
 		<p class="whitespace-pre-line text-sm text-muted-foreground">{plan.description}</p>
 	{/if}

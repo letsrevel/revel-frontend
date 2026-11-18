@@ -780,3 +780,25 @@ describe('MembershipCard', () => {
 		});
 	});
 });
+
+describe('MembershipCard calendar plan', () => {
+	it('shows the alignment label but never a join-now quote', () => {
+		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const sub = makeSub();
+		sub.plan = {
+			...sub.plan,
+			period_alignment: 'calendar',
+			period_unit: 'year',
+			calendar_start_month: 4
+		} as typeof sub.plan;
+		render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: MembershipCard,
+				componentProps: { membership: makeMembership(sub) }
+			}
+		});
+		expect(screen.getByTestId('plan-alignment')).toHaveTextContent('Calendar year from April');
+		expect(screen.queryByText(/First period until/)).not.toBeInTheDocument();
+	});
+});

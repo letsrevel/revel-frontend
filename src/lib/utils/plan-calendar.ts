@@ -2,6 +2,7 @@ import * as m from '$lib/paraglide/messages.js';
 import type { FirstPeriodPricing, PeriodAlignment, PeriodUnit } from '$lib/api/generated/types.gen';
 import { formatDateLongMonth } from './date';
 import { formatMonthName } from './calendar';
+import { formatMoney } from './format';
 
 /** The alignment fields every plan schema carries (missing = rolling). */
 export interface PlanAlignmentFields {
@@ -71,4 +72,22 @@ export function firstPeriodQuote(plan: PlanQuoteFields): FirstPeriodQuote | null
 		isFree: Number(price) === 0,
 		pricing: plan.first_period_pricing ?? 'prorated'
 	};
+}
+
+export interface QuotablePlan extends PlanQuoteFields {
+	currency: string;
+}
+
+/**
+ * The join-now sentence for a calendar plan ("First period until 31 December
+ * 2026: €12.50, then ..."), or null when there is nothing to quote. `regular`
+ * is the plan's own formatted price (`formatPlanPrice`).
+ */
+export function firstPeriodQuoteText(plan: QuotablePlan, regular: string): string | null {
+	const q = firstPeriodQuote(plan);
+	if (!q) return null;
+	const price = formatMoney(q.price, plan.currency);
+	if (q.isFree) return m['planCalendar.quoteFree']({ date: q.lastDay, regular });
+	if (q.pricing === 'full') return m['planCalendar.quoteFull']({ date: q.lastDay, price, regular });
+	return m['planCalendar.quotePartial']({ date: q.lastDay, price, regular });
 }

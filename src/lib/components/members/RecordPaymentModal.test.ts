@@ -113,4 +113,20 @@ describe('RecordPaymentModal calendar first-period prefill', () => {
 		expect(await screen.findByLabelText('Amount')).toHaveValue(12);
 		expect(screen.queryByText(/First period until/)).not.toBeInTheDocument();
 	});
+
+	it('says full price (not partial) for a full-pricing plan', async () => {
+		const sub = calendarSub('pending');
+		(sub.plan as unknown as Record<string, unknown>).first_period_pricing = 'full';
+		(sub.plan as unknown as Record<string, unknown>).first_period_price = '12.00';
+		open(sub);
+		expect(await screen.findByText(/full price, whatever part is left/)).toBeInTheDocument();
+		expect(screen.queryByText(/partial price/)).not.toBeInTheDocument();
+	});
+
+	it('says the first period is free when the quote is zero', async () => {
+		const sub = calendarSub('pending');
+		(sub.plan as unknown as Record<string, unknown>).first_period_price = '0.00';
+		open(sub);
+		expect(await screen.findByText(/December 31, 2026 is free/)).toBeInTheDocument();
+	});
 });

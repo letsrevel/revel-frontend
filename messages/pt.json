@@ -11899,5 +11899,10 @@
 	"planCalendar.calendarYear": "Ano civil a partir de {month}",
 	"planCalendar.differentCalendar": "Calendário de faturação diferente",
 	"planCalendar.differentCalendarHelper": "Este plano é faturado num calendário diferente. Cancela o teu plano atual e subscreve este em vez disso.",
-	"planCalendar.firstPeriodHint": "Primeiro período até {date}: preço parcial."
+	"planCalendar.firstPeriodHint": "Primeiro período até {date}: preço parcial.",
+	"planCalendar.firstPeriodHintFull": "Período até {date}: preço total, por pouco que reste.",
+	"planCalendar.firstPeriodHintFree": "O primeiro período até {date} é gratuito.",
+	"planCalendar.quotePartial": "Primeiro período até {date}: {price}, uma cobrança parcial. A partir daí aplica-se o preço total: {regular}.",
+	"planCalendar.quoteFree": "Grátis até {date}, depois {regular}.",
+	"planCalendar.quoteFull": "Este período termina em {date}. Aderir agora custa o preço total ({price}), por pouco tempo que reste, e depois {regular}."
 }

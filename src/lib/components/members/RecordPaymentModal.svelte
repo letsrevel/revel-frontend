@@ -98,7 +98,11 @@
 					/>
 					{#if firstPeriod}
 						<p class="text-xs text-muted-foreground">
-							{m['planCalendar.firstPeriodHint']({ date: firstPeriod.lastDay })}
+							{firstPeriod.isFree
+								? m['planCalendar.firstPeriodHintFree']({ date: firstPeriod.lastDay })
+								: firstPeriod.pricing === 'full'
+									? m['planCalendar.firstPeriodHintFull']({ date: firstPeriod.lastDay })
+									: m['planCalendar.firstPeriodHint']({ date: firstPeriod.lastDay })}
 						</p>
 					{/if}
 				</div>

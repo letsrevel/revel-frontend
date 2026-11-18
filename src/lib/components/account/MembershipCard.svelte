@@ -33,6 +33,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { getMemberStatusLabel, getMemberStatusTone } from '$lib/utils/member-status';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
+	import { calendarAlignmentLabel } from '$lib/utils/plan-calendar';
 	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
@@ -366,6 +367,11 @@
 						<p class="text-sm text-muted-foreground">
 							{sub.plan.name} · {formatPlanPrice(sub.plan)}
 						</p>
+						{#if calendarAlignmentLabel(sub.plan)}
+							<p class="text-xs text-muted-foreground" data-testid="plan-alignment">
+								{calendarAlignmentLabel(sub.plan)}
+							</p>
+						{/if}
 					{:else if membership.tier}
 						<p class="text-sm text-muted-foreground">{membership.tier.name}</p>
 					{/if}

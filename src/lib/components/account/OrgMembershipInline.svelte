@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { calendarAlignmentLabel } from '$lib/utils/plan-calendar';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
@@ -57,6 +58,11 @@
 			</h3>
 			<div class="mt-1 font-medium">{sub.plan.name}</div>
 			<div class="text-sm text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
+			{#if calendarAlignmentLabel(sub.plan)}
+				<div class="text-xs text-muted-foreground" data-testid="plan-alignment">
+					{calendarAlignmentLabel(sub.plan)}
+				</div>
+			{/if}
 			<div class="mt-2 flex items-center gap-2">
 				<SubscriptionStatusBadge status={sub.status} data-testid="membership-subscription-status" />
 				<span class="text-xs text-muted-foreground">
