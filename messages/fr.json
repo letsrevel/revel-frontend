@@ -4112,7 +4112,9 @@
 						"freePriceNotZero": "Les formules gratuites doivent être au prix de 0.",
 						"freeNeedsLifetime": "Les formules gratuites doivent utiliser la période à vie.",
 						"onlinePriceZero": "Les formules en ligne doivent coûter plus de 0. Utilisez une formule gratuite pour une adhésion sans frais.",
-						"onlineNoLifetime": "Les formules en ligne ne peuvent pas être à vie — Stripe facture au mois ou à l'année. Utilisez une formule hors ligne pour une adhésion payée une seule fois."
+						"onlineNoLifetime": "Les formules en ligne ne peuvent pas être à vie — Stripe facture au mois ou à l'année. Utilisez une formule hors ligne pour une adhésion payée une seule fois.",
+						"calendarPeriod": "Les formules calendaires doivent avoir une période mensuelle ou annuelle.",
+						"fullNeedsOffline": "Seules les formules hors ligne peuvent facturer le plein tarif pour la première période."
 					},
 					"periodMonth": "mois",
 					"periodYear": "an(s)",
@@ -4134,7 +4136,24 @@
 					"periodLifetime": "à vie (sans renouvellement)",
 					"freeShapeLocked": "Les formules gratuites sont toujours au prix de 0 et à vie : ces champs ne sont pas modifiables.",
 					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir.",
-					"paymentInstructionsMissing": "Les personnes qui postulent ne verront pas comment payer. Ajoutez des instructions ici ou définissez celles par défaut de l'organisation dans les Paramètres."
+					"paymentInstructionsMissing": "Les personnes qui postulent ne verront pas comment payer. Ajoutez des instructions ici ou définissez celles par défaut de l'organisation dans les Paramètres.",
+					"alignment": "Alignement de la facturation",
+					"alignmentRolling": "Glissant",
+					"alignmentRollingHelp": "La période de chaque membre commence à son adhésion.",
+					"alignmentCalendar": "Calendaire",
+					"alignmentCalendarHelp": "Tout le monde renouvelle à la même date, par exemple le 1er janvier.",
+					"alignmentImmutable": "L'alignement de la facturation ne peut plus être modifié après la création de la formule.",
+					"calendarStartMonth": "Commence en",
+					"calendarStartMonthHelp": "Le mois où commence la période annuelle. Tout le monde renouvelle le 1er de ce mois.",
+					"calendarNoCount": "Les formules calendaires se renouvellent chaque mois ou chaque année, il n'y a donc pas de fréquence à régler.",
+					"calendarPeriodLocked": "La période de facturation d'une formule calendaire ne peut plus être modifiée après sa création.",
+					"subscribersLocked": "Cette formule a des abonnements actifs, sa devise et sa période de facturation ne peuvent donc pas être modifiées. Archive-la et crée une nouvelle formule à la place.",
+					"firstPricing": "Tarif de la première période",
+					"firstPricingProrated": "Au prorata",
+					"firstPricingProratedHelp": "Les personnes qui adhèrent en cours de période paient un prix partiel.",
+					"firstPricingFull": "Plein tarif",
+					"firstPricingFullHelp": "Tout le monde paie le plein tarif, même en adhérant tard.",
+					"firstPricingFullOnlineLocked": "Les formules en ligne sont toujours calculées au prorata la première période."
 				},
 				"errors": {
 					"createFailed": "Échec de la création du forfait : {detail}",

@@ -4142,7 +4142,9 @@
 						"freePriceNotZero": "Kostenlose Pläne müssen den Preis 0 haben.",
 						"freeNeedsLifetime": "Kostenlose Pläne müssen den Zeitraum „lebenslang“ verwenden.",
 						"onlinePriceZero": "Online-Pläne müssen mehr als 0 kosten. Nutze für eine kostenlose Mitgliedschaft einen kostenlosen Plan.",
-						"onlineNoLifetime": "Online-Pläne können nicht lebenslang sein — Stripe rechnet monatlich oder jährlich ab. Nutze für eine einmalig bezahlte Mitgliedschaft einen Offline-Plan."
+						"onlineNoLifetime": "Online-Pläne können nicht lebenslang sein — Stripe rechnet monatlich oder jährlich ab. Nutze für eine einmalig bezahlte Mitgliedschaft einen Offline-Plan.",
+						"calendarPeriod": "Kalendarische Pläne müssen eine monatliche oder jährliche Periode verwenden.",
+						"fullNeedsOffline": "Nur Offline-Pläne können für die erste Periode den vollen Preis berechnen."
 					},
 					"periodMonth": "Monat(e)",
 					"periodYear": "Jahr(e)",
@@ -4164,7 +4166,24 @@
 					"periodLifetime": "lebenslang (keine Verlängerung)",
 					"freeShapeLocked": "Kostenlose Pläne haben immer den Preis 0 und laufen lebenslang — das lässt sich nicht ändern.",
 					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus.",
-					"paymentInstructionsMissing": "Bewerber*innen sehen nicht, wie sie bezahlen können. Füge hier Anweisungen hinzu oder lege in den Einstellungen einen Standard für die Organisation fest."
+					"paymentInstructionsMissing": "Bewerber*innen sehen nicht, wie sie bezahlen können. Füge hier Anweisungen hinzu oder lege in den Einstellungen einen Standard für die Organisation fest.",
+					"alignment": "Abrechnungszeitraum",
+					"alignmentRolling": "Rollierend",
+					"alignmentRollingHelp": "Der Zeitraum jedes Mitglieds beginnt mit dem Beitritt.",
+					"alignmentCalendar": "Kalendarisch",
+					"alignmentCalendarHelp": "Alle verlängern am selben Datum, z. B. am 1. Januar.",
+					"alignmentImmutable": "Der Abrechnungszeitraum kann nach dem Erstellen des Plans nicht mehr geändert werden.",
+					"calendarStartMonth": "Beginnt im",
+					"calendarStartMonthHelp": "Der Monat, in dem der Jahreszeitraum beginnt. Alle verlängern am 1. dieses Monats.",
+					"calendarNoCount": "Kalendarische Pläne verlängern sich jeden Monat oder jedes Jahr, daher gibt es keine Häufigkeit einzustellen.",
+					"calendarPeriodLocked": "Die Abrechnungsperiode eines kalendarischen Plans kann nach dem Erstellen nicht mehr geändert werden.",
+					"subscribersLocked": "Dieser Plan hat aktive Abonnent*innen, daher können Währung und Abrechnungsperiode nicht geändert werden. Archiviere ihn und erstelle stattdessen einen neuen Plan.",
+					"firstPricing": "Preis der ersten Periode",
+					"firstPricingProrated": "Anteilig",
+					"firstPricingProratedHelp": "Wer mitten in der Periode beitritt, zahlt einen Teilpreis.",
+					"firstPricingFull": "Voller Preis",
+					"firstPricingFullHelp": "Alle zahlen den vollen Preis, auch bei spätem Beitritt.",
+					"firstPricingFullOnlineLocked": "Online-Pläne rechnen die erste Periode immer anteilig ab."
 				},
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
