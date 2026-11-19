@@ -64,8 +64,9 @@ export interface FirstPeriodQuote {
 
 /** The join-now quote for a calendar plan; null when there is nothing to quote. */
 export function firstPeriodQuote(plan: PlanQuoteFields): FirstPeriodQuote | null {
-	if (!isCalendarPlan(plan) || !plan.first_period_end) return null;
-	const price = plan.first_period_price ?? '0';
+	// A null price is unknown, not free: only an explicit 0 means a free first period.
+	const price = plan.first_period_price;
+	if (!isCalendarPlan(plan) || !plan.first_period_end || price == null) return null;
 	return {
 		lastDay: formatPeriodLastDay(plan.first_period_end),
 		price,

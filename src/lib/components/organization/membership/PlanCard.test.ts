@@ -696,6 +696,14 @@ describe('PlanCard calendar quote', () => {
 		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
 	});
 
+	it('hides the quote when a gate blocks the viewer', () => {
+		renderCard({ plan: makePlan(quoted), gateAction: 'blocked' });
+		expect(
+			screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+		).toBeInTheDocument();
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
+
 	it('hides the quote when sales are paused', () => {
 		renderCard({ plan: makePlan({ ...quoted, sales_status: 'paused' }) });
 		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();

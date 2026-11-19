@@ -102,6 +102,7 @@ describe('firstPeriodQuote', () => {
 	it('is null for rolling plans or without an end', () => {
 		expect(firstPeriodQuote({ ...base, period_alignment: 'rolling' })).toBeNull();
 		expect(firstPeriodQuote({ ...base, first_period_end: null })).toBeNull();
+		expect(firstPeriodQuote({ ...base, first_period_price: null })).toBeNull();
 	});
 	it('returns the quote with the inclusive last day', () => {
 		expect(firstPeriodQuote(base)).toEqual({

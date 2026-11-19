@@ -199,10 +199,11 @@
 	 * The join-now quote only applies when the viewer could actually join through
 	 * this card. Not for their own plan (`current`), a switch (`member`: it keeps
 	 * the billing anchor, so there is no stub charge), a held offline membership,
-	 * or a plan that is sold out or paused.
+	 * a viewer blocked by a gate (`gated`: no join control, and today's quote
+	 * would be stale by the time they can join), or a plan that is sold out or paused.
 	 */
 	const canJoinNow = $derived(
-		['login', 'apply', 'reapply', 'gated', 'subscribe'].includes(action) &&
+		['login', 'apply', 'reapply', 'subscribe'].includes(action) &&
 			!plan.sold_out &&
 			plan.sales_status !== 'paused'
 	);
