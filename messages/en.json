@@ -4142,7 +4142,9 @@
 						"freePriceNotZero": "Free plans must be priced 0.",
 						"freeNeedsLifetime": "Free plans must use the lifetime period.",
 						"onlinePriceZero": "Online plans must be priced above 0. Use a free plan for a no-cost membership.",
-						"onlineNoLifetime": "Online plans can't be lifetime — Stripe bills monthly or yearly. Use an offline plan for a one-off paid membership."
+						"onlineNoLifetime": "Online plans can't be lifetime — Stripe bills monthly or yearly. Use an offline plan for a one-off paid membership.",
+						"calendarPeriod": "Calendar plans must use a monthly or yearly period.",
+						"fullNeedsOffline": "Only offline plans can charge the full price for the first period."
 					},
 					"periodMonth": "month(s)",
 					"periodYear": "year(s)",
@@ -4164,7 +4166,24 @@
 					"periodLifetime": "lifetime (never renews)",
 					"freeShapeLocked": "Free plans are always priced 0 and always last a lifetime, so these can't be changed.",
 					"lifetimeNoCount": "A lifetime plan never renews, so there's no billing frequency to set.",
-					"paymentInstructionsMissing": "Applicants won't see how to pay. Add instructions here or set an organization default in Settings."
+					"paymentInstructionsMissing": "Applicants won't see how to pay. Add instructions here or set an organization default in Settings.",
+					"alignment": "Billing alignment",
+					"alignmentRolling": "Rolling",
+					"alignmentRollingHelp": "Each member's period starts when they join.",
+					"alignmentCalendar": "Calendar",
+					"alignmentCalendarHelp": "Everyone renews on the same date, e.g. 1 January.",
+					"alignmentImmutable": "Billing alignment can't be changed after the plan is created.",
+					"calendarStartMonth": "Starts in",
+					"calendarStartMonthHelp": "The month the yearly period begins. Everyone renews on the 1st of this month.",
+					"calendarNoCount": "Calendar plans renew every month or every year, so there's no frequency to set.",
+					"calendarPeriodLocked": "The billing period of a calendar plan can't be changed after creation.",
+					"subscribersLocked": "This plan has active subscribers, so its currency and billing period can't be changed. Archive it and create a new plan instead.",
+					"firstPricing": "First period pricing",
+					"firstPricingProrated": "Prorated",
+					"firstPricingProratedHelp": "People joining mid-period pay a partial price.",
+					"firstPricingFull": "Full price",
+					"firstPricingFullHelp": "People pay the full price even when joining late.",
+					"firstPricingFullOnlineLocked": "Online plans always prorate the first period."
 				},
 				"errors": {
 					"createFailed": "Failed to create plan: {detail}",
@@ -11875,5 +11894,15 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Cancel this request?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Cancelling also cancels their pending membership request.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Yes, cancel request",
-	"manageMemberModal.awaitingBanRequestNote": "Banning also closes their pending membership request."
+	"manageMemberModal.awaitingBanRequestNote": "Banning also closes their pending membership request.",
+	"planCalendar.calendarMonth": "Calendar month (renews on the 1st)",
+	"planCalendar.calendarYear": "Calendar year from {month}",
+	"planCalendar.differentCalendar": "Different billing calendar",
+	"planCalendar.differentCalendarHelper": "This plan bills on a different calendar. Cancel your current plan and subscribe to it instead.",
+	"planCalendar.firstPeriodHint": "First period until {date}: partial price. Based on today; adjust if backdating.",
+	"planCalendar.firstPeriodHintFull": "Period until {date}: full price, whatever part is left. Based on today; adjust if backdating.",
+	"planCalendar.firstPeriodHintFree": "First period until {date} is free. Based on today; adjust if backdating.",
+	"planCalendar.quotePartial": "First period until {date}: {price} (partial). Then {regular}.",
+	"planCalendar.quoteFree": "Free until {date}, then {regular}.",
+	"planCalendar.quoteFull": "This period ends on {date}. Joining now costs the full {price}, however little of the period is left."
 }

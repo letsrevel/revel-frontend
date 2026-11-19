@@ -258,6 +258,12 @@ export function formatMonthYear(year: number, month: number): string {
 	return date.toLocaleDateString(getDateLocale(), { month: 'long', year: 'numeric' });
 }
 
+/** Long month name (1-12) in the UI language, independent of the machine's timezone. */
+export function formatMonthName(month: number): string {
+	const date = new Date(Date.UTC(2000, month - 1, 1));
+	return date.toLocaleDateString(getDateLocale(), { month: 'long', timeZone: 'UTC' });
+}
+
 /**
  * Format week range for display
  */

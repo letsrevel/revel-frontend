@@ -4142,7 +4142,9 @@
 						"freePriceNotZero": "Os planos gratuitos têm de ter preço 0.",
 						"freeNeedsLifetime": "Os planos gratuitos têm de usar o período vitalício.",
 						"onlinePriceZero": "Os planos online têm de custar mais de 0. Usa um plano gratuito para uma adesão sem custos.",
-						"onlineNoLifetime": "Os planos online não podem ser vitalícios — o Stripe fatura mensal ou anualmente. Usa um plano offline para uma adesão paga uma única vez."
+						"onlineNoLifetime": "Os planos online não podem ser vitalícios — o Stripe fatura mensal ou anualmente. Usa um plano offline para uma adesão paga uma única vez.",
+						"calendarPeriod": "Os planos de calendário têm de usar um período mensal ou anual.",
+						"fullNeedsOffline": "Só os planos offline podem cobrar o preço total no primeiro período."
 					},
 					"periodMonth": "mês(es)",
 					"periodYear": "ano(s)",
@@ -4164,7 +4166,24 @@
 					"periodLifetime": "vitalício (nunca renova)",
 					"freeShapeLocked": "Os planos gratuitos têm sempre preço 0 e duração vitalícia, por isso estes campos não podem ser alterados.",
 					"lifetimeNoCount": "Um plano vitalício nunca renova, por isso não há frequência de faturação a definir.",
-					"paymentInstructionsMissing": "Quem se candidatar não verá como pagar. Adiciona instruções aqui ou define as predefinidas da organização nas Definições."
+					"paymentInstructionsMissing": "Quem se candidatar não verá como pagar. Adiciona instruções aqui ou define as predefinidas da organização nas Definições.",
+					"alignment": "Alinhamento da faturação",
+					"alignmentRolling": "Contínuo",
+					"alignmentRollingHelp": "O período de cada membro começa quando se junta.",
+					"alignmentCalendar": "De calendário",
+					"alignmentCalendarHelp": "Todos renovam na mesma data, por exemplo a 1 de janeiro.",
+					"alignmentImmutable": "O alinhamento da faturação não pode ser alterado depois de o plano ser criado.",
+					"calendarStartMonth": "Começa em",
+					"calendarStartMonthHelp": "O mês em que o período anual começa. Todos renovam no dia 1 deste mês.",
+					"calendarNoCount": "Os planos de calendário renovam todos os meses ou todos os anos, por isso não há frequência para definir.",
+					"calendarPeriodLocked": "O período de faturação de um plano de calendário não pode ser alterado depois de criado.",
+					"subscribersLocked": "Este plano tem subscritores ativos, por isso a moeda e o período de faturação não podem ser alterados. Arquiva-o e cria um plano novo.",
+					"firstPricing": "Preço do primeiro período",
+					"firstPricingProrated": "Proporcional",
+					"firstPricingProratedHelp": "Quem se junta a meio do período paga um preço parcial.",
+					"firstPricingFull": "Preço total",
+					"firstPricingFullHelp": "Todos pagam o preço total, mesmo que se juntem tarde.",
+					"firstPricingFullOnlineLocked": "Os planos online aplicam sempre o valor proporcional no primeiro período."
 				},
 				"errors": {
 					"createFailed": "Não foi possível criar o plano: {detail}",
@@ -11875,5 +11894,15 @@
 	"manageMemberModal.awaitingCancelConfirmTitle": "Cancelar este pedido?",
 	"manageMemberModal.awaitingCancelConfirmMessage": "Ao cancelar, o pedido de adesão pendente também é cancelado.",
 	"manageMemberModal.awaitingCancelConfirmButton": "Sim, cancelar pedido",
-	"manageMemberModal.awaitingBanRequestNote": "Ao banir, o pedido de adesão pendente também é encerrado."
+	"manageMemberModal.awaitingBanRequestNote": "Ao banir, o pedido de adesão pendente também é encerrado.",
+	"planCalendar.calendarMonth": "Mês civil (renova no dia 1)",
+	"planCalendar.calendarYear": "Ano civil a partir de {month}",
+	"planCalendar.differentCalendar": "Calendário de faturação diferente",
+	"planCalendar.differentCalendarHelper": "Este plano é faturado num calendário diferente. Cancela o teu plano atual e subscreve este em vez disso.",
+	"planCalendar.firstPeriodHint": "Primeiro período até {date}: preço parcial. Com base em hoje; ajuste se registar com data anterior.",
+	"planCalendar.firstPeriodHintFull": "Período até {date}: preço total, por pouco que reste. Com base em hoje; ajuste se registar com data anterior.",
+	"planCalendar.firstPeriodHintFree": "O primeiro período até {date} é gratuito. Com base em hoje; ajuste se registar com data anterior.",
+	"planCalendar.quotePartial": "Primeiro período até {date}: {price} (parcial). Depois {regular}.",
+	"planCalendar.quoteFree": "Grátis até {date}, depois {regular}.",
+	"planCalendar.quoteFull": "Este período termina em {date}. Aderir agora custa o preço total de {price}, por pouco tempo que reste."
 }

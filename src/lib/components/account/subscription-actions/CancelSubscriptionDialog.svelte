@@ -20,7 +20,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { formatDate } from '$lib/utils/date';
+	import { formatPlanBoundary } from '$lib/utils/plan-calendar';
 	import {
 		settleSubscriptionCaches,
 		MY_MEMBERSHIPS_KEY,
@@ -185,7 +185,9 @@
 				toast.success(m['cancelSub.successImmediate']());
 			} else if (data.current_period_end) {
 				toast.success(
-					m['cancelSub.successPeriodEnd']({ date: formatDate(data.current_period_end) })
+					m['cancelSub.successPeriodEnd']({
+						date: formatPlanBoundary(data.current_period_end, sub.plan, 'end')
+					})
 				);
 			} else {
 				toast.success(m['cancelSub.successPeriodEndNoDate']());
@@ -269,7 +271,9 @@
 						<span class="block text-sm font-medium">{m['cancelSub.periodEnd']()}</span>
 						<span class="block text-xs text-muted-foreground">
 							{#if sub.current_period_end}
-								{m['cancelSub.periodEndHintDated']({ date: formatDate(sub.current_period_end) })}
+								{m['cancelSub.periodEndHintDated']({
+									date: formatPlanBoundary(sub.current_period_end, sub.plan, 'end')
+								})}
 							{:else}
 								{m['cancelSub.periodEndHint']()}
 							{/if}

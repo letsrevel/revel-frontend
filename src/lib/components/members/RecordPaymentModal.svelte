@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { SubscriptionSchema, PaymentRecordSchema } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
@@ -11,6 +12,8 @@
 	import EditableStatusSelect from './EditableStatusSelect.svelte';
 	import type { EditableStatus } from './paymentEdit';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatMoney } from '$lib/utils/format';
+	import { firstPeriodQuote } from '$lib/utils/plan-calendar';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
@@ -29,13 +32,27 @@
 	let notes = $state('');
 	let occurredAt = $state('');
 
+	// A pending calendar subscription is awaiting its (partial) first payment, so
+	// the suggestion is the "join now" quote rather than the full plan price.
+	const firstPeriod = $derived(
+		subscription.status === 'pending' && subscription.plan.first_period_price != null
+			? firstPeriodQuote(subscription.plan)
+			: null
+	);
+	const expectedAmount = $derived(firstPeriod?.price ?? String(subscription.plan.price ?? '0.00'));
+
+	// Keyed on `open` only: a background refetch of the subscription while the
+	// modal is open must not wipe what the staff member has typed.
+	const isOpen = $derived(open);
 	$effect(() => {
-		if (open) {
-			amount = String(subscription.plan.price ?? '0.00');
-			currency = subscription.plan.currency ?? 'EUR';
-			status = 'succeeded';
-			notes = '';
-			occurredAt = '';
+		if (isOpen) {
+			untrack(() => {
+				amount = expectedAmount;
+				currency = subscription.plan.currency ?? 'EUR';
+				status = 'succeeded';
+				notes = '';
+				occurredAt = '';
+			});
 		}
 	});
 
@@ -46,7 +63,7 @@
 		status === 'succeeded' &&
 			(amount as string | null) != null &&
 			String(amount).trim() !== '' &&
-			Number(amount) !== Number(subscription.plan.price)
+			Number(amount) !== Number(expectedAmount)
 	);
 
 	const currencyWarning = $derived(currency !== subscription.plan.currency);
@@ -85,6 +102,15 @@
 						required
 						aria-describedby={amountWarning ? 'rp-amt-warning' : undefined}
 					/>
+					{#if firstPeriod}
+						<p class="text-xs text-muted-foreground">
+							{firstPeriod.isFree
+								? m['planCalendar.firstPeriodHintFree']({ date: firstPeriod.lastDay })
+								: firstPeriod.pricing === 'full'
+									? m['planCalendar.firstPeriodHintFull']({ date: firstPeriod.lastDay })
+									: m['planCalendar.firstPeriodHint']({ date: firstPeriod.lastDay })}
+						</p>
+					{/if}
 				</div>
 				<div class="space-y-1">
 					<Label for="rp-cur">{m['orgAdmin.members.subscriptions.recordPayment.currency']()}</Label>
@@ -122,7 +148,9 @@
 						class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
 					>
 						{m['orgAdmin.members.subscriptions.recordPayment.amountWarning']({
-							price: formatPlanPrice(subscription.plan)
+							price: firstPeriod
+								? formatMoney(firstPeriod.price, subscription.plan.currency)
+								: formatPlanPrice(subscription.plan)
 						})}
 					</p>
 				{/if}

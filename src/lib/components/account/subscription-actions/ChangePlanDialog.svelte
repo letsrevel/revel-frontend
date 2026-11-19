@@ -18,6 +18,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { classifyPlanChange, formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { samePeriodGrid } from '$lib/utils/plan-calendar';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
@@ -68,7 +69,7 @@
 	);
 
 	function isSelectable(p: Candidate): boolean {
-		return !p.sold_out && p.sales_status === 'open';
+		return !p.sold_out && p.sales_status === 'open' && samePeriodGrid(sub.plan, p);
 	}
 
 	/** Why an option cannot be picked — sold out wins when both apply. */
@@ -81,6 +82,12 @@
 		}
 		if (p.sales_status !== 'open') {
 			return { label: m['membershipPlans.paused'](), helper: m['membershipPlans.pausedHelper']() };
+		}
+		if (!samePeriodGrid(sub.plan, p)) {
+			return {
+				label: m['planCalendar.differentCalendar'](),
+				helper: m['planCalendar.differentCalendarHelper']()
+			};
 		}
 		return null;
 	}

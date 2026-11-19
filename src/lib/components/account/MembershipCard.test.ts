@@ -165,6 +165,30 @@ describe('MembershipCard', () => {
 		};
 	}
 
+	it('shows calendar-plan dates in UTC, never shifted by the viewer timezone', () => {
+		const calendarPlan = {
+			...makeSub().plan,
+			period_alignment: 'calendar' as const,
+			period_unit: 'year' as const,
+			calendar_start_month: 1
+		};
+		const { unmount } = renderCard(
+			makeMembership(makeSub({ current_period_end: '2027-01-01T00:00:00Z', plan: calendarPlan }))
+		);
+		expect(screen.getByText('Next renewal: Jan 1, 2027')).toBeInTheDocument();
+		unmount();
+		renderCard(
+			makeMembership(
+				makeSub({
+					current_period_end: '2027-01-01T00:00:00Z',
+					cancel_at_period_end: true,
+					plan: calendarPlan
+				})
+			)
+		);
+		expect(screen.getByText('Cancels on Dec 31, 2026')).toBeInTheDocument();
+	});
+
 	it('offers all three self-serve actions on an online active subscription', () => {
 		renderCard(makeMembership(makeSub()));
 
@@ -778,5 +802,27 @@ describe('MembershipCard', () => {
 
 			expect(screen.queryByText('How to pay Test Org')).toBeNull();
 		});
+	});
+});
+
+describe('MembershipCard calendar plan', () => {
+	it('shows the alignment label but never a join-now quote', () => {
+		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const sub = makeSub();
+		sub.plan = {
+			...sub.plan,
+			period_alignment: 'calendar',
+			period_unit: 'year',
+			calendar_start_month: 4
+		} as typeof sub.plan;
+		render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: MembershipCard,
+				componentProps: { membership: makeMembership(sub) }
+			}
+		});
+		expect(screen.getByTestId('plan-alignment')).toHaveTextContent('Calendar year from April');
+		expect(screen.queryByText(/First period until/)).not.toBeInTheDocument();
 	});
 });

@@ -20,6 +20,7 @@
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { calendarAlignmentLabel, firstPeriodQuoteText } from '$lib/utils/plan-calendar';
 	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
@@ -192,6 +193,21 @@
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
 
 	const canContactOrganization = $derived(canContactOrg(contactMethod, contactEmail));
+
+	const alignmentLabel = $derived(calendarAlignmentLabel(plan));
+	/**
+	 * The join-now quote only applies when the viewer could actually join through
+	 * this card. Not for their own plan (`current`), a switch (`member`: it keeps
+	 * the billing anchor, so there is no stub charge), a held offline membership,
+	 * a viewer blocked by a gate (`gated`: no join control, and today's quote
+	 * would be stale by the time they can join), or a plan that is sold out or paused.
+	 */
+	const canJoinNow = $derived(
+		['login', 'apply', 'reapply', 'subscribe'].includes(action) &&
+			!plan.sold_out &&
+			plan.sales_status !== 'paused'
+	);
+	const quoteText = $derived(canJoinNow ? firstPeriodQuoteText(plan, formatPlanPrice(plan)) : null);
 
 	const isFree = $derived(isFreePlan(plan));
 	const isOffline = $derived(plan.payment_method === 'offline');
@@ -413,6 +429,12 @@
 	{meta}
 	{actions}
 >
+	{#if alignmentLabel}
+		<p class="text-sm font-medium text-foreground">{alignmentLabel}</p>
+	{/if}
+	{#if quoteText}
+		<p class="text-sm text-muted-foreground" data-testid="plan-first-period-quote">{quoteText}</p>
+	{/if}
 	{#if plan.description}
 		<p class="whitespace-pre-line text-sm text-muted-foreground">{plan.description}</p>
 	{/if}

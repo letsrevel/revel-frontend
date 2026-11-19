@@ -76,3 +76,81 @@ describe('RecordPaymentModal amount warning', () => {
 		expect(screen.queryByText(warning)).not.toBeInTheDocument();
 	});
 });
+
+describe('RecordPaymentModal calendar first-period prefill', () => {
+	const calendarSub = (status: string) =>
+		({
+			id: 'sub-2',
+			status,
+			plan: {
+				price: '12.00',
+				currency: 'EUR',
+				period_alignment: 'calendar',
+				period_unit: 'month',
+				first_period_end: '2027-01-01T00:00:00Z',
+				first_period_price: '4.00'
+			}
+		}) as unknown as SubscriptionSchema;
+	const open = (sub: SubscriptionSchema) =>
+		render(RecordPaymentModal, {
+			props: { subscription: sub, open: true, onClose: vi.fn(), onSubmit: vi.fn() }
+		});
+
+	it('prefills the first-period price for a pending calendar subscription, with a hint', async () => {
+		open(calendarSub('pending'));
+		const amount = await screen.findByLabelText('Amount');
+		expect(amount).toHaveValue(4);
+		expect(screen.getByText(/First period until December 31, 2026/)).toBeInTheDocument();
+		// The suggestion is the expected amount: no warning until it is edited.
+		expect(screen.queryByText(/different from the plan price/)).not.toBeInTheDocument();
+		await userEvent.clear(amount);
+		await userEvent.type(amount, '12');
+		expect(screen.getByText(/different from the plan price/)).toBeInTheDocument();
+	});
+
+	it('uses the full plan price when the subscription is not pending', async () => {
+		open(calendarSub('active'));
+		expect(await screen.findByLabelText('Amount')).toHaveValue(12);
+		expect(screen.queryByText(/First period until/)).not.toBeInTheDocument();
+	});
+
+	it('says full price (not partial) for a full-pricing plan', async () => {
+		const sub = calendarSub('pending');
+		(sub.plan as unknown as Record<string, unknown>).first_period_pricing = 'full';
+		(sub.plan as unknown as Record<string, unknown>).first_period_price = '12.00';
+		open(sub);
+		expect(await screen.findByText(/full price, whatever part is left/)).toBeInTheDocument();
+		expect(screen.queryByText(/partial price/)).not.toBeInTheDocument();
+	});
+
+	it('says the first period is free when the quote is zero', async () => {
+		const sub = calendarSub('pending');
+		(sub.plan as unknown as Record<string, unknown>).first_period_price = '0.00';
+		open(sub);
+		expect(await screen.findByText(/December 31, 2026 is free/)).toBeInTheDocument();
+	});
+
+	it('says the amount is based on today so staff adjust when backdating', async () => {
+		open(calendarSub('pending'));
+		expect(await screen.findByText(/Based on today; adjust if backdating/)).toBeInTheDocument();
+	});
+
+	it('keeps what the staff member typed when the subscription prop refetches', async () => {
+		const sub = calendarSub('pending');
+		const { rerender } = render(RecordPaymentModal, {
+			props: { subscription: sub, open: true, onClose: vi.fn(), onSubmit: vi.fn() }
+		});
+		const amount = await screen.findByLabelText('Amount');
+		await userEvent.clear(amount);
+		await userEvent.type(amount, '7');
+		const notes = screen.getByLabelText(/Notes/);
+		await userEvent.type(notes, 'cash at the door');
+
+		const refetched = calendarSub('pending');
+		(refetched.plan as unknown as Record<string, unknown>).first_period_price = '3.00';
+		await rerender({ subscription: refetched });
+
+		expect(screen.getByLabelText('Amount')).toHaveValue(7);
+		expect(screen.getByLabelText(/Notes/)).toHaveValue('cash at the door');
+	});
+});

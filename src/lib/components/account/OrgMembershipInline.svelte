@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		calendarAlignmentLabel,
+		formatDateLineDate,
+		formatPlanBoundary
+	} from '$lib/utils/plan-calendar';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
@@ -26,6 +31,10 @@
 
 	const sub = $derived(subQuery.data);
 
+	function lineDate(l: { kind: string; date: string | null }): string {
+		return formatDateLineDate(l, sub?.plan);
+	}
+
 	function fmtDate(d: string | null | undefined): string {
 		return d ? formatDate(d) : '—';
 	}
@@ -43,7 +52,7 @@
 			m['orgPublic.yourMembership.pendingSwitchFallbackPlan']();
 		return m['orgPublic.yourMembership.pendingSwitch']({
 			plan: name,
-			date: formatDate(periodEnd)
+			date: formatPlanBoundary(periodEnd, sub?.plan, 'start')
 		});
 	});
 </script>
@@ -57,15 +66,20 @@
 			</h3>
 			<div class="mt-1 font-medium">{sub.plan.name}</div>
 			<div class="text-sm text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
+			{#if calendarAlignmentLabel(sub.plan)}
+				<div class="text-xs text-muted-foreground" data-testid="plan-alignment">
+					{calendarAlignmentLabel(sub.plan)}
+				</div>
+			{/if}
 			<div class="mt-2 flex items-center gap-2">
 				<SubscriptionStatusBadge status={sub.status} data-testid="membership-subscription-status" />
 				<span class="text-xs text-muted-foreground">
 					{#if line.kind === 'renewal'}
-						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
+						{m['subscriptions.dateLine.renewal']({ date: lineDate(line) })}
 					{:else if line.kind === 'cancels'}
-						{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
+						{m['subscriptions.dateLine.cancels']({ date: lineDate(line) })}
 					{:else if line.kind === 'period_ends'}
-						{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
+						{m['subscriptions.dateLine.periodEnds']({ date: lineDate(line) })}
 					{:else if line.kind === 'paused_since'}
 						{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
 					{:else if line.kind === 'ended'}

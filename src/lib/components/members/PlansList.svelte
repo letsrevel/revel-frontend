@@ -23,6 +23,7 @@
 	import MigrateSubscribersDialog from './MigrateSubscribersDialog.svelte';
 	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { formatPlanPrice, isLifetimePlan } from '$lib/utils/subscriptions';
+	import { calendarAlignmentLabel, firstPeriodQuoteText } from '$lib/utils/plan-calendar';
 	import { planPaymentMethodLabel } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
@@ -231,6 +232,16 @@
 							<div class="min-w-0 flex-1">
 								<p class="truncate font-medium">{p.name}</p>
 								<p class="text-sm text-muted-foreground">{formatPlanPrice(p)}</p>
+								{#if calendarAlignmentLabel(p)}
+									<p class="text-xs text-muted-foreground" data-testid="plan-alignment">
+										{calendarAlignmentLabel(p)}
+									</p>
+									{#if firstPeriodQuoteText(p, formatPlanPrice(p))}
+										<p class="text-xs text-muted-foreground" data-testid="plan-first-period-quote">
+											{firstPeriodQuoteText(p, formatPlanPrice(p))}
+										</p>
+									{/if}
+								{/if}
 								<div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
 									<span class="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
 										{planPaymentMethodLabel(p.payment_method)}

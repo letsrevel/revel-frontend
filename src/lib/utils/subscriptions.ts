@@ -1,5 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import { formatMoney } from './format';
+import { samePeriodGrid, type PlanAlignmentFields } from './plan-calendar';
 import type {
 	MembershipStatus,
 	MySubscriptionSchema,
@@ -427,16 +428,15 @@ export function needsMembershipSuspendedNotice(
 /**
  * Could this member switch onto `plan` from `sub` right now?
  *
- * Mirrors `ChangePlanDialog`'s own candidate filter (a *different* plan, billed
- * online, in the currency the Stripe subscription already runs in) on top of
- * `getMemberActions().changePlan`, and additionally drops plans the dialog would
- * only render disabled. That keeps the org page from linking a member into a
- * change-plan flow that cannot offer the plan they clicked from — the same
- * "never render a control that can only fail" rule the action matrix follows.
+ * Mirrors `ChangePlanDialog`'s candidate filter (different plan, online, same
+ * currency, same billing calendar) on top of `getMemberActions().changePlan`,
+ * and drops plans the dialog would only render disabled — never link a member
+ * into a flow that cannot offer the plan they clicked from.
  */
 export function canSwitchToPlan(
 	sub: MySubscriptionSchema,
-	plan: Pick<PublicPlanSchema, 'id' | 'payment_method' | 'currency' | 'sold_out' | 'sales_status'>,
+	plan: Pick<PublicPlanSchema, 'id' | 'payment_method' | 'currency' | 'sold_out' | 'sales_status'> &
+		PlanAlignmentFields,
 	now: Date = new Date()
 ): boolean {
 	if (!getMemberActions(sub, now).changePlan) return false;
@@ -445,6 +445,7 @@ export function canSwitchToPlan(
 		plan.id !== sub.plan_id &&
 		plan.payment_method === 'online' &&
 		plan.currency === sub.plan.currency &&
+		samePeriodGrid(sub.plan, plan) &&
 		!plan.sold_out &&
 		plan.sales_status === 'open'
 	);

@@ -248,3 +248,24 @@ describe('MembershipRequestCard plan context', () => {
 		expect(screen.queryByText('Online · Stripe')).not.toBeInTheDocument();
 	});
 });
+
+describe('MembershipRequestCard calendar plan', () => {
+	it('shows the requested plan alignment label', () => {
+		renderCard(
+			makeRequest({
+				plan: {
+					id: 'plan-1',
+					name: 'Yearly',
+					price: '40.00',
+					currency: 'EUR',
+					period_unit: 'year',
+					period_count: 1,
+					payment_method: 'online',
+					period_alignment: 'calendar',
+					calendar_start_month: 1
+				}
+			} as Partial<OrganizationMembershipRequestRetrieve>)
+		);
+		expect(screen.getByTestId('plan-alignment')).toHaveTextContent('Calendar year from January');
+	});
+});

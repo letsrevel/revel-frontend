@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { calendarAlignmentLabel } from '$lib/utils/plan-calendar';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		MembershipRecordSchema,
@@ -182,6 +183,11 @@
 									size="sm"
 									label={planPaymentMethodLabel(request.plan.payment_method)}
 								/>
+								{#if calendarAlignmentLabel(request.plan)}
+									<span class="text-muted-foreground" data-testid="plan-alignment">
+										{calendarAlignmentLabel(request.plan)}
+									</span>
+								{/if}
 							</p>
 						{/if}
 					</div>

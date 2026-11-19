@@ -3,6 +3,8 @@
 	import type {
 		PlanSchema,
 		PlanCreateSchema,
+		PeriodAlignment,
+		FirstPeriodPricing,
 		OrganizationAdminDetailSchema,
 		PeriodUnit,
 		SubscriptionPaymentMethod
@@ -13,6 +15,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import PlanCalendarFields from './PlanCalendarFields.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { AlertTriangle, Loader2 } from '@lucide/svelte';
 	import { untrack } from 'svelte';
@@ -39,6 +42,8 @@
 	let currency = $state<string>('EUR');
 	let periodUnit = $state<PeriodUnit>('month');
 	let periodCount = $state(1);
+	// Period count held aside while a calendar alignment forces it to 1.
+	let savedPeriodCount: number | null = null;
 	let isActive = $state(true);
 	let paymentMethod = $state<SubscriptionPaymentMethod>('offline');
 	let salesPaused = $state(false);
@@ -46,7 +51,17 @@
 	// field is emptied, so the cleared cap has to survive as a nullish value —
 	// `Number(null)` is 0, which would silently make the plan permanently sold out.
 	let maxSubscriptions = $state<string | number | null>('');
-	let errors = $state<{ name?: string; price?: string; period?: string; maxSubs?: string }>({});
+	// Calendar alignment (create-only, except `firstPricing` which is patchable).
+	let periodAlignment = $state<PeriodAlignment>('rolling');
+	let calendarStartMonth = $state(1);
+	let firstPricing = $state<FirstPeriodPricing>('prorated');
+	let errors = $state<{
+		name?: string;
+		price?: string;
+		period?: string;
+		maxSubs?: string;
+		firstPricing?: string;
+	}>({});
 
 	$effect(() => {
 		// Track `open` so reopening the create modal after abandoning a prior
@@ -65,6 +80,9 @@
 			paymentMethod = plan.payment_method;
 			salesPaused = plan.sales_status === 'paused';
 			maxSubscriptions = plan.max_subscriptions == null ? '' : String(plan.max_subscriptions);
+			periodAlignment = plan.period_alignment ?? 'rolling';
+			calendarStartMonth = plan.calendar_start_month ?? 1;
+			firstPricing = plan.first_period_pricing ?? 'prorated';
 		} else {
 			name = '';
 			description = '';
@@ -73,10 +91,14 @@
 			currency = 'EUR';
 			periodUnit = 'month';
 			periodCount = 1;
+			savedPeriodCount = null;
 			isActive = true;
 			paymentMethod = 'offline';
 			salesPaused = false;
 			maxSubscriptions = '';
+			periodAlignment = 'rolling';
+			calendarStartMonth = 1;
+			firstPricing = 'prorated';
 		}
 		errors = {};
 	});
@@ -96,6 +118,20 @@
 	const isOnline = $derived(effectiveMethod === 'online');
 	const isOffline = $derived(effectiveMethod === 'offline');
 	const isLifetime = $derived(periodUnit === 'lifetime');
+	const isCalendar = $derived(periodAlignment === 'calendar');
+	// A calendar plan's billing period is fixed at creation (backend refuses a
+	// change), and a plan with live subscribers can't change currency or period.
+	const calendarLocked = $derived(!!plan && isCalendar);
+	const subscribersLocked = $derived(!!plan && (plan.active_subscription_count ?? 0) > 0);
+	const periodDescribedBy = $derived(
+		[
+			isFree ? 'plan-shape-locked' : null,
+			calendarLocked ? 'plan-calendar-locked' : null,
+			subscribersLocked ? 'plan-subscribers-locked' : null
+		]
+			.filter(Boolean)
+			.join(' ') || undefined
+	);
 
 	// An offline plan with no instructions of its own AND no organization default
 	// leaves applicants with nothing about how to pay. Read from the admin org
@@ -123,11 +159,37 @@
 		if (paymentMethod === 'free') {
 			price = '0.00';
 			periodUnit = 'lifetime';
+			// A free plan is lifetime, and a calendar plan can't be.
+			if (!plan) periodAlignment = 'rolling';
 		} else if (paymentMethod === 'online' && untrack(() => periodUnit) === 'lifetime') {
 			// Only reachable by picking lifetime under Offline and then switching to
 			// Online — the option is withdrawn for Online, so it cannot be re-chosen.
 			periodUnit = 'month';
 		}
+	});
+
+	/**
+	 * Calendar plans renew every 1 month or 1 year (never lifetime), and only an
+	 * offline plan may charge the full price for the first period.
+	 */
+	$effect(() => {
+		if (plan) return;
+		const calendar = periodAlignment === 'calendar';
+		untrack(() => {
+			if (calendar) {
+				if (periodUnit === 'lifetime') periodUnit = 'month';
+				// Remember what the organizer had so switching back restores it.
+				if (periodCount !== 1) savedPeriodCount = periodCount;
+				periodCount = 1;
+			} else if (savedPeriodCount !== null) {
+				periodCount = savedPeriodCount;
+				savedPeriodCount = null;
+			}
+		});
+	});
+
+	$effect(() => {
+		if (isOnline && firstPricing === 'full') firstPricing = 'prorated';
 	});
 
 	/** `null` = unlimited (field left empty or cleared). */
@@ -166,9 +228,22 @@
 			errors.period = m['orgAdmin.members.plans.form.errors.onlineNoLifetime']();
 			return false;
 		}
+		if (isCalendar && isLifetime) {
+			errors.period = m['orgAdmin.members.plans.form.errors.calendarPeriod']();
+			return false;
+		}
+		if (isCalendar && firstPricing === 'full' && !isOffline) {
+			errors.firstPricing = m['orgAdmin.members.plans.form.errors.fullNeedsOffline']();
+			return false;
+		}
 		// A lifetime term never renews, so `period_count` describes nothing — the
-		// field is withdrawn from the form and its value is not asserted.
-		if (!isLifetime && (!Number.isInteger(periodCount) || periodCount < 1 || periodCount > 120)) {
+		// field is withdrawn from the form and its value is not asserted. A calendar
+		// plan's count is pinned to 1 the same way.
+		if (
+			!isLifetime &&
+			!isCalendar &&
+			(!Number.isInteger(periodCount) || periodCount < 1 || periodCount > 120)
+		) {
 			errors.period = m['orgAdmin.members.plans.form.errors.periodInvalid']();
 			return false;
 		}
@@ -191,11 +266,21 @@
 			period_unit: periodUnit,
 			// A lifetime plan is never renewed, so the backend ignores this; pin it to
 			// 1 rather than shipping whatever the (hidden) field last held.
-			period_count: isLifetime ? 1 : periodCount,
+			period_count: isLifetime || isCalendar ? 1 : periodCount,
 			is_active: isActive,
 			sales_status: salesPaused ? 'paused' : 'open',
 			max_subscriptions: normalizedCap(),
-			...(plan ? {} : { payment_method: paymentMethod }),
+			...(plan
+				? {}
+				: {
+						payment_method: paymentMethod,
+						period_alignment: periodAlignment,
+						...(isCalendar && periodUnit === 'year'
+							? { calendar_start_month: calendarStartMonth }
+							: {})
+					}),
+			// Patchable on edit too, but only a calendar plan has one to set.
+			...(isCalendar ? { first_period_pricing: firstPricing } : {}),
 			// Only an offline plan has instructions to show; online/free never carry them.
 			...(isOffline ? { payment_instructions: paymentInstructions } : {})
 		} as PlanCreateSchema);
@@ -358,7 +443,8 @@
 					<select
 						id="plan-currency"
 						bind:value={currency}
-						disabled={isSaving}
+						disabled={isSaving || subscribersLocked}
+						aria-describedby={subscribersLocked ? 'plan-subscribers-locked' : undefined}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{#each currencyOptions() as opt (opt.value)}
@@ -370,7 +456,7 @@
 			{#if errors.price}<p class="text-sm text-destructive">{errors.price}</p>{/if}
 
 			<div class="grid grid-cols-2 gap-3">
-				{#if !isLifetime}
+				{#if !isLifetime && !isCalendar}
 					<div class="space-y-1">
 						<Label for="plan-period-count">{m['orgAdmin.members.plans.form.periodCount']()}</Label>
 						<Input
@@ -380,7 +466,8 @@
 							max="120"
 							bind:value={periodCount}
 							required
-							disabled={isSaving}
+							disabled={isSaving || subscribersLocked}
+							aria-describedby={periodDescribedBy}
 						/>
 					</div>
 				{/if}
@@ -389,15 +476,15 @@
 					<select
 						id="plan-period-unit"
 						bind:value={periodUnit}
-						disabled={isSaving || isFree}
-						aria-describedby={isFree ? 'plan-shape-locked' : undefined}
+						disabled={isSaving || isFree || calendarLocked || subscribersLocked}
+						aria-describedby={periodDescribedBy}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						<option value="month">{m['orgAdmin.members.plans.form.periodMonth']()}</option>
 						<option value="year">{m['orgAdmin.members.plans.form.periodYear']()}</option>
 						<!-- Withdrawn for ONLINE: Stripe bills monthly or yearly, so the
 						     backend refuses a lifetime Stripe plan outright. -->
-						{#if !isOnline}
+						{#if !isOnline && !isCalendar}
 							<option value="lifetime">
 								{m['orgAdmin.members.plans.form.periodLifetime']()}
 							</option>
@@ -413,8 +500,40 @@
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.plans.form.lifetimeNoCount']()}
 				</p>
+			{:else if isCalendar}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.calendarNoCount']()}
+				</p>
+			{/if}
+			{#if calendarLocked}
+				<p id="plan-calendar-locked" class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.calendarPeriodLocked']()}
+				</p>
+			{/if}
+			{#if subscribersLocked}
+				<p id="plan-subscribers-locked" class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.subscribersLocked']()}
+				</p>
 			{/if}
 			{#if errors.period}<p class="text-sm text-destructive">{errors.period}</p>{/if}
+
+			{#if !isFree}
+				<PlanCalendarFields
+					editing={!!plan}
+					bind:alignment={periodAlignment}
+					bind:startMonth={calendarStartMonth}
+					bind:firstPricing
+					{periodUnit}
+					{isOnline}
+					{isSaving}
+					firstPricingErrorId={errors.firstPricing ? 'plan-first-pricing-error' : undefined}
+				/>
+				{#if errors.firstPricing}
+					<p id="plan-first-pricing-error" role="alert" class="text-sm text-destructive">
+						{errors.firstPricing}
+					</p>
+				{/if}
+			{/if}
 
 			<div class="space-y-1">
 				<Label for="plan-max-subs">{m['orgAdmin.members.plans.form.maxSubscriptions']()}</Label>
