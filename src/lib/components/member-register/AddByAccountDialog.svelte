@@ -3,7 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
-	import { Loader2 } from '@lucide/svelte';
+	import { Info, Loader2 } from '@lucide/svelte';
 	import type {
 		MembershipRecordSchema,
 		MembershipTierSchema,
@@ -24,6 +24,8 @@
 	import {
 		inviteMemberByAccount,
 		invalidateInvitations,
+		listMemberInvitations,
+		memberRegisterKeys,
 		revokeMemberInvitation,
 		RegisterApiError
 	} from '$lib/member-register/api';
@@ -84,6 +86,8 @@
 	// Plain-language note to show once the next lookup answer lands (e.g. the
 	// invitation we tried to withdraw was already accepted or expired).
 	let pendingNotice = $state<string | null>(null);
+	// The notice as shown: informational (not an error), so it renders as a status.
+	let notice = $state<string | null>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
 	function reset() {
@@ -95,6 +99,7 @@
 		tierId = '';
 		refusedAdd = null;
 		pendingNotice = null;
+		notice = null;
 	}
 
 	$effect(() => {
@@ -137,15 +142,69 @@
 		queriedEmail = typed;
 		outcome = result;
 		failure = null;
+		notice = null;
 		const refusal = refusedAdd;
-		const notice = pendingNotice;
+		const pending = pendingNotice;
 		refusedAdd = null;
 		pendingNotice = null;
-		if (notice) failure = { stale: false, message: notice, detail: null };
+		if (pending) notice = pending;
 		const resultKind = result.kind === 'found' ? classifyLookup(result.user) : null;
 		if (refusal && (resultKind === 'addable' || resultKind === 'invitation-pending')) {
-			failure = describeRegisterError(refusal, 'save');
+			failure = describeInviteError(refusal);
 		}
+		if (result.kind === 'found' && result.user.pending_invitation_id) {
+			void preselectInvitedTier(result.user.pending_invitation_id, typed);
+		}
+	}
+
+	// Resending starts from the tier the pending invitation already carries, so a
+	// bare Resend cannot silently change it. Reads the invitations list (cached by
+	// PendingInvitations, fetched through the query otherwise); anything missing
+	// falls back to the plain tier picker.
+	async function preselectInvitedTier(invitationId: string, typed: string) {
+		try {
+			const key = memberRegisterKeys.invitations(slug);
+			let results: { id: string; tier_id: string }[] | undefined = queryClient.getQueryData<{
+				results: { id: string; tier_id: string }[];
+			}>(key)?.results;
+			if (!results) {
+				const fetched = await queryClient.fetchQuery({
+					queryKey: key,
+					queryFn: () => listMemberInvitations(slug, accessToken),
+					staleTime: 30_000
+				});
+				results = fetched.results;
+			}
+			const tier = results.find((i) => i.id === invitationId)?.tier_id;
+			if (tier && stillShowing(typed) && selectableTiers.some((t) => t.id === tier)) {
+				tierId = tier;
+			}
+		} catch {
+			// no invitation tier to preselect
+		}
+	}
+
+	// An invite that 404s means the backend could not invite this account (it only
+	// invites verified, non-guest, active accounts) or the tier is not standard.
+	function describeInviteError(error: unknown): DescribedError {
+		if (error instanceof RegisterApiError && error.status === 404) {
+			return { stale: false, message: m['memberPeople.byAccount.inviteNotFound'](), detail: null };
+		}
+		return describeRegisterError(error, 'save');
+	}
+
+	// Look the account up again after a race, unless the lockout is on: then there
+	// is nothing to look up with, so show `onThrottled` inline and drop the stale card.
+	function relookup(forEmail: string, onThrottled: () => void) {
+		// Read the live deadline, not the `throttled` snapshot (it ticks on a timer).
+		if (lookupThrottleRemaining(slug) > 0) {
+			outcome = null;
+			refusedAdd = null;
+			pendingNotice = null;
+			onThrottled();
+			return;
+		}
+		lookup.mutate(forEmail);
 	}
 
 	function showFailure(error: unknown, typed: string) {
@@ -159,6 +218,7 @@
 		outcome = null;
 		refusedAdd = null;
 		pendingNotice = null;
+		notice = null;
 		failure = described;
 	}
 
@@ -170,11 +230,12 @@
 
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
-		if (lookup.isPending || throttled) return;
+		if (lookup.isPending || throttled || busy) return;
 		emailError = validateLookupEmail(email);
 		if (emailError) return;
 		outcome = null;
 		failure = null;
+		notice = null;
 		refusedAdd = null;
 		pendingNotice = null;
 		lookup.mutate(email.trim());
@@ -184,6 +245,7 @@
 		// Any edit invalidates what was found for the previous value.
 		outcome = null;
 		failure = null;
+		notice = null;
 		emailError = null;
 		refusedAdd = null;
 		pendingNotice = null;
@@ -220,16 +282,29 @@
 			if (stillShowing(vars.email)) onClose();
 		},
 		onError: (error: unknown, vars) => {
-			if (!stillShowing(vars.email)) return; // the dialog has moved on to someone else
+			// The dialog may have moved on to someone else: the outcome still reaches the
+			// admin as a toast (success always does), only the inline state is skipped.
+			const current = stillShowing(vars.email);
 			// `already_member` (backend #1363) means a race with another admin or an
 			// approval: look again and show what they hold now. Any other 400 is a
 			// plain refusal, shown as is, without spending a throttled lookup.
 			if (isAlreadyMember(error)) {
+				if (!current) {
+					toast.info(m['makeMemberAction.alreadyMember']());
+					return;
+				}
 				refusedAdd = error;
-				lookup.mutate(vars.email);
+				relookup(vars.email, () => {
+					failure = describeInviteError(error);
+				});
 				return;
 			}
-			failure = describeRegisterError(error, 'save');
+			const described = describeInviteError(error);
+			if (!current) {
+				toast.error(described.message);
+				return;
+			}
+			failure = described;
 		}
 	}));
 
@@ -245,14 +320,26 @@
 		},
 		onError: (error: unknown, vars) => {
 			invalidateInvitations(queryClient, slug).catch(() => undefined);
-			if (!stillShowing(vars.email)) return; // the dialog has moved on to someone else
+			const current = stillShowing(vars.email);
 			// 404: accepted or expired meanwhile. Explain, then show what they are now.
 			if (error instanceof RegisterApiError && error.status === 404) {
-				pendingNotice = m['memberPeople.byAccount.withdrawGone']();
-				lookup.mutate(vars.email);
+				const gone = m['memberPeople.byAccount.withdrawGone']();
+				if (!current) {
+					toast.info(gone);
+					return;
+				}
+				pendingNotice = gone;
+				relookup(vars.email, () => {
+					notice = gone;
+				});
 				return;
 			}
-			failure = describeRegisterError(error, 'save');
+			const described = describeRegisterError(error, 'save');
+			if (!current) {
+				toast.error(described.message);
+				return;
+			}
+			failure = described;
 		}
 	}));
 
@@ -304,7 +391,11 @@
 					</p>
 				{/if}
 			</div>
-			<Button type="submit" disabled={lookup.isPending || throttled} class="w-full sm:w-auto">
+			<Button
+				type="submit"
+				disabled={lookup.isPending || throttled || busy}
+				class="w-full sm:w-auto"
+			>
 				{#if lookup.isPending}
 					<Loader2 class="animate-spin" aria-hidden="true" />
 					{m['memberPeople.byAccount.finding']()}
@@ -317,6 +408,17 @@
 		<div aria-live="polite" class="space-y-3" data-testid="by-account-result">
 			{#if failure}
 				<RegisterErrorAlert error={failure} />
+			{/if}
+			{#if notice}
+				<!-- Informational, not an error: the withdrawal's goal is already met. -->
+				<div
+					role="status"
+					class="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm"
+					data-testid="by-account-notice"
+				>
+					<Info class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+					<p>{notice}</p>
+				</div>
 			{/if}
 			{#if outcome?.kind === 'not-found'}
 				<div class="space-y-3 rounded-md border bg-muted/40 p-3">

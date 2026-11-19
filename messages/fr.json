@@ -2960,7 +2960,8 @@
 		"success": "Invitation envoyée à {name}. Cette personne devient membre dès qu'elle accepte.",
 		"error": "Échec de l'envoi de l'invitation. Veuillez réessayer.",
 		"tiersLoadError": "Échec du chargement des niveaux d'adhésion. Veuillez réessayer.",
-		"alreadyMember": "Cette personne est déjà membre."
+		"alreadyMember": "Cette personne est déjà membre.",
+		"notInvitable": "Ce compte ne peut pas être invité (paiement invité ou e-mail non vérifié). Partage plutôt un lien d'invitation."
 	},
 	"makeMemberModal": {
 		"title": "Inviter comme membre",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Retirer l'invitation",
 	"memberPeople.byAccount.withdrawn": "Invitation à {name} retirée.",
 	"memberPeople.byAccount.withdrawGone": "Cette invitation a déjà été acceptée ou a expiré.",
+	"memberPeople.byAccount.inviteNotFound": "Ce compte ne peut pas être invité. Il n'existe peut-être plus, son e-mail n'est pas vérifié ou le compte est inactif, ou le niveau n'est pas un niveau standard.",
 	"memberPeople.byAccount.invitationPending": "{name} a une invitation d'adhésion en attente. La renvoyer la renouvelle et ne la notifie qu'une fois par jour au plus.",
 	"memberPeople.byAccount.throttledIn": "Trop de recherches. Réessayez dans {time}.",
 	"memberPeople.byAccount.throttled": "Trop de recherches. Réessayez dans un moment.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Retirer l'invitation à {name}",
 	"memberPeople.invitations.withdrawn": "Invitation à {name} retirée.",
 	"memberPeople.invitations.gone": "Cette invitation a déjà été acceptée ou a expiré.",
+	"memberPeople.invitations.none": "Aucune invitation en attente.",
 	"memberPeople.invitations.loadError": "Impossible de charger les invitations en attente.",
 	"memberPeople.invitations.retry": "Réessayer",
 	"memberPeople.sheet.manageSubscription": "Gérer l'abonnement",

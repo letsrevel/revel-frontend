@@ -214,6 +214,11 @@
 			return toRelativePath(context.action_url);
 		}
 
+		// membership_invitation_received: the join page that accepts the invitation.
+		if (context.accept_url && typeof context.accept_url === 'string') {
+			return toRelativePath(context.accept_url);
+		}
+
 		// Check for submission_url (questionnaire notifications) - prioritize this for admin actions
 		if (context.submission_url && typeof context.submission_url === 'string') {
 			return toRelativePath(context.submission_url);

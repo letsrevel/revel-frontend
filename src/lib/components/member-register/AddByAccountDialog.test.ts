@@ -13,6 +13,7 @@ const sdk = vi.hoisted(() => ({
 	organizationadminuserlookupLookupUser: vi.fn(),
 	organizationadminmemberinvitationsCreateMemberInvitation: vi.fn(),
 	organizationadminmemberinvitationsRevokeMemberInvitation: vi.fn(),
+	organizationadminmemberinvitationsListMemberInvitations: vi.fn(),
 	organizationadminmemberregisterGetMemberRegisterRecord: vi.fn(),
 	organizationadminmemberregisterListMemberRegister: vi.fn()
 }));
@@ -22,7 +23,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), error: vi.fn(
 vi.mock('svelte-sonner', () => ({ toast }));
 
 import AddByAccountDialog from './AddByAccountDialog.svelte';
-import { clearLookupThrottles } from '$lib/member-register/lookup-throttle';
+import { clearLookupThrottles, setLookupThrottle } from '$lib/member-register/lookup-throttle';
 
 function rec(id: string, extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
 	return {
@@ -90,6 +91,16 @@ beforeEach(() => {
 	for (const fn of Object.values(sdk)) fn.mockReset();
 	for (const fn of Object.values(toast)) fn.mockReset();
 	for (const fn of Object.values(cb)) fn.mockReset();
+});
+
+const invitationRow = (id: string, tierId: string) => ({
+	id,
+	invitee_id: 'u1',
+	invitee_display_name: 'Ada Lovelace',
+	tier_id: tierId,
+	tier_name: tierId,
+	expires_at: '2026-12-01T12:00:00Z',
+	created_at: '2026-11-17T12:00:00Z'
 });
 
 describe('AddByAccountDialog', () => {
@@ -337,7 +348,7 @@ describe('AddByAccountDialog', () => {
 		await screen.findByTestId('by-account-invitation-pending');
 		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
 		expect(await screen.findByTestId('by-account-has-membership')).toBeInTheDocument();
-		expect(await screen.findByTestId('register-error')).toHaveTextContent(
+		expect(await screen.findByTestId('by-account-notice')).toHaveTextContent(
 			'already accepted or has expired'
 		);
 		expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(2);
@@ -404,6 +415,180 @@ describe('AddByAccountDialog', () => {
 		await screen.findByTestId('by-account-invitation-pending');
 		await user.click(screen.getByRole('button', { name: 'Resend invitation' }));
 		expect(await screen.findByTestId('by-account-has-membership')).toBeInTheDocument();
+	});
+
+	it('an invite 404 says the account cannot be invited, not that a list was refreshed', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmemberinvitationsCreateMemberInvitation.mockResolvedValue({
+			error: { detail: 'Not found.' },
+			response: { status: 404 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Send invitation' }));
+		const alert = await screen.findByTestId('register-error');
+		expect(alert).toHaveTextContent("This account can't be invited");
+		expect(alert).not.toHaveTextContent('refreshed');
+	});
+
+	it('an invite error that lands after the admin moved on still toasts', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		let settle: (value: unknown) => void = () => undefined;
+		sdk.organizationadminmemberinvitationsCreateMemberInvitation.mockReturnValue(
+			new Promise((resolve) => (settle = resolve))
+		);
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Send invitation' }));
+		const input = screen.getByLabelText('Account email');
+		await user.clear(input);
+		await user.type(input, 'bob@example.org');
+		settle({ error: { detail: 'Tier is not available.' }, response: { status: 400 } });
+		await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Tier is not available.'));
+		expect(screen.queryByTestId('register-error')).toBeNull();
+	});
+
+	it('a withdraw error that lands after the admin moved on still toasts', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		let settle: (value: unknown) => void = () => undefined;
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockReturnValue(
+			new Promise((resolve) => (settle = resolve))
+		);
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
+		const input = screen.getByLabelText('Account email');
+		await user.clear(input);
+		await user.type(input, 'bob@example.org');
+		settle({ error: { detail: 'boom' }, response: { status: 500 } });
+		await waitFor(() => expect(toast.error).toHaveBeenCalled());
+	});
+
+	it('disables Find account while an invite is in flight', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmemberinvitationsCreateMemberInvitation.mockReturnValue(
+			new Promise(() => undefined)
+		);
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		await user.click(screen.getByRole('button', { name: 'Send invitation' }));
+		expect(screen.getByRole('button', { name: 'Find account' })).toBeDisabled();
+	});
+
+	it('the withdraw 404 notice is an informational status, not an error alert', async () => {
+		sdk.organizationadminuserlookupLookupUser
+			.mockResolvedValueOnce(found({ pending_invitation_id: 'i1' }))
+			.mockResolvedValueOnce(found({ membership_status: 'active', is_member: true }));
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
+			data: { count: 0, results: [] },
+			response: { status: 200 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
+		const notice = await screen.findByTestId('by-account-notice');
+		expect(notice).toHaveAttribute('role', 'status');
+		expect(notice).toHaveTextContent('already accepted or has expired');
+		expect(screen.queryByTestId('register-error')).toBeNull();
+	});
+
+	it('a withdraw 404 while the lookup is throttled still shows the notice, without looking up', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		setLookupThrottle('acme', 600);
+		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
+		expect(await screen.findByTestId('by-account-notice')).toHaveTextContent(
+			'already accepted or has expired'
+		);
+		expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(1);
+		expect(screen.queryByRole('button', { name: 'Withdraw invitation' })).toBeNull();
+	});
+
+	it('already_member while the lookup is throttled shows the refusal without looking up', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(found());
+		sdk.organizationadminmemberinvitationsCreateMemberInvitation.mockResolvedValue({
+			error: { detail: 'You are already a member.', code: 'already_member' },
+			response: { status: 400 }
+		});
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-found');
+		setLookupThrottle('acme', 600);
+		await user.click(screen.getByRole('button', { name: 'Send invitation' }));
+		expect(await screen.findByTestId('register-error')).toHaveTextContent(
+			'You are already a member.'
+		);
+		expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(1);
+	});
+
+	it('f) Resend preselects the tier of the cached pending invitation', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		const { user, client } = setup([tier('t1', 'Full'), tier('t2', 'Student')]);
+		client.setQueryData(['organization', 'acme', 'member-invitations'], {
+			count: 1,
+			next: null,
+			previous: null,
+			results: [invitationRow('i1', 't2')]
+		});
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await waitFor(() => expect(screen.getByLabelText('Tier')).toHaveValue('t2'));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Resend invitation' })).toBeEnabled()
+		);
+	});
+
+	it('f) Resend fetches the invitations when they are not cached', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		sdk.organizationadminmemberinvitationsListMemberInvitations.mockResolvedValue({
+			data: { count: 1, next: null, previous: null, results: [invitationRow('i1', 't2')] },
+			response: { status: 200 }
+		});
+		const { user } = setup([tier('t1', 'Full'), tier('t2', 'Student')]);
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await waitFor(() => expect(screen.getByLabelText('Tier')).toHaveValue('t2'));
+	});
+
+	it('f) Resend keeps the empty picker when the invitation is not in the list', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		sdk.organizationadminmemberinvitationsListMemberInvitations.mockResolvedValue({
+			data: { count: 1, next: null, previous: null, results: [invitationRow('other', 't2')] },
+			response: { status: 200 }
+		});
+		const { user } = setup([tier('t1', 'Full'), tier('t2', 'Student')]);
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await waitFor(() =>
+			expect(sdk.organizationadminmemberinvitationsListMemberInvitations).toHaveBeenCalled()
+		);
+		expect(screen.getByLabelText('Tier')).toHaveValue('');
+		expect(screen.getByRole('button', { name: 'Resend invitation' })).toBeDisabled();
 	});
 
 	it('e) 429 shows the wait and disables the submit', async () => {

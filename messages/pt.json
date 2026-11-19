@@ -3159,7 +3159,8 @@
 		"success": "Convite enviado a {name}. A pessoa passa a ser membro assim que aceitar.",
 		"error": "Não foi possível enviar o convite. Tenta novamente.",
 		"tiersLoadError": "Não foi possível carregar os níveis de adesão. Tenta novamente.",
-		"alreadyMember": "Esta pessoa já é membro."
+		"alreadyMember": "Esta pessoa já é membro.",
+		"notInvitable": "Esta conta não pode ser convidada (compra como convidado ou email não verificado). Partilha antes um link de convite."
 	},
 	"makeMemberModal": {
 		"title": "Convidar como membro",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Retirar convite",
 	"memberPeople.byAccount.withdrawn": "Convite para {name} retirado.",
 	"memberPeople.byAccount.withdrawGone": "Esse convite já foi aceite ou expirou.",
+	"memberPeople.byAccount.inviteNotFound": "Esta conta não pode ser convidada. Pode já não existir, ter o email por verificar ou estar inativa, ou o nível não ser um nível padrão.",
 	"memberPeople.byAccount.invitationPending": "{name} tem um convite de adesão pendente. Reenviá-lo renova-o e avisa a pessoa no máximo uma vez por dia.",
 	"memberPeople.byAccount.throttledIn": "Demasiadas pesquisas. Tenta novamente dentro de {time}.",
 	"memberPeople.byAccount.throttled": "Demasiadas pesquisas. Tenta novamente daqui a pouco.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Retirar o convite para {name}",
 	"memberPeople.invitations.withdrawn": "Convite para {name} retirado.",
 	"memberPeople.invitations.gone": "Este convite já foi aceite ou expirou.",
+	"memberPeople.invitations.none": "Sem convites pendentes.",
 	"memberPeople.invitations.loadError": "Não foi possível carregar os convites pendentes.",
 	"memberPeople.invitations.retry": "Tentar novamente",
 	"memberPeople.sheet.manageSubscription": "Gerir subscrição",

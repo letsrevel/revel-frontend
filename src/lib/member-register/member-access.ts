@@ -2,7 +2,7 @@ import { organizationadminmembersGetMember } from '$lib/api/generated/sdk.gen';
 import type { QueryClient } from '@tanstack/svelte-query';
 import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 import { membersListKey } from '$lib/components/members/user-note';
-import { invalidateRegister } from './api';
+import { invalidateInvitations, invalidateRegister } from './api';
 
 /**
  * Key of one person's access row. Deliberately OUTSIDE the
@@ -49,6 +49,9 @@ export async function invalidateAfterMemberWrite(
 		queryClient.invalidateQueries({ queryKey: membersListKey(slug) }),
 		invalidateRegister(queryClient, slug, true),
 		queryClient.invalidateQueries({ queryKey: memberAccessPrefix(slug) }),
-		queryClient.invalidateQueries({ queryKey: ['organization', slug, 'subscriptions'] })
+		queryClient.invalidateQueries({ queryKey: ['organization', slug, 'subscriptions'] }),
+		// The backend ends a pending invitation when the account becomes a member by
+		// any route (approval, direct add, ...), not only by accepting it.
+		invalidateInvitations(queryClient, slug)
 	]);
 }

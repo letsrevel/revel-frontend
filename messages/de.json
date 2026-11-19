@@ -3159,7 +3159,8 @@
 		"success": "Einladung an {name} gesendet. Die Person wird Mitglied, sobald sie annimmt.",
 		"error": "Die Einladung konnte nicht gesendet werden. Bitte erneut versuchen.",
 		"tiersLoadError": "Mitgliedschaftsstufen konnten nicht geladen werden. Bitte erneut versuchen.",
-		"alreadyMember": "Diese Person ist bereits Mitglied."
+		"alreadyMember": "Diese Person ist bereits Mitglied.",
+		"notInvitable": "Dieses Konto kann nicht eingeladen werden (Gast-Checkout oder nicht bestätigte E-Mail-Adresse). Teile stattdessen einen Einladungslink."
 	},
 	"makeMemberModal": {
 		"title": "Als Mitglied einladen",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Einladung zurückziehen",
 	"memberPeople.byAccount.withdrawn": "Einladung an {name} zurückgezogen.",
 	"memberPeople.byAccount.withdrawGone": "Diese Einladung wurde bereits angenommen oder ist abgelaufen.",
+	"memberPeople.byAccount.inviteNotFound": "Dieses Konto kann nicht eingeladen werden. Es existiert möglicherweise nicht mehr, die E-Mail-Adresse ist nicht bestätigt oder das Konto inaktiv, oder die Stufe ist keine Standardstufe.",
 	"memberPeople.byAccount.invitationPending": "{name} hat eine offene Mitgliedschaftseinladung. Erneutes Senden verlängert sie und benachrichtigt die Person höchstens einmal pro Tag.",
 	"memberPeople.byAccount.throttledIn": "Zu viele Suchanfragen. Versuche es in {time} erneut.",
 	"memberPeople.byAccount.throttled": "Zu viele Suchanfragen. Versuche es in Kürze erneut.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Einladung an {name} zurückziehen",
 	"memberPeople.invitations.withdrawn": "Einladung an {name} zurückgezogen.",
 	"memberPeople.invitations.gone": "Diese Einladung wurde bereits angenommen oder ist abgelaufen.",
+	"memberPeople.invitations.none": "Keine ausstehenden Einladungen.",
 	"memberPeople.invitations.loadError": "Offene Einladungen konnten nicht geladen werden.",
 	"memberPeople.invitations.retry": "Erneut versuchen",
 	"memberPeople.sheet.manageSubscription": "Abo verwalten",

@@ -43,7 +43,7 @@ function setup() {
 			componentProps: { slug: 'acme', accessToken: 'tok' }
 		}
 	});
-	return { invalidate, user: userEvent.setup() };
+	return { invalidate, user: userEvent.setup(), client };
 }
 
 beforeEach(() => {
@@ -159,5 +159,98 @@ describe('PendingInvitations', () => {
 		);
 		expect(await screen.findByTestId('register-error')).toBeInTheDocument();
 		expect(toast.success).not.toHaveBeenCalled();
+	});
+
+	describe('focus after a withdrawal (WCAG 2.4.3)', () => {
+		const ok = { response: { status: 204 } };
+
+		it("moves to the next row's Withdraw button", async () => {
+			sdk.organizationadminmemberinvitationsListMemberInvitations
+				.mockResolvedValueOnce(
+					page([invitation('i1', 'Ada Lovelace'), invitation('i2', 'Grace Hopper')])
+				)
+				.mockResolvedValue(page([invitation('i2', 'Grace Hopper')]));
+			sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue(ok);
+			const { user } = setup();
+			await user.click(
+				await screen.findByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+			);
+			await waitFor(() =>
+				expect(
+					screen.getByRole('button', { name: 'Withdraw invitation to Grace Hopper' })
+				).toHaveFocus()
+			);
+		});
+
+		it('moves to the previous row when the last one was withdrawn', async () => {
+			sdk.organizationadminmemberinvitationsListMemberInvitations
+				.mockResolvedValueOnce(
+					page([invitation('i1', 'Ada Lovelace'), invitation('i2', 'Grace Hopper')])
+				)
+				.mockResolvedValue(page([invitation('i1', 'Ada Lovelace')]));
+			sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue(ok);
+			const { user } = setup();
+			await user.click(
+				await screen.findByRole('button', { name: 'Withdraw invitation to Grace Hopper' })
+			);
+			await waitFor(() =>
+				expect(
+					screen.getByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+				).toHaveFocus()
+			);
+		});
+
+		it('moves to a stable sr-only target when no rows remain', async () => {
+			sdk.organizationadminmemberinvitationsListMemberInvitations
+				.mockResolvedValueOnce(page([invitation('i1', 'Ada Lovelace')]))
+				.mockResolvedValue(page([]));
+			sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue(ok);
+			const { user } = setup();
+			await user.click(
+				await screen.findByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+			);
+			await waitFor(() => expect(screen.getByTestId('pending-invitations-focus')).toHaveFocus());
+			expect(screen.getByTestId('pending-invitations-focus')).toHaveTextContent(
+				'No pending invitations.'
+			);
+		});
+	});
+
+	describe('clearing a withdraw failure', () => {
+		it('clears a non-404 failure once a refetch brings fresh data', async () => {
+			sdk.organizationadminmemberinvitationsListMemberInvitations.mockResolvedValue(
+				page([invitation('i1', 'Ada Lovelace')])
+			);
+			sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+				error: { detail: 'boom' },
+				response: { status: 500 }
+			});
+			const { user, client } = setup();
+			await user.click(
+				await screen.findByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+			);
+			expect(await screen.findByTestId('register-error')).toBeInTheDocument();
+			await client.invalidateQueries({ queryKey: ['organization', 'acme', 'member-invitations'] });
+			await waitFor(() => expect(screen.queryByTestId('register-error')).toBeNull());
+		});
+
+		it('keeps the accepted-or-expired explanation across later refetches', async () => {
+			sdk.organizationadminmemberinvitationsListMemberInvitations
+				.mockResolvedValueOnce(page([invitation('i1', 'Ada Lovelace')]))
+				.mockResolvedValue(page([]));
+			sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+				error: { detail: 'Not found' },
+				response: { status: 404 }
+			});
+			const { user, client } = setup();
+			await user.click(
+				await screen.findByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+			);
+			await waitFor(() => expect(screen.queryAllByTestId('pending-invitation')).toHaveLength(0));
+			await client.invalidateQueries({ queryKey: ['organization', 'acme', 'member-invitations'] });
+			expect(screen.getByTestId('register-error')).toHaveTextContent(
+				'already accepted or has expired'
+			);
+		});
 	});
 });

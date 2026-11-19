@@ -3159,7 +3159,8 @@
 		"success": "Invito inviato a {name}. La persona diventa membro non appena accetta.",
 		"error": "Impossibile inviare l'invito. Riprova.",
 		"tiersLoadError": "Impossibile caricare i livelli di iscrizione. Per favore riprova.",
-		"alreadyMember": "Questa persona è già un membro."
+		"alreadyMember": "Questa persona è già un membro.",
+		"notInvitable": "Questo account non può essere invitato (checkout come ospite o email non verificata). Condividi invece un link di invito."
 	},
 	"makeMemberModal": {
 		"title": "Invita come membro",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Ritira invito",
 	"memberPeople.byAccount.withdrawn": "Invito a {name} ritirato.",
 	"memberPeople.byAccount.withdrawGone": "Questo invito è già stato accettato o è scaduto.",
+	"memberPeople.byAccount.inviteNotFound": "Questo account non può essere invitato. Potrebbe non esistere più, avere l'email non verificata o essere inattivo, oppure il livello non è un livello standard.",
 	"memberPeople.byAccount.invitationPending": "{name} ha un invito di iscrizione in sospeso. Reinviarlo lo rinnova e avvisa la persona al massimo una volta al giorno.",
 	"memberPeople.byAccount.throttledIn": "Troppe ricerche. Riprova tra {time}.",
 	"memberPeople.byAccount.throttled": "Troppe ricerche. Riprova tra poco.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Ritira l'invito a {name}",
 	"memberPeople.invitations.withdrawn": "Invito a {name} ritirato.",
 	"memberPeople.invitations.gone": "Questo invito è già stato accettato o è scaduto.",
+	"memberPeople.invitations.none": "Nessun invito in sospeso.",
 	"memberPeople.invitations.loadError": "Impossibile caricare gli inviti in sospeso.",
 	"memberPeople.invitations.retry": "Riprova",
 	"memberPeople.sheet.manageSubscription": "Gestisci abbonamento",

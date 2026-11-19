@@ -93,6 +93,12 @@ export function createInviteMemberMutation(opts: InviteMutationOptions) {
 				opts.onDone();
 				return;
 			}
+			// 404: the backend only invites verified, non-guest accounts, and the ticket
+			// schema carries no flag for that, so the button cannot be hidden up front.
+			if (error instanceof RegisterApiError && error.status === 404) {
+				toast.error(m['makeMemberAction.notInvitable']());
+				return;
+			}
 			const detail = error instanceof RegisterApiError ? backendMessage(error.body) : null;
 			toast.error(detail ?? m['makeMemberAction.error']());
 		}

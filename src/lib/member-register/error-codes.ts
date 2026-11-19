@@ -22,7 +22,3 @@ export function isCodedRefusal(error: unknown, code: string): boolean {
 
 /** The account already holds a membership row of any state. */
 export const isAlreadyMember = (error: unknown): boolean => isCodedRefusal(error, 'already_member');
-
-/** Staff acted on an account with no connection to the organization yet. */
-export const isInvitationRequired = (error: unknown): boolean =>
-	isCodedRefusal(error, 'invitation_required');

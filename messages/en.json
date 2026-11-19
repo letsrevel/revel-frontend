@@ -3159,7 +3159,8 @@
 		"success": "Invitation sent to {name}. They become a member once they accept.",
 		"error": "Failed to send the invitation. Please try again.",
 		"tiersLoadError": "Failed to load membership tiers. Please try again.",
-		"alreadyMember": "This user is already a member."
+		"alreadyMember": "This user is already a member.",
+		"notInvitable": "This account can't be invited (guest checkout or unverified email). Share an invite link instead."
 	},
 	"makeMemberModal": {
 		"title": "Invite as Member",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Withdraw invitation",
 	"memberPeople.byAccount.withdrawn": "Invitation to {name} withdrawn.",
 	"memberPeople.byAccount.withdrawGone": "That invitation was already accepted or has expired.",
+	"memberPeople.byAccount.inviteNotFound": "This account can't be invited. It may no longer exist, its email may be unverified or the account inactive, or the tier isn't a standard tier.",
 	"memberPeople.byAccount.invitationPending": "{name} has a pending membership invitation. Resending renews it and notifies them at most once a day.",
 	"memberPeople.byAccount.throttledIn": "Too many lookups. Try again in {time}.",
 	"memberPeople.byAccount.throttled": "Too many lookups. Try again in a little while.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Withdraw invitation to {name}",
 	"memberPeople.invitations.withdrawn": "Invitation to {name} withdrawn.",
 	"memberPeople.invitations.gone": "This invitation was already accepted or has expired.",
+	"memberPeople.invitations.none": "No pending invitations.",
 	"memberPeople.invitations.loadError": "Couldn't load pending invitations.",
 	"memberPeople.invitations.retry": "Try again",
 	"memberPeople.sheet.manageSubscription": "Manage subscription",

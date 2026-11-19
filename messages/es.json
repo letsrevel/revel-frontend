@@ -3159,7 +3159,8 @@
 		"success": "Invitación enviada a {name}. La persona será miembro en cuanto la acepte.",
 		"error": "No se pudo enviar la invitación. Inténtalo de nuevo.",
 		"tiersLoadError": "No se han podido cargar los niveles de membresía. Inténtalo de nuevo.",
-		"alreadyMember": "Esta persona ya es miembro."
+		"alreadyMember": "Esta persona ya es miembro.",
+		"notInvitable": "Esta cuenta no se puede invitar (compra como invitado o correo sin verificar). Comparte un enlace de invitación en su lugar."
 	},
 	"makeMemberModal": {
 		"title": "Invitar como miembro",
@@ -11570,6 +11571,7 @@
 	"memberPeople.byAccount.withdraw": "Retirar invitación",
 	"memberPeople.byAccount.withdrawn": "Invitación a {name} retirada.",
 	"memberPeople.byAccount.withdrawGone": "Esa invitación ya fue aceptada o ha caducado.",
+	"memberPeople.byAccount.inviteNotFound": "Esta cuenta no se puede invitar. Puede que ya no exista, que su correo no esté verificado o que la cuenta esté inactiva, o que el nivel no sea estándar.",
 	"memberPeople.byAccount.invitationPending": "{name} tiene una invitación de membresía pendiente. Reenviarla la renueva y avisa a la persona como máximo una vez al día.",
 	"memberPeople.byAccount.throttledIn": "Demasiadas búsquedas. Inténtalo de nuevo en {time}.",
 	"memberPeople.byAccount.throttled": "Demasiadas búsquedas. Inténtalo de nuevo en un rato.",
@@ -11583,6 +11585,7 @@
 	"memberPeople.invitations.withdrawAria": "Retirar la invitación a {name}",
 	"memberPeople.invitations.withdrawn": "Invitación a {name} retirada.",
 	"memberPeople.invitations.gone": "Esta invitación ya fue aceptada o ha caducado.",
+	"memberPeople.invitations.none": "No hay invitaciones pendientes.",
 	"memberPeople.invitations.loadError": "No se pudieron cargar las invitaciones pendientes.",
 	"memberPeople.invitations.retry": "Reintentar",
 	"memberPeople.sheet.manageSubscription": "Gestionar suscripción",

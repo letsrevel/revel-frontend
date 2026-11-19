@@ -109,7 +109,12 @@ export const memberRegisterKeys = {
 		['organization', slug, 'member-register', 'merged-into', recordId] as const,
 	matches: (slug: string, requestId: string) =>
 		['organization', slug, 'member-register', 'matches', requestId] as const,
-	/** Pending member invitations; outside `all`: only invite/withdraw/accept change them. */
+	/**
+	 * Pending member invitations; outside `all` (register edits don't touch them).
+	 * Changed by invite/resend/withdraw/accept, and by any write that makes the
+	 * account a member (the backend ends the invitation then): see
+	 * `invalidateAfterMemberWrite`.
+	 */
 	invitations: (slug: string) => ['organization', slug, 'member-invitations'] as const
 };
 
