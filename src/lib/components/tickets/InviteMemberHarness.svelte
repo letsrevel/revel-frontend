@@ -13,5 +13,6 @@
 	});
 </script>
 
+<!-- i18n-ignore (test-only harness, never rendered in the app) -->
 <button type="button" onclick={() => mutation.mutate({ userId: 'u1', tierId: 't1' })}>Invite</button
 >
