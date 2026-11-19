@@ -1,9 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
-import type { MemberInvitationSchema } from '$lib/api/generated/types.gen';
+import type {
+	MemberInvitationSchema,
+	PaginatedResponseSchemaMemberInvitationSchema
+} from '$lib/api/generated/types.gen';
 
 const sdk = vi.hoisted(() => ({
 	organizationadminmemberinvitationsListMemberInvitations: vi.fn(),
@@ -28,12 +31,23 @@ function invitation(id: string, name: string): MemberInvitationSchema {
 	};
 }
 
-const page = (results: MemberInvitationSchema[]) => ({
+interface ListResult {
+	data: PaginatedResponseSchemaMemberInvitationSchema;
+	response: { status: number };
+}
+
+interface Harness {
+	invalidate: MockInstance<QueryClient['invalidateQueries']>;
+	user: UserEvent;
+	client: QueryClient;
+}
+
+const page = (results: MemberInvitationSchema[]): ListResult => ({
 	data: { count: results.length, next: null, previous: null, results },
 	response: { status: 200 }
 });
 
-function setup() {
+function setup(): Harness {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	const invalidate = vi.spyOn(client, 'invalidateQueries');
 	render(QueryClientTestWrapper, {
