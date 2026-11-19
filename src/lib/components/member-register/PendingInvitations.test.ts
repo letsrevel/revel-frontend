@@ -114,6 +114,37 @@ describe('PendingInvitations', () => {
 		);
 	});
 
+	it('keeps the 404 explanation visible when the refreshed list is empty', async () => {
+		sdk.organizationadminmemberinvitationsListMemberInvitations
+			.mockResolvedValueOnce(page([invitation('i1', 'Ada Lovelace')]))
+			.mockResolvedValue(page([]));
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		const { user } = setup();
+		await user.click(
+			await screen.findByRole('button', { name: 'Withdraw invitation to Ada Lovelace' })
+		);
+		await waitFor(() => expect(screen.queryAllByTestId('pending-invitation')).toHaveLength(0));
+		expect(screen.getByTestId('register-error')).toHaveTextContent(
+			'already accepted or has expired'
+		);
+	});
+
+	it('shows a load failure with a retry instead of hiding the section', async () => {
+		sdk.organizationadminmemberinvitationsListMemberInvitations
+			.mockResolvedValueOnce({ error: { detail: 'boom' }, response: { status: 500 } })
+			.mockResolvedValue(page([invitation('i1', 'Ada Lovelace')]));
+		const { user } = setup();
+		expect(await screen.findByTestId('pending-invitations-load-error')).toHaveTextContent(
+			"Couldn't load pending invitations."
+		);
+		await user.click(screen.getByRole('button', { name: 'Try again' }));
+		expect(await screen.findByTestId('pending-invitation')).toHaveTextContent('Ada Lovelace');
+		expect(screen.queryByTestId('pending-invitations-load-error')).toBeNull();
+	});
+
 	it('shows another failure inline', async () => {
 		sdk.organizationadminmemberinvitationsListMemberInvitations.mockResolvedValue(
 			page([invitation('i1', 'Ada Lovelace')])

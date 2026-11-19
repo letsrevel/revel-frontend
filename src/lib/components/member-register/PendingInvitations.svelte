@@ -34,6 +34,8 @@
 		enabled: active && !!accessToken
 	}));
 	const invitations = $derived(invitationsQuery.data?.results ?? []);
+	// A failed load must not look like "no pending invitations" (which hides the section).
+	const loadFailed = $derived(invitationsQuery.isError && !invitationsQuery.data);
 
 	let failure = $state<DescribedError | null>(null);
 
@@ -63,7 +65,7 @@
 	const pendingId = $derived(withdraw.isPending ? withdraw.variables?.id : null);
 </script>
 
-{#if invitations.length > 0}
+{#if invitations.length > 0 || loadFailed || failure}
 	<section
 		class="space-y-3"
 		aria-labelledby="pending-invitations-heading"
@@ -78,37 +80,55 @@
 		{#if failure}
 			<RegisterErrorAlert error={failure} />
 		{/if}
-		<ul class="divide-y rounded-md border bg-card">
-			{#each invitations as invitation (invitation.id)}
-				<li
-					class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
-					data-testid="pending-invitation"
+		{#if loadFailed}
+			<div class="space-y-2" data-testid="pending-invitations-load-error">
+				<RegisterErrorAlert
+					error={{ stale: false, message: m['memberPeople.invitations.loadError'](), detail: null }}
+				/>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					disabled={invitationsQuery.isFetching}
+					onclick={() => invitationsQuery.refetch()}
 				>
-					<div class="min-w-0">
-						<p class="truncate font-bold">{invitation.invitee_display_name}</p>
-						<p class="text-sm text-muted-foreground">
-							{invitation.tier_name} &middot;
-							{m['memberPeople.invitations.expires']({ date: formatDate(invitation.expires_at) })}
-						</p>
-					</div>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						class="self-start sm:self-auto"
-						disabled={withdraw.isPending}
-						aria-label={m['memberPeople.invitations.withdrawAria']({
-							name: invitation.invitee_display_name
-						})}
-						onclick={() => withdraw.mutate(invitation)}
+					{m['memberPeople.invitations.retry']()}
+				</Button>
+			</div>
+		{/if}
+		{#if invitations.length > 0}
+			<ul class="divide-y rounded-md border bg-card">
+				{#each invitations as invitation (invitation.id)}
+					<li
+						class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+						data-testid="pending-invitation"
 					>
-						{#if pendingId === invitation.id}
-							<Loader2 class="animate-spin" aria-hidden="true" />
-						{/if}
-						{m['memberPeople.invitations.withdraw']()}
-					</Button>
-				</li>
-			{/each}
-		</ul>
+						<div class="min-w-0">
+							<p class="truncate font-bold">{invitation.invitee_display_name}</p>
+							<p class="text-sm text-muted-foreground">
+								{invitation.tier_name} &middot;
+								{m['memberPeople.invitations.expires']({ date: formatDate(invitation.expires_at) })}
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							class="self-start sm:self-auto"
+							disabled={withdraw.isPending}
+							aria-label={m['memberPeople.invitations.withdrawAria']({
+								name: invitation.invitee_display_name
+							})}
+							onclick={() => withdraw.mutate(invitation)}
+						>
+							{#if pendingId === invitation.id}
+								<Loader2 class="animate-spin" aria-hidden="true" />
+							{/if}
+							{m['memberPeople.invitations.withdraw']()}
+						</Button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</section>
 {/if}

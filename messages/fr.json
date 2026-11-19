@@ -11583,6 +11583,8 @@
 	"memberPeople.invitations.withdrawAria": "Retirer l'invitation à {name}",
 	"memberPeople.invitations.withdrawn": "Invitation à {name} retirée.",
 	"memberPeople.invitations.gone": "Cette invitation a déjà été acceptée ou a expiré.",
+	"memberPeople.invitations.loadError": "Impossible de charger les invitations en attente.",
+	"memberPeople.invitations.retry": "Réessayer",
 	"memberPeople.sheet.manageSubscription": "Gérer l'abonnement",
 	"memberPeople.sheet.addSubscription": "Ajouter un abonnement",
 	"manageMemberModal.tierLockedReason": "Le niveau de cet adhérent suit la formule de son abonnement. Change la formule dans Gérer l'abonnement.",

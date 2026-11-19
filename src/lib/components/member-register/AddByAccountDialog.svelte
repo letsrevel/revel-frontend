@@ -195,32 +195,38 @@
 
 	const tierName = (id: string) => tiers.find((t) => t.id === id)?.name ?? '';
 
-	function relookup(notice?: string) {
-		if (notice) pendingNotice = notice;
-		lookup.mutate(queriedEmail);
+	// True while the dialog still shows the account an invite/withdraw was sent for:
+	// the admin may have looked someone else up while the call was in flight.
+	function stillShowing(forEmail: string): boolean {
+		return queriedEmail === forEmail && email.trim() === forEmail;
 	}
 
 	// Inviting and resending are the same call: re-inviting renews the invitation.
 	const invite = createMutation(() => ({
-		mutationFn: (vars: { user: OrgUserLookupSchema; renew: boolean }) =>
-			inviteMemberByAccount(slug, accessToken, vars.user.user_id, tierId),
+		mutationFn: (vars: {
+			user: OrgUserLookupSchema;
+			renew: boolean;
+			email: string;
+			tierId: string;
+		}) => inviteMemberByAccount(slug, accessToken, vars.user.user_id, vars.tierId),
 		onSuccess: (_data, vars) => {
 			invalidateInvitations(queryClient, slug).catch(() => undefined);
-			const who = lookupDisplayName(vars.user, queriedEmail);
+			const who = lookupDisplayName(vars.user, vars.email);
 			toast.success(
 				vars.renew
 					? m['memberPeople.byAccount.resent']({ name: who })
-					: m['memberPeople.byAccount.invited']({ name: who, tier: tierName(tierId) })
+					: m['memberPeople.byAccount.invited']({ name: who, tier: tierName(vars.tierId) })
 			);
-			onClose();
+			if (stillShowing(vars.email)) onClose();
 		},
-		onError: (error: unknown) => {
+		onError: (error: unknown, vars) => {
+			if (!stillShowing(vars.email)) return; // the dialog has moved on to someone else
 			// `already_member` (backend #1363) means a race with another admin or an
 			// approval: look again and show what they hold now. Any other 400 is a
 			// plain refusal, shown as is, without spending a throttled lookup.
-			if (isAlreadyMember(error) && queriedEmail) {
+			if (isAlreadyMember(error)) {
 				refusedAdd = error;
-				lookup.mutate(queriedEmail);
+				lookup.mutate(vars.email);
 				return;
 			}
 			failure = describeRegisterError(error, 'save');
@@ -228,20 +234,22 @@
 	}));
 
 	const withdraw = createMutation(() => ({
-		mutationFn: (vars: { user: OrgUserLookupSchema; invitationId: string }) =>
+		mutationFn: (vars: { user: OrgUserLookupSchema; invitationId: string; email: string }) =>
 			revokeMemberInvitation(slug, accessToken, vars.invitationId),
 		onSuccess: (_data, vars) => {
 			invalidateInvitations(queryClient, slug).catch(() => undefined);
 			toast.success(
-				m['memberPeople.byAccount.withdrawn']({ name: lookupDisplayName(vars.user, queriedEmail) })
+				m['memberPeople.byAccount.withdrawn']({ name: lookupDisplayName(vars.user, vars.email) })
 			);
-			onClose();
+			if (stillShowing(vars.email)) onClose();
 		},
-		onError: (error: unknown) => {
+		onError: (error: unknown, vars) => {
 			invalidateInvitations(queryClient, slug).catch(() => undefined);
+			if (!stillShowing(vars.email)) return; // the dialog has moved on to someone else
 			// 404: accepted or expired meanwhile. Explain, then show what they are now.
-			if (error instanceof RegisterApiError && error.status === 404 && queriedEmail) {
-				relookup(m['memberPeople.byAccount.withdrawGone']());
+			if (error instanceof RegisterApiError && error.status === 404) {
+				pendingNotice = m['memberPeople.byAccount.withdrawGone']();
+				lookup.mutate(vars.email);
 				return;
 			}
 			failure = describeRegisterError(error, 'save');
@@ -383,7 +391,13 @@
 							<Button
 								type="button"
 								disabled={!canInvite}
-								onclick={() => invite.mutate({ user, renew: kind === 'invitation-pending' })}
+								onclick={() =>
+									invite.mutate({
+										user,
+										renew: kind === 'invitation-pending',
+										email: queriedEmail,
+										tierId
+									})}
 							>
 								{#if invite.isPending}
 									<Loader2 class="animate-spin" aria-hidden="true" />
@@ -392,20 +406,23 @@
 									? m['memberPeople.byAccount.resend']()
 									: m['memberPeople.byAccount.invite']()}
 							</Button>
-							{#if kind === 'invitation-pending' && user.pending_invitation_id}
-								{@const invitationId = user.pending_invitation_id}
-								<Button
-									type="button"
-									variant="outline"
-									disabled={busy || lookup.isPending}
-									onclick={() => withdraw.mutate({ user, invitationId })}
-								>
-									{#if withdraw.isPending}
-										<Loader2 class="animate-spin" aria-hidden="true" />
-									{/if}
-									{m['memberPeople.byAccount.withdraw']()}
-								</Button>
-							{/if}
+						</div>
+					{/if}
+					{#if kind === 'invitation-pending' && user.pending_invitation_id}
+						{@const invitationId = user.pending_invitation_id}
+						<!-- Withdrawing needs only the invitation, never a tier: keep it outside the tier branch. -->
+						<div>
+							<Button
+								type="button"
+								variant="outline"
+								disabled={busy || lookup.isPending}
+								onclick={() => withdraw.mutate({ user, invitationId, email: queriedEmail })}
+							>
+								{#if withdraw.isPending}
+									<Loader2 class="animate-spin" aria-hidden="true" />
+								{/if}
+								{m['memberPeople.byAccount.withdraw']()}
+							</Button>
 						</div>
 					{/if}
 				</div>

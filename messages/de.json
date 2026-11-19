@@ -11583,6 +11583,8 @@
 	"memberPeople.invitations.withdrawAria": "Einladung an {name} zurückziehen",
 	"memberPeople.invitations.withdrawn": "Einladung an {name} zurückgezogen.",
 	"memberPeople.invitations.gone": "Diese Einladung wurde bereits angenommen oder ist abgelaufen.",
+	"memberPeople.invitations.loadError": "Offene Einladungen konnten nicht geladen werden.",
+	"memberPeople.invitations.retry": "Erneut versuchen",
 	"memberPeople.sheet.manageSubscription": "Abo verwalten",
 	"memberPeople.sheet.addSubscription": "Abo hinzufügen",
 	"manageMemberModal.tierLockedReason": "Die Stufe dieses Mitglieds folgt seinem Abo-Tarif. Ändere den Tarif unter „Abo verwalten“.",

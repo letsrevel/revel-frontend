@@ -344,6 +344,49 @@ describe('AddByAccountDialog', () => {
 		expect(cb.onClose).not.toHaveBeenCalled();
 	});
 
+	it('f) a Withdraw 404 that lands after the admin moved to another account is not applied to it', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		let settle: (value: unknown) => void = () => undefined;
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockReturnValue(
+			new Promise((resolve) => (settle = resolve))
+		);
+		const { user } = setup();
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
+		const input = screen.getByLabelText('Account email');
+		await user.clear(input);
+		await user.type(input, 'bob@example.org');
+		settle({ error: { detail: 'Not found' }, response: { status: 404 } });
+		await waitFor(() =>
+			expect(sdk.organizationadminmemberinvitationsRevokeMemberInvitation).toHaveBeenCalled()
+		);
+		await new Promise((r) => setTimeout(r, 20));
+		expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(1);
+		expect(screen.queryByTestId('register-error')).toBeNull();
+		expect(cb.onClose).not.toHaveBeenCalled();
+	});
+
+	it('f) Withdraw stays available when there is no standard tier to resend with', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		sdk.organizationadminmemberinvitationsRevokeMemberInvitation.mockResolvedValue({
+			response: { status: 204 }
+		});
+		const { user } = setup([]);
+		await lookup(user);
+		await screen.findByTestId('by-account-no-tiers');
+		expect(screen.queryByRole('button', { name: 'Resend invitation' })).toBeNull();
+		await user.click(screen.getByRole('button', { name: 'Withdraw invitation' }));
+		await waitFor(() => expect(cb.onClose).toHaveBeenCalled());
+		expect(sdk.organizationadminmemberinvitationsRevokeMemberInvitation).toHaveBeenCalledWith(
+			expect.objectContaining({ path: { slug: 'acme', invitation_id: 'i1' } })
+		);
+	});
+
 	it('f) already_member on Resend re-runs the lookup', async () => {
 		sdk.organizationadminuserlookupLookupUser
 			.mockResolvedValueOnce(found({ pending_invitation_id: 'i1' }))

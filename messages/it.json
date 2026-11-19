@@ -11583,6 +11583,8 @@
 	"memberPeople.invitations.withdrawAria": "Ritira l'invito a {name}",
 	"memberPeople.invitations.withdrawn": "Invito a {name} ritirato.",
 	"memberPeople.invitations.gone": "Questo invito è già stato accettato o è scaduto.",
+	"memberPeople.invitations.loadError": "Impossibile caricare gli inviti in sospeso.",
+	"memberPeople.invitations.retry": "Riprova",
 	"memberPeople.sheet.manageSubscription": "Gestisci abbonamento",
 	"memberPeople.sheet.addSubscription": "Aggiungi abbonamento",
 	"manageMemberModal.tierLockedReason": "Il livello di questo socio segue il piano del suo abbonamento. Cambia il piano da Gestisci abbonamento.",

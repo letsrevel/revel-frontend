@@ -11583,6 +11583,8 @@
 	"memberPeople.invitations.withdrawAria": "Retirar o convite para {name}",
 	"memberPeople.invitations.withdrawn": "Convite para {name} retirado.",
 	"memberPeople.invitations.gone": "Este convite já foi aceite ou expirou.",
+	"memberPeople.invitations.loadError": "Não foi possível carregar os convites pendentes.",
+	"memberPeople.invitations.retry": "Tentar novamente",
 	"memberPeople.sheet.manageSubscription": "Gerir subscrição",
 	"memberPeople.sheet.addSubscription": "Adicionar subscrição",
 	"manageMemberModal.tierLockedReason": "O nível deste membro segue o plano da sua subscrição. Muda o plano em Gerir subscrição.",

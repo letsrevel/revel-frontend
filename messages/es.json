@@ -11583,6 +11583,8 @@
 	"memberPeople.invitations.withdrawAria": "Retirar la invitación a {name}",
 	"memberPeople.invitations.withdrawn": "Invitación a {name} retirada.",
 	"memberPeople.invitations.gone": "Esta invitación ya fue aceptada o ha caducado.",
+	"memberPeople.invitations.loadError": "No se pudieron cargar las invitaciones pendientes.",
+	"memberPeople.invitations.retry": "Reintentar",
 	"memberPeople.sheet.manageSubscription": "Gestionar suscripción",
 	"memberPeople.sheet.addSubscription": "Añadir suscripción",
 	"manageMemberModal.tierLockedReason": "El nivel de este miembro sigue el plan de su suscripción. Cambia el plan en Gestionar suscripción.",
