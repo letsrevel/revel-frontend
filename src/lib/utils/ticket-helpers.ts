@@ -1,6 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import { formatMoney } from '$lib/utils/format';
-import { getUserDisplayName } from '$lib/utils/user-display';
+import { staffViewDisplayName } from '$lib/utils/user-display';
 import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -11,7 +11,7 @@ import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 export function getGuestNameIfDifferent(ticket: any): string | null {
 	const guestName = typeof ticket.guest_name === 'string' ? ticket.guest_name.trim() : '';
 	if (!guestName) return null;
-	const userDisplayName = getUserDisplayName(ticket.user, m['eventTicketsAdmin.unknownUser']());
+	const userDisplayName = staffViewDisplayName(ticket.user, m['eventTicketsAdmin.unknownUser']());
 	if (guestName.toLowerCase() === userDisplayName.toLowerCase().trim()) return null;
 	return guestName;
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
@@ -43,7 +44,7 @@
 							profilePictureUrl={rsvp.user.profile_picture_url}
 							previewUrl={rsvp.user.profile_picture_preview_url}
 							thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
-							displayName={getUserDisplayName(rsvp.user)}
+							displayName={staffViewDisplayName(rsvp.user)}
 							firstName={rsvp.user.first_name}
 							lastName={rsvp.user.last_name}
 							size="md"
@@ -51,7 +52,7 @@
 						/>
 						<div>
 							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-								<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
+								<p class="font-medium">{staffViewDisplayName(rsvp.user)}</p>
 								{#if rsvp.user.pronouns}
 									<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
 								{/if}
@@ -62,6 +63,9 @@
 								{/if}
 							</div>
 							<p class="text-sm text-muted-foreground">{rsvp.user.email || 'N/A'}</p>
+							{#if isUnknownHolder(rsvp.user)}
+								<UnknownHolderBadge class="mt-1" />
+							{/if}
 						</div>
 					</div>
 					<StatusBadge
@@ -99,7 +103,7 @@
 						onclick={() => onEdit(rsvp)}
 						class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 						aria-label={m['attendeesAdmin.editRsvpAriaLabel']({
-							name: getUserDisplayName(rsvp.user)
+							name: staffViewDisplayName(rsvp.user)
 						})}
 					>
 						<Edit class="h-4 w-4" aria-hidden="true" />
@@ -110,7 +114,7 @@
 						onclick={() => onDelete(rsvp)}
 						class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 						aria-label={m['attendeesAdmin.deleteRsvpAriaLabel']({
-							name: getUserDisplayName(rsvp.user)
+							name: staffViewDisplayName(rsvp.user)
 						})}
 					>
 						<Trash2 class="h-4 w-4" aria-hidden="true" />
@@ -125,7 +129,7 @@
 										{...props}
 										class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
 										aria-label={m['attendeesAdmin.moreActionsForAriaLabel']({
-											name: getUserDisplayName(rsvp.user)
+											name: staffViewDisplayName(rsvp.user)
 										})}
 									>
 										<MoreVertical class="h-4 w-4" aria-hidden="true" />

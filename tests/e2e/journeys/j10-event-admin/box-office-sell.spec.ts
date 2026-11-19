@@ -129,7 +129,7 @@ async function openTicketsFilteredBy(page: Page, event: CreatedEvent, name: stri
 	await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
 	await waitForClientAuth(page);
 	await expect(page.getByRole('heading', { name: 'Manage Tickets' })).toBeVisible();
-	await page.getByPlaceholder('Search by holder, purchaser, email, or tier...').fill(name);
+	await page.getByPlaceholder('Search by holder name, email, or tier...').fill(name);
 	await expect(page).toHaveURL(new RegExp(`search=${encodeURIComponent(name)}`), {
 		timeout: 15_000
 	});

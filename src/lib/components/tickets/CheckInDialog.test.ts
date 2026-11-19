@@ -47,6 +47,29 @@ describe('CheckInDialog staff note before confirming (#1165/#1167)', () => {
 	});
 });
 
+describe('CheckInDialog unknown holder (ADR-0020)', () => {
+	const masked = {
+		id: 'tkt-2',
+		status: 'active',
+		user: { id: 'u9', known: false, display_name: 'Guest Gina', email: 'gina@example.com' },
+		tier: { name: 'General', payment_method: 'free', price_type: 'fixed' }
+	};
+
+	it('shows the supplied name, the email and the explanation', () => {
+		renderDialog(toCheckInTicket(masked as unknown as AdminTicketSchema));
+		expect(screen.getByText('Guest Gina')).toBeInTheDocument();
+		expect(screen.getByText('gina@example.com')).toBeInTheDocument();
+		expect(screen.getByTestId('unknown-holder-badge')).toBeInTheDocument();
+		expect(screen.getByTestId('unknown-holder-explanation')).toBeInTheDocument();
+	});
+
+	it('shows no hint for a known holder', () => {
+		const known = { ...masked, user: { ...masked.user, known: true } };
+		renderDialog(toCheckInTicket(known as unknown as AdminTicketSchema));
+		expect(screen.queryByTestId('unknown-holder-badge')).not.toBeInTheDocument();
+	});
+});
+
 describe('toCheckInTicket', () => {
 	it('carries private_note through explicitly', () => {
 		const ticket = toCheckInTicket({

@@ -13,6 +13,13 @@ function ticket(guestName: unknown, user: Record<string, unknown> = {}): TicketF
 	};
 }
 
+describe('getGuestNameIfDifferent with a masked holder', () => {
+	it('is null when the guest name is the display_name staff supplied', () => {
+		const masked = { known: false, display_name: 'Guest Gina', email: 'gina@example.com' };
+		expect(getGuestNameIfDifferent({ guest_name: 'Guest Gina', user: masked })).toBeNull();
+	});
+});
+
 describe('getGuestNameIfDifferent', () => {
 	it('returns the holder name when it differs from the purchaser', () => {
 		expect(getGuestNameIfDifferent(ticket('Bob Bearer'))).toBe('Bob Bearer');

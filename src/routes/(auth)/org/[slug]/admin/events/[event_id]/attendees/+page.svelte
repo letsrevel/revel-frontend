@@ -17,7 +17,8 @@
 		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
+	import { rsvpCreateErrorMessage } from '$lib/components/attendees/rsvp-create-error';
 	import { Users, ChevronLeft, ChevronRight, UserPlus } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -33,7 +34,6 @@
 	import CreateRsvpDialog from '$lib/components/attendees/CreateRsvpDialog.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
-	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -175,7 +175,7 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			const userName = rsvpToBlacklist ? getUserDisplayName(rsvpToBlacklist.user) : '';
+			const userName = rsvpToBlacklist ? staffViewDisplayName(rsvpToBlacklist.user) : '';
 			showBlacklistDialog = false;
 			rsvpToBlacklist = null;
 			toast.success(m['attendeesAdmin.blacklistSuccess']({ name: userName }));
@@ -211,9 +211,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail =
-					extractApiErrorDetail(response.error) ?? m['attendeesAdmin.createError']();
-				throw new Error(errorDetail);
+				throw new Error(rsvpCreateErrorMessage(response.error));
 			}
 
 			return response.data;
@@ -254,8 +252,8 @@
 		// Set user info
 		userToMakeMember = {
 			id: user.id,
-			displayName: getUserDisplayName(user),
-			email: user.email
+			displayName: staffViewDisplayName(user),
+			email: user.email ?? undefined
 		};
 
 		await tiersLoader.ensureLoaded();
@@ -568,7 +566,7 @@
 	isOpen={showDeleteDialog}
 	title={m['attendeesAdmin.deleteDialogTitle']()}
 	message={deletingRsvp
-		? m['attendeesAdmin.deleteDialogMessage']({ name: getUserDisplayName(deletingRsvp.user) })
+		? m['attendeesAdmin.deleteDialogMessage']({ name: staffViewDisplayName(deletingRsvp.user) })
 		: ''}
 	confirmText={m['attendeesAdmin.deleteDialogConfirm']()}
 	cancelText={m['attendeesAdmin.deleteDialogCancel']()}
@@ -607,7 +605,7 @@
 	title={m['attendeesAdmin.blacklistDialogTitle']()}
 	message={rsvpToBlacklist
 		? m['attendeesAdmin.blacklistDialogMessageWithSubscription']({
-				name: getUserDisplayName(rsvpToBlacklist.user)
+				name: staffViewDisplayName(rsvpToBlacklist.user)
 			})
 		: ''}
 	confirmText={m['attendeesAdmin.blacklistDialogConfirm']()}

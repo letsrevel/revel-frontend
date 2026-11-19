@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import { needsPaymentConfirmation, isPwycTicket } from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
 	import { Ticket, QrCode } from '@lucide/svelte';
@@ -604,7 +604,7 @@
 	<UserNoteDialog
 		slug={data.event.organization.slug}
 		userId={ticketForNote.user.id}
-		displayName={getUserDisplayName(ticketForNote.user)}
+		displayName={staffViewDisplayName(ticketForNote.user)}
 		accessToken={authStore.accessToken}
 		onClose={() => (ticketForNote = null)}
 	/>
@@ -673,7 +673,7 @@
 	title={m['eventTicketsAdmin.blacklistDialogTitle']()}
 	message={memberAdmin.ticketToBlacklist
 		? `${m['eventTicketsAdmin.blacklistDialogMessage']({
-				name: getUserDisplayName(memberAdmin.ticketToBlacklist.user)
+				name: staffViewDisplayName(memberAdmin.ticketToBlacklist.user)
 			})} ${m['membershipLoss.subscriptionCancelledIfAny']()}`
 		: ''}
 	confirmText={m['eventTicketsAdmin.blacklistDialogConfirm']()}

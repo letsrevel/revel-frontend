@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
@@ -78,7 +79,7 @@
 								profilePictureUrl={rsvp.user.profile_picture_url}
 								previewUrl={rsvp.user.profile_picture_preview_url}
 								thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
-								displayName={getUserDisplayName(rsvp.user)}
+								displayName={staffViewDisplayName(rsvp.user)}
 								firstName={rsvp.user.first_name}
 								lastName={rsvp.user.last_name}
 								size="sm"
@@ -86,7 +87,7 @@
 							/>
 							<div class="flex flex-col">
 								<div class="flex items-center gap-2">
-									<span>{getUserDisplayName(rsvp.user)}</span>
+									<span>{staffViewDisplayName(rsvp.user)}</span>
 									{#if rsvp.user.pronouns}
 										<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
 									{/if}
@@ -101,6 +102,9 @@
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
 						{rsvp.user.email || 'N/A'}
+						{#if isUnknownHolder(rsvp.user)}
+							<UnknownHolderBadge class="mt-1 block" />
+						{/if}
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-sm">
 						<StatusBadge
@@ -125,7 +129,7 @@
 									disabled={addMemberPending || tiersLoading}
 									class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
 									aria-label={m['attendeesAdmin.makeMemberAriaLabel']({
-										name: getUserDisplayName(rsvp.user)
+										name: staffViewDisplayName(rsvp.user)
 									})}
 								>
 									<UserPlus class="h-3 w-3" aria-hidden="true" />
@@ -137,7 +141,7 @@
 								onclick={() => onEdit(rsvp)}
 								class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 								aria-label={m['attendeesAdmin.editRsvpAriaLabel']({
-									name: getUserDisplayName(rsvp.user)
+									name: staffViewDisplayName(rsvp.user)
 								})}
 							>
 								<Edit class="h-3 w-3" aria-hidden="true" />
@@ -148,7 +152,7 @@
 								onclick={() => onDelete(rsvp)}
 								class="inline-flex items-center gap-1 rounded-md bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 								aria-label={m['attendeesAdmin.deleteRsvpAriaLabel']({
-									name: getUserDisplayName(rsvp.user)
+									name: staffViewDisplayName(rsvp.user)
 								})}
 							>
 								<Trash2 class="h-3 w-3" aria-hidden="true" />
@@ -163,7 +167,7 @@
 												{...props}
 												class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
 												aria-label={m['attendeesAdmin.moreActionsForAriaLabel']({
-													name: getUserDisplayName(rsvp.user)
+													name: staffViewDisplayName(rsvp.user)
 												})}
 											>
 												<MoreVertical class="h-4 w-4" aria-hidden="true" />

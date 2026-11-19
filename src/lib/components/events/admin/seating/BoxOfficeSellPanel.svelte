@@ -19,15 +19,15 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { AlertCircle, LoaderCircle } from '@lucide/svelte';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import { formatMoney } from '$lib/utils/format';
-	import { extractPurchaseErrorMessage } from '$lib/components/tickets/purchase-error';
 	import type { SeatView } from '$lib/components/tickets/seating-view';
 	import { seatViewsFrom, sectorGroupsFrom } from './seat-override-model';
 	import BoxOfficeSeatPicker from './BoxOfficeSeatPicker.svelte';
 	import {
 		BOX_OFFICE_PAYMENT_METHODS,
 		boxOfficePaymentMethodLabel,
+		boxOfficeSellErrorMessage,
 		buildSellRequest,
 		doorSalePrice,
 		isSellableStatus,
@@ -201,7 +201,7 @@
 			toast.success(
 				m['orgAdmin.seating.boxOffice.sellSuccessToast']({
 					seat: seatLabel,
-					recipient: getUserDisplayName(ticket.user)
+					recipient: staffViewDisplayName(ticket.user)
 				})
 			);
 			// Reset for the next sale (keep the payment method for repeated door sales).
@@ -217,9 +217,7 @@
 		onError: (err: unknown) => {
 			// Clear any prior success box so a failed sale can't read as issued.
 			lastResult = null;
-			toast.error(
-				extractPurchaseErrorMessage(err, m['orgAdmin.seating.boxOffice.sellFailedToast']())
-			);
+			toast.error(boxOfficeSellErrorMessage(err));
 		}
 	}));
 
@@ -271,7 +269,7 @@
 				<p class="mt-1 text-sm">
 					{m['orgAdmin.seating.boxOffice.resultDetail']({
 						seat: lastResult.seat?.label ?? '',
-						recipient: getUserDisplayName(lastResult.user)
+						recipient: staffViewDisplayName(lastResult.user)
 					})}
 				</p>
 				{#if lastResultAmount}

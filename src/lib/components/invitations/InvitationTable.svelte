@@ -10,7 +10,7 @@
 	import { Trash2, Edit, CheckSquare, Square } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { Button } from '$lib/components/ui/button';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
@@ -60,7 +60,7 @@
 	function invitationLabel(
 		invitation: EventInvitationListSchema | PendingEventInvitationListSchema
 	): string {
-		return 'user' in invitation ? getUserDisplayName(invitation.user) : invitation.email;
+		return 'user' in invitation ? staffViewDisplayName(invitation.user) : invitation.email;
 	}
 
 	function toggleSelectAll() {

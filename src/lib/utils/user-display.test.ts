@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { getUserDisplayName, getUserRealName } from './user-display';
+import {
+	getUserDisplayName,
+	getUserRealName,
+	isUnknownHolder,
+	staffViewDisplayName
+} from './user-display';
 
 const base = { preferred_name: '', first_name: '', last_name: '', email: 'ann@example.com' };
 
@@ -39,5 +44,34 @@ describe('getUserRealName', () => {
 describe('getUserDisplayName', () => {
 	it('still bottoms out at email for pure display purposes', () => {
 		expect(getUserDisplayName(base)).toBe('ann@example.com');
+	});
+});
+
+describe('staffViewDisplayName', () => {
+	it('prefers the backend display_name, which for an unknown holder is the name staff supplied', () => {
+		const unknown = { known: false, display_name: 'Guest Gina', email: 'gina@example.com' };
+		expect(staffViewDisplayName(unknown)).toBe('Guest Gina');
+		// the legacy chain would have dropped the supplied name for the email
+		expect(getUserDisplayName(unknown)).toBe('gina@example.com');
+	});
+
+	it('trims the display_name and skips a blank one', () => {
+		expect(staffViewDisplayName({ display_name: '  Ann  ' })).toBe('Ann');
+		expect(staffViewDisplayName({ display_name: '  ', first_name: 'Ann' })).toBe('Ann');
+	});
+
+	it('falls back to the legacy chain and then to the given fallback', () => {
+		expect(staffViewDisplayName({ first_name: 'Ann', last_name: 'B' })).toBe('Ann B');
+		expect(staffViewDisplayName({ display_name: null }, 'Nobody')).toBe('Nobody');
+	});
+});
+
+describe('isUnknownHolder', () => {
+	it('is true only for an explicit known: false', () => {
+		expect(isUnknownHolder({ known: false })).toBe(true);
+		expect(isUnknownHolder({ known: true })).toBe(false);
+		expect(isUnknownHolder({})).toBe(false);
+		expect(isUnknownHolder(null)).toBe(false);
+		expect(isUnknownHolder(undefined)).toBe(false);
 	});
 });

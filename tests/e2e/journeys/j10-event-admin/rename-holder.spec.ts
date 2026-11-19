@@ -81,7 +81,7 @@ test.describe('J10 rename ticket holder @p1', () => {
 		// query FIRST: the row is already on screen, so asserting the holder-name
 		// query while it is still visible would pass without the query ever
 		// round-tripping. Emptying the list first makes the match meaningful.
-		const search = page.getByPlaceholder('Search by holder, purchaser, email, or tier...');
+		const search = page.getByPlaceholder('Search by holder name, email, or tier...');
 		await search.fill('zzz-no-such-holder');
 		await expect(holderCell).toHaveCount(0, { timeout: 15_000 });
 		await search.fill(holderName);

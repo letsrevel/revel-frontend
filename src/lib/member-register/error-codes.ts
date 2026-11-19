@@ -22,3 +22,11 @@ export function isCodedRefusal(error: unknown, code: string): boolean {
 
 /** The account already holds a membership row of any state. */
 export const isAlreadyMember = (error: unknown): boolean => isCodedRefusal(error, 'already_member');
+
+/**
+ * True when a raw API error body (as returned by the generated client, not a
+ * RegisterApiError) carries the `invitation_required` code. The body is
+ * validated with Zod via {@link errorCodeOf}; `detail` is never inspected.
+ */
+export const isInvitationRequiredBody = (body: unknown): boolean =>
+	errorCodeOf(body) === 'invitation_required';

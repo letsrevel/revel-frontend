@@ -3,7 +3,7 @@ import * as m from '$lib/paraglide/messages.js';
 import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
-import { getUserDisplayName } from '$lib/utils/user-display';
+import { staffViewDisplayName } from '$lib/utils/user-display';
 import { organizationadminblacklistCreateBlacklistEntry } from '$lib/api';
 import {
 	inviteMemberByAccount,
@@ -150,7 +150,7 @@ export function createTicketMemberAdmin(opts: Options) {
 			return response.data;
 		},
 		onSuccess: () => {
-			const userName = ticketToBlacklist ? getUserDisplayName(ticketToBlacklist.user) : '';
+			const userName = ticketToBlacklist ? staffViewDisplayName(ticketToBlacklist.user) : '';
 			showBlacklistDialog = false;
 			ticketToBlacklist = null;
 			toast.success(m['eventTicketsAdmin.blacklistSuccess']({ name: userName }));
@@ -187,7 +187,7 @@ export function createTicketMemberAdmin(opts: Options) {
 		// Set user info
 		userToMakeMember = {
 			id: user.id,
-			displayName: getUserDisplayName(user),
+			displayName: staffViewDisplayName(user),
 			email: user.email ?? undefined
 		};
 

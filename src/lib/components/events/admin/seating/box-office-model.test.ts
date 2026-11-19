@@ -4,8 +4,10 @@ import type {
 	TicketTierDetailSchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 import {
 	BOX_OFFICE_PAYMENT_METHODS,
+	boxOfficeSellErrorMessage,
 	buildSellRequest,
 	doorSalePrice,
 	isSellableStatus,
@@ -236,5 +238,22 @@ describe('recordedSaleAmount (#958)', () => {
 
 	it('falls back to the tier price when price_paid is null (flat tier)', () => {
 		expect(recordedSaleAmount({ price_paid: null, tier })).toBe('20.00');
+	});
+});
+
+describe('boxOfficeSellErrorMessage', () => {
+	it('explains invitation_required by code, not by detail', () => {
+		const message = boxOfficeSellErrorMessage({
+			code: 'invitation_required',
+			detail: 'whatever the server said'
+		});
+		expect(message).toBe(m['orgAdmin.seating.boxOffice.invitationRequired']());
+		expect(message).not.toContain('whatever');
+	});
+
+	it('keeps the generic failure for anything else', () => {
+		expect(boxOfficeSellErrorMessage(undefined)).toBe(
+			m['orgAdmin.seating.boxOffice.sellFailedToast']()
+		);
 	});
 });
