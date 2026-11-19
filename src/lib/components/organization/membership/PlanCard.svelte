@@ -195,7 +195,18 @@
 	const canContactOrganization = $derived(canContactOrg(contactMethod, contactEmail));
 
 	const alignmentLabel = $derived(calendarAlignmentLabel(plan));
-	const quoteText = $derived(firstPeriodQuoteText(plan, formatPlanPrice(plan)));
+	/**
+	 * The join-now quote only applies when the viewer could actually join through
+	 * this card. Not for their own plan (`current`), a switch (`member`: it keeps
+	 * the billing anchor, so there is no stub charge), a held offline membership,
+	 * or a plan that is sold out or paused.
+	 */
+	const canJoinNow = $derived(
+		['login', 'apply', 'reapply', 'gated', 'subscribe'].includes(action) &&
+			!plan.sold_out &&
+			plan.sales_status !== 'paused'
+	);
+	const quoteText = $derived(canJoinNow ? firstPeriodQuoteText(plan, formatPlanPrice(plan)) : null);
 
 	const isFree = $derived(isFreePlan(plan));
 	const isOffline = $derived(plan.payment_method === 'offline');

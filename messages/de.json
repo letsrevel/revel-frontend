@@ -11899,9 +11899,9 @@
 	"planCalendar.calendarYear": "Kalenderjahr ab {month}",
 	"planCalendar.differentCalendar": "Anderer Abrechnungskalender",
 	"planCalendar.differentCalendarHelper": "Dieser Tarif wird nach einem anderen Kalender abgerechnet. Kündige deinen aktuellen Tarif und schließe stattdessen diesen ab.",
-	"planCalendar.firstPeriodHint": "Erster Zeitraum bis {date}: anteiliger Preis.",
-	"planCalendar.firstPeriodHintFull": "Zeitraum bis {date}: voller Preis, egal wie viel davon übrig ist.",
-	"planCalendar.firstPeriodHintFree": "Der erste Zeitraum bis {date} ist kostenlos.",
+	"planCalendar.firstPeriodHint": "Erster Zeitraum bis {date}: anteiliger Preis. Basiert auf heute; bei Rückdatierung anpassen.",
+	"planCalendar.firstPeriodHintFull": "Zeitraum bis {date}: voller Preis, egal wie viel davon übrig ist. Basiert auf heute; bei Rückdatierung anpassen.",
+	"planCalendar.firstPeriodHintFree": "Der erste Zeitraum bis {date} ist kostenlos. Basiert auf heute; bei Rückdatierung anpassen.",
 	"planCalendar.quotePartial": "Erster Zeitraum bis {date}: {price} (anteilig). Danach {regular}.",
 	"planCalendar.quoteFree": "Kostenlos bis {date}, danach {regular}.",
 	"planCalendar.quoteFull": "Dieser Zeitraum endet am {date}. Wer jetzt beitritt, zahlt den vollen Preis von {price}, auch wenn nur noch wenig Zeit bleibt."

@@ -98,6 +98,27 @@ describe('PlanFormModal calendar alignment (create)', () => {
 		);
 	});
 
+	it('restores the previous period count when switching back to rolling', async () => {
+		const user = userEvent.setup();
+		await renderModal();
+		const count = screen.getByLabelText(/^every$/i);
+		await user.clear(count);
+		await user.type(count, '3');
+		await user.click(screen.getByRole('radio', { name: /^calendar/i }));
+		await user.click(screen.getByRole('radio', { name: /^rolling/i }));
+		expect(screen.getByLabelText(/^every$/i)).toHaveValue(3);
+	});
+
+	it('keeps each radio help text outside its label but linked by aria-describedby', async () => {
+		await renderModal();
+		const radio = screen.getByRole('radio', { name: /^calendar/i });
+		const helpId = radio.getAttribute('aria-describedby') as string;
+		const help = document.getElementById(helpId) as HTMLElement;
+		expect(help).toBeTruthy();
+		expect(help.closest('label')).toBeNull();
+		expect(radio.closest('label')).toBeNull();
+	});
+
 	it('withdraws lifetime once calendar is chosen', async () => {
 		const user = userEvent.setup();
 		await renderModal();

@@ -11899,9 +11899,9 @@
 	"planCalendar.calendarYear": "Año natural desde {month}",
 	"planCalendar.differentCalendar": "Calendario de facturación distinto",
 	"planCalendar.differentCalendarHelper": "Este plan se factura con un calendario distinto. Cancela tu plan actual y suscríbete a este en su lugar.",
-	"planCalendar.firstPeriodHint": "Primer periodo hasta el {date}: precio parcial.",
-	"planCalendar.firstPeriodHintFull": "Periodo hasta el {date}: precio completo, por poco que quede.",
-	"planCalendar.firstPeriodHintFree": "El primer periodo hasta el {date} es gratuito.",
+	"planCalendar.firstPeriodHint": "Primer periodo hasta el {date}: precio parcial. Basado en hoy; ajústalo si registras con fecha anterior.",
+	"planCalendar.firstPeriodHintFull": "Periodo hasta el {date}: precio completo, por poco que quede. Basado en hoy; ajústalo si registras con fecha anterior.",
+	"planCalendar.firstPeriodHintFree": "El primer periodo hasta el {date} es gratuito. Basado en hoy; ajústalo si registras con fecha anterior.",
 	"planCalendar.quotePartial": "Primer periodo hasta el {date}: {price} (parcial). Después {regular}.",
 	"planCalendar.quoteFree": "Gratis hasta el {date}, después {regular}.",
 	"planCalendar.quoteFull": "Este periodo termina el {date}. Unirte ahora cuesta el precio completo de {price}, por poco tiempo que quede."

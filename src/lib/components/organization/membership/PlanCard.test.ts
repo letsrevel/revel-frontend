@@ -678,4 +678,26 @@ describe('PlanCard calendar quote', () => {
 		renderCard();
 		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
 	});
+
+	const quoted = { ...base, first_period_price: '12.50', first_period_pricing: 'prorated' };
+
+	it("hides the quote on the viewer's own plan", () => {
+		renderCard({ plan: makePlan(quoted), subscription: makeSub() });
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
+
+	it('hides the quote when switching from another plan (anchor is kept)', () => {
+		renderCard({ plan: makePlan({ ...quoted, id: 'plan-2' }), subscription: makeSub() });
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
+
+	it('hides the quote on a sold-out plan', () => {
+		renderCard({ plan: makePlan({ ...quoted, sold_out: true }) });
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
+
+	it('hides the quote when sales are paused', () => {
+		renderCard({ plan: makePlan({ ...quoted, sales_status: 'paused' }) });
+		expect(screen.queryByTestId('plan-first-period-quote')).not.toBeInTheDocument();
+	});
 });

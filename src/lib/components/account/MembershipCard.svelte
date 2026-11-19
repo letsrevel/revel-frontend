@@ -33,7 +33,11 @@
 	import { formatDate } from '$lib/utils/date';
 	import { getMemberStatusLabel, getMemberStatusTone } from '$lib/utils/member-status';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
-	import { calendarAlignmentLabel } from '$lib/utils/plan-calendar';
+	import {
+		calendarAlignmentLabel,
+		formatDateLineDate,
+		formatPlanBoundary
+	} from '$lib/utils/plan-calendar';
 	import { canContactOrg } from '$lib/utils/plan-payment-method';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
@@ -126,6 +130,10 @@
 	let redirecting = $state(false);
 	let resuming = $state(false);
 
+	function lineDate(l: { kind: string; date: string | null }): string {
+		return formatDateLineDate(l, sub?.plan);
+	}
+
 	function fmtDate(d: string | null | undefined): string {
 		return d ? formatDate(d) : '—';
 	}
@@ -185,7 +193,7 @@
 			m['orgPublic.yourMembership.pendingSwitchFallbackPlan']();
 		return m['orgPublic.yourMembership.pendingSwitch']({
 			plan: name,
-			date: formatDate(periodEnd)
+			date: formatPlanBoundary(periodEnd, sub?.plan, 'start')
 		});
 	});
 
@@ -432,11 +440,11 @@
 				{#if !heldMember}
 					<p class="mt-2 text-sm">
 						{#if line.kind === 'renewal'}
-							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.renewal']({ date: lineDate(line) })}
 						{:else if line.kind === 'cancels'}
-							{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.cancels']({ date: lineDate(line) })}
 						{:else if line.kind === 'period_ends'}
-							{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.periodEnds']({ date: lineDate(line) })}
 						{:else if line.kind === 'paused_since'}
 							{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
 						{:else if line.kind === 'ended'}

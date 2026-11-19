@@ -42,6 +42,8 @@
 	let currency = $state<string>('EUR');
 	let periodUnit = $state<PeriodUnit>('month');
 	let periodCount = $state(1);
+	// Period count held aside while a calendar alignment forces it to 1.
+	let savedPeriodCount: number | null = null;
 	let isActive = $state(true);
 	let paymentMethod = $state<SubscriptionPaymentMethod>('offline');
 	let salesPaused = $state(false);
@@ -89,6 +91,7 @@
 			currency = 'EUR';
 			periodUnit = 'month';
 			periodCount = 1;
+			savedPeriodCount = null;
 			isActive = true;
 			paymentMethod = 'offline';
 			salesPaused = false;
@@ -171,10 +174,18 @@
 	 */
 	$effect(() => {
 		if (plan) return;
-		if (periodAlignment === 'calendar') {
-			if (untrack(() => periodUnit) === 'lifetime') periodUnit = 'month';
-			periodCount = 1;
-		}
+		const calendar = periodAlignment === 'calendar';
+		untrack(() => {
+			if (calendar) {
+				if (periodUnit === 'lifetime') periodUnit = 'month';
+				// Remember what the organizer had so switching back restores it.
+				if (periodCount !== 1) savedPeriodCount = periodCount;
+				periodCount = 1;
+			} else if (savedPeriodCount !== null) {
+				periodCount = savedPeriodCount;
+				savedPeriodCount = null;
+			}
+		});
 	});
 
 	$effect(() => {
@@ -515,9 +526,12 @@
 					{periodUnit}
 					{isOnline}
 					{isSaving}
+					firstPricingErrorId={errors.firstPricing ? 'plan-first-pricing-error' : undefined}
 				/>
 				{#if errors.firstPricing}
-					<p class="text-sm text-destructive">{errors.firstPricing}</p>
+					<p id="plan-first-pricing-error" role="alert" class="text-sm text-destructive">
+						{errors.firstPricing}
+					</p>
 				{/if}
 			{/if}
 

@@ -50,6 +50,7 @@
 	import { invalidateRegister } from '$lib/member-register/api';
 	import { memberAccessPrefix } from '$lib/member-register/member-access';
 	import { formatDate } from '$lib/utils/date';
+	import { formatDateLineDate } from '$lib/utils/plan-calendar';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -407,11 +408,11 @@
 				{#each [getDateLine(sub)] as line (line.kind)}
 					<div class="text-xs text-muted-foreground">
 						{#if line.kind === 'renewal'}
-							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.renewal']({ date: formatDateLineDate(line, sub.plan) })}
 						{:else if line.kind === 'cancels'}
-							{m['subscriptions.dateLine.cancels']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.cancels']({ date: formatDateLineDate(line, sub.plan) })}
 						{:else if line.kind === 'period_ends'}
-							{m['subscriptions.dateLine.periodEnds']({ date: fmtDate(line.date) })}
+							{m['subscriptions.dateLine.periodEnds']({ date: formatDateLineDate(line, sub.plan) })}
 						{:else if line.kind === 'paused_since'}
 							{m['subscriptions.dateLine.pausedSince']({ date: fmtDate(line.date) })}
 						{:else if line.kind === 'ended'}

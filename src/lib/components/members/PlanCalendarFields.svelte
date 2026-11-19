@@ -18,6 +18,8 @@
 		/** Online (Stripe) plans can only prorate the first period. */
 		isOnline: boolean;
 		isSaving?: boolean;
+		/** Id of the rendered first-pricing error, when there is one. */
+		firstPricingErrorId?: string;
 	}
 
 	let {
@@ -27,7 +29,8 @@
 		firstPricing = $bindable(),
 		periodUnit,
 		isOnline,
-		isSaving = false
+		isSaving = false,
+		firstPricingErrorId
 	}: Props = $props();
 
 	const isCalendar = $derived(alignment === 'calendar');
@@ -57,9 +60,10 @@
 	<fieldset class="space-y-1">
 		<legend class="text-sm font-medium">{m['orgAdmin.members.plans.form.alignment']()}</legend>
 		<div class="space-y-2">
-			<label class="flex items-start gap-2 text-sm">
+			<div class="flex items-start gap-2 text-sm">
 				<input
 					type="radio"
+					id="plan-alignment-rolling"
 					name="plan-alignment"
 					value="rolling"
 					class="mt-1"
@@ -67,16 +71,19 @@
 					disabled={isSaving}
 					aria-describedby="plan-alignment-rolling-help"
 				/>
-				<span>
-					{m['orgAdmin.members.plans.form.alignmentRolling']()}
+				<div>
+					<label for="plan-alignment-rolling">
+						{m['orgAdmin.members.plans.form.alignmentRolling']()}
+					</label>
 					<span id="plan-alignment-rolling-help" class="block text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.alignmentRollingHelp']()}
 					</span>
-				</span>
-			</label>
-			<label class="flex items-start gap-2 text-sm">
+				</div>
+			</div>
+			<div class="flex items-start gap-2 text-sm">
 				<input
 					type="radio"
+					id="plan-alignment-calendar"
 					name="plan-alignment"
 					value="calendar"
 					class="mt-1"
@@ -84,13 +91,15 @@
 					disabled={isSaving}
 					aria-describedby="plan-alignment-calendar-help"
 				/>
-				<span>
-					{m['orgAdmin.members.plans.form.alignmentCalendar']()}
+				<div>
+					<label for="plan-alignment-calendar">
+						{m['orgAdmin.members.plans.form.alignmentCalendar']()}
+					</label>
 					<span id="plan-alignment-calendar-help" class="block text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.alignmentCalendarHelp']()}
 					</span>
-				</span>
-			</label>
+				</div>
+			</div>
 		</div>
 	</fieldset>
 
@@ -118,45 +127,55 @@
 {/if}
 
 {#if isCalendar}
-	<fieldset class="space-y-1">
+	<fieldset class="space-y-1" aria-describedby={firstPricingErrorId}>
 		<legend class="text-sm font-medium">{m['orgAdmin.members.plans.form.firstPricing']()}</legend>
 		<div class="space-y-2">
-			<label class="flex items-start gap-2 text-sm">
+			<div class="flex items-start gap-2 text-sm">
 				<input
 					type="radio"
+					id="plan-first-pricing-prorated"
 					name="plan-first-pricing"
 					value="prorated"
 					class="mt-1"
 					bind:group={firstPricing}
 					disabled={isSaving}
-					aria-describedby="plan-first-pricing-prorated-help"
+					aria-describedby={['plan-first-pricing-prorated-help', firstPricingErrorId]
+						.filter(Boolean)
+						.join(' ')}
 				/>
-				<span>
-					{m['orgAdmin.members.plans.form.firstPricingProrated']()}
+				<div>
+					<label for="plan-first-pricing-prorated">
+						{m['orgAdmin.members.plans.form.firstPricingProrated']()}
+					</label>
 					<span id="plan-first-pricing-prorated-help" class="block text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.firstPricingProratedHelp']()}
 					</span>
-				</span>
-			</label>
-			<label class="flex items-start gap-2 text-sm" class:opacity-50={isOnline}>
+				</div>
+			</div>
+			<div class="flex items-start gap-2 text-sm" class:opacity-50={isOnline}>
 				<input
 					type="radio"
+					id="plan-first-pricing-full"
 					name="plan-first-pricing"
 					value="full"
 					class="mt-1"
 					bind:group={firstPricing}
 					disabled={isSaving || isOnline}
-					aria-describedby="plan-first-pricing-full-help"
+					aria-describedby={['plan-first-pricing-full-help', firstPricingErrorId]
+						.filter(Boolean)
+						.join(' ')}
 				/>
-				<span>
-					{m['orgAdmin.members.plans.form.firstPricingFull']()}
+				<div>
+					<label for="plan-first-pricing-full">
+						{m['orgAdmin.members.plans.form.firstPricingFull']()}
+					</label>
 					<span id="plan-first-pricing-full-help" class="block text-xs text-muted-foreground">
 						{isOnline
 							? m['orgAdmin.members.plans.form.firstPricingFullOnlineLocked']()
 							: m['orgAdmin.members.plans.form.firstPricingFullHelp']()}
 					</span>
-				</span>
-			</label>
+				</div>
+			</div>
 		</div>
 	</fieldset>
 {/if}

@@ -129,4 +129,28 @@ describe('RecordPaymentModal calendar first-period prefill', () => {
 		open(sub);
 		expect(await screen.findByText(/December 31, 2026 is free/)).toBeInTheDocument();
 	});
+
+	it('says the amount is based on today so staff adjust when backdating', async () => {
+		open(calendarSub('pending'));
+		expect(await screen.findByText(/Based on today; adjust if backdating/)).toBeInTheDocument();
+	});
+
+	it('keeps what the staff member typed when the subscription prop refetches', async () => {
+		const sub = calendarSub('pending');
+		const { rerender } = render(RecordPaymentModal, {
+			props: { subscription: sub, open: true, onClose: vi.fn(), onSubmit: vi.fn() }
+		});
+		const amount = await screen.findByLabelText('Amount');
+		await userEvent.clear(amount);
+		await userEvent.type(amount, '7');
+		const notes = screen.getByLabelText(/Notes/);
+		await userEvent.type(notes, 'cash at the door');
+
+		const refetched = calendarSub('pending');
+		(refetched.plan as unknown as Record<string, unknown>).first_period_price = '3.00';
+		await rerender({ subscription: refetched });
+
+		expect(screen.getByLabelText('Amount')).toHaveValue(7);
+		expect(screen.getByLabelText(/Notes/)).toHaveValue('cash at the door');
+	});
 });

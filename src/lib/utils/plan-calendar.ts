@@ -1,6 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import type { FirstPeriodPricing, PeriodAlignment, PeriodUnit } from '$lib/api/generated/types.gen';
-import { formatDateLongMonth } from './date';
+import { formatDate, formatDateLongMonth } from './date';
 import { formatMonthName } from './calendar';
 import { formatMoney } from './format';
 
@@ -90,4 +90,42 @@ export function firstPeriodQuoteText(plan: QuotablePlan, regular: string): strin
 	if (q.isFree) return m['planCalendar.quoteFree']({ date: q.lastDay, regular });
 	if (q.pricing === 'full') return m['planCalendar.quoteFull']({ date: q.lastDay, price });
 	return m['planCalendar.quotePartial']({ date: q.lastDay, price, regular });
+}
+
+/**
+ * Formats a subscription period boundary. Rolling plans keep the viewer's local
+ * timezone. Calendar plans have boundaries at exactly 00:00 UTC on the 1st, so
+ * they are rendered in UTC (a viewer west of UTC would otherwise see the day
+ * before). `start` is the boundary itself ("renews on", "switching on"); `end`
+ * is the inclusive last day (boundary minus 1 ms), for "until"/"ends on" wording.
+ */
+export function formatPlanBoundary(
+	iso: string,
+	plan: PlanAlignmentFields | null | undefined,
+	kind: 'start' | 'end',
+	style: 'short' | 'long' = 'short'
+): string {
+	const fmt = style === 'long' ? formatDateLongMonth : formatDate;
+	if (!plan || !isCalendarPlan(plan)) return fmt(iso);
+	const t = Date.parse(iso);
+	return fmt(new Date(kind === 'end' ? t - 1 : t).toISOString(), 'UTC');
+}
+
+/** Date-line kinds whose date is a period boundary, mapped to start/end wording. */
+const BOUNDARY_KIND: Record<string, 'start' | 'end'> = {
+	renewal: 'start',
+	cancels: 'end',
+	period_ends: 'end'
+};
+
+/** Date for a `getDateLine` row; only boundary kinds get the calendar-plan treatment. */
+export function formatDateLineDate(
+	line: { kind: string; date: string | null },
+	plan: PlanAlignmentFields | null | undefined,
+	style: 'short' | 'long' = 'short'
+): string {
+	if (!line.date) return '—';
+	const kind = BOUNDARY_KIND[line.kind];
+	if (!kind) return (style === 'long' ? formatDateLongMonth : formatDate)(line.date);
+	return formatPlanBoundary(line.date, plan, kind, style);
 }

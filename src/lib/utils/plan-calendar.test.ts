@@ -6,7 +6,9 @@ vi.mock('$lib/paraglide/runtime.js', () => ({ getLocale }));
 import {
 	calendarAlignmentLabel,
 	firstPeriodQuote,
+	formatDateLineDate,
 	formatPeriodLastDay,
+	formatPlanBoundary,
 	isCalendarPlan,
 	samePeriodGrid
 } from './plan-calendar';
@@ -111,5 +113,39 @@ describe('firstPeriodQuote', () => {
 	});
 	it('flags a free first period', () => {
 		expect(firstPeriodQuote({ ...base, first_period_price: '0.00' })?.isFree).toBe(true);
+	});
+});
+
+describe('formatPlanBoundary', () => {
+	const cal = { period_alignment: 'calendar' } as const;
+	const boundary = '2027-01-01T00:00:00Z';
+
+	it('renders a calendar boundary in UTC, whatever the viewer timezone', () => {
+		expect(formatPlanBoundary(boundary, cal, 'start')).toBe('Jan 1, 2027');
+		expect(formatPlanBoundary(boundary, cal, 'start', 'long')).toBe('January 1, 2027');
+	});
+	it('renders the inclusive last day for an end boundary', () => {
+		expect(formatPlanBoundary(boundary, cal, 'end')).toBe('Dec 31, 2026');
+		expect(formatPlanBoundary(boundary, cal, 'end', 'long')).toBe('December 31, 2026');
+	});
+	it('leaves rolling plans untouched (local formatting, no shift)', async () => {
+		const { formatDate } = await import('./date');
+		expect(formatPlanBoundary(boundary, { period_alignment: 'rolling' }, 'end')).toBe(
+			formatDate(boundary)
+		);
+		expect(formatPlanBoundary(boundary, undefined, 'start')).toBe(formatDate(boundary));
+	});
+});
+
+describe('formatDateLineDate', () => {
+	const cal = { period_alignment: 'calendar' } as const;
+	it('uses start wording for renewal and last day for cancels / period ends', () => {
+		const date = '2027-01-01T00:00:00Z';
+		expect(formatDateLineDate({ kind: 'renewal', date }, cal)).toBe('Jan 1, 2027');
+		expect(formatDateLineDate({ kind: 'cancels', date }, cal)).toBe('Dec 31, 2026');
+		expect(formatDateLineDate({ kind: 'period_ends', date }, cal)).toBe('Dec 31, 2026');
+	});
+	it('is a dash without a date', () => {
+		expect(formatDateLineDate({ kind: 'renewal', date: null }, cal)).toBe('—');
 	});
 });

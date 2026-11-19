@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { SubscriptionSchema, PaymentRecordSchema } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
@@ -40,13 +41,18 @@
 	);
 	const expectedAmount = $derived(firstPeriod?.price ?? String(subscription.plan.price ?? '0.00'));
 
+	// Keyed on `open` only: a background refetch of the subscription while the
+	// modal is open must not wipe what the staff member has typed.
+	const isOpen = $derived(open);
 	$effect(() => {
-		if (open) {
-			amount = expectedAmount;
-			currency = subscription.plan.currency ?? 'EUR';
-			status = 'succeeded';
-			notes = '';
-			occurredAt = '';
+		if (isOpen) {
+			untrack(() => {
+				amount = expectedAmount;
+				currency = subscription.plan.currency ?? 'EUR';
+				status = 'succeeded';
+				notes = '';
+				occurredAt = '';
+			});
 		}
 	});
 
