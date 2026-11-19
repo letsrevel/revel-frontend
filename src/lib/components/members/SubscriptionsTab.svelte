@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorCodeOf } from '$lib/member-register/error-codes';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -127,6 +128,9 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) {
+				if (errorCodeOf(res.error) === 'invitation_required') {
+					throw new Error(m['memberPeople.invitationRequired']());
+				}
 				// 400 is `ValidationErrorResponse | ErrorDetail` (backend #824): the old
 				// `{detail?: string}` cast silently dropped the `{errors}` branch and
 				// stringified a request-validation 422's `detail` LIST.

@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { createStandardTiersLoader } from '$lib/components/tickets/ticket-member-admin.svelte';
+	import {
+		createStandardTiersLoader,
+		createInviteMemberMutation
+	} from '$lib/components/tickets/ticket-member-admin.svelte';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -10,7 +13,6 @@
 		eventadminrsvpsUpdateRsvp,
 		eventadminrsvpsDeleteRsvp,
 		eventadminrsvpsCreateRsvp,
-		organizationadminmembersAddMember,
 		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
@@ -146,33 +148,16 @@
 		}
 	}));
 
-	// Add member mutation
-	const addMemberMutation = createMutation(() => ({
-		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
-			const response = await organizationadminmembersAddMember({
-				path: { slug: organization.slug, user_id: userId },
-				body: { tier_id: tierId },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-
-			if (response.error) {
-				const errorDetail = extractApiErrorDetail(response.error) ?? m['makeMemberAction.error']();
-				throw new Error(errorDetail);
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			const userName = userToMakeMember?.displayName || '';
+	// Invite-as-member mutation (shared with the tickets page)
+	const addMemberMutation = createInviteMemberMutation({
+		getSlug: () => organization.slug,
+		getAccessToken: () => accessToken,
+		getName: () => userToMakeMember?.displayName || '',
+		onDone: () => {
 			showMakeMemberModal = false;
 			userToMakeMember = null;
-			toast.success(m['makeMemberAction.success']({ name: userName }));
-			invalidateAll();
-		},
-		onError: (error: Error) => {
-			toast.error(error.message);
 		}
-	}));
+	});
 
 	// Blacklist user mutation
 	const blacklistMutation = createMutation(() => ({

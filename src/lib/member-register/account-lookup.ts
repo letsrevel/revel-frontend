@@ -6,15 +6,19 @@ import { pickCurrentEntry } from './person-target';
 /**
  * What an account lookup means for the admin:
  * - `pending-application`: the person already asked to join; review that instead.
- * - `has-membership`: a membership row exists in ANY state (the add endpoint
+ * - `has-membership`: a membership row exists in ANY state (the invite endpoint
  *   refuses all of them); managing it is the person sheet's job.
- * - `addable`: a verified account with no membership, ready to be added.
+ * - `invitation-pending`: no membership yet, but an invitation is out; the admin
+ *   can resend (renew) or withdraw it.
+ * - `addable`: a verified account with no membership, ready to be invited.
  */
-export type LookupKind = 'pending-application' | 'has-membership' | 'addable';
+export type LookupKind =
+	'pending-application' | 'has-membership' | 'invitation-pending' | 'addable';
 
 export function classifyLookup(user: OrgUserLookupSchema): LookupKind {
 	if (user.pending_request_id) return 'pending-application';
 	if (user.membership_status != null || user.is_member) return 'has-membership';
+	if (user.pending_invitation_id) return 'invitation-pending';
 	return 'addable';
 }
 

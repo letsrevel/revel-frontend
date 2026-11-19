@@ -15,6 +15,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 import {
 	organizationadminmembersUpdateMember,
 	organizationadminmembersRemoveMember,
+	organizationadminmembersAddStaff,
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api/generated/sdk.gen';
 
@@ -499,6 +500,28 @@ describe('MemberAccessActions failure surfacing', () => {
 			);
 		});
 		expect(alertSpy).not.toHaveBeenCalled();
+	});
+});
+
+describe('MemberAccessActions staff promotion without a connection', () => {
+	it('explains that the account must be invited as a member first (by code, not text)', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembersAddStaff).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Translated text that must not be matched.', code: 'invitation_required' },
+			response: { status: 400 }
+		} as never);
+
+		renderTab();
+
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Make Staff Member' }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith(
+				'Failed to promote to staff: This account has no connection to your organization yet. Invite them as a member first.'
+			);
+		});
 	});
 });
 

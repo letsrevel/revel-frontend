@@ -138,6 +138,9 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 	membership_payment_requested: {
 		label: (locale) => m['notificationPreferences.typeMembershipPaymentRequested']({}, { locale })
 	},
+	membership_invitation_received: {
+		label: (locale) => m['notificationPreferences.typeMembershipInvitationReceived']({}, { locale })
+	},
 	membership_offline_joined: {
 		label: (locale) => m['notificationPreferences.typeMembershipOfflineJoined']({}, { locale }),
 		description: (locale) =>

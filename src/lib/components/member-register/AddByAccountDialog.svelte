@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { z } from 'zod';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -22,17 +21,20 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MemberStatusBadge from '$lib/components/members/MemberStatusBadge.svelte';
-	import { addMemberByAccount, RegisterApiError } from '$lib/member-register/api';
+	import {
+		inviteMemberByAccount,
+		invalidateInvitations,
+		revokeMemberInvitation,
+		RegisterApiError
+	} from '$lib/member-register/api';
+	import { isAlreadyMember } from '$lib/member-register/error-codes';
 	import {
 		classifyLookup,
 		lookupDisplayName,
 		lookupWithSeed,
-		resolveSeed,
-		seedDeps,
 		validateLookupEmail,
 		type AccountLookupOutcome
 	} from '$lib/member-register/account-lookup';
-	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 	import { lookupThrottleRemaining, setLookupThrottle } from '$lib/member-register/lookup-throttle';
 	import { describeRegisterError, type DescribedError } from '$lib/member-register/errors';
 	import { SELECT_CLASS } from '$lib/member-register/ui';
@@ -42,7 +44,7 @@
 		open: boolean;
 		slug: string;
 		accessToken: string | null;
-		/** STANDARD tiers only: the backend refuses any other tier on add. */
+		/** STANDARD tiers only: the backend refuses any other tier on invite. */
 		tiers: MembershipTierSchema[];
 		onClose: () => void;
 		/** Open the person sheet on a seed entry (the dialog closes itself first). */
@@ -76,9 +78,12 @@
 	// Bumped whenever the lockout starts or ends, so `throttled` re-evaluates.
 	let throttleTick = $state(0);
 	let tierId = $state('');
-	// Set when an add was refused with 400: the re-lookup must explain why, and an
+	// Set when an invite was refused with 400: the re-lookup must explain why, and an
 	// answer that still says "addable" means the refusal was something else.
 	let refusedAdd = $state<unknown>(null);
+	// Plain-language note to show once the next lookup answer lands (e.g. the
+	// invitation we tried to withdraw was already accepted or expired).
+	let pendingNotice = $state<string | null>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
 	function reset() {
@@ -89,6 +94,7 @@
 		failure = null;
 		tierId = '';
 		refusedAdd = null;
+		pendingNotice = null;
 	}
 
 	$effect(() => {
@@ -132,8 +138,12 @@
 		outcome = result;
 		failure = null;
 		const refusal = refusedAdd;
+		const notice = pendingNotice;
 		refusedAdd = null;
-		if (refusal && result.kind === 'found' && classifyLookup(result.user) === 'addable') {
+		pendingNotice = null;
+		if (notice) failure = { stale: false, message: notice, detail: null };
+		const resultKind = result.kind === 'found' ? classifyLookup(result.user) : null;
+		if (refusal && (resultKind === 'addable' || resultKind === 'invitation-pending')) {
 			failure = describeRegisterError(refusal, 'save');
 		}
 	}
@@ -148,6 +158,7 @@
 		if (email.trim() !== typed) return;
 		outcome = null;
 		refusedAdd = null;
+		pendingNotice = null;
 		failure = described;
 	}
 
@@ -165,6 +176,7 @@
 		outcome = null;
 		failure = null;
 		refusedAdd = null;
+		pendingNotice = null;
 		lookup.mutate(email.trim());
 	}
 
@@ -174,42 +186,33 @@
 		failure = null;
 		emailError = null;
 		refusedAdd = null;
+		pendingNotice = null;
 	}
 
 	const found = $derived(outcome?.kind === 'found' ? outcome : null);
 	const kind = $derived(found ? classifyLookup(found.user) : null);
 	const name = $derived(found ? lookupDisplayName(found.user, queriedEmail) : '');
 
-	// The add-member 400 body is external data: validate it (CLAUDE.md: Zod for API responses).
-	const AlreadyMemberBody = z.object({ code: z.literal('already_member') });
+	const tierName = (id: string) => tiers.find((t) => t.id === id)?.name ?? '';
 
-	function isAlreadyMember(error: unknown): boolean {
-		return (
-			error instanceof RegisterApiError &&
-			error.status === 400 &&
-			AlreadyMemberBody.safeParse(error.body).success
-		);
+	function relookup(notice?: string) {
+		if (notice) pendingNotice = notice;
+		lookup.mutate(queriedEmail);
 	}
 
-	const add = createMutation(() => ({
-		mutationFn: async (user: OrgUserLookupSchema) => {
-			await addMemberByAccount(slug, accessToken, user.user_id, tierId);
-			// The member exists from here on: a failed refresh or seed lookup must not
-			// report the add as failed (a retry would be refused), it only skips the sheet.
-			// Refresh in the background; the seed lookup does not wait for it.
-			invalidateAfterMemberWrite(queryClient, slug).catch(() => undefined);
-			try {
-				return await resolveSeed(user, seedDeps(slug, accessToken));
-			} catch {
-				return null;
-			}
-		},
-		onSuccess: (seed: MembershipRecordSchema | null, user: OrgUserLookupSchema) => {
+	// Inviting and resending are the same call: re-inviting renews the invitation.
+	const invite = createMutation(() => ({
+		mutationFn: (vars: { user: OrgUserLookupSchema; renew: boolean }) =>
+			inviteMemberByAccount(slug, accessToken, vars.user.user_id, tierId),
+		onSuccess: (_data, vars) => {
+			invalidateInvitations(queryClient, slug).catch(() => undefined);
+			const who = lookupDisplayName(vars.user, queriedEmail);
 			toast.success(
-				m['memberPeople.byAccount.added']({ name: lookupDisplayName(user, queriedEmail) })
+				vars.renew
+					? m['memberPeople.byAccount.resent']({ name: who })
+					: m['memberPeople.byAccount.invited']({ name: who, tier: tierName(tierId) })
 			);
 			onClose();
-			if (seed) onOpenPerson(seed);
 		},
 		onError: (error: unknown) => {
 			// `already_member` (backend #1363) means a race with another admin or an
@@ -224,8 +227,31 @@
 		}
 	}));
 
+	const withdraw = createMutation(() => ({
+		mutationFn: (vars: { user: OrgUserLookupSchema; invitationId: string }) =>
+			revokeMemberInvitation(slug, accessToken, vars.invitationId),
+		onSuccess: (_data, vars) => {
+			invalidateInvitations(queryClient, slug).catch(() => undefined);
+			toast.success(
+				m['memberPeople.byAccount.withdrawn']({ name: lookupDisplayName(vars.user, queriedEmail) })
+			);
+			onClose();
+		},
+		onError: (error: unknown) => {
+			invalidateInvitations(queryClient, slug).catch(() => undefined);
+			// 404: accepted or expired meanwhile. Explain, then show what they are now.
+			if (error instanceof RegisterApiError && error.status === 404 && queriedEmail) {
+				relookup(m['memberPeople.byAccount.withdrawGone']());
+				return;
+			}
+			failure = describeRegisterError(error, 'save');
+		}
+	}));
+
+	const busy = $derived(invite.isPending || withdraw.isPending);
+
 	function handleOpenChange(next: boolean) {
-		if (!next && !add.isPending) onClose();
+		if (!next && !busy) onClose();
 	}
 
 	function closeThen(action: () => void) {
@@ -233,7 +259,7 @@
 		action();
 	}
 
-	const canAdd = $derived(!!tierId && !add.isPending && !lookup.isPending);
+	const canInvite = $derived(!!tierId && !busy && !lookup.isPending);
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
@@ -323,12 +349,17 @@
 						</div>
 					{/if}
 				</div>
-			{:else if found && kind === 'addable'}
+			{:else if found && (kind === 'addable' || kind === 'invitation-pending')}
 				{@const user = found.user}
 				<div class="space-y-3 rounded-md border bg-muted/40 p-3">
 					<p class="text-sm font-medium" data-testid="by-account-found">
 						{m['memberPeople.byAccount.found']({ name })}
 					</p>
+					{#if kind === 'invitation-pending'}
+						<p class="text-sm" data-testid="by-account-invitation-pending">
+							{m['memberPeople.byAccount.invitationPending']({ name })}
+						</p>
+					{/if}
 					{#if selectableTiers.length === 0}
 						<p class="text-sm" data-testid="by-account-no-tiers">
 							{m['memberPeople.byAccount.noTiers']()}
@@ -341,31 +372,48 @@
 					{:else}
 						<div class="space-y-2">
 							<Label for="aba-tier">{m['memberPeople.byAccount.tierLabel']()}</Label>
-							<select
-								id="aba-tier"
-								class={SELECT_CLASS}
-								bind:value={tierId}
-								disabled={add.isPending}
-							>
+							<select id="aba-tier" class={SELECT_CLASS} bind:value={tierId} disabled={busy}>
 								<option value="" disabled>{m['memberRegister.tierPlaceholder']()}</option>
 								{#each selectableTiers as tier (tier.id)}
 									<option value={tier.id}>{tier.name}</option>
 								{/each}
 							</select>
 						</div>
-						<Button type="button" disabled={!canAdd} onclick={() => add.mutate(user)}>
-							{#if add.isPending}
-								<Loader2 class="animate-spin" aria-hidden="true" />
+						<div class="flex flex-wrap gap-2">
+							<Button
+								type="button"
+								disabled={!canInvite}
+								onclick={() => invite.mutate({ user, renew: kind === 'invitation-pending' })}
+							>
+								{#if invite.isPending}
+									<Loader2 class="animate-spin" aria-hidden="true" />
+								{/if}
+								{kind === 'invitation-pending'
+									? m['memberPeople.byAccount.resend']()
+									: m['memberPeople.byAccount.invite']()}
+							</Button>
+							{#if kind === 'invitation-pending' && user.pending_invitation_id}
+								{@const invitationId = user.pending_invitation_id}
+								<Button
+									type="button"
+									variant="outline"
+									disabled={busy || lookup.isPending}
+									onclick={() => withdraw.mutate({ user, invitationId })}
+								>
+									{#if withdraw.isPending}
+										<Loader2 class="animate-spin" aria-hidden="true" />
+									{/if}
+									{m['memberPeople.byAccount.withdraw']()}
+								</Button>
 							{/if}
-							{m['memberPeople.byAccount.addMember']()}
-						</Button>
+						</div>
 					{/if}
 				</div>
 			{/if}
 		</div>
 
 		<DialogFooter class="gap-2 sm:gap-0">
-			<Button type="button" variant="outline" onclick={onClose} disabled={add.isPending}>
+			<Button type="button" variant="outline" onclick={onClose} disabled={busy}>
 				{m['memberRegister.cancel']()}
 			</Button>
 		</DialogFooter>
