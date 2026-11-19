@@ -647,7 +647,7 @@ describe('PlanCard calendar quote', () => {
 		});
 		expect(screen.getByText('Calendar year from January')).toBeInTheDocument();
 		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
-			/First period until December 31, 2026: €12\.50, a partial charge\. From then on the full price applies: €40\.00 \/ year\./
+			/First period until December 31, 2026: €12\.50 \(partial\)\. Then €40\.00 \/ year\./
 		);
 	});
 
@@ -670,7 +670,7 @@ describe('PlanCard calendar quote', () => {
 			})
 		});
 		expect(screen.getByTestId('plan-first-period-quote')).toHaveTextContent(
-			/This period ends on December 31, 2026\. Joining now costs the full price \(€40\.00\)/
+			/This period ends on December 31, 2026\. Joining now costs the full €40\.00, however little of the period is left\./
 		);
 	});
 

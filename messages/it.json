@@ -11902,7 +11902,7 @@
 	"planCalendar.firstPeriodHint": "Primo periodo fino al {date}: prezzo parziale.",
 	"planCalendar.firstPeriodHintFull": "Periodo fino al {date}: prezzo pieno, qualunque sia la parte rimasta.",
 	"planCalendar.firstPeriodHintFree": "Il primo periodo fino al {date} è gratuito.",
-	"planCalendar.quotePartial": "Primo periodo fino al {date}: {price}, un addebito parziale. Da allora si applica il prezzo pieno: {regular}.",
+	"planCalendar.quotePartial": "Primo periodo fino al {date}: {price} (parziale). Poi {regular}.",
 	"planCalendar.quoteFree": "Gratis fino al {date}, poi {regular}.",
-	"planCalendar.quoteFull": "Questo periodo termina il {date}. Iscriversi ora costa il prezzo pieno ({price}), anche se resta poco tempo, poi {regular}."
+	"planCalendar.quoteFull": "Questo periodo termina il {date}. Iscriversi ora costa il prezzo pieno di {price}, anche se resta poco tempo."
 }

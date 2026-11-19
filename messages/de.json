@@ -11902,7 +11902,7 @@
 	"planCalendar.firstPeriodHint": "Erster Zeitraum bis {date}: anteiliger Preis.",
 	"planCalendar.firstPeriodHintFull": "Zeitraum bis {date}: voller Preis, egal wie viel davon übrig ist.",
 	"planCalendar.firstPeriodHintFree": "Der erste Zeitraum bis {date} ist kostenlos.",
-	"planCalendar.quotePartial": "Erster Zeitraum bis {date}: {price}, eine anteilige Zahlung. Danach gilt der volle Preis: {regular}.",
+	"planCalendar.quotePartial": "Erster Zeitraum bis {date}: {price} (anteilig). Danach {regular}.",
 	"planCalendar.quoteFree": "Kostenlos bis {date}, danach {regular}.",
-	"planCalendar.quoteFull": "Dieser Zeitraum endet am {date}. Wer jetzt beitritt, zahlt den vollen Preis ({price}), auch wenn nur noch wenig Zeit bleibt, danach {regular}."
+	"planCalendar.quoteFull": "Dieser Zeitraum endet am {date}. Wer jetzt beitritt, zahlt den vollen Preis von {price}, auch wenn nur noch wenig Zeit bleibt."
 }

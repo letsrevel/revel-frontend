@@ -88,6 +88,6 @@ export function firstPeriodQuoteText(plan: QuotablePlan, regular: string): strin
 	if (!q) return null;
 	const price = formatMoney(q.price, plan.currency);
 	if (q.isFree) return m['planCalendar.quoteFree']({ date: q.lastDay, regular });
-	if (q.pricing === 'full') return m['planCalendar.quoteFull']({ date: q.lastDay, price, regular });
+	if (q.pricing === 'full') return m['planCalendar.quoteFull']({ date: q.lastDay, price });
 	return m['planCalendar.quotePartial']({ date: q.lastDay, price, regular });
 }

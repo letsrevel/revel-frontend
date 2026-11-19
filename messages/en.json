@@ -11902,7 +11902,7 @@
 	"planCalendar.firstPeriodHint": "First period until {date}: partial price.",
 	"planCalendar.firstPeriodHintFull": "Period until {date}: full price, whatever part is left.",
 	"planCalendar.firstPeriodHintFree": "First period until {date} is free.",
-	"planCalendar.quotePartial": "First period until {date}: {price}, a partial charge. From then on the full price applies: {regular}.",
+	"planCalendar.quotePartial": "First period until {date}: {price} (partial). Then {regular}.",
 	"planCalendar.quoteFree": "Free until {date}, then {regular}.",
-	"planCalendar.quoteFull": "This period ends on {date}. Joining now costs the full price ({price}) however little of it is left, then {regular}."
+	"planCalendar.quoteFull": "This period ends on {date}. Joining now costs the full {price}, however little of the period is left."
 }
