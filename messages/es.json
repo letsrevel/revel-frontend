@@ -7681,7 +7681,7 @@
 				"addressPlaceholder": "Calle Mayor 123, 2º A",
 				"addressHelper": "Editar la dirección aquí no vuelve a geolocalizar el marcador. Las coordenadas deben actualizarse por separado.",
 				"addressVisibilityLabel": "Visibilidad de la dirección",
-				"venuePublicNote": "El lugar \"{venue}\" es público: su nombre, dirección y enlaces de mapa siguen visibles para todas las personas que pueden ver el evento, sea cual sea este ajuste. Este ajuste solo cubre la dirección propia del evento y sus enlaces de mapa. Para mantener la dirección en privado, usa una dirección personalizada para los eventos de la serie en lugar de un lugar.",
+				"venuePublicNote": "El lugar \"{venue}\" es público: su nombre, dirección y enlaces de mapa siguen visibles para todas las personas que pueden ver el evento, sea cual sea este ajuste. Este ajuste solo cubre la dirección propia del evento y sus enlaces de mapa. Aquí no puedes cambiar ni quitar el lugar de la serie, y editar la dirección de arriba no lo sustituye.",
 				"maxAttendeesLabel": "Aforo máximo",
 				"maxAttendeesHelper": "Déjalo vacío para aforo ilimitado.",
 				"maxTicketsPerUserLabel": "Entradas máximas por persona",

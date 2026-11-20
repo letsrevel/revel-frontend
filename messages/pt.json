@@ -7681,7 +7681,7 @@
 				"addressPlaceholder": "Rua Principal, 123, Sala 4",
 				"addressHelper": "Editar a morada aqui não volta a geocodificar o marcador. As coordenadas têm de ser atualizadas em separado.",
 				"addressVisibilityLabel": "Visibilidade da morada",
-				"venuePublicNote": "O local \"{venue}\" é público: o nome, a morada e as ligações de mapa continuam visíveis para todas as pessoas que podem ver o evento, seja qual for esta definição. Esta definição só abrange a morada própria do evento e as suas ligações de mapa. Para manter a morada privada, usa uma morada personalizada para os eventos da série em vez de um local.",
+				"venuePublicNote": "O local \"{venue}\" é público: o nome, a morada e as ligações de mapa continuam visíveis para todas as pessoas que podem ver o evento, seja qual for esta definição. Esta definição só abrange a morada própria do evento e as suas ligações de mapa. Aqui não podes alterar nem remover o local da série, e editar a morada acima não o substitui.",
 				"maxAttendeesLabel": "Máximo de participantes",
 				"maxAttendeesHelper": "Deixa vazio para capacidade ilimitada.",
 				"maxTicketsPerUserLabel": "Máximo de bilhetes por pessoa",

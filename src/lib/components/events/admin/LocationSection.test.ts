@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import LocationSection from './LocationSection.svelte';
+import LocationSectionHarness from './LocationSectionHarness.test.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import * as m from '$lib/paraglide/messages.js';
 import type { VenueDetailSchema } from '$lib/api/generated/types.gen';
@@ -56,10 +57,21 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 
 	it('switches to custom-address mode from the note', async () => {
 		const user = userEvent.setup();
-		const { onVenueSelect, onUpdate, onCitySelect } = setup(
-			{ venue_id: 'venue_1', address: venue.address, city_id: 1 },
-			venue
-		);
+		// A harness that applies the callbacks, so the rendered fields show the real result.
+		const onUpdate = vi.fn();
+		const onVenueSelect = vi.fn();
+		const onCitySelect = vi.fn();
+		render(LocationSectionHarness, {
+			props: {
+				client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+				initialFormData: { venue_id: 'venue_1', address: venue.address, city_id: 1 },
+				initialCity: venue.city,
+				initialVenue: venue,
+				onUpdate,
+				onCitySelect,
+				onVenueSelect
+			}
+		});
 
 		await user.click(
 			screen.getByRole('button', { name: m['locationSection.useCustomAddressInstead']() })
@@ -71,8 +83,15 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 		expect(onCitySelect).toHaveBeenCalledWith(null);
 		expect(screen.queryByText(m['locationSection.venuePublicNote']())).toBeNull();
 		expect(screen.getByLabelText(m['locationSection.addressVisibility']())).toBeInTheDocument();
+		// The rendered fields are empty: the venue's address and city did not carry over.
+		const addressInput = document.getElementById('location-address') as HTMLInputElement;
+		expect(addressInput.value).toBe('');
+		expect(
+			screen.queryByRole('button', { name: m['cityAutocomplete.clearSelection']() })
+		).toBeNull();
+		expect((document.getElementById('city-search') as HTMLInputElement).value).toBe('');
 		// The button unmounted: focus moves to the address field, not <body> (WCAG 2.4.3).
-		expect(document.activeElement).toBe(document.getElementById('location-address'));
+		expect(document.activeElement).toBe(addressInput);
 	});
 
 	it('shows the reworded hint, without "private venues", in address mode', () => {

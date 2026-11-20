@@ -7681,7 +7681,7 @@
 				"addressPlaceholder": "Via Roma 123, Interno 4",
 				"addressHelper": "Modificare l'indirizzo qui non ri-geocodifica il segnaposto. Le coordinate devono essere aggiornate separatamente.",
 				"addressVisibilityLabel": "Visibilità dell'indirizzo",
-				"venuePublicNote": "La location \"{venue}\" è pubblica: nome, indirizzo e link alla mappa restano visibili a tutte le persone che possono vedere l'evento, qualunque sia questa impostazione. Questa impostazione copre solo l'indirizzo proprio dell'evento e i suoi link alla mappa. Per mantenere privato l'indirizzo, usa un indirizzo personalizzato per gli eventi della serie al posto di una location.",
+				"venuePublicNote": "La location \"{venue}\" è pubblica: nome, indirizzo e link alla mappa restano visibili a tutte le persone che possono vedere l'evento, qualunque sia questa impostazione. Questa impostazione copre solo l'indirizzo proprio dell'evento e i suoi link alla mappa. Qui non puoi cambiare né rimuovere la location della serie, e modificare l'indirizzo qui sopra non la sostituisce.",
 				"maxAttendeesLabel": "Numero massimo di persone partecipanti",
 				"maxAttendeesHelper": "Lascia vuoto per capienza illimitata.",
 				"maxTicketsPerUserLabel": "Biglietti massimi a persona",
