@@ -74,6 +74,22 @@ describe('ClaimInvitationButton', () => {
 		expect(replace).not.toHaveBeenCalled();
 	});
 
+	it('still reloads after an in-page change (#anchor or tab) during the claim', async () => {
+		claimMock.mockResolvedValue({ data: { id: 'inv-1' }, error: undefined });
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		render(ClaimInvitationButton, { props: { tokenId: 'et-1' } });
+
+		await user.click(
+			screen.getByRole('button', { name: m['claimInvitationButton.claimInvitation']() })
+		);
+		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('et-1'));
+		window.location.href = 'http://localhost/events/acme/gala?et=et-1&tab=tickets#tickets';
+		await vi.advanceTimersByTimeAsync(1000);
+
+		// The reload uses the URL from the click, without ?et=.
+		expect(replace).toHaveBeenCalledWith('http://localhost/events/acme/gala?tab=info');
+	});
+
 	it('keeps the pending token and does not reload when the claim fails', async () => {
 		claimMock.mockResolvedValue({ data: undefined, error: { message: 'Token used up' } });
 		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

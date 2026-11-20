@@ -13,7 +13,11 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 
 const gotoMock = vi.hoisted(() => vi.fn());
-vi.mock('$app/navigation', () => ({ goto: gotoMock }));
+const navListeners = vi.hoisted(() => [] as Array<() => void>);
+vi.mock('$app/navigation', () => ({
+	goto: gotoMock,
+	afterNavigate: (fn: () => void) => navListeners.push(fn)
+}));
 
 const pageState = vi.hoisted(() => ({ pathname: '/join/event/token-1' }));
 vi.mock('$app/state', () => ({
@@ -27,7 +31,8 @@ vi.mock('$app/state', () => ({
 
 const forgetMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/utils/pending-event-token', () => ({ forgetPendingEventToken: forgetMock }));
-vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const toastSuccess = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({ toast: { success: toastSuccess, error: vi.fn() } }));
 
 const authState = vi.hoisted(() => ({
 	isAuthenticated: false,
@@ -114,6 +119,8 @@ describe('join event page — claim', () => {
 		authState.isAuthenticated = true;
 		authState.accessToken = 'tok';
 		pageState.pathname = '/join/event/token-1';
+		navListeners.length = 0;
+		toastSuccess.mockReset();
 		gotoMock.mockReset();
 		forgetMock.mockReset();
 		vi.mocked(eventpublicdiscoveryClaimInvitation).mockResolvedValue({
@@ -138,7 +145,7 @@ describe('join event page — claim', () => {
 		expect(gotoMock.mock.calls[0][0]).toContain('/events/test-org/test-event');
 	});
 
-	it('does not open the event when the user left the page during the cleanup', async () => {
+	it('does not open the event when the user navigated during the cleanup, even back to the same page', async () => {
 		let release: () => void = () => undefined;
 		forgetMock.mockImplementation(
 			() =>
@@ -150,7 +157,11 @@ describe('join event page — claim', () => {
 
 		await claim();
 		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('token-1'));
-		pageState.pathname = '/events';
+		// The success path ran up to the cleanup (positive control).
+		expect(toastSuccess).toHaveBeenCalled();
+		// The user leaves and comes back with Back: same path, but two navigations.
+		navListeners.forEach((fn) => fn());
+		navListeners.forEach((fn) => fn());
 		release();
 		await new Promise((r) => setTimeout(r, 0));
 

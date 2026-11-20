@@ -3,7 +3,7 @@
 	import { withSiteName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { loginHref } from '$lib/utils/safe-redirect';
 	import { Button } from '$lib/components/ui/button';
@@ -40,9 +40,16 @@
 		id: string;
 		orgSlug: string;
 		eventSlug: string;
-		/** The page path at click time; the redirect only runs while it is current. */
-		fromPath: string;
+		/** The navigation count at click time; the redirect only runs while it is current. */
+		navigation: number;
 	}
+
+	// Counts completed navigations, so "the user moved on" includes leaving the
+	// page and coming back with the Back button before the claim finished.
+	let navigationCount = 0;
+	afterNavigate(() => {
+		navigationCount += 1;
+	});
 
 	// Claim mutation
 	const claimMutation = createMutation(() => ({
@@ -68,7 +75,7 @@
 			// pending_event_token cookie and offer the claim again (#1274).
 			await forgetPendingEventToken(target.id);
 			// The user may have moved on while the request ran: do not pull them back.
-			if (appPage.url.pathname !== target.fromPath) return;
+			if (navigationCount !== target.navigation) return;
 			// The claim response carries no organization — the token does.
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {
@@ -94,7 +101,7 @@
 			id: tokenId,
 			orgSlug: token?.organization_slug ?? '',
 			eventSlug: token?.event_slug ?? '',
-			fromPath: appPage.url.pathname
+			navigation: navigationCount
 		});
 	}
 

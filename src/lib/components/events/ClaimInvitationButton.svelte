@@ -36,8 +36,9 @@
 		}
 
 		isLoading = true;
-		// The reload below only runs while the user is still on this page.
-		const fromHref = window.location.href;
+		// The reload below only runs while the user is still on this page (same
+		// path; a tab or #anchor change inside the page still counts as here).
+		const fromUrl = new URL(window.location.href);
 
 		try {
 			const response = await eventpublicdiscoveryClaimInvitation({
@@ -69,11 +70,12 @@
 
 			// Strip the ?et= token from the URL before reloading so the claim
 			// button doesn't reappear on the next page load
-			const url = new URL(window.location.href);
+			const url = new URL(fromUrl);
 			url.searchParams.delete('et');
 
 			setTimeout(() => {
-				if (window.location.href !== fromHref) return;
+				const here = new URL(window.location.href);
+				if (here.origin !== fromUrl.origin || here.pathname !== fromUrl.pathname) return;
 				window.location.replace(url.toString());
 			}, 1000);
 		} catch (err) {

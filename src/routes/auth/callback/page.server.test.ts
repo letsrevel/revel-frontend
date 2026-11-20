@@ -153,6 +153,24 @@ describe('/auth/callback load', () => {
 		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala?et=et-1');
 	});
 
+	it('keeps an ?et= for another token than the one it claimed', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=other'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala?et=other');
+	});
+
 	it('redirects to the login error page when the exchange throws', async () => {
 		mockedExchange.mockRejectedValue(new Error('network'));
 		expect(await loadRedirect('?token=x')).toEqual({
