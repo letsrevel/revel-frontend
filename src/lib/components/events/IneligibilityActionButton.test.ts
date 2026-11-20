@@ -73,7 +73,9 @@ describe('IneligibilityActionButton claim button gating', () => {
 	])('offers the claim instead of the step for a granting token with %s', (_label, nextStep) => {
 		setup(nextStep, token);
 		expect(screen.getByRole('button', { name: claimName() })).toBeInTheDocument();
-		if (nextStep && nextStep !== 'request_invitation') {
+		// Steps that render their own action button: that button is replaced.
+		// (The wait steps render only text, and request_invitation shares the claim slot.)
+		if (nextStep && !['request_invitation', 'wait_for_invitation_approval'].includes(nextStep)) {
 			expect(
 				screen.queryByRole('button', { name: getActionButtonText(nextStep) })
 			).not.toBeInTheDocument();

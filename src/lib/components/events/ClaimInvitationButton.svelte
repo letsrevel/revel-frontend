@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { forgetPendingEventToken } from '$lib/utils/pending-event-token';
 
 	interface Props {
 		tokenId: string;
@@ -24,16 +25,6 @@
 
 	let isLoading = $state(false);
 	let showSuccess = $state(false);
-
-	async function forgetPendingToken(token: string): Promise<void> {
-		try {
-			await fetch(`/api/events/pending-token?token=${encodeURIComponent(token)}`, {
-				method: 'DELETE'
-			});
-		} catch (err) {
-			console.warn('Failed to clear the pending event token:', err);
-		}
-	}
 
 	async function handleClaim() {
 		if (!isAuthenticated) {
@@ -71,9 +62,8 @@
 			// The event page also reads the token from the 7-day pending_event_token
 			// cookie, so stripping ?et= alone is not enough: the claim button would
 			// come back on reload instead of the real next step (#1115, #1274).
-			// The cookie is httpOnly, so the server deletes it. Best effort: if this
-			// fails, the next claim attempt can still clear it.
-			await forgetPendingToken(tokenId);
+			// The cookie is httpOnly, so the server deletes it (best effort).
+			await forgetPendingEventToken(tokenId);
 
 			// Strip the ?et= token from the URL before reloading so the claim
 			// button doesn't reappear on the next page load

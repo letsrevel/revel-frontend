@@ -5,7 +5,7 @@ vi.mock('$lib/api/client', () => ({
 }));
 vi.mock('$lib/server/session', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/session')>()),
-	establishSession: vi.fn().mockResolvedValue(undefined)
+	establishSession: vi.fn().mockResolvedValue({})
 }));
 vi.mock('$lib/server/logger', () => ({
 	log: { debug: vi.fn(), warning: vi.fn(), error: vi.fn() }
@@ -46,6 +46,7 @@ async function loadRedirect(
 beforeEach(() => {
 	mockedExchange.mockReset();
 	vi.mocked(establishSession).mockClear();
+	vi.mocked(establishSession).mockResolvedValue({});
 });
 
 describe('/auth/callback load', () => {

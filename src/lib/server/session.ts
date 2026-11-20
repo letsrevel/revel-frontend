@@ -4,7 +4,11 @@ import {
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
-import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import {
+	claimPendingTokens,
+	setClaimFlashCookie,
+	type ClaimResults
+} from '$lib/server/token-claim';
 
 /**
  * Whether the session may outlive the browser. On a tenant (custom-domain)
@@ -24,7 +28,9 @@ export interface SessionTokens {
 /**
  * Turn a fresh access/refresh pair into a logged-in browser session: set the
  * three auth cookies and claim any pending invitation tokens (org/event),
- * leaving the claim flash cookie for the destination page.
+ * leaving the claim flash cookie for the destination page. Returns the claim
+ * results, so the caller can drop a claimed `?et=` from its redirect target
+ * (`dropClaimedEventToken`).
  *
  * The redirect stays at the call site — the login actions redirect to the
  * page's `?returnUrl`, the OIDC callback to the exchange response's
@@ -35,11 +41,12 @@ export async function establishSession(
 	tokens: SessionTokens,
 	rememberMe: boolean,
 	fetchFn: typeof fetch
-): Promise<void> {
+): Promise<ClaimResults> {
 	cookies.set('access_token', tokens.access, getAccessTokenCookieOptions(rememberMe));
 	cookies.set('refresh_token', tokens.refresh, getRefreshTokenCookieOptions(rememberMe));
 	cookies.set('remember_me', rememberMe ? 'true' : 'false', getRememberMeCookieOptions(rememberMe));
 
 	const claimResults = await claimPendingTokens(cookies, tokens.access, fetchFn);
 	setClaimFlashCookie(cookies, claimResults);
+	return claimResults;
 }

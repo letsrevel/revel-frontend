@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import { getAuthCookieOptions } from '$lib/utils/cookies';
 
 /**
  * Forget the pending event token after the user claimed it.
@@ -17,7 +18,9 @@ import type { RequestHandler } from './$types';
 export const DELETE: RequestHandler = async ({ cookies, url }) => {
 	const token = url.searchParams.get('token');
 	if (token && cookies.get('pending_event_token') === token) {
-		cookies.delete('pending_event_token', { path: '/' });
+		// Same attributes as the set in hooks.server.ts: a Secure delete would be
+		// dropped by the browser over plain http (dev on a LAN IP).
+		cookies.delete('pending_event_token', getAuthCookieOptions());
 	}
 	return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
 };

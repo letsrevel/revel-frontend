@@ -16,6 +16,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { forgetPendingEventToken } from '$lib/utils/pending-event-token';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { getImageUrl } from '$lib/utils/url';
@@ -48,8 +49,11 @@
 
 			return response.data;
 		},
-		onSuccess: (evt) => {
+		onSuccess: async (evt) => {
 			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
+			// The event page would otherwise read this token from the
+			// pending_event_token cookie and offer the claim again (#1274).
+			await forgetPendingEventToken(tokenId);
 			// The claim response carries no organization — the token does.
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {

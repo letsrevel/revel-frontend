@@ -6,7 +6,8 @@ vi.mock('$lib/api/client', () => ({
 	authObtainTokenWithOtp: vi.fn(),
 	accountResendVerificationEmail: vi.fn()
 }));
-vi.mock('$lib/server/token-claim', () => ({
+vi.mock('$lib/server/token-claim', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/token-claim')>()),
 	claimPendingTokens: vi.fn().mockResolvedValue({}),
 	setClaimFlashCookie: vi.fn()
 }));
@@ -16,6 +17,7 @@ import {
 	authObtainToken,
 	authObtainTokenWithOtp
 } from '$lib/api/client';
+import { claimPendingTokens } from '$lib/server/token-claim';
 import { actions } from './+page.server';
 
 function fakeCookies() {
@@ -89,6 +91,49 @@ describe('login action session lifetime', () => {
 		);
 		expect(options.get('refresh_token')?.maxAge).toBeUndefined();
 		expect(values.get('remember_me')).toBe('false');
+	});
+});
+
+describe('login redirect after an event-token claim (#1274)', () => {
+	async function redirectFor(
+		action: 'login' | 'verify2FA',
+		fields: Record<string, string>,
+		returnUrl: string
+	): Promise<string> {
+		const { cookies } = fakeCookies();
+		const event = {
+			request: form(fields),
+			fetch: vi.fn(),
+			cookies,
+			url: new URL(`https://example.test/login?returnUrl=${encodeURIComponent(returnUrl)}`),
+			locals: {}
+		} as unknown as ActionEvent;
+		try {
+			await actions[action](event);
+		} catch (err) {
+			const r = err as { status?: number; location?: string };
+			if (r.status === 303 && r.location) return r.location;
+			throw err;
+		}
+		throw new Error('no redirect');
+	}
+
+	it.each<['login' | 'verify2FA', Record<string, string>]>([
+		['login', credentials],
+		['verify2FA', { code: '123456', tempToken: 'temp', rememberMe: 'true' }]
+	])('%s drops the ?et= of the token it just claimed', async (action, fields) => {
+		vi.mocked(claimPendingTokens).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+		expect(await redirectFor(action, fields, '/events/acme/gala?et=et-1')).toBe(
+			'/events/acme/gala'
+		);
+	});
+
+	it('keeps the ?et= when the claim did not succeed', async () => {
+		expect(await redirectFor('login', credentials, '/events/acme/gala?et=et-1')).toBe(
+			'/events/acme/gala?et=et-1'
+		);
 	});
 });
 

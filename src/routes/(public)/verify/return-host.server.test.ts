@@ -3,12 +3,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const resolveReturnTarget = vi.hoisted(() => vi.fn());
 vi.mock('$lib/server/tenant-canonical', () => ({ resolveReturnTarget }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ accountVerifyEmail: vi.fn() }));
-vi.mock('$lib/utils/cookies', () => ({
+vi.mock('$lib/utils/cookies', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/utils/cookies')>()),
 	getAccessTokenCookieOptions: () => ({ path: '/' }),
 	getRefreshTokenCookieOptions: () => ({ path: '/' })
 }));
-vi.mock('$lib/server/token-claim', () => ({
-	claimPendingTokens: vi.fn().mockResolvedValue([]),
+vi.mock('$lib/server/token-claim', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/token-claim')>()),
+	claimPendingTokens: vi.fn().mockResolvedValue({}),
 	setClaimFlashCookie: vi.fn()
 }));
 vi.mock('$lib/server/logger', () => ({

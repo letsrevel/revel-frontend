@@ -10,6 +10,7 @@ import {
 import { extractErrorMessage } from '$lib/utils/errors';
 import { classifyOtpFailure, totpLockedMessage } from '$lib/utils/totp-lock';
 import { establishSession, sessionRememberMe } from '$lib/server/session';
+import { dropClaimedEventToken } from '$lib/server/token-claim';
 import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
@@ -95,7 +96,7 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
-				await establishSession(
+				const claimResults = await establishSession(
 					cookies,
 					{ access, refresh },
 					sessionRememberMe(data.rememberMe, locals),
@@ -104,7 +105,7 @@ export const actions = {
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
-				throw redirect(303, returnUrl);
+				throw redirect(303, dropClaimedEventToken(returnUrl, claimResults));
 			}
 
 			if (isEmailNotVerified(response.response, response.error)) {
@@ -181,7 +182,7 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data) {
 				const { access, refresh } = response.data;
-				await establishSession(
+				const claimResults = await establishSession(
 					cookies,
 					{ access, refresh },
 					sessionRememberMe(data.rememberMe, locals),
@@ -190,7 +191,7 @@ export const actions = {
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
-				throw redirect(303, returnUrl);
+				throw redirect(303, dropClaimedEventToken(returnUrl, claimResults));
 			}
 
 			if (isEmailNotVerified(response.response, response.error)) {

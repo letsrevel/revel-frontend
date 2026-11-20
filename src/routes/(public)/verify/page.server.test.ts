@@ -4,12 +4,14 @@ import * as m from '$lib/paraglide/messages.js';
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	accountVerifyEmail: vi.fn()
 }));
-vi.mock('$lib/utils/cookies', () => ({
+vi.mock('$lib/utils/cookies', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/utils/cookies')>()),
 	getAccessTokenCookieOptions: () => ({ path: '/' }),
 	getRefreshTokenCookieOptions: () => ({ path: '/' })
 }));
-vi.mock('$lib/server/token-claim', () => ({
-	claimPendingTokens: vi.fn().mockResolvedValue([]),
+vi.mock('$lib/server/token-claim', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/token-claim')>()),
+	claimPendingTokens: vi.fn().mockResolvedValue({}),
 	setClaimFlashCookie: vi.fn()
 }));
 vi.mock('$lib/server/logger', () => ({
@@ -19,6 +21,7 @@ vi.mock('$lib/seo', () => ({ buildSeo: () => ({}) }));
 vi.mock('$lib/seo/server', () => ({ resolveLang: () => 'en' }));
 
 import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
+import { claimPendingTokens } from '$lib/server/token-claim';
 import { load } from './+page.server';
 
 const mockedVerify = vi.mocked(accountVerifyEmail);
@@ -60,6 +63,21 @@ describe('/verify redirect target', () => {
 
 	it('follows a safe relative returnUrl', async () => {
 		const target = '/oauth/authorize?client_id=x&resource=a&resource=b';
+		expect(await loadRedirect(`?token=t&returnUrl=${encodeURIComponent(target)}`)).toBe(target);
+	});
+
+	it('drops the ?et= of the event token that the verification just claimed (#1274)', async () => {
+		vi.mocked(claimPendingTokens).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+		const target = '/events/acme/gala?et=et-1';
+		expect(await loadRedirect(`?token=t&returnUrl=${encodeURIComponent(target)}`)).toBe(
+			'/events/acme/gala'
+		);
+	});
+
+	it('keeps the ?et= when no event token was claimed', async () => {
+		const target = '/events/acme/gala?et=et-1';
 		expect(await loadRedirect(`?token=t&returnUrl=${encodeURIComponent(target)}`)).toBe(target);
 	});
 

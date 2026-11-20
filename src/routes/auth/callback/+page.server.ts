@@ -2,6 +2,7 @@ import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { authOidcExchange } from '$lib/api/client';
 import { establishSession, sessionRememberMe } from '$lib/server/session';
+import { dropClaimedEventToken } from '$lib/server/token-claim';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
 import { log } from '$lib/server/logger';
 
@@ -29,14 +30,14 @@ export const load: PageServerLoad = async ({ url, cookies, fetch, locals }) => {
 			throw redirect(303, '/login?error=oidc_state');
 		}
 
-		await establishSession(
+		const claimResults = await establishSession(
 			cookies,
 			{ access: data.access, refresh: data.refresh },
 			sessionRememberMe(true, locals),
 			fetch
 		);
 
-		throw redirect(303, safeReturnUrl(data.return_url));
+		throw redirect(303, dropClaimedEventToken(safeReturnUrl(data.return_url), claimResults));
 	} catch (err) {
 		if (isRedirect(err)) {
 			throw err;
