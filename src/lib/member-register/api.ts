@@ -13,13 +13,17 @@ import {
 	organizationadminmemberregisterlinkingListPossibleDuplicates,
 	organizationadminmemberregisterlinkingMergeMemberRegisterRecord,
 	organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord,
-	organizationadminmembersAddMember,
+	organizationadminmemberinvitationsCreateMemberInvitation,
+	organizationadminmemberinvitationsListMemberInvitations,
+	organizationadminmemberinvitationsRevokeMemberInvitation,
 	organizationadminuserlookupLookupUser
 } from '$lib/api';
 import type {
+	MemberInvitationSchema,
 	MembershipRecordCreateSchema,
 	MembershipRecordSchema,
 	OrgUserLookupSchema,
+	PaginatedResponseSchemaMemberInvitationSchema,
 	PaginatedResponseSchemaMembershipRecordSchema,
 	PossibleDuplicateSchema,
 	RegisterMatchSchema
@@ -104,8 +108,20 @@ export const memberRegisterKeys = {
 	mergedInto: (slug: string, recordId: string) =>
 		['organization', slug, 'member-register', 'merged-into', recordId] as const,
 	matches: (slug: string, requestId: string) =>
-		['organization', slug, 'member-register', 'matches', requestId] as const
+		['organization', slug, 'member-register', 'matches', requestId] as const,
+	/**
+	 * Pending member invitations; outside `all` (register edits don't touch them).
+	 * Changed by invite/resend/withdraw/accept, and by any write that makes the
+	 * account a member (the backend ends the invitation then): see
+	 * `invalidateAfterMemberWrite`.
+	 */
+	invitations: (slug: string) => ['organization', slug, 'member-invitations'] as const
 };
+
+/** Refresh the pending-invitations list after an invite, resend or withdrawal. */
+export function invalidateInvitations(queryClient: QueryClient, slug: string): Promise<void> {
+	return queryClient.invalidateQueries({ queryKey: memberRegisterKeys.invitations(slug) });
+}
 
 /**
  * Invalidate the possible-duplicates scan after a write that can change the
@@ -417,16 +433,52 @@ export async function lookupAccount(
 	return res.data;
 }
 
-/** Add an existing account to a STANDARD tier. A 400 may mean they already hold a membership row. */
-export async function addMemberByAccount(
+/**
+ * Invite an existing account to a STANDARD tier (the account becomes a member
+ * once it accepts). Re-inviting the same account renews the same invitation, so
+ * this doubles as "Resend". A 400 `already_member` means a membership row exists.
+ */
+export async function inviteMemberByAccount(
 	slug: string,
 	accessToken: string | null | undefined,
 	userId: string,
 	tierId: string
+): Promise<MemberInvitationSchema> {
+	const res = await organizationadminmemberinvitationsCreateMemberInvitation({
+		path: { slug },
+		body: { user_id: userId, tier_id: tierId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+export const INVITATIONS_PAGE_SIZE = 50;
+
+/** Pending (not yet accepted, not expired) member invitations. */
+export async function listMemberInvitations(
+	slug: string,
+	accessToken: string | null | undefined
+): Promise<PaginatedResponseSchemaMemberInvitationSchema> {
+	const res = await organizationadminmemberinvitationsListMemberInvitations({
+		path: { slug },
+		query: { page: 1, page_size: INVITATIONS_PAGE_SIZE },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Withdraw a pending invitation. 404 once it was accepted or expired. */
+export async function revokeMemberInvitation(
+	slug: string,
+	accessToken: string | null | undefined,
+	invitationId: string
 ): Promise<void> {
-	const res = await organizationadminmembersAddMember({
-		path: { slug, user_id: userId },
-		body: { tier_id: tierId },
+	const res = await organizationadminmemberinvitationsRevokeMemberInvitation({
+		path: { slug, invitation_id: invitationId },
 		headers: authHeaders(accessToken)
 	});
 	ensureOk(res);

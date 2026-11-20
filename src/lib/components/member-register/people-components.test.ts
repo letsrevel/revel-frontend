@@ -57,7 +57,7 @@ describe('AddPersonMenu', () => {
 		const items = screen
 			.queryAllByRole('menuitem', { hidden: true })
 			.map((el) => el.textContent?.trim());
-		expect(items).toEqual(['Add to register', 'Add by account', 'Create invite link']);
+		expect(items).toEqual(['Add to register', 'Invite by account', 'Create invite link']);
 		await userEvent.click(screen.getByTestId('add-to-register'));
 		expect(onAddToRegister).toHaveBeenCalledTimes(1);
 		document.body.style.pointerEvents = '';

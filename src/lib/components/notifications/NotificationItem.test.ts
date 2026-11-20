@@ -304,6 +304,26 @@ describe('NotificationItem', () => {
 		});
 	});
 
+	describe('membership_invitation_received', () => {
+		it('follows accept_url to the join page instead of the notifications list', async () => {
+			const notification = createMockNotification({
+				notification_type: 'membership_invitation_received',
+				// BE MembershipInvitationReceivedContext: accept_url, no frontend_url.
+				context: {
+					organization_name: 'Acme',
+					accept_url: 'https://revel.test/join/org/tok-123'
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			expect(goto).toHaveBeenCalledWith('/join/org/tok-123');
+		});
+	});
+
 	describe('fiscal_document_skipped digest (#1008)', () => {
 		it.each([
 			[

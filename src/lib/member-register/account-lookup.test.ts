@@ -46,6 +46,18 @@ describe('classifyLookup', () => {
 			'has-membership'
 		);
 	});
+	it('an outstanding invitation is its own kind', () => {
+		expect(classifyLookup(user({ pending_invitation_id: 'i1' }))).toBe('invitation-pending');
+		expect(classifyLookup(user({ pending_invitation_id: null }))).toBe('addable');
+	});
+	it('a pending request or a membership wins over an invitation', () => {
+		expect(classifyLookup(user({ pending_invitation_id: 'i1', pending_request_id: 'p1' }))).toBe(
+			'pending-application'
+		);
+		expect(classifyLookup(user({ pending_invitation_id: 'i1', is_member: true }))).toBe(
+			'has-membership'
+		);
+	});
 	it('is_member alone counts', () => {
 		expect(classifyLookup(user({ is_member: true }))).toBe('has-membership');
 	});

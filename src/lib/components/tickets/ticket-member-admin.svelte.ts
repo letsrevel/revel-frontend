@@ -4,12 +4,15 @@ import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { getUserDisplayName } from '$lib/utils/user-display';
+import { organizationadminblacklistCreateBlacklistEntry } from '$lib/api';
 import {
-	organizationadminmembersAddMember,
-	organizationadminblacklistCreateBlacklistEntry
-} from '$lib/api';
+	inviteMemberByAccount,
+	invalidateInvitations,
+	RegisterApiError
+} from '$lib/member-register/api';
+import { isAlreadyMember } from '$lib/member-register/error-codes';
 import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
-import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+import { backendMessage } from '$lib/utils/api-error-detail';
 
 interface MakeMemberUser {
 	id: string;
@@ -61,6 +64,47 @@ export function createStandardTiersLoader(opts: Options) {
 	};
 }
 
+interface InviteMutationOptions extends Options {
+	/** Display name of the person being invited, for the success toast. */
+	getName: () => string;
+	/** Called after the invitation was sent, or the account turned out to be a member already. */
+	onDone: () => void;
+}
+
+/**
+ * "Invite as member" mutation shared by the event tickets and attendees pages
+ * (admins can no longer add a member directly; the account must accept an
+ * invitation). Branches on the backend's `code`, never on its `detail` text.
+ * Call at component init (it reads the QueryClient from context).
+ */
+export function createInviteMemberMutation(opts: InviteMutationOptions) {
+	const queryClient = useQueryClient();
+	return createMutation(() => ({
+		mutationFn: ({ userId, tierId }: { userId: string; tierId: string }) =>
+			inviteMemberByAccount(opts.getSlug(), opts.getAccessToken(), userId, tierId),
+		onSuccess: () => {
+			invalidateInvitations(queryClient, opts.getSlug()).catch(() => undefined);
+			toast.success(m['makeMemberAction.success']({ name: opts.getName() }));
+			opts.onDone();
+		},
+		onError: (error: unknown) => {
+			if (isAlreadyMember(error)) {
+				toast.info(m['makeMemberAction.alreadyMember']());
+				opts.onDone();
+				return;
+			}
+			// 404: the backend only invites verified, non-guest accounts, and the ticket
+			// schema carries no flag for that, so the button cannot be hidden up front.
+			if (error instanceof RegisterApiError && error.status === 404) {
+				toast.error(m['makeMemberAction.notInvitable']());
+				return;
+			}
+			const detail = error instanceof RegisterApiError ? backendMessage(error.body) : null;
+			toast.error(detail ?? m['makeMemberAction.error']());
+		}
+	}));
+}
+
 /**
  * Membership + blacklist admin actions for the event tickets list.
  *
@@ -82,32 +126,14 @@ export function createTicketMemberAdmin(opts: Options) {
 	let showBlacklistDialog = $state(false);
 	let ticketToBlacklist = $state<AdminTicketSchema | null>(null);
 
-	const addMemberMutation = createMutation(() => ({
-		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
-			const response = await organizationadminmembersAddMember({
-				path: { slug: opts.getSlug(), user_id: userId },
-				body: { tier_id: tierId },
-				headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
-			});
-
-			if (response.error) {
-				const errorDetail = extractApiErrorDetail(response.error) ?? m['makeMemberAction.error']();
-				throw new Error(errorDetail);
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			const userName = userToMakeMember?.displayName || '';
+	const addMemberMutation = createInviteMemberMutation({
+		...opts,
+		getName: () => userToMakeMember?.displayName || '',
+		onDone: () => {
 			showMakeMemberModal = false;
 			userToMakeMember = null;
-			toast.success(m['makeMemberAction.success']({ name: userName }));
-			invalidateAll();
-		},
-		onError: (error: Error) => {
-			toast.error(error.message);
 		}
-	}));
+	});
 
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async (userId: string) => {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorCodeOf } from '$lib/member-register/error-codes';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -160,6 +161,9 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
+				if (errorCodeOf(response.error) === 'invitation_required') {
+					throw new Error(m['memberPeople.invitationRequired']());
+				}
 				throw new Error(backendMessage(response.error) || m['membersTab.promoteStaffError']());
 			}
 			return response.data;

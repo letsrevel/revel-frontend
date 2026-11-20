@@ -10,10 +10,10 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { registerEntry, registerPath } from '../../support/member-register';
+import { registerPath } from '../../support/member-register';
 
-// "Add by account": staff look a verified account up by its exact email and add
-// it straight to a standard tier. The accounts are throwaway users (not seeded
+// "Invite by account": staff look a verified account up by its exact email and invite
+// it to a standard tier (it becomes a member once it accepts). The accounts are throwaway users (not seeded
 // personas): the lookup is throttled per STAFF user, and a fresh owner per spec
 // keeps each run on its own quota and re-runnable.
 
@@ -21,8 +21,8 @@ async function openDialog(page: Page, org: CreatedOrg): Promise<Locator> {
 	await gotoHydrated(page, registerPath(org.slug));
 	await waitForClientAuth(page);
 	await page.getByRole('button', { name: 'Add person' }).click();
-	await page.getByRole('menuitem', { name: 'Add by account' }).click();
-	const dialog = page.getByRole('dialog', { name: 'Add by account' });
+	await page.getByRole('menuitem', { name: 'Invite by account' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Invite by account' });
 	await expect(dialog).toBeVisible();
 	// Initial focus lands on the email input.
 	await expect(dialog.getByLabel('Account email')).toBeFocused();
@@ -34,7 +34,7 @@ async function findAccount(dialog: Locator, email: string): Promise<void> {
 	await dialog.getByRole('button', { name: 'Find account' }).click();
 }
 
-test.describe('J31 add a member by account @p1', () => {
+test.describe('J31 invite a member by account @p1', () => {
 	test('unknown email: neutral not-found and the invite-link CTA', async ({ browser }) => {
 		test.setTimeout(180_000);
 		const org = await createOrganization();
@@ -83,9 +83,7 @@ test.describe('J31 add a member by account @p1', () => {
 		}
 	});
 
-	test('verified non-member: add with a tier and the row appears in People', async ({
-		browser
-	}) => {
+	test('verified non-member: invite, see it pending, then withdraw it', async ({ browser }) => {
 		test.setTimeout(240_000);
 		const org = await createOrganization();
 		const person = await createVerifiedUser('ByAccountNew');
@@ -95,22 +93,28 @@ test.describe('J31 add a member by account @p1', () => {
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
 		try {
-			const dialog = await openDialog(page, org);
+			let dialog = await openDialog(page, org);
 			await findAccount(dialog, person.email);
 			await expect(dialog.getByText(/Account found/)).toBeVisible({ timeout: 15_000 });
 			// The org has a single standard tier, so it is preselected.
 			await expect(dialog.getByLabel('Tier')).toHaveValue(org.defaultTierId);
-			await dialog.getByRole('button', { name: 'Add as member' }).click();
+			await dialog.getByRole('button', { name: 'Send invitation' }).click();
 			await expect(dialog).toBeHidden({ timeout: 15_000 });
 
-			// The sheet opens on the new member...
-			const sheet = page.getByRole('dialog', { name: personName, exact: true });
-			await expect(sheet).toBeVisible({ timeout: 15_000 });
-			await page.keyboard.press('Escape');
-			await expect(sheet).toBeHidden();
+			// No member exists until they accept: the invitation is listed as pending.
+			const pending = page.getByRole('region', { name: 'Pending invitations' });
+			await expect(pending.getByText(personName)).toBeVisible({ timeout: 15_000 });
 
-			// ...and the row is in the People list.
-			await expect(registerEntry(page, personName)).toBeVisible({ timeout: 15_000 });
+			// Looking them up again offers resend and withdraw.
+			dialog = await openDialog(page, org);
+			await findAccount(dialog, person.email);
+			await expect(dialog.getByText(/pending membership invitation/)).toBeVisible({
+				timeout: 15_000
+			});
+			await expect(dialog.getByRole('button', { name: 'Resend invitation' })).toBeVisible();
+			await dialog.getByRole('button', { name: 'Withdraw invitation' }).click();
+			await expect(dialog).toBeHidden({ timeout: 15_000 });
+			await expect(pending).toBeHidden({ timeout: 15_000 });
 		} finally {
 			await context.close();
 		}

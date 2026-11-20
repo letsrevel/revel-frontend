@@ -42,6 +42,7 @@
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
 	import PeopleChips from '$lib/components/member-register/PeopleChips.svelte';
 	import NeedsAttention from '$lib/components/member-register/NeedsAttention.svelte';
+	import PendingInvitations from '$lib/components/member-register/PendingInvitations.svelte';
 	import AddByAccountDialog from '$lib/components/member-register/AddByAccountDialog.svelte';
 	import AddPersonMenu from '$lib/components/member-register/AddPersonMenu.svelte';
 	import AwaitingPaymentPeople from './AwaitingPaymentPeople.svelte';
@@ -340,6 +341,7 @@
 		onReviewDuplicates={() => (duplicatesOpen = true)}
 		onReviewApplications={onOpenApplications}
 	/>
+	<PendingInvitations {slug} {accessToken} {active} />
 
 	<div class="flex flex-wrap items-start justify-between gap-3">
 		{#if !filters.activeOn}

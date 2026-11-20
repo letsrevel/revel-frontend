@@ -114,6 +114,20 @@ describe('SubscriptionsTab create dialog', () => {
 		);
 	});
 
+	it('explains that the account must be invited first on invitation_required', async () => {
+		createMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Some translated text.', code: 'invitation_required' },
+			response: { ok: false } as unknown as Response
+		} as never);
+		renderTab();
+		await openAndSubmit();
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(
+			'This account has no connection to your organization yet. Invite them as a member first.'
+		);
+	});
+
 	it("does not show a previous attempt's error when the dialog is opened again", async () => {
 		createMock.mockResolvedValue({
 			data: undefined,
