@@ -127,11 +127,46 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 		expect(onUpdate).toHaveBeenCalledWith(
 			expect.objectContaining({ location_maps_url: null, location_maps_embed: null })
 		);
-		// The maps section opened for the old data; its fields are now empty and no preview of the old place shows.
-		expect((document.getElementById('location-maps-url') as HTMLInputElement).value).toBe('');
-		expect((document.getElementById('location-maps-embed') as HTMLTextAreaElement).value).toBe('');
+		// The fresh address form starts with the maps section closed, as for a new address.
+		expect(
+			screen.getByRole('button', { name: m['locationSection.mapsSection']() })
+		).toHaveAttribute('aria-expanded', 'false');
+		expect(document.getElementById('location-maps-url')).toBeNull();
+		expect(document.getElementById('location-maps-embed')).toBeNull();
 		expect(screen.queryByText(m['detailsStep.mapsPreview']())).toBeNull();
 		expect(document.querySelector('iframe')).toBeNull();
+	});
+
+	it('starts a new address with the maps section closed after "Change location type"', async () => {
+		const user = userEvent.setup();
+		render(LocationSectionHarness, {
+			props: {
+				client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+				initialFormData: {
+					address: '5 Old Rd',
+					location_maps_url: 'https://maps.app.goo.gl/old',
+					location_maps_embed: 'https://www.google.com/maps/embed?pb=old'
+				},
+				initialCity: null,
+				initialVenue: null,
+				onUpdate: vi.fn(),
+				onCitySelect: vi.fn(),
+				onVenueSelect: vi.fn()
+			}
+		});
+		const mapsToggle = () =>
+			screen.getByRole('button', { name: m['locationSection.mapsSection']() });
+		expect(mapsToggle()).toHaveAttribute('aria-expanded', 'true');
+
+		await user.click(
+			screen.getByRole('button', { name: m['locationSection.changeLocationType']() })
+		);
+		await user.click(
+			screen.getByRole('button', { name: new RegExp(m['locationSection.addAddress']()) })
+		);
+
+		expect(mapsToggle()).toHaveAttribute('aria-expanded', 'false');
+		expect(document.getElementById('location-maps-url')).toBeNull();
 	});
 
 	it('shows the reworded hint, without "private venues", in address mode', () => {

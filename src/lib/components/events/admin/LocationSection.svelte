@@ -104,9 +104,10 @@
 	}
 
 	/**
-	 * "Use a custom address instead" from the venue note: the organizer wants the
+	 * "Use a custom address instead" from the venue note: the organizer may want the
 	 * location private, so the venue's public address, city and map links must not
-	 * carry over into the custom-address fields (the plain venue→address switch keeps them).
+	 * carry over into the custom-address fields. The address visibility setting stays
+	 * as it is; it shows directly below the address field.
 	 * Focus then moves to the address field, since the button itself unmounts.
 	 */
 	async function useCustomAddressInstead() {
@@ -118,6 +119,8 @@
 			location_maps_url: null,
 			location_maps_embed: null
 		});
+		// The maps section opened for the old links; a fresh address form starts closed.
+		mapsExpanded = false;
 		await tick();
 		document.getElementById('location-address')?.focus();
 	}
@@ -137,6 +140,7 @@
 			location_maps_url: null,
 			location_maps_embed: null
 		});
+		mapsExpanded = false;
 		userSelectedMode = 'none';
 	}
 
