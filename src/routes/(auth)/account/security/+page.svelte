@@ -81,6 +81,14 @@
 		totpLocked = false;
 	}
 
+	// The lock ran out, or the user dismissed it (cancel or reopen of a flow):
+	// lift it AND hide its now-stale "try again in N minutes" text. The next
+	// server answer (a new `form`) shows its own message again.
+	function dismissLock() {
+		clearLock();
+		lockExpired = true;
+	}
+
 	onDestroy(() => {
 		if (lockTimer !== undefined) clearTimeout(lockTimer);
 	});
@@ -108,10 +116,7 @@
 				? form.retryAfterSeconds
 				: null;
 		if (seconds !== null) {
-			lockTimer = setTimeout(() => {
-				clearLock();
-				lockExpired = true;
-			}, seconds * 1000);
+			lockTimer = setTimeout(dismissLock, seconds * 1000);
 		}
 		// The submit button (focused) just became disabled and the inputs are
 		// off too: land focus on the status message so it is read and keyboard
@@ -190,14 +195,14 @@
 		qrCodeDataUrl = '';
 		otpCode = '';
 		isEnabling = false;
-		clearLock();
+		dismissLock();
 	}
 
 	// Cancel disable flow
 	function cancelDisable() {
 		showDisableFlow = false;
 		otpCode = '';
-		clearLock();
+		dismissLock();
 	}
 
 	// Request password reset
@@ -279,7 +284,7 @@
 								type="button"
 								class="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
 								onclick={() => {
-									clearLock();
+									dismissLock();
 									otpCode = '';
 									showDisableFlow = true;
 								}}

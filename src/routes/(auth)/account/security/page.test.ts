@@ -90,6 +90,8 @@ describe('security page: lock recovery', () => {
 		await ev.click(screen.getByRole('button', { name: /cancel/i }));
 		await ev.click(screen.getByRole('button', { name: /disable/i }));
 		expect(digitInputs().every((i) => !i.disabled)).toBe(true);
+		// The dismissed lock's "try again in N minutes" text must not linger.
+		expect(document.getElementById('totp-code-error')).toBeNull();
 	});
 
 	it('does not leave a timer behind when destroyed', async () => {
