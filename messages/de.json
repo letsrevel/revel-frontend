@@ -11929,5 +11929,18 @@
 	"unknownHolder.srLabel": "Profil nicht geteilt: Diese Person hat keine aktive Verbindung zu deiner Organisation.",
 	"unknownHolder.explanation": "Diese Person hat keine aktive Verbindung zu deiner Organisation, deshalb werden nur die E-Mail-Adresse und der Name angezeigt, die du eingegeben hast.",
 	"unknownHolder.noteUnavailable": "Notiz nicht verfügbar: Diese Person hat keine aktive Verbindung zu deiner Organisation",
-	"attendeesAdmin.invitationRequired": "Diese Person hat noch keine Verbindung zu deiner Organisation, daher kannst du sie nicht anmelden. Lade sie zur Veranstaltung ein oder bitte sie, sich zuerst selbst anzumelden, ein Ticket zu kaufen oder sich zu bewerben."
+	"attendeesAdmin.invitationRequired": "Diese Person hat noch keine Verbindung zu deiner Organisation, daher kannst du sie nicht anmelden. Lade sie zur Veranstaltung ein oder bitte sie, sich zuerst selbst anzumelden, ein Ticket zu kaufen oder sich zu bewerben.",
+	"totpLock.paused": [
+		{
+			"declarations": ["input minutes", "local minutesPlural = minutes: plural"],
+			"selectors": ["minutesPlural"],
+			"match": {
+				"minutesPlural=one": "Die Zwei-Faktor-Bestätigung ist zu deiner Sicherheit pausiert. Versuche es in {minutes} Minute erneut.",
+				"minutesPlural=*": "Die Zwei-Faktor-Bestätigung ist zu deiner Sicherheit pausiert. Versuche es in {minutes} Minuten erneut."
+			}
+		}
+	],
+	"totpLock.pausedNoTime": "Die Zwei-Faktor-Bestätigung ist zu deiner Sicherheit pausiert. Bitte versuche es später erneut.",
+	"totpLock.wrongCodeRestart": "Das hat nicht geklappt. Melde dich bitte erneut an.",
+	"totpLock.rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es dann erneut."
 }

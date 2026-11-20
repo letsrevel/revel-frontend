@@ -11929,5 +11929,18 @@
 	"unknownHolder.srLabel": "Perfil não partilhado: esta pessoa não tem nenhuma ligação ativa com a tua organização.",
 	"unknownHolder.explanation": "Esta pessoa não tem nenhuma ligação ativa com a tua organização, por isso só são mostrados o email e o nome que indicaste.",
 	"unknownHolder.noteUnavailable": "Nota indisponível: esta pessoa não tem nenhuma ligação ativa com a tua organização",
-	"attendeesAdmin.invitationRequired": "Esta pessoa ainda não tem qualquer ligação à tua organização, por isso não podes responder por ela. Convida-a para o evento ou pede-lhe que primeiro responda, compre um bilhete ou se candidate por conta própria."
+	"attendeesAdmin.invitationRequired": "Esta pessoa ainda não tem qualquer ligação à tua organização, por isso não podes responder por ela. Convida-a para o evento ou pede-lhe que primeiro responda, compre um bilhete ou se candidate por conta própria.",
+	"totpLock.paused": [
+		{
+			"declarations": ["input minutes", "local minutesPlural = minutes: plural"],
+			"selectors": ["minutesPlural"],
+			"match": {
+				"minutesPlural=one": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente dentro de {minutes} minuto.",
+				"minutesPlural=*": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente dentro de {minutes} minutos."
+			}
+		}
+	],
+	"totpLock.pausedNoTime": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente mais tarde.",
+	"totpLock.wrongCodeRestart": "Não funcionou. Inicia sessão novamente.",
+	"totpLock.rateLimited": "Demasiadas tentativas. Aguarda um momento e tenta novamente."
 }

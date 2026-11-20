@@ -11929,5 +11929,18 @@
 	"unknownHolder.srLabel": "Profilo non condiviso: questa persona non ha alcun legame attivo con la tua organizzazione.",
 	"unknownHolder.explanation": "Questa persona non ha alcun legame attivo con la tua organizzazione, quindi vengono mostrati solo l'email e il nome che hai inserito.",
 	"unknownHolder.noteUnavailable": "Nota non disponibile: questa persona non ha alcun legame attivo con la tua organizzazione",
-	"attendeesAdmin.invitationRequired": "Questa persona non ha ancora alcun legame con la tua organizzazione, quindi non puoi confermare la partecipazione al suo posto. Invitala all'evento o chiedile di confermare, acquistare un biglietto o candidarsi di persona per prima."
+	"attendeesAdmin.invitationRequired": "Questa persona non ha ancora alcun legame con la tua organizzazione, quindi non puoi confermare la partecipazione al suo posto. Invitala all'evento o chiedile di confermare, acquistare un biglietto o candidarsi di persona per prima.",
+	"totpLock.paused": [
+		{
+			"declarations": ["input minutes", "local minutesPlural = minutes: plural"],
+			"selectors": ["minutesPlural"],
+			"match": {
+				"minutesPlural=one": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova tra {minutes} minuto.",
+				"minutesPlural=*": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova tra {minutes} minuti."
+			}
+		}
+	],
+	"totpLock.pausedNoTime": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova più tardi.",
+	"totpLock.wrongCodeRestart": "Non ha funzionato. Accedi di nuovo.",
+	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova."
 }

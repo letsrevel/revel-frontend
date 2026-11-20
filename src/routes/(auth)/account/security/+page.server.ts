@@ -10,9 +10,31 @@ import {
 } from '$lib/api/client';
 import { z } from 'zod';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { classifyOtpFailure, retryAfterToSeconds, totpLockedMessage } from '$lib/utils/totp-lock';
 import { emailChangeRequestSchema } from '$lib/schemas/auth';
 import { log } from '$lib/server/logger';
 import { plainOrNull } from '$lib/utils/plain-data';
+
+/**
+ * Map a 429 from the enable/disable OTP routes: `totp_locked` is the
+ * per-account failure lock (the page disables the code input), a 429 without
+ * the code is the ordinary rate limit. Returns null for anything else.
+ */
+function otpRateFailure(response: Response | undefined, error: unknown) {
+	const kind = classifyOtpFailure(response, error);
+	if (kind === 'locked') {
+		return fail(429, {
+			errors: { code: totpLockedMessage(response) },
+			totpLocked: true,
+			// Seconds until the lock lifts, so the page can re-enable code entry.
+			retryAfterSeconds: retryAfterToSeconds(response?.headers?.get('Retry-After'))
+		});
+	}
+	if (kind === 'throttled') {
+		return fail(429, { errors: { code: m['totpLock.rateLimited']() } });
+	}
+	return null;
+}
 
 /**
  * Load current user's 2FA status
@@ -150,6 +172,9 @@ export const actions: Actions = {
 				};
 			}
 
+			const rateFailure = otpRateFailure(response.response, response.error);
+			if (rateFailure) return rateFailure;
+
 			if (response.error) {
 				const errorMessage = extractErrorMessage(
 					response.error,
@@ -212,6 +237,9 @@ export const actions: Actions = {
 					message: m['serverErrors.account.twoFaDisabled']()
 				};
 			}
+
+			const rateFailure = otpRateFailure(response.response, response.error);
+			if (rateFailure) return rateFailure;
 
 			if (response.error) {
 				const errorMessage = extractErrorMessage(

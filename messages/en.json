@@ -11929,5 +11929,18 @@
 	"unknownHolder.srLabel": "Profile not shared: this person has no active connection to your organization.",
 	"unknownHolder.explanation": "This person has no active connection to your organization, so only the email and name you entered are shown.",
 	"unknownHolder.noteUnavailable": "Staff note unavailable: this person has no active connection to your organization",
-	"attendeesAdmin.invitationRequired": "This person has no connection to your organization yet, so you cannot RSVP for them. Invite them to the event, or ask them to RSVP, buy a ticket or apply themselves first."
+	"attendeesAdmin.invitationRequired": "This person has no connection to your organization yet, so you cannot RSVP for them. Invite them to the event, or ask them to RSVP, buy a ticket or apply themselves first.",
+	"totpLock.paused": [
+		{
+			"declarations": ["input minutes", "local minutesPlural = minutes: plural"],
+			"selectors": ["minutesPlural"],
+			"match": {
+				"minutesPlural=one": "Two-factor verification is paused for your security. Try again in {minutes} minute.",
+				"minutesPlural=*": "Two-factor verification is paused for your security. Try again in {minutes} minutes."
+			}
+		}
+	],
+	"totpLock.pausedNoTime": "Two-factor verification is paused for your security. Please try again later.",
+	"totpLock.wrongCodeRestart": "That didn't work. Please sign in again.",
+	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again."
 }

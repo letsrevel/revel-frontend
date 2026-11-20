@@ -249,3 +249,83 @@ describe('unverified email handling', () => {
 		expect(invalid).toMatchObject({ data: { requires2FA: true, email: 'a@example.com' } });
 	});
 });
+
+describe('verify2FA failures (#1264, totp_locked)', () => {
+	function event(): ActionEvent {
+		return {
+			request: form({
+				code: '123456',
+				tempToken: 'spent',
+				rememberMe: 'true',
+				email: 'a@example.com'
+			}),
+			fetch: vi.fn(),
+			cookies: fakeCookies().cookies,
+			url: new URL('https://example.test/login'),
+			locals: {}
+		} as unknown as ActionEvent;
+	}
+
+	it('totp_locked returns to the password step with the minutes, no spent token', async () => {
+		vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
+			response: { ok: false, status: 429, headers: new Headers({ 'Retry-After': '840' }) },
+			error: { detail: 'x', code: 'totp_locked' }
+		} as never);
+		const result = (await actions.verify2FA(event())) as {
+			status: number;
+			data: Record<string, unknown>;
+		};
+		expect(result.status).toBe(429);
+		expect(result.data.requires2FA).toBeUndefined();
+		expect(result.data.tempToken).toBeUndefined();
+		expect(result.data.restartedFrom2FA).toBe(true);
+		expect((result.data.errors as { form: string }).form).toBe(
+			'Two-factor verification is paused for your security. Try again in 14 minutes.'
+		);
+	});
+
+	it('totp_locked without Retry-After uses the message without a number', async () => {
+		vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
+			response: { ok: false, status: 429, headers: new Headers() },
+			error: { code: 'totp_locked' }
+		} as never);
+		const result = (await actions.verify2FA(event())) as { data: { errors: { form: string } } };
+		expect(result.data.errors.form).toBe(
+			'Two-factor verification is paused for your security. Please try again later.'
+		);
+	});
+
+	it('a 429 without a code is the generic rate limit and keeps the code step', async () => {
+		vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
+			response: { ok: false, status: 429, headers: new Headers() },
+			error: { detail: 'Too many requests' }
+		} as never);
+		const result = (await actions.verify2FA(event())) as {
+			status: number;
+			data: Record<string, unknown>;
+		};
+		expect(result.status).toBe(429);
+		expect(result.data.requires2FA).toBe(true);
+		// Rejected before the code was checked: the token is intact and is returned.
+		expect(result.data.tempToken).toBe('spent');
+		expect((result.data.errors as { code: string }).code).toBeTruthy();
+		expect(result.data.restartedFrom2FA).toBeUndefined();
+	});
+
+	it('a wrong code (401) returns to the password step and never re-posts the spent token', async () => {
+		vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
+			response: { ok: false, status: 401, headers: new Headers() },
+			error: { detail: 'Invalid OTP' }
+		} as never);
+		const result = (await actions.verify2FA(event())) as {
+			status: number;
+			data: Record<string, unknown>;
+		};
+		expect(result.status).toBe(401);
+		expect(result.data.requires2FA).toBeUndefined();
+		expect(result.data.tempToken).toBeUndefined();
+		expect(result.data.restartedFrom2FA).toBe(true);
+		expect(result.data.email).toBe('a@example.com');
+		expect((result.data.errors as { form: string }).form).toBeTruthy();
+	});
+});

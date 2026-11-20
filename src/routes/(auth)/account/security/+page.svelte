@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page as appPage } from '$app/state';
 	import { brandName } from '$lib/seo/tenant';
+	import { onDestroy, tick } from 'svelte';
 	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import {
@@ -60,8 +61,68 @@
 
 	// Derived state
 	const totpActive = $derived(data.totpActive);
-	const provisioningUri = $derived(form?.provisioningUri);
+	// Setup data arrives once, with the `setup` action. A failed `verify` replaces
+	// `form` with a payload that does not carry it, so it is kept here instead of
+	// being derived from `form` (otherwise the enable UI collapses to its loading
+	// placeholder and the error/lock state is never visible).
+	let provisioningUri = $state<string | undefined>(undefined);
 	const setupSuccess = $derived(form?.verified);
+	// The account's 2FA failure lock is engaged: code entry stays off until the
+	// user cancels/reopens the flow or Retry-After elapses.
+	let totpLocked = $state(false);
+	// The lock ran out on the timer: its "try again in N minutes" text is stale.
+	// Any newer server answer (a new `form`) shows its own message again.
+	let lockExpired = $state(false);
+	let lockTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function clearLock() {
+		if (lockTimer !== undefined) clearTimeout(lockTimer);
+		lockTimer = undefined;
+		totpLocked = false;
+	}
+
+	// The lock ran out, or the user dismissed it (cancel or reopen of a flow):
+	// lift it AND hide its now-stale "try again in N minutes" text. The next
+	// server answer (a new `form`) shows its own message again.
+	function dismissLock() {
+		clearLock();
+		lockExpired = true;
+	}
+
+	onDestroy(() => {
+		if (lockTimer !== undefined) clearTimeout(lockTimer);
+	});
+
+	$effect(() => {
+		void form;
+		lockExpired = false;
+	});
+
+	$effect(() => {
+		if (form?.provisioningUri) {
+			provisioningUri = form.provisioningUri;
+			showSetupFlow = true;
+		}
+	});
+
+	// Engage the lock from a failure payload and re-enable code entry once the
+	// server-provided Retry-After has elapsed.
+	$effect(() => {
+		if (!form || !('totpLocked' in form) || form.totpLocked !== true) return;
+		clearLock();
+		totpLocked = true;
+		const seconds =
+			'retryAfterSeconds' in form && typeof form.retryAfterSeconds === 'number'
+				? form.retryAfterSeconds
+				: null;
+		if (seconds !== null) {
+			lockTimer = setTimeout(dismissLock, seconds * 1000);
+		}
+		// The submit button (focused) just became disabled and the inputs are
+		// off too: land focus on the status message so it is read and keyboard
+		// users keep their place.
+		void tick().then(() => document.getElementById('totp-code-error')?.focus());
+	});
 	const disableSuccess = $derived(form?.disabled);
 
 	// Extract manual entry code from provisioning URI
@@ -90,8 +151,10 @@
 		if (setupSuccess) {
 			toast.success(form?.message || m['accountSecurityPage.toast_2faEnabled']());
 			showSetupFlow = false;
+			provisioningUri = undefined;
 			qrCodeDataUrl = '';
 			otpCode = '';
+			clearLock();
 			// Invalidate to refresh user data and show updated status
 			invalidate('app:user');
 		}
@@ -102,6 +165,7 @@
 			toast.success(form?.message || m['accountSecurityPage.toast_2faDisabled']());
 			showDisableFlow = false;
 			otpCode = '';
+			clearLock();
 			// Invalidate to refresh user data
 			invalidate('app:user');
 		}
@@ -127,15 +191,18 @@
 	// Cancel setup flow
 	function cancelSetup() {
 		showSetupFlow = false;
+		provisioningUri = undefined;
 		qrCodeDataUrl = '';
 		otpCode = '';
 		isEnabling = false;
+		dismissLock();
 	}
 
 	// Cancel disable flow
 	function cancelDisable() {
 		showDisableFlow = false;
 		otpCode = '';
+		dismissLock();
 	}
 
 	// Request password reset
@@ -217,6 +284,8 @@
 								type="button"
 								class="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
 								onclick={() => {
+									dismissLock();
+									otpCode = '';
 									showDisableFlow = true;
 								}}
 							>
@@ -231,6 +300,8 @@
 									return async ({ result }) => {
 										isEnabling = false;
 										if (result.type === 'success') {
+											clearLock();
+											otpCode = '';
 											// Apply action to update form prop
 											await applyAction(result);
 											showSetupFlow = true;
@@ -346,9 +417,14 @@
 									}}
 								>
 									<div class="mt-4">
-										<TwoFactorInput bind:value={otpCode} />
-										{#if form?.errors && 'code' in form.errors && form.errors.code}
-											<p class="mt-2 text-sm text-destructive" role="alert">
+										<TwoFactorInput bind:value={otpCode} disabled={totpLocked} />
+										{#if !lockExpired && form?.errors && 'code' in form.errors && form.errors.code}
+											<p
+												id="totp-code-error"
+												tabindex="-1"
+												role={totpLocked ? 'status' : 'alert'}
+												class="mt-2 text-sm text-destructive"
+											>
 												{form.errors.code}
 											</p>
 										{/if}
@@ -357,7 +433,7 @@
 									<div class="mt-6 flex gap-3">
 										<button
 											type="submit"
-											disabled={otpCode.length !== 6 || isSubmitting}
+											disabled={otpCode.length !== 6 || isSubmitting || totpLocked}
 											class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
 										>
 											{isSubmitting
@@ -420,9 +496,14 @@
 									}}
 								>
 									<div class="mt-4">
-										<TwoFactorInput bind:value={otpCode} />
-										{#if form?.errors && 'code' in form.errors && form.errors.code}
-											<p class="mt-2 text-sm text-destructive" role="alert">
+										<TwoFactorInput bind:value={otpCode} disabled={totpLocked} />
+										{#if !lockExpired && form?.errors && 'code' in form.errors && form.errors.code}
+											<p
+												id="totp-code-error"
+												tabindex="-1"
+												role={totpLocked ? 'status' : 'alert'}
+												class="mt-2 text-sm text-destructive"
+											>
 												{form.errors.code}
 											</p>
 										{/if}
@@ -431,7 +512,7 @@
 									<div class="mt-6 flex gap-3">
 										<button
 											type="submit"
-											disabled={otpCode.length !== 6 || isSubmitting}
+											disabled={otpCode.length !== 6 || isSubmitting || totpLocked}
 											class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 disabled:opacity-50"
 										>
 											{isSubmitting
