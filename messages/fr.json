@@ -2754,7 +2754,7 @@
 		"rejectedHint": "Contactez l'équipe organisatrice pour obtenir une nouvelle invitation.",
 		"rejectedCta": "Parcourir les événements",
 		"rejectedGoToEvent": "Aller à l'événement",
-		"rejectedInvitedHint": "Vous avez déjà une invitation ? Elle se trouve sur la page de l'événement."
+		"rejectedInvitedHint": "Vous avez déjà accepté l'invitation ? Elle se trouve sur la page de l'événement."
 	},
 	"joinOrgPage": {
 		"pageTitle": "Rejoindre {organizationName}",

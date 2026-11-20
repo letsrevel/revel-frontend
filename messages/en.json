@@ -2953,7 +2953,7 @@
 		"rejectedHint": "Contact the organizer to get a new invitation.",
 		"rejectedCta": "Browse events",
 		"rejectedGoToEvent": "Go to the event",
-		"rejectedInvitedHint": "Already invited? Your invitation is on the event page."
+		"rejectedInvitedHint": "Already accepted the invitation? You find it on the event page."
 	},
 	"joinOrgPage": {
 		"pageTitle": "Join {organizationName}",

@@ -85,7 +85,9 @@
 				})
 			);
 		},
-		onError: (error: Error) => {
+		onError: (error: Error, target) => {
+			// A failed claim for a link the user already left must not alarm the new page.
+			if (navigationCount !== target.navigation) return;
 			toast.error(error.message || m['joinEventPage.toast_claimError']());
 		}
 	}));
@@ -137,14 +139,16 @@
 	);
 	// The 410 preview still names the event, so a person who already holds an
 	// invitation can reach it (#1276).
-	const rejectionEventHref = $derived(
-		rejection?.organization_slug && rejection.event_slug
-			? resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: rejection.organization_slug,
-					event_slug: rejection.event_slug
-				})
-			: null
-	);
+	// A private event is visible only after sign-in, so a signed-out visitor
+	// goes through login and comes back to the event.
+	const rejectionEventHref = $derived.by(() => {
+		if (!rejection?.organization_slug || !rejection.event_slug) return null;
+		const eventPath = resolve('/(public)/events/[org_slug]/[event_slug]', {
+			org_slug: rejection.organization_slug,
+			event_slug: rejection.event_slug
+		});
+		return isAuthenticated ? eventPath : loginHref(eventPath);
+	});
 
 	const rejectionBody = $derived(
 		rejection

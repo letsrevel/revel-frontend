@@ -2953,7 +2953,7 @@
 		"rejectedHint": "Contatta chi organizza per ricevere un nuovo invito.",
 		"rejectedCta": "Sfoglia gli eventi",
 		"rejectedGoToEvent": "Vai all'evento",
-		"rejectedInvitedHint": "Hai già un invito? Lo trovi nella pagina dell'evento."
+		"rejectedInvitedHint": "Hai già accettato l'invito? Lo trovi nella pagina dell'evento."
 	},
 	"joinOrgPage": {
 		"pageTitle": "Unisciti a {organizationName}",
