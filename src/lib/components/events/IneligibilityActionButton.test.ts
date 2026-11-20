@@ -6,6 +6,8 @@
  * invitation is already held: offering the claim again succeeds, reloads
  * with the pending_event_token cookie still set, and shows the claim button
  * again instead of the step that really blocks.
+ * Exception (#1274): a step that the token's own waiver removes, for example
+ * the questionnaire on a public event; the claim then clears that step.
  */
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
@@ -82,6 +84,20 @@ describe('IneligibilityActionButton claim button gating', () => {
 		setup(nextStep, token);
 		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: getActionButtonText(nextStep) })).toBeInTheDocument();
+	});
+
+	it('offers the claim instead of the questionnaire when the token waives the questionnaire (#1274)', () => {
+		// A logged-in visitor of a public event: no invitation step comes first.
+		setup('complete_questionnaire', {
+			...token,
+			uses: 11,
+			max_uses: 30,
+			invitation_payload: { waives_questionnaire: true }
+		});
+		expect(screen.getByRole('button', { name: claimName() })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: getActionButtonText('complete_questionnaire') })
+		).not.toBeInTheDocument();
 	});
 
 	it('shows the complete-profile CTA, not the claim button, once the invitation is held', () => {

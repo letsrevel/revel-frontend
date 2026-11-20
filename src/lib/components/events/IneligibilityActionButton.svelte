@@ -20,6 +20,7 @@
 	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateAll } from '$app/navigation';
+	import { shouldOfferTokenClaim } from '$lib/utils/event-token-claim';
 	import { toast } from 'svelte-sonner';
 	import {
 		Check,
@@ -73,18 +74,8 @@
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const queryClient = useQueryClient();
 
-	// Claiming only helps while the invitation gate is what blocks the user.
-	// The backend checks invitations before membership, profile, questionnaire
-	// and availability, so any later next_step means the user already holds an
-	// invitation (or the event needs none). Offering the claim then loops: it
-	// succeeds, the page reloads with the pending_event_token cookie still set,
-	// and the claim button comes back instead of the step that actually blocks.
-	const showClaimButton = $derived(
-		!!eventTokenDetails?.grants_invitation &&
-			(!nextStep ||
-				nextStep === 'request_invitation' ||
-				nextStep === 'wait_for_invitation_approval')
-	);
+	// Claim only where it can clear the step; see shouldOfferTokenClaim.
+	const showClaimButton = $derived(shouldOfferTokenClaim(eventTokenDetails, nextStep));
 
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
@@ -392,7 +383,7 @@
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<!-- Use ClaimInvitationButton while the invitation gate is the blocker (see showClaimButton) -->
+	<!-- Use ClaimInvitationButton where the claim clears the step (see showClaimButton) -->
 	{#if showClaimButton && eventTokenDetails}
 		<ClaimInvitationButton
 			tokenId={eventTokenDetails.id || ''}
