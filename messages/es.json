@@ -2953,7 +2953,8 @@
 		"rejectedHint": "Contacta con quien organiza el evento para conseguir una nueva invitación.",
 		"rejectedCta": "Explorar eventos",
 		"rejectedGoToEvent": "Ir al evento",
-		"rejectedInvitedHint": "¿Ya aceptaste la invitación? La encontrarás en la página del evento."
+		"rejectedInvitedHint": "¿Ya has aceptado la invitación? La encontrarás en la página del evento.",
+		"rejectedSignIn": "Inicia sesión para ver tu invitación"
 	},
 	"joinOrgPage": {
 		"pageTitle": "Únete a {organizationName}",

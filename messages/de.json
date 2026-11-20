@@ -2953,7 +2953,8 @@
 		"rejectedHint": "Wende dich an die Organisator*innen, um eine neue Einladung zu erhalten.",
 		"rejectedCta": "Events durchstöbern",
 		"rejectedGoToEvent": "Zum Event",
-		"rejectedInvitedHint": "Hast du die Einladung schon angenommen? Du findest sie auf der Event-Seite."
+		"rejectedInvitedHint": "Hast du die Einladung schon angenommen? Du findest sie auf der Event-Seite.",
+		"rejectedSignIn": "Anmelden, um deine Einladung zu sehen"
 	},
 	"joinOrgPage": {
 		"pageTitle": "{organizationName} beitreten",
