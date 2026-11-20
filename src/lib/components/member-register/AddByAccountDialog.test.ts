@@ -559,6 +559,53 @@ describe('AddByAccountDialog', () => {
 		);
 	});
 
+	it("f) looking up another account drops the previous account's preselected tier", async () => {
+		sdk.organizationadminuserlookupLookupUser
+			.mockResolvedValueOnce(found({ pending_invitation_id: 'i1' }))
+			.mockResolvedValueOnce(found({ pending_invitation_id: 'i2' }));
+		const { user, client } = setup([tier('t1', 'Full'), tier('t2', 'Student')]);
+		client.setQueryData(['organization', 'acme', 'member-invitations'], {
+			count: 1,
+			next: null,
+			previous: null,
+			results: [invitationRow('i1', 't2')]
+		});
+		await lookup(user);
+		await waitFor(() => expect(screen.getByLabelText('Tier')).toHaveValue('t2'));
+		const input = screen.getByLabelText('Account email');
+		await user.clear(input);
+		await user.type(input, 'bob@example.org');
+		await user.click(screen.getByRole('button', { name: 'Find account' }));
+		await waitFor(() => expect(sdk.organizationadminuserlookupLookupUser).toHaveBeenCalledTimes(2));
+		await screen.findByTestId('by-account-invitation-pending');
+		// i2 is not in the list: the admin must choose B's tier, not inherit A's.
+		expect(screen.getByLabelText('Tier')).toHaveValue('');
+		expect(screen.getByRole('button', { name: 'Resend invitation' })).toBeDisabled();
+	});
+
+	it('f) a tier the admin picks while preselection loads is kept', async () => {
+		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
+			found({ pending_invitation_id: 'i1' })
+		);
+		let settle: (value: unknown) => void = () => undefined;
+		sdk.organizationadminmemberinvitationsListMemberInvitations.mockReturnValue(
+			new Promise((resolve) => (settle = resolve))
+		);
+		const { user } = setup([tier('t1', 'Full'), tier('t2', 'Student')]);
+		await lookup(user);
+		await screen.findByTestId('by-account-invitation-pending');
+		await user.selectOptions(screen.getByLabelText('Tier'), 't1');
+		settle({
+			data: { count: 1, next: null, previous: null, results: [invitationRow('i1', 't2')] },
+			response: { status: 200 }
+		});
+		await waitFor(() =>
+			expect(sdk.organizationadminmemberinvitationsListMemberInvitations).toHaveBeenCalled()
+		);
+		await new Promise((r) => setTimeout(r, 20));
+		expect(screen.getByLabelText('Tier')).toHaveValue('t1');
+	});
+
 	it('f) Resend fetches the invitations when they are not cached', async () => {
 		sdk.organizationadminuserlookupLookupUser.mockResolvedValue(
 			found({ pending_invitation_id: 'i1' })

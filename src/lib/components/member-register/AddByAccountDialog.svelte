@@ -80,6 +80,8 @@
 	// Bumped whenever the lockout starts or ends, so `throttled` re-evaluates.
 	let throttleTick = $state(0);
 	let tierId = $state('');
+	// The admin picked a tier for the shown account: preselection must not override it.
+	let tierTouched = false;
 	// Set when an invite was refused with 400: the re-lookup must explain why, and an
 	// answer that still says "addable" means the refusal was something else.
 	let refusedAdd = $state<unknown>(null);
@@ -97,6 +99,7 @@
 		outcome = null;
 		failure = null;
 		tierId = '';
+		tierTouched = false;
 		refusedAdd = null;
 		pendingNotice = null;
 		notice = null;
@@ -176,7 +179,12 @@
 				results = fetched.results;
 			}
 			const tier = results.find((i) => i.id === invitationId)?.tier_id;
-			if (tier && stillShowing(typed) && selectableTiers.some((t) => t.id === tier)) {
+			if (
+				tier &&
+				!tierTouched &&
+				stillShowing(typed) &&
+				selectableTiers.some((t) => t.id === tier)
+			) {
 				tierId = tier;
 			}
 		} catch {
@@ -242,8 +250,11 @@
 	}
 
 	function oninput() {
-		// Any edit invalidates what was found for the previous value.
+		// Any edit invalidates what was found for the previous value, including the
+		// tier chosen (or preselected) for that account.
 		outcome = null;
+		tierId = '';
+		tierTouched = false;
 		failure = null;
 		notice = null;
 		emailError = null;
@@ -482,7 +493,13 @@
 					{:else}
 						<div class="space-y-2">
 							<Label for="aba-tier">{m['memberPeople.byAccount.tierLabel']()}</Label>
-							<select id="aba-tier" class={SELECT_CLASS} bind:value={tierId} disabled={busy}>
+							<select
+								id="aba-tier"
+								class={SELECT_CLASS}
+								bind:value={tierId}
+								disabled={busy}
+								onchange={() => (tierTouched = true)}
+							>
 								<option value="" disabled>{m['memberRegister.tierPlaceholder']()}</option>
 								{#each selectableTiers as tier (tier.id)}
 									<option value={tier.id}>{tier.name}</option>

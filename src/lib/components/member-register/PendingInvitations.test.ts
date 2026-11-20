@@ -144,6 +144,12 @@ describe('PendingInvitations', () => {
 		expect(screen.getByTestId('register-error')).toHaveTextContent(
 			'already accepted or has expired'
 		);
+		// The focused Withdraw button is gone: focus lands on the section heading, not <body>.
+		await waitFor(() =>
+			expect(document.activeElement).toBe(
+				screen.getByRole('heading', { name: 'Pending invitations' })
+			)
+		);
 	});
 
 	it('shows a load failure with a retry instead of hiding the section', async () => {

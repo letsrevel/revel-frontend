@@ -80,6 +80,17 @@
 		fallbackEl?.focus();
 	}
 
+	// The row being withdrawn is about to unmount: refresh, then move focus to its
+	// neighbour (or the fallbacks in `restoreFocus`).
+	function refreshThenRestoreFocus(invitation: MemberInvitationSchema) {
+		const index = invitations.findIndex((i) => i.id === invitation.id);
+		const neighbour = invitations[index + 1] ?? invitations[index - 1] ?? null;
+		const neighbourId = neighbour && neighbour.id !== invitation.id ? neighbour.id : null;
+		invalidateInvitations(queryClient, slug)
+			.catch(() => undefined)
+			.then(() => restoreFocus(neighbourId));
+	}
+
 	const withdraw = createMutation(() => ({
 		mutationFn: (invitation: MemberInvitationSchema) =>
 			revokeMemberInvitation(slug, accessToken, invitation.id),
@@ -92,19 +103,15 @@
 			toast.success(
 				m['memberPeople.invitations.withdrawn']({ name: invitation.invitee_display_name })
 			);
-			const index = invitations.findIndex((i) => i.id === invitation.id);
-			const neighbour = invitations[index + 1] ?? invitations[index - 1] ?? null;
-			const neighbourId = neighbour && neighbour.id !== invitation.id ? neighbour.id : null;
-			invalidateInvitations(queryClient, slug)
-				.catch(() => undefined)
-				.then(() => restoreFocus(neighbourId));
+			refreshThenRestoreFocus(invitation);
 		},
-		onError: (error: unknown) => {
+		onError: (error: unknown, invitation) => {
 			if (error instanceof RegisterApiError && error.status === 404) {
-				// Accepted or expired meanwhile: it is gone either way, so refresh the list.
+				// Accepted or expired meanwhile: it is gone either way, so refresh the list
+				// (its row, and the focused Withdraw button with it, disappears).
 				failure = { stale: true, message: m['memberPeople.invitations.gone'](), detail: null };
 				failureIsGone = true;
-				invalidateInvitations(queryClient, slug).catch(() => undefined);
+				refreshThenRestoreFocus(invitation);
 				return;
 			}
 			failure = describeRegisterError(error, 'save');
