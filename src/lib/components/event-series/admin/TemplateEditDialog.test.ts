@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import TemplateEditDialog from './TemplateEditDialog.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import * as m from '$lib/paraglide/messages.js';
 import { VISIBILITY_DEFAULTS } from '$lib/utils/event-visibility';
 import type {
 	EventDetailSchema,
@@ -177,6 +178,37 @@ describe('TemplateEditDialog', () => {
 
 		expect(addressVisibilitySelect().value).toBe('members-only');
 		expect(pronounCheckbox().checked).toBe(true);
+	});
+
+	// --- 1b. Venue visibility copy (#1254) ----------------------------------
+
+	it('shows the reworded address-visibility hint and no venue note when the template has no venue', async () => {
+		renderDialog(makeTemplateEvent());
+		await waitForLoaded();
+
+		expect(screen.getByTestId('template-edit-address-visibility-hint')).toHaveTextContent(
+			m['detailsStep.addressVisibilityHint']()
+		);
+		expect(m['detailsStep.addressVisibilityHint']()).not.toMatch(/private venues/i);
+		// The hint describes the ADDRESS visibility select, not the event visibility one.
+		expect(screen.getByTestId('template-edit-address-visibility')).toHaveAccessibleDescription(
+			m['detailsStep.addressVisibilityHint']()
+		);
+		expect(screen.queryByTestId('template-edit-venue-public-note')).toBeNull();
+	});
+
+	it('explains that the venue stays public when the template has a venue', async () => {
+		renderDialog(
+			makeTemplateEvent({ venue: { id: 'v1', name: 'The Hall' } as EventDetailSchema['venue'] })
+		);
+		await waitForLoaded();
+
+		expect(screen.getByTestId('template-edit-venue-public-note')).toHaveTextContent(
+			m['recurringEvents.templateDialog.fields.venuePublicNote']({ venue: 'The Hall' })
+		);
+		expect(screen.getByTestId('template-edit-address-visibility')).toHaveAccessibleDescription(
+			expect.stringContaining('The Hall')
+		);
 	});
 
 	// --- 2. Payload shape -----------------------------------------------------
