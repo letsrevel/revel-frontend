@@ -871,10 +871,17 @@ export async function claimTicketViaApi(
 	options: { seatId?: string } = {}
 ): Promise<{ id: string; status: string }> {
 	const api = await ApiClient.login(user.email, user.password);
+	// The cart endpoint (#846) is the only checkout since backend #1392 removed the
+	// single-tier one: one item for this tier.
 	const response = await api.post<{ tickets?: Array<{ id: string; status: string }> }>(
-		`/api/events/${eventId}/tickets/${tierId}/checkout`,
+		`/api/events/${eventId}/checkout`,
 		{
-			tickets: [{ guest_name: `${user.firstName} ${user.lastName}`, seat_id: options.seatId }]
+			items: [
+				{
+					tier_id: tierId,
+					tickets: [{ guest_name: `${user.firstName} ${user.lastName}`, seat_id: options.seatId }]
+				}
+			]
 		}
 	);
 	const ticket = response.tickets?.[0];
@@ -923,9 +930,9 @@ export async function startOnlineCheckout(
 ): Promise<string> {
 	const api = await ApiClient.login(user.email, user.password);
 	const reserve = await api.post<{ reservation_id?: string; requires_payment?: boolean }>(
-		`/api/events/${eventId}/tickets/${tierId}/checkout`,
+		`/api/events/${eventId}/checkout`,
 		{
-			tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }],
+			items: [{ tier_id: tierId, tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }] }],
 			// An attendee invoice is only generated when the buyer supplied
 			// billing info at checkout (payment.buyer_billing_snapshot).
 			billing_info: options.billingInfo
