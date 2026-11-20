@@ -4,9 +4,10 @@
 
 	/**
 	 * Studio-volume hint for an account whose profile staff cannot see because the
-	 * person has not interacted with the organization yet (backend ADR-0020).
-	 * The explanation is the screen-reader content; sighted staff get the same
-	 * sentence from `showExplanation` where there is room for it.
+	 * person has no active connection to the organization (backend ADR-0020).
+	 * Screen readers get the full sentence as the badge's `srLabel`; with
+	 * `showExplanation` the visible explanation says it instead, so the badge
+	 * reads its plain label and nothing is announced twice.
 	 */
 	interface Props {
 		showExplanation?: boolean;
@@ -21,7 +22,7 @@
 		tone="neutral"
 		size="sm"
 		label={m['unknownHolder.badge']()}
-		srLabel={m['unknownHolder.srLabel']()}
+		srLabel={showExplanation ? undefined : m['unknownHolder.srLabel']()}
 		data-testid="unknown-holder-badge"
 	/>
 	{#if showExplanation}

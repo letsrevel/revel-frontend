@@ -3,6 +3,7 @@ import {
 	getUserDisplayName,
 	getUserRealName,
 	isUnknownHolder,
+	secondaryEmail,
 	staffViewDisplayName
 } from './user-display';
 
@@ -73,5 +74,23 @@ describe('isUnknownHolder', () => {
 		expect(isUnknownHolder({})).toBe(false);
 		expect(isUnknownHolder(null)).toBe(false);
 		expect(isUnknownHolder(undefined)).toBe(false);
+	});
+});
+
+describe('secondaryEmail', () => {
+	it('returns the email when the name is something else', () => {
+		expect(secondaryEmail({ display_name: 'Gina', email: 'gina@example.com' })).toBe(
+			'gina@example.com'
+		);
+	});
+
+	it('returns null when the name already is the email (no supplied name)', () => {
+		expect(
+			secondaryEmail({ display_name: 'gina@example.com', email: 'gina@example.com' })
+		).toBeNull();
+	});
+
+	it('returns null when there is no email', () => {
+		expect(secondaryEmail({ display_name: 'Gina', email: null })).toBeNull();
 	});
 });

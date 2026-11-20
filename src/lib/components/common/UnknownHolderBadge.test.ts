@@ -18,5 +18,9 @@ describe('UnknownHolderBadge', () => {
 		expect(screen.getByTestId('unknown-holder-explanation')).toHaveTextContent(
 			m['unknownHolder.explanation']()
 		);
+		// The visible explanation carries the sentence: the badge must not repeat it.
+		expect(screen.getByTestId('unknown-holder-badge')).not.toHaveTextContent(
+			m['unknownHolder.srLabel']()
+		);
 	});
 });

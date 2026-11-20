@@ -23,8 +23,6 @@ import type {
 } from '$lib/api/generated/types.gen';
 import type { SeatStatus } from '$lib/components/tickets/seating-view';
 import * as m from '$lib/paraglide/messages.js';
-import { isInvitationRequiredBody } from '$lib/member-register/error-codes';
-import { extractPurchaseErrorMessage } from '$lib/components/tickets/purchase-error';
 
 /** Payment methods a box-office sale may use (spec §2). */
 export type BoxOfficePaymentMethod = 'at_the_door' | 'free';
@@ -90,17 +88,6 @@ export function buildSellRequest(args: BuildSellArgs): BoxOfficeSellRequest | nu
 	if (last) body.last_name = last;
 
 	return body;
-}
-
-/**
- * Toast text for a failed sale. `invitation_required` (the account has no
- * connection to the organization yet, ADR-0020) is matched on its code, never
- * on the translated detail; everything else goes through the purchase-error
- * extractor.
- */
-export function boxOfficeSellErrorMessage(err: unknown): string {
-	if (isInvitationRequiredBody(err)) return m['orgAdmin.seating.boxOffice.invitationRequired']();
-	return extractPurchaseErrorMessage(err, m['orgAdmin.seating.boxOffice.sellFailedToast']());
 }
 
 /** The sector id owning `seatId`, or null when the seat is not in the chart. */

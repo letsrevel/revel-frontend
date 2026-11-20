@@ -11929,6 +11929,5 @@
 	"unknownHolder.srLabel": "Profilo non condiviso: questa persona non ha alcun legame attivo con la tua organizzazione.",
 	"unknownHolder.explanation": "Questa persona non ha alcun legame attivo con la tua organizzazione, quindi vengono mostrati solo l'email e il nome che hai inserito.",
 	"unknownHolder.noteUnavailable": "Nota non disponibile: questa persona non ha alcun legame attivo con la tua organizzazione",
-	"attendeesAdmin.invitationRequired": "Questa persona non ha ancora alcun legame con la tua organizzazione, quindi non puoi confermare la partecipazione al suo posto. Invitala all'evento o chiedile di confermare, acquistare un biglietto o candidarsi di persona per prima.",
-	"orgAdmin.seating.boxOffice.invitationRequired": "Questo account non ha ancora alcun legame con la tua organizzazione. Vendi all'indirizzo email della persona oppure chiedile di confermare la partecipazione o acquistare un biglietto di persona per prima."
+	"attendeesAdmin.invitationRequired": "Questa persona non ha ancora alcun legame con la tua organizzazione, quindi non puoi confermare la partecipazione al suo posto. Invitala all'evento o chiedile di confermare, acquistare un biglietto o candidarsi di persona per prima."
 }

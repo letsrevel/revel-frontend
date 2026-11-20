@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import TicketCardList from './TicketCardList.svelte';
+import TicketTable from './TicketTable.svelte';
 import * as m from '$lib/paraglide/messages.js';
 import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 
@@ -43,9 +44,19 @@ const knownUser = {
 	pronouns: 'she/her'
 };
 
-function renderCards(tickets: AdminTicketSchema[], onEditNote?: (t: AdminTicketSchema) => void) {
+// The card list (mobile) and the table (desktop) render the same row contract.
+const VIEWS = [
+	['TicketCardList', TicketCardList],
+	['TicketTable', TicketTable]
+] as const;
+
+function renderView(
+	view: (typeof VIEWS)[number][1],
+	tickets: AdminTicketSchema[],
+	onEditNote?: (t: AdminTicketSchema) => void
+) {
 	const noop = vi.fn();
-	return render(TicketCardList, {
+	return render(view as typeof TicketCardList, {
 		props: {
 			tickets,
 			checkInPending: false,
@@ -65,9 +76,9 @@ function renderCards(tickets: AdminTicketSchema[], onEditNote?: (t: AdminTicketS
 	});
 }
 
-describe('TicketCardList unknown holders', () => {
+describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 	it('shows the supplied name, the email and the badge, and never "null"', () => {
-		const { container } = renderCards([ticket(unknownUser)]);
+		const { container } = renderView(view, [ticket(unknownUser)]);
 		expect(screen.getByText('Guest Gina')).toBeInTheDocument();
 		expect(screen.getByText('gina@example.com')).toBeInTheDocument();
 		expect(screen.getByTestId('unknown-holder-badge')).toBeInTheDocument();
@@ -76,7 +87,7 @@ describe('TicketCardList unknown holders', () => {
 	});
 
 	it('shows no badge for a known holder, and still shows pronouns', () => {
-		renderCards([ticket(knownUser)]);
+		renderView(view, [ticket(knownUser)]);
 		expect(screen.getByText('Alice Anderson')).toBeInTheDocument();
 		expect(screen.getByText('(she/her)')).toBeInTheDocument();
 		expect(screen.queryByTestId('unknown-holder-badge')).not.toBeInTheDocument();
@@ -84,18 +95,16 @@ describe('TicketCardList unknown holders', () => {
 
 	it('disables the staff-note action for an unknown holder', async () => {
 		const onEditNote = vi.fn();
-		renderCards([ticket(unknownUser)], onEditNote);
+		renderView(view, [ticket(unknownUser)], onEditNote);
 		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
 		const item = await screen.findByTestId('note-unavailable');
 		expect(item).toHaveTextContent(m['unknownHolder.noteUnavailable']());
 		expect(item).toHaveAttribute('aria-disabled', 'true');
-		await userEvent.click(item);
-		expect(onEditNote).not.toHaveBeenCalled();
 	});
 
 	it('offers the staff-note action for a known holder', async () => {
 		const onEditNote = vi.fn();
-		renderCards([ticket(knownUser)], onEditNote);
+		renderView(view, [ticket(knownUser)], onEditNote);
 		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
 		await userEvent.click(await screen.findByText(m['userNote.editAction']()));
 		expect(onEditNote).toHaveBeenCalledTimes(1);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder, secondaryEmail } from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
@@ -62,7 +62,9 @@
 									</Badge>
 								{/if}
 							</div>
-							<p class="text-sm text-muted-foreground">{rsvp.user.email || 'N/A'}</p>
+							{#if secondaryEmail(rsvp.user)}
+								<p class="text-sm text-muted-foreground">{secondaryEmail(rsvp.user)}</p>
+							{/if}
 							{#if isUnknownHolder(rsvp.user)}
 								<UnknownHolderBadge class="mt-1" />
 							{/if}

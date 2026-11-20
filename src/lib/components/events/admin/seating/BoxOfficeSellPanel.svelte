@@ -21,13 +21,13 @@
 	import { AlertCircle, LoaderCircle } from '@lucide/svelte';
 	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import { formatMoney } from '$lib/utils/format';
+	import { extractPurchaseErrorMessage } from '$lib/components/tickets/purchase-error';
 	import type { SeatView } from '$lib/components/tickets/seating-view';
 	import { seatViewsFrom, sectorGroupsFrom } from './seat-override-model';
 	import BoxOfficeSeatPicker from './BoxOfficeSeatPicker.svelte';
 	import {
 		BOX_OFFICE_PAYMENT_METHODS,
 		boxOfficePaymentMethodLabel,
-		boxOfficeSellErrorMessage,
 		buildSellRequest,
 		doorSalePrice,
 		isSellableStatus,
@@ -217,7 +217,9 @@
 		onError: (err: unknown) => {
 			// Clear any prior success box so a failed sale can't read as issued.
 			lastResult = null;
-			toast.error(boxOfficeSellErrorMessage(err));
+			toast.error(
+				extractPurchaseErrorMessage(err, m['orgAdmin.seating.boxOffice.sellFailedToast']())
+			);
 		}
 	}));
 

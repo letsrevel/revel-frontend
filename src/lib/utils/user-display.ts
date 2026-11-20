@@ -66,6 +66,17 @@ export function staffViewDisplayName(user: StaffViewUserInfo, fallback = 'Unknow
 }
 
 /**
+ * The email to show on a secondary line under the name, or null when the name
+ * already is the email (an unknown holder with no supplied name), so the same
+ * address is not printed twice.
+ */
+export function secondaryEmail(user: StaffViewUserInfo): string | null {
+	const email = user.email?.trim();
+	if (!email) return null;
+	return user.display_name?.trim() === email ? null : email;
+}
+
+/**
  * True when the account's profile is withheld from staff (nothing but the email and the
  * name staff typed). Only an explicit `known: false` counts: a missing flag means an
  * older or partial payload and is treated as known so no hint is shown by mistake.
