@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) and other AI assistants when working with code in this repository.
 
+## Writing Style: ASD-STE100
+
+**Standing rule (decided 2026-11-20).** Write in ASD-STE100 Simplified Technical English wherever possible.
+This applies to chat replies, PR titles and descriptions, issues, and responses (for example, replies to review comments).
+
+- Keep each sentence short: 20 words or fewer for instructions, 25 words or fewer for descriptions.
+- Use the active voice and simple verb tenses.
+- Write one instruction in each sentence. Give the steps in the sequence that the reader does them.
+- Use one word for one meaning, and use the same term for the same thing every time.
+- Use articles ("a", "the"). Do not remove words only to make the text shorter.
+- Use vertical lists for sequences and for text that has many parts.
+
+Code, identifiers, commands, quoted text, log output, and technical names stay as they are.
+Do not rewrite existing documentation only to apply this rule.
+
 ## Important Reference Documents
 
 - **`.dev-docs/guides/common-fixes.md`** (local-only, gitignored) - Common issues and their solutions. **READ THIS FIRST** to avoid recurring mistakes with TanStack Query, backend enums, and Svelte 5 patterns.
