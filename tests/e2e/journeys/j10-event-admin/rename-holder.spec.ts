@@ -14,11 +14,11 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // name with the purchaser underneath, and the backend's guest_name search finds
 // the ticket by its NEW holder name.
 //
-// On the "(Purchased by …)" line: the row renders it whenever guest_name
-// differs from the purchaser's display name (`getGuestNameIfDifferent`).
-// claimTicketViaApi seeds guest_name with the buyer's OWN full name and
-// register leaves `preferred_name` blank, so the two match and the line is
-// absent until this spec renames the holder.
+// Staff view of the holder (backend ADR-0020): an offline ticket stays
+// PENDING, and a pending checkout does not make the buyer known to the
+// organization. So the row shows the name on the ticket (guest_name) with a
+// "Profile not shared" badge, never the buyer's profile name, and no
+// "(Purchased by …)" line, before and after the rename.
 //
 // Isolation: an own event with an offline tier (its tickets stay PENDING, so
 // they remain renamable — the backend 409s once checked in or cancelled) plus
@@ -72,10 +72,12 @@ test.describe('J10 rename ticket holder @p1', () => {
 			await expect(holderCell.first()).toBeVisible({ timeout: 10_000 });
 		}).toPass({ timeout: 60_000 });
 
-		// Holder and purchaser are both on the row now.
+		// The holder is still unknown: the badge stays and the buyer's profile name
+		// does not leak through a "(Purchased by …)" line.
 		await expect(
-			page.getByText(`(Purchased by ${buyerName})`).filter({ visible: true }).first()
+			page.getByTestId('unknown-holder-badge').filter({ visible: true }).first()
 		).toBeVisible();
+		await expect(page.getByText(/\(Purchased by /).filter({ visible: true })).toHaveCount(0);
 
 		// Backend search matches guest_name (server-side, URL-driven). Garbage
 		// query FIRST: the row is already on screen, so asserting the holder-name
