@@ -79,7 +79,12 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 
 		expect(onVenueSelect).toHaveBeenCalledWith(null);
 		// The location must stay private: the venue's public address and city do not carry over.
-		expect(onUpdate).toHaveBeenCalledWith({ address: null, city_id: null });
+		expect(onUpdate).toHaveBeenCalledWith({
+			address: null,
+			city_id: null,
+			location_maps_url: null,
+			location_maps_embed: null
+		});
 		expect(onCitySelect).toHaveBeenCalledWith(null);
 		expect(screen.queryByText(m['locationSection.venuePublicNote']())).toBeNull();
 		expect(screen.getByLabelText(m['locationSection.addressVisibility']())).toBeInTheDocument();
@@ -92,6 +97,41 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 		expect((document.getElementById('city-search') as HTMLInputElement).value).toBe('');
 		// The button unmounted: focus moves to the address field, not <body> (WCAG 2.4.3).
 		expect(document.activeElement).toBe(addressInput);
+	});
+
+	it('does not carry the previous map links into the custom address', async () => {
+		const user = userEvent.setup();
+		const onUpdate = vi.fn();
+		render(LocationSectionHarness, {
+			props: {
+				client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+				initialFormData: {
+					venue_id: 'venue_1',
+					address: venue.address,
+					city_id: 1,
+					location_maps_url: 'https://maps.app.goo.gl/hall',
+					location_maps_embed: 'https://www.google.com/maps/embed?pb=hall'
+				},
+				initialCity: venue.city,
+				initialVenue: venue,
+				onUpdate,
+				onCitySelect: vi.fn(),
+				onVenueSelect: vi.fn()
+			}
+		});
+
+		await user.click(
+			screen.getByRole('button', { name: m['locationSection.useCustomAddressInstead']() })
+		);
+
+		expect(onUpdate).toHaveBeenCalledWith(
+			expect.objectContaining({ location_maps_url: null, location_maps_embed: null })
+		);
+		// The maps section opened for the old data; its fields are now empty and no preview of the old place shows.
+		expect((document.getElementById('location-maps-url') as HTMLInputElement).value).toBe('');
+		expect((document.getElementById('location-maps-embed') as HTMLTextAreaElement).value).toBe('');
+		expect(screen.queryByText(m['detailsStep.mapsPreview']())).toBeNull();
+		expect(document.querySelector('iframe')).toBeNull();
 	});
 
 	it('shows the reworded hint, without "private venues", in address mode', () => {

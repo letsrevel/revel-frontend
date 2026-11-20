@@ -105,14 +105,19 @@
 
 	/**
 	 * "Use a custom address instead" from the venue note: the organizer wants the
-	 * location private, so the venue's public address and city must not carry over
-	 * into the custom-address fields (the plain venue→address switch keeps them).
+	 * location private, so the venue's public address, city and map links must not
+	 * carry over into the custom-address fields (the plain venue→address switch keeps them).
 	 * Focus then moves to the address field, since the button itself unmounts.
 	 */
 	async function useCustomAddressInstead() {
 		setMode('address');
 		onCitySelect(null);
-		onUpdate({ address: null, city_id: null });
+		onUpdate({
+			address: null,
+			city_id: null,
+			location_maps_url: null,
+			location_maps_embed: null
+		});
 		await tick();
 		document.getElementById('location-address')?.focus();
 	}
