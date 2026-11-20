@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		CitySchema,
@@ -103,6 +104,28 @@
 	}
 
 	/**
+	 * "Use a custom address instead" from the venue note: the organizer may want the
+	 * location private, so the venue's public address, city and map links must not
+	 * carry over into the custom-address fields. The address visibility setting stays
+	 * as it is; it shows directly below the address field.
+	 * Focus then moves to the address field, since the button itself unmounts.
+	 */
+	async function useCustomAddressInstead() {
+		setMode('address');
+		onCitySelect(null);
+		onUpdate({
+			address: null,
+			city_id: null,
+			location_maps_url: null,
+			location_maps_embed: null
+		});
+		// The maps section opened for the old links; a fresh address form starts closed.
+		mapsExpanded = false;
+		await tick();
+		document.getElementById('location-address')?.focus();
+	}
+
+	/**
 	 * Handle going back to CTA selection
 	 */
 	function goBackToSelection() {
@@ -117,6 +140,7 @@
 			location_maps_url: null,
 			location_maps_embed: null
 		});
+		mapsExpanded = false;
 		userSelectedMode = 'none';
 	}
 
@@ -420,6 +444,21 @@
 		<div class="space-y-4">
 			<!-- Venue Selector -->
 			<VenueSelector {organizationSlug} {selectedVenue} onSelect={handleVenueSelect} />
+
+			<!-- Venues are public by design: the Address Visibility setting does not hide them -->
+			<div
+				class="rounded-md border border-border bg-muted/50 p-3 text-sm"
+				data-testid="venue-public-note"
+			>
+				<p class="text-muted-foreground">{m['locationSection.venuePublicNote']()}</p>
+				<button
+					type="button"
+					onclick={useCustomAddressInstead}
+					class="mt-2 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{m['locationSection.useCustomAddressInstead']()}
+				</button>
+			</div>
 
 			<!-- Read-only City (from venue) -->
 			{#if selectedVenue?.city}

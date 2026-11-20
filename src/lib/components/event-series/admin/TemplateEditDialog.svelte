@@ -554,6 +554,7 @@
 								disabled={updateMutation.isPending}
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 								data-testid="template-edit-address-visibility"
+								aria-describedby="template-address-visibility-hint"
 							>
 								<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
 								<option value="unlisted">{m['SFwESEssentialsStep.unlisted']()}</option>
@@ -566,6 +567,18 @@
 								<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
 								<option value="staff-only">{m['SFwESEssentialsStep.staffOnly']()}</option>
 							</select>
+							<p
+								class="text-xs text-muted-foreground"
+								id="template-address-visibility-hint"
+								data-testid="template-edit-address-visibility-hint"
+							>
+								{m['detailsStep.addressVisibilityHint']()}
+								{#if templateQuery.data?.venue}<span data-testid="template-edit-venue-public-note"
+										>{m['recurringEvents.templateDialog.fields.venuePublicNote']({
+											venue: templateQuery.data.venue.name
+										})}</span
+									>{/if}
+							</p>
 						</div>
 					</section>
 

@@ -166,6 +166,18 @@ describe('EventQuickInfo', () => {
 		expect(screen.getByText('Location TBD')).toBeInTheDocument();
 	});
 
+	it('renders the venue, not the backend address-hidden placeholder, in venue mode', () => {
+		const venueEvent = {
+			...mockEvent,
+			address: 'Address visible to attendees only',
+			venue: { id: 'v1', name: 'The Hall', address: '1 Public St', city: mockEvent.city }
+		} as EventDetailSchema;
+		render(EventQuickInfo, { props: { event: venueEvent } });
+		expect(screen.getByText(/The Hall/)).toBeInTheDocument();
+		expect(screen.getByText(/1 Public St/)).toBeInTheDocument();
+		expect(screen.queryByText(/visible to attendees only/i)).not.toBeInTheDocument();
+	});
+
 	it('handles city without country', () => {
 		const eventWithCityOnly = {
 			...mockEvent,
