@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After a wrong two-factor code at login, the page goes back to the password step with a clear message. (#1268, #1264)
 - On narrow screens, the questionnaire form buttons stay inside their card. (#1273)
 - When an invitation link grants an invitation, the event page offers to claim it before any other step, so the link's waivers apply. After the claim, the page shows the next step. (#1275)
+- When an invitation link no longer works, the join page links to the event, and a signed-out visitor can sign in to see their invitation. (#1277)
 
 ## [2.39.1] - 2026-11-17
 
