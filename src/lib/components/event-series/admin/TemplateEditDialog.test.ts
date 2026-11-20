@@ -203,9 +203,12 @@ describe('TemplateEditDialog', () => {
 		);
 		await waitForLoaded();
 
-		expect(screen.getByTestId('template-edit-venue-public-note')).toHaveTextContent(
-			m['recurringEvents.templateDialog.fields.venuePublicNote']({ venue: 'The Hall' })
-		);
+		const note = m['recurringEvents.templateDialog.fields.venuePublicNote']({ venue: 'The Hall' });
+		expect(screen.getByTestId('template-edit-venue-public-note')).toHaveTextContent(note);
+		// This dialog cannot change the venue (TemplateEditSchema has no venue_id), so the
+		// note must not advise a custom address in place of the venue.
+		expect(note).not.toMatch(/custom address/i);
+		expect(note).toMatch(/cannot change or remove the series venue here/i);
 		expect(screen.getByTestId('template-edit-address-visibility')).toHaveAccessibleDescription(
 			expect.stringContaining('The Hall')
 		);
