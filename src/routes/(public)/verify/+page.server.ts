@@ -5,7 +5,12 @@ import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { getApiFailure, linkTokenFailureMessage } from '$lib/server/api-result';
-import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import {
+	claimPendingTokens,
+	dropClaimedEventToken,
+	setClaimFlashCookie,
+	type ClaimResults
+} from '$lib/server/token-claim';
 import { log } from '$lib/server/logger';
 import { sessionRememberMe } from '$lib/server/session';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
@@ -60,8 +65,9 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 
 			// Attempt to claim any pending invitation tokens
 			// This is done silently - failures won't interrupt the verification flow
+			let claimResults: ClaimResults = {};
 			if (access) {
-				const claimResults = await claimPendingTokens(cookies, access, fetch);
+				claimResults = await claimPendingTokens(cookies, access, fetch);
 				setClaimFlashCookie(cookies, claimResults);
 			}
 
@@ -77,7 +83,13 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 			// returnUrl (registration with `?returnUrl=`, BE #1023); the profile
 			// page otherwise, so a new user can complete their profile. The link
 			// is attacker-craftable, so the value goes through safeReturnUrl.
-			throw redirect(303, safeReturnUrl(url.searchParams.get('returnUrl'), '/account/profile'));
+			throw redirect(
+				303,
+				dropClaimedEventToken(
+					safeReturnUrl(url.searchParams.get('returnUrl'), '/account/profile'),
+					claimResults
+				)
+			);
 		}
 
 		// If response was not ok, handle the error

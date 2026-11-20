@@ -1,11 +1,9 @@
 /**
- * Invitation-claim loop regression (PR #1115). The claim button must only
- * stand in for the CTA while the invitation gate is what blocks the user.
- * The backend evaluates InvitationGate before FullProfileGate, the
- * questionnaire gate and availability, so any later `next_step` means the
- * invitation is already held: offering the claim again succeeds, reloads
- * with the pending_event_token cookie still set, and shows the claim button
- * again instead of the step that really blocks.
+ * Invitation-claim gating (#1115, #1274). A token that grants an invitation
+ * always offers the claim first, whatever the next step: its waivers may clear
+ * that step (questionnaire, membership, purchase, capacity). The #1115 loop is
+ * prevented in ClaimInvitationButton, which deletes the pending_event_token
+ * cookie after a successful claim, so the reload carries no token.
  */
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
@@ -65,40 +63,54 @@ describe('IneligibilityActionButton claim button gating', () => {
 		['no next step', null],
 		['an undefined next step', undefined],
 		['request_invitation', 'request_invitation'],
-		['wait_for_invitation_approval', 'wait_for_invitation_approval']
-	])('offers the claim button for a granting token with %s', (_label, nextStep) => {
+		['wait_for_invitation_approval', 'wait_for_invitation_approval'],
+		['complete_questionnaire', 'complete_questionnaire'],
+		['become_member', 'become_member'],
+		['join_waitlist', 'join_waitlist'],
+		['purchase_ticket', 'purchase_ticket'],
+		['complete_profile', 'complete_profile'],
+		['rsvp', 'rsvp']
+	])('offers the claim instead of the step for a granting token with %s', (_label, nextStep) => {
 		setup(nextStep, token);
 		expect(screen.getByRole('button', { name: claimName() })).toBeInTheDocument();
+		// Steps that render their own action button: that button is replaced.
+		// (The wait steps render only text, and request_invitation shares the claim slot.)
+		if (nextStep && !['request_invitation', 'wait_for_invitation_approval'].includes(nextStep)) {
+			expect(
+				screen.queryByRole('button', { name: getActionButtonText(nextStep) })
+			).not.toBeInTheDocument();
+		}
 	});
 
-	it.each<NextStep>([
-		'complete_profile',
-		'complete_questionnaire',
-		'purchase_ticket',
-		'rsvp',
-		'become_member',
-		'join_waitlist'
-	])('does not offer the claim button for a granting token with %s', (nextStep) => {
-		setup(nextStep, token);
+	it.each<NextStep>(['complete_questionnaire', 'complete_profile', 'rsvp'])(
+		'shows the %s action when the token grants no invitation',
+		(nextStep) => {
+			setup(nextStep, { ...token, grants_invitation: false });
+			expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
+			expect(
+				screen.getByRole('button', { name: getActionButtonText(nextStep) })
+			).toBeInTheDocument();
+		}
+	);
+
+	it('shows the step action without token details (after a claim cleared the token)', () => {
+		setup('complete_questionnaire', null);
 		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
-		expect(screen.getByRole('button', { name: getActionButtonText(nextStep) })).toBeInTheDocument();
-	});
-
-	it('shows the complete-profile CTA, not the claim button, once the invitation is held', () => {
-		setup('complete_profile', token);
 		expect(
-			screen.getByRole('button', { name: m['eligibility.actionButton.complete_profile']() })
-		).toBeEnabled();
-		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
+			screen.getByRole('button', { name: getActionButtonText('complete_questionnaire') })
+		).toBeInTheDocument();
 	});
 
-	it('never offers the claim button when the token grants no invitation', () => {
+	it('shows the step action for a granting token without an id', () => {
+		setup('complete_questionnaire', { ...token, id: null });
+		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: getActionButtonText('complete_questionnaire') })
+		).toBeInTheDocument();
+	});
+
+	it('never offers the claim when the token grants no invitation', () => {
 		setup(null, { ...token, grants_invitation: false });
-		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
-	});
-
-	it('never offers the claim button without token details', () => {
-		setup('request_invitation', null);
 		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
 	});
 
@@ -137,7 +149,7 @@ describe('IneligibilityActionButton complete_profile navigation', () => {
 
 	it('sends the user to the profile page with a redirect back to the event', async () => {
 		const user = userEvent.setup();
-		setup('complete_profile', token);
+		setup('complete_profile', null);
 
 		await user.click(
 			screen.getByRole('button', { name: m['eligibility.actionButton.complete_profile']() })

@@ -73,17 +73,15 @@
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const queryClient = useQueryClient();
 
-	// Claiming only helps while the invitation gate is what blocks the user.
-	// The backend checks invitations before membership, profile, questionnaire
-	// and availability, so any later next_step means the user already holds an
-	// invitation (or the event needs none). Offering the claim then loops: it
-	// succeeds, the page reloads with the pending_event_token cookie still set,
-	// and the claim button comes back instead of the step that actually blocks.
+	// A token that grants an invitation is always offered first: its waivers
+	// (questionnaire, membership, purchase, capacity) may clear the step below,
+	// and a claim on an invitation the user already holds is harmless. The claim
+	// loop of #1115 cannot come back: after a successful claim,
+	// ClaimInvitationButton deletes the pending_event_token cookie and strips
+	// ?et=, so the reload has no token and shows the real next step.
+	// Without a token id the claim (and the cookie clear) cannot work.
 	const showClaimButton = $derived(
-		!!eventTokenDetails?.grants_invitation &&
-			(!nextStep ||
-				nextStep === 'request_invitation' ||
-				nextStep === 'wait_for_invitation_approval')
+		!!eventTokenDetails?.grants_invitation && !!eventTokenDetails.id
 	);
 
 	let isLoading = $state(false);
@@ -392,10 +390,10 @@
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<!-- Use ClaimInvitationButton while the invitation gate is the blocker (see showClaimButton) -->
+	<!-- Use ClaimInvitationButton while a granting token is present (see showClaimButton) -->
 	{#if showClaimButton && eventTokenDetails}
 		<ClaimInvitationButton
-			tokenId={eventTokenDetails.id || ''}
+			tokenId={eventTokenDetails.id ?? ''}
 			tokenDetails={eventTokenDetails}
 			class="w-full"
 		/>

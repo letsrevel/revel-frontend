@@ -5,7 +5,7 @@ vi.mock('$lib/api/client', () => ({
 }));
 vi.mock('$lib/server/session', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/session')>()),
-	establishSession: vi.fn().mockResolvedValue(undefined)
+	establishSession: vi.fn().mockResolvedValue({})
 }));
 vi.mock('$lib/server/logger', () => ({
 	log: { debug: vi.fn(), warning: vi.fn(), error: vi.fn() }
@@ -46,6 +46,7 @@ async function loadRedirect(
 beforeEach(() => {
 	mockedExchange.mockReset();
 	vi.mocked(establishSession).mockClear();
+	vi.mocked(establishSession).mockResolvedValue({});
 });
 
 describe('/auth/callback load', () => {
@@ -114,6 +115,60 @@ describe('/auth/callback load', () => {
 		} as never);
 
 		expect((await loadRedirect('?token=good')).location).toBe('/dashboard');
+	});
+
+	it('drops the ?et= of the event token that the login just claimed (#1274)', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=et-1'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala');
+	});
+
+	it('keeps the ?et= when the event claim did not succeed', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=et-1'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: false }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala?et=et-1');
+	});
+
+	it('keeps an ?et= for another token than the one it claimed', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=other'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala?et=other');
 	});
 
 	it('redirects to the login error page when the exchange throws', async () => {

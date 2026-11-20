@@ -3,7 +3,7 @@
 	import { withSiteName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { loginHref } from '$lib/utils/safe-redirect';
 	import { Button } from '$lib/components/ui/button';
@@ -16,6 +16,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { forgetPendingEventToken } from '$lib/utils/pending-event-token';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { getImageUrl } from '$lib/utils/url';
@@ -30,11 +31,31 @@
 	const isAuthenticated = $derived(authStore.isAuthenticated);
 	const accessToken = $derived(authStore.accessToken);
 
+	/**
+	 * What one claim acts on, captured when the user clicks. The page component
+	 * is reused when the route param changes, so the callbacks must not read
+	 * `tokenId` or `token` again after the request.
+	 */
+	interface ClaimTarget {
+		id: string;
+		orgSlug: string;
+		eventSlug: string;
+		/** The navigation count at click time; the redirect only runs while it is current. */
+		navigation: number;
+	}
+
+	// Counts completed navigations, so "the user moved on" includes leaving the
+	// page and coming back with the Back button before the claim finished.
+	let navigationCount = 0;
+	afterNavigate(() => {
+		navigationCount += 1;
+	});
+
 	// Claim mutation
 	const claimMutation = createMutation(() => ({
-		mutationFn: async () => {
+		mutationFn: async (target: ClaimTarget) => {
 			const response = await eventpublicdiscoveryClaimInvitation({
-				path: { token: tokenId },
+				path: { token: target.id },
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 			});
 
@@ -48,13 +69,18 @@
 
 			return response.data;
 		},
-		onSuccess: (evt) => {
+		onSuccess: async (evt, target) => {
 			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
+			// The event page would otherwise read this token from the
+			// pending_event_token cookie and offer the claim again (#1274).
+			await forgetPendingEventToken(target.id);
+			// The user may have moved on while the request ran: do not pull them back.
+			if (navigationCount !== target.navigation) return;
 			// The claim response carries no organization — the token does.
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: token?.organization_slug ?? '',
-					event_slug: evt.slug ?? token?.event_slug ?? ''
+					org_slug: target.orgSlug,
+					event_slug: evt.slug ?? target.eventSlug
 				})
 			);
 		},
@@ -71,7 +97,12 @@
 			return;
 		}
 
-		claimMutation.mutate();
+		claimMutation.mutate({
+			id: tokenId,
+			orgSlug: token?.organization_slug ?? '',
+			eventSlug: token?.event_slug ?? '',
+			navigation: navigationCount
+		});
 	}
 
 	// Guest shortcut (backend #923): when the token's event allows attending

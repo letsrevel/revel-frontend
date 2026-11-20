@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { forgetPendingEventToken } from '$lib/utils/pending-event-token';
 
 	interface Props {
 		tokenId: string;
@@ -35,6 +36,9 @@
 		}
 
 		isLoading = true;
+		// The reload below only runs while the user is still on this page (same
+		// path; a tab or #anchor change inside the page still counts as here).
+		const fromUrl = new URL(window.location.href);
 
 		try {
 			const response = await eventpublicdiscoveryClaimInvitation({
@@ -58,12 +62,20 @@
 
 			onSuccess?.();
 
+			// The event page also reads the token from the 7-day pending_event_token
+			// cookie, so stripping ?et= alone is not enough: the claim button would
+			// come back on reload instead of the real next step (#1115, #1274).
+			// The cookie is httpOnly, so the server deletes it (best effort).
+			await forgetPendingEventToken(tokenId);
+
 			// Strip the ?et= token from the URL before reloading so the claim
 			// button doesn't reappear on the next page load
-			const url = new URL(window.location.href);
+			const url = new URL(fromUrl);
 			url.searchParams.delete('et');
 
 			setTimeout(() => {
+				const here = new URL(window.location.href);
+				if (here.origin !== fromUrl.origin || here.pathname !== fromUrl.pathname) return;
 				window.location.replace(url.toString());
 			}, 1000);
 		} catch (err) {

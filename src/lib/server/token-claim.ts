@@ -1,5 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
-import { getClientCookieOptions } from '$lib/utils/cookies';
+import { getAuthCookieOptions, getClientCookieOptions } from '$lib/utils/cookies';
+import { safeReturnUrl } from '$lib/utils/safe-redirect';
 import {
 	organizationClaimInvitation,
 	eventpublicdiscoveryClaimInvitation
@@ -13,6 +14,8 @@ export interface ClaimResult {
 	success: boolean;
 	name?: string;
 	slug?: string;
+	/** The claimed token id (event claims only). Server-side only: never put it in the flash cookie. */
+	token?: string;
 }
 
 /**
@@ -78,7 +81,7 @@ export async function claimPendingTokens(
 		}
 
 		// Always delete the cookie to prevent retry loops
-		cookies.delete('pending_org_token', { path: '/' });
+		cookies.delete('pending_org_token', getAuthCookieOptions());
 	}
 
 	// Check for pending event token
@@ -96,7 +99,8 @@ export async function claimPendingTokens(
 					type: 'event',
 					success: true,
 					name: response.data.name,
-					slug: response.data.slug
+					slug: response.data.slug,
+					token: eventToken
 				};
 			} else {
 				console.warn('[TOKEN-CLAIM] Failed to claim event token (may be expired/invalid)');
@@ -114,7 +118,7 @@ export async function claimPendingTokens(
 		}
 
 		// Always delete the cookie to prevent retry loops
-		cookies.delete('pending_event_token', { path: '/' });
+		cookies.delete('pending_event_token', getAuthCookieOptions());
 	}
 
 	return results;
@@ -135,7 +139,9 @@ export function setClaimFlashCookie(cookies: Cookies, results: ClaimResults): vo
 		successfulClaims.push(results.organization);
 	}
 	if (results.event?.success) {
-		successfulClaims.push(results.event);
+		// The token id stays on the server: the flash cookie is readable by client JS.
+		const { token: _token, ...event } = results.event;
+		successfulClaims.push(event);
 	}
 
 	if (successfulClaims.length > 0) {
@@ -144,4 +150,56 @@ export function setClaimFlashCookie(cookies: Cookies, results: ClaimResults): vo
 		const encodedValue = Buffer.from(jsonString).toString('base64');
 		cookies.set('claim_flash', encodedValue, CLAIM_FLASH_COOKIE_OPTIONS);
 	}
+}
+
+/**
+ * Remove the claimed event token from a post-login redirect target.
+ *
+ * Login, OIDC and email verification return the user to a URL that can still
+ * carry `?et=<token>`. When that token was just claimed, `hooks.server.ts`
+ * would capture it again into the `pending_event_token` cookie, and the event
+ * page would offer "Claim invitation" again instead of the real next step
+ * (#1274). A token that was not claimed stays in the URL, so the user can
+ * still claim it on the page.
+ *
+ * Only the query string changes; the path is kept byte for byte. Parsing the
+ * target with `new URL()` would normalize dot segments and could turn a safe
+ * path such as `/.//host` into the protocol-relative `//host`. The result goes
+ * through `safeReturnUrl` again as a second guard.
+ *
+ * @param target - A same-origin path (already passed through safeReturnUrl)
+ * @param results - Results from claimPendingTokens
+ */
+export function dropClaimedEventToken(target: string, results: ClaimResults): string {
+	const claimed = results.event?.success ? results.event.token : undefined;
+	if (!claimed) return target;
+
+	const hashAt = target.indexOf('#');
+	const beforeHash = hashAt === -1 ? target : target.slice(0, hashAt);
+	const hash = hashAt === -1 ? '' : target.slice(hashAt);
+	const queryAt = beforeHash.indexOf('?');
+	if (queryAt === -1) return target;
+
+	const pairs = beforeHash.slice(queryAt + 1).split('&');
+	const kept = pairs.filter((pair) => !isQueryPair(pair, 'et', claimed));
+	if (kept.length === pairs.length) return target;
+
+	const query = kept.join('&');
+	return safeReturnUrl(beforeHash.slice(0, queryAt) + (query ? `?${query}` : '') + hash);
+}
+
+function decodeQueryPart(part: string): string {
+	try {
+		return decodeURIComponent(part.replace(/\+/g, ' '));
+	} catch {
+		return part;
+	}
+}
+
+function isQueryPair(pair: string, key: string, value: string): boolean {
+	const eq = pair.indexOf('=');
+	if (eq === -1) return false;
+	return (
+		decodeQueryPart(pair.slice(0, eq)) === key && decodeQueryPart(pair.slice(eq + 1)) === value
+	);
 }
