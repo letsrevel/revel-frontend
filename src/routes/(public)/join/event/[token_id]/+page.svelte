@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy, untrack } from 'svelte';
 	import { page as appPage } from '$app/state';
 	import { withSiteName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
@@ -44,10 +45,14 @@
 		navigation: number;
 	}
 
-	// Counts completed navigations, so "the user moved on" includes leaving the
-	// page and coming back with the Back button before the claim finished.
+	// Counts navigations, so "the user moved on" includes a change of link on
+	// this page and leaving it. afterNavigate stops when the page unmounts, so
+	// leaving for another route also counts here.
 	let navigationCount = 0;
 	afterNavigate(() => {
+		navigationCount += 1;
+	});
+	onDestroy(() => {
 		navigationCount += 1;
 	});
 
@@ -70,12 +75,14 @@
 			return response.data;
 		},
 		onSuccess: async (evt, target) => {
-			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
+			// The user may have moved on while the request ran: still forget the
+			// claimed token, but do not show this claim's toast or pull them back.
+			const stillHere = (): boolean => navigationCount === target.navigation;
+			if (stillHere()) toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
 			// The event page would otherwise read this token from the
 			// pending_event_token cookie and offer the claim again (#1274).
 			await forgetPendingEventToken(target.id);
-			// The user may have moved on while the request ran: do not pull them back.
-			if (navigationCount !== target.navigation) return;
+			if (!stillHere()) return;
 			// The claim response carries no organization — the token does.
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {
@@ -84,10 +91,19 @@
 				})
 			);
 		},
-		onError: (error: Error) => {
+		onError: (error: Error, target) => {
+			// A failed claim for a link the user already left must not alarm the new page.
+			if (navigationCount !== target.navigation) return;
 			toast.error(error.message || m['joinEventPage.toast_claimError']());
 		}
 	}));
+
+	// The page component is reused when the route param changes. A claim still
+	// running for the previous token must not keep this page's button busy.
+	$effect(() => {
+		void tokenId;
+		untrack(() => claimMutation.reset());
+	});
 
 	function handleClaim() {
 		if (!isAuthenticated) {
@@ -127,6 +143,20 @@
 			? m['joinEventPage.rejectedTitle']()
 			: m['joinEventPage.pageTitle']({ eventName: token?.event_name ?? '' })
 	);
+	// The 410 preview still names the event, so a person who already holds an
+	// invitation can reach it (#1276).
+	// "Go to the event" links straight to the event: a guest without an account
+	// can open a public event. A private event shows only after sign-in, so a
+	// signed-out visitor also gets a sign-in link back to the event.
+	const rejectionEventHref = $derived(
+		rejection?.organization_slug && rejection.event_slug
+			? resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: rejection.organization_slug,
+					event_slug: rejection.event_slug
+				})
+			: null
+	);
+
 	const rejectionBody = $derived(
 		rejection
 			? rejection.reason === 'expired'
@@ -179,9 +209,39 @@
 			<Card>
 				<CardContent class="space-y-6 p-6 text-center sm:p-8">
 					<p class="text-sm text-muted-foreground">{m['joinEventPage.rejectedHint']()}</p>
-					<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
-						{m['joinEventPage.rejectedCta']()}
-					</Button>
+					{#if rejectionEventHref}
+						<!-- A person who already holds an invitation finds it on the event page. -->
+						<p class="text-sm text-muted-foreground">
+							{m['joinEventPage.rejectedInvitedHint']()}
+						</p>
+						<div class="space-y-3">
+							<Button size="lg" class="w-full" href={rejectionEventHref}>
+								{m['joinEventPage.rejectedGoToEvent']()}
+							</Button>
+							{#if !isAuthenticated}
+								<Button
+									size="lg"
+									variant="outline"
+									class="w-full"
+									href={loginHref(rejectionEventHref)}
+								>
+									{m['joinEventPage.rejectedSignIn']()}
+								</Button>
+							{/if}
+							<Button
+								size="lg"
+								variant="outline"
+								class="w-full"
+								href={resolve('/(public)/events', {})}
+							>
+								{m['joinEventPage.rejectedCta']()}
+							</Button>
+						</div>
+					{:else}
+						<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
+							{m['joinEventPage.rejectedCta']()}
+						</Button>
+					{/if}
 				</CardContent>
 			</Card>
 		</div>

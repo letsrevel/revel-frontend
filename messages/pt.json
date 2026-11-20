@@ -2951,7 +2951,10 @@
 		"rejectedExpired": "O teu convite para {eventName} expirou.",
 		"rejectedUsedUp": "Este link de convite para {eventName} já foi totalmente utilizado.",
 		"rejectedHint": "Contacta quem organiza para obteres um novo convite.",
-		"rejectedCta": "Explorar eventos"
+		"rejectedCta": "Explorar eventos",
+		"rejectedGoToEvent": "Ir para o evento",
+		"rejectedInvitedHint": "Já aceitaste o convite? Está na página do evento.",
+		"rejectedSignIn": "Inicia sessão para veres o teu convite"
 	},
 	"joinOrgPage": {
 		"pageTitle": "Junta-te a {organizationName}",

@@ -32,7 +32,8 @@ vi.mock('$app/state', () => ({
 const forgetMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/utils/pending-event-token', () => ({ forgetPendingEventToken: forgetMock }));
 const toastSuccess = vi.hoisted(() => vi.fn());
-vi.mock('svelte-sonner', () => ({ toast: { success: toastSuccess, error: vi.fn() } }));
+const toastError = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({ toast: { success: toastSuccess, error: toastError } }));
 
 const authState = vi.hoisted(() => ({
 	isAuthenticated: false,
@@ -166,5 +167,207 @@ describe('join event page — claim', () => {
 		await new Promise((r) => setTimeout(r, 0));
 
 		expect(gotoMock).not.toHaveBeenCalled();
+	});
+});
+
+// #1276: a link that no longer works still names its event. A person who
+// already holds an invitation reaches it from there.
+describe('join event page — link no longer works', () => {
+	const rejection = {
+		message: 'gone',
+		reason: 'used_up',
+		event_name: 'Test Event',
+		event_slug: 'test-event',
+		organization_slug: 'test-org'
+	};
+
+	it('offers the event and the event list to a signed-in person', () => {
+		authState.isAuthenticated = true;
+		renderPage({ token: null, rejection });
+
+		const toEvent = screen.getByRole('link', { name: m['joinEventPage.rejectedGoToEvent']() });
+		expect(toEvent.getAttribute('href')).toBe('/events/test-org/test-event');
+		expect(screen.getByText(m['joinEventPage.rejectedInvitedHint']())).toBeInTheDocument();
+		expect(
+			screen.queryByRole('link', { name: m['joinEventPage.rejectedSignIn']() })
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole('link', { name: m['joinEventPage.rejectedCta']() }).getAttribute('href')
+		).toBe('/events');
+	});
+
+	it('links a signed-out visitor straight to the event, and offers sign-in for a private event', () => {
+		authState.isAuthenticated = false;
+		renderPage({ token: null, rejection });
+
+		// A guest without an account can still open a public event directly.
+		expect(
+			screen
+				.getByRole('link', { name: m['joinEventPage.rejectedGoToEvent']() })
+				.getAttribute('href')
+		).toBe('/events/test-org/test-event');
+		expect(
+			screen.getByRole('link', { name: m['joinEventPage.rejectedSignIn']() }).getAttribute('href')
+		).toBe(`/login?returnUrl=${encodeURIComponent('/events/test-org/test-event')}`);
+	});
+
+	it('offers only the event list when the event is not named', () => {
+		renderPage({ token: null, rejection: { ...rejection, event_slug: '', organization_slug: '' } });
+
+		expect(
+			screen.queryByRole('link', { name: m['joinEventPage.rejectedGoToEvent']() })
+		).not.toBeInTheDocument();
+		expect(screen.queryByText(m['joinEventPage.rejectedInvitedHint']())).not.toBeInTheDocument();
+		expect(
+			screen.getByRole('link', { name: m['joinEventPage.rejectedCta']() })
+		).toBeInTheDocument();
+	});
+});
+
+// #1276: the component is reused across /join/event/<token> params; a claim
+// still running for the previous token must not keep the new page busy.
+describe('join event page — token change during a claim', () => {
+	beforeEach(() => {
+		authState.isAuthenticated = true;
+		authState.accessToken = 'tok';
+		navListeners.length = 0;
+	});
+
+	it('enables the claim button for the new token', async () => {
+		let finishOld: () => void = () => undefined;
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					finishOld = () =>
+						resolve({ data: { name: 'Test Event', slug: 'test-event' }, error: undefined });
+				}) as never
+		);
+		forgetMock.mockReset();
+		forgetMock.mockResolvedValue(undefined);
+		gotoMock.mockReset();
+		toastSuccess.mockReset();
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+		const props = (id: string) => ({
+			client,
+			component: JoinEventPage,
+			componentProps: {
+				data: {
+					token: makeToken({ id }),
+					rejection: null,
+					tokenId: id,
+					canAttendWithoutLogin: false
+				}
+			}
+		});
+		const { rerender } = render(QueryClientTestWrapper, { props: props('token-1') });
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+		await vi.waitFor(() =>
+			expect(
+				screen.getByRole('button', { name: m['joinEventPage.claimingButton']() })
+			).toBeDisabled()
+		);
+
+		await rerender(props('token-2'));
+
+		await vi.waitFor(() =>
+			expect(screen.getByRole('button', { name: m['joinEventPage.claimButton']() })).toBeEnabled()
+		);
+
+		// The old claim still finishes its cleanup, but does not redirect the new page.
+		navListeners.forEach((fn) => fn());
+		finishOld();
+		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('token-1'));
+		await new Promise((r) => setTimeout(r, 0));
+		expect(gotoMock).not.toHaveBeenCalled();
+		expect(toastSuccess).not.toHaveBeenCalled();
+	});
+
+	function pendingFailingClaim(): { started: () => boolean; fail: () => void } {
+		let fail: (() => void) | null = null;
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockClear();
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					fail = () => resolve({ data: undefined, error: { message: 'Already claimed' } });
+				}) as never
+		);
+		return { started: () => fail !== null, fail: () => fail?.() };
+	}
+
+	it('shows the error of a failed claim while the user stays', async () => {
+		const claimCall = pendingFailingClaim();
+		toastError.mockReset();
+		renderPage({});
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+		await vi.waitFor(() => expect(claimCall.started()).toBe(true));
+		claimCall.fail();
+
+		await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith('Already claimed'));
+	});
+
+	it('does not show the error of a claim for a link the user left', async () => {
+		const claimCall = pendingFailingClaim();
+		toastError.mockReset();
+		renderPage({});
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+		await vi.waitFor(() => expect(claimCall.started()).toBe(true));
+		navListeners.forEach((fn) => fn());
+		claimCall.fail();
+		await new Promise((r) => setTimeout(r, 0));
+
+		expect(toastError).not.toHaveBeenCalled();
+	});
+
+	it('neither redirects nor shows a toast after the user left the join page', async () => {
+		let finish: (() => void) | null = null;
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockClear();
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					finish = () =>
+						resolve({ data: { name: 'Test Event', slug: 'test-event' }, error: undefined });
+				}) as never
+		);
+		forgetMock.mockReset();
+		forgetMock.mockResolvedValue(undefined);
+		gotoMock.mockReset();
+		toastSuccess.mockReset();
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+		const { unmount } = render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: JoinEventPage,
+				componentProps: {
+					data: {
+						token: makeToken(),
+						rejection: null,
+						tokenId: 'token-1',
+						canAttendWithoutLogin: false
+					}
+				}
+			}
+		});
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+		await vi.waitFor(() => expect(finish).not.toBeNull());
+		// Leaving for another route unmounts the page; afterNavigate no longer runs.
+		unmount();
+		finish?.();
+		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('token-1'));
+		await new Promise((r) => setTimeout(r, 0));
+
+		expect(gotoMock).not.toHaveBeenCalled();
+		expect(toastSuccess).not.toHaveBeenCalled();
 	});
 });
