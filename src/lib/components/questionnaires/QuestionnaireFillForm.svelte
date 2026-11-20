@@ -406,25 +406,28 @@
 		class="flex flex-col items-end gap-3 rounded-[1.5rem] border-2 border-border bg-card p-5 shadow-poster sm:p-6"
 	>
 		{#if !allRequiredAnswered}
-			<p class="text-sm text-muted-foreground">
+			<p class="self-start text-sm text-muted-foreground sm:self-end">
 				{m['questionnaireSubmissionPage.validation_allRequired']()}
 			</p>
 		{/if}
-		<div class="flex items-center justify-end gap-4">
-			<Button type="button" variant="outline" size="lg" onclick={onCancel}>
+		<!-- Narrow screens: the buttons stack full width, so neither overflows the
+		     card. From sm up they sit in one right-aligned row. The DOM order (cancel,
+		     then submit) is the visual order in both layouts, so focus order matches. -->
+		<div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+			<Button type="button" variant="outline" size="lg" class="w-full sm:w-auto" onclick={onCancel}>
 				{m['questionnaireSubmissionPage.button_cancel']()}
 			</Button>
 			<Button
 				type="submit"
 				size="lg"
-				class="font-extrabold shadow-poster"
+				class="w-full font-extrabold shadow-poster sm:w-auto"
 				disabled={submitting || !allRequiredAnswered}
 			>
 				{#if submitting}
-					<Loader2 class="h-5 w-5 animate-spin" />
+					<Loader2 class="animate-spin" />
 					{m['questionnaireSubmissionPage.button_submitting']()}
 				{:else if submitted}
-					<Check class="h-5 w-5" />
+					<Check />
 					{m['questionnaireSubmissionPage.button_submitted']()}
 				{:else}
 					{m['questionnaireSubmissionPage.button_submit']()}

@@ -78,6 +78,24 @@ describe('Membership questionnaire fill page', () => {
 		});
 	});
 
+	it('keeps the action buttons in reading order, also when they stack on narrow screens', () => {
+		renderPage();
+		const cancel = screen.getByRole('button', { name: 'Cancel' });
+		const submitButton = screen.getByRole('button', { name: 'Submit Questionnaire' });
+		// Focus follows the DOM: Cancel, then Submit.
+		expect(
+			cancel.compareDocumentPosition(submitButton) & Node.DOCUMENT_POSITION_FOLLOWING
+		).toBeTruthy();
+		// A reversed flex direction would show them in the other order than focus follows.
+		const row = cancel.parentElement as HTMLElement;
+		expect(row).toBe(submitButton.parentElement);
+		expect(row.className).not.toMatch(/reverse/);
+		// Narrow screens: both buttons fill the card width, so neither overflows it.
+		expect(row.classList).toContain('w-full');
+		expect(cancel.classList).toContain('w-full');
+		expect(submitButton.classList).toContain('w-full');
+	});
+
 	/**
 	 * The submit endpoint answers with the SUBMISSION shape on every path (the
 	 * grader is queued on commit), so `requires_evaluation` is the whole signal —
