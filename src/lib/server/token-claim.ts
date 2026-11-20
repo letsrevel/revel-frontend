@@ -1,5 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import { getAuthCookieOptions, getClientCookieOptions } from '$lib/utils/cookies';
+import { safeReturnUrl } from '$lib/utils/safe-redirect';
 import {
 	organizationClaimInvitation,
 	eventpublicdiscoveryClaimInvitation
@@ -161,14 +162,44 @@ export function setClaimFlashCookie(cookies: Cookies, results: ClaimResults): vo
  * (#1274). A token that was not claimed stays in the URL, so the user can
  * still claim it on the page.
  *
+ * Only the query string changes; the path is kept byte for byte. Parsing the
+ * target with `new URL()` would normalize dot segments and could turn a safe
+ * path such as `/.//host` into the protocol-relative `//host`. The result goes
+ * through `safeReturnUrl` again as a second guard.
+ *
  * @param target - A same-origin path (already passed through safeReturnUrl)
  * @param results - Results from claimPendingTokens
  */
 export function dropClaimedEventToken(target: string, results: ClaimResults): string {
 	const claimed = results.event?.success ? results.event.token : undefined;
 	if (!claimed) return target;
-	const url = new URL(target, 'http://internal.invalid');
-	if (url.searchParams.get('et') !== claimed) return target;
-	url.searchParams.delete('et');
-	return url.pathname + url.search + url.hash;
+
+	const hashAt = target.indexOf('#');
+	const beforeHash = hashAt === -1 ? target : target.slice(0, hashAt);
+	const hash = hashAt === -1 ? '' : target.slice(hashAt);
+	const queryAt = beforeHash.indexOf('?');
+	if (queryAt === -1) return target;
+
+	const pairs = beforeHash.slice(queryAt + 1).split('&');
+	const kept = pairs.filter((pair) => !isQueryPair(pair, 'et', claimed));
+	if (kept.length === pairs.length) return target;
+
+	const query = kept.join('&');
+	return safeReturnUrl(beforeHash.slice(0, queryAt) + (query ? `?${query}` : '') + hash);
+}
+
+function decodeQueryPart(part: string): string {
+	try {
+		return decodeURIComponent(part.replace(/\+/g, ' '));
+	} catch {
+		return part;
+	}
+}
+
+function isQueryPair(pair: string, key: string, value: string): boolean {
+	const eq = pair.indexOf('=');
+	if (eq === -1) return false;
+	return (
+		decodeQueryPart(pair.slice(0, eq)) === key && decodeQueryPart(pair.slice(eq + 1)) === value
+	);
 }

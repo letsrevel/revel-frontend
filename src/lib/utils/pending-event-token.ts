@@ -9,11 +9,19 @@
  * Best effort: a failure is logged and never blocks the navigation. The
  * timeout keeps a stalled request from holding the user on the page.
  */
+function timeoutSignal(ms: number): AbortSignal {
+	// AbortSignal.timeout is missing in older browsers (Safari before 16).
+	if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
+	const controller = new AbortController();
+	setTimeout(() => controller.abort(), ms);
+	return controller.signal;
+}
+
 export async function forgetPendingEventToken(token: string, timeoutMs = 3000): Promise<void> {
 	try {
 		const res = await fetch(`/api/events/pending-token?token=${encodeURIComponent(token)}`, {
 			method: 'DELETE',
-			signal: AbortSignal.timeout(timeoutMs)
+			signal: timeoutSignal(timeoutMs)
 		});
 		if (!res.ok) {
 			console.warn('Failed to clear the pending event token:', res.status);

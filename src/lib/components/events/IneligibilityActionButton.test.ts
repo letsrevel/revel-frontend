@@ -101,6 +101,14 @@ describe('IneligibilityActionButton claim button gating', () => {
 		).toBeInTheDocument();
 	});
 
+	it('shows the step action for a granting token without an id', () => {
+		setup('complete_questionnaire', { ...token, id: null });
+		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: getActionButtonText('complete_questionnaire') })
+		).toBeInTheDocument();
+	});
+
 	it('never offers the claim when the token grants no invitation', () => {
 		setup(null, { ...token, grants_invitation: false });
 		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();

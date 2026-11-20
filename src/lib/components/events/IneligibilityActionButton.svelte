@@ -79,7 +79,10 @@
 	// loop of #1115 cannot come back: after a successful claim,
 	// ClaimInvitationButton deletes the pending_event_token cookie and strips
 	// ?et=, so the reload has no token and shows the real next step.
-	const showClaimButton = $derived(!!eventTokenDetails?.grants_invitation);
+	// Without a token id the claim (and the cookie clear) cannot work.
+	const showClaimButton = $derived(
+		!!eventTokenDetails?.grants_invitation && !!eventTokenDetails.id
+	);
 
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
@@ -390,7 +393,7 @@
 	<!-- Use ClaimInvitationButton while a granting token is present (see showClaimButton) -->
 	{#if showClaimButton && eventTokenDetails}
 		<ClaimInvitationButton
-			tokenId={eventTokenDetails.id || ''}
+			tokenId={eventTokenDetails.id ?? ''}
 			tokenDetails={eventTokenDetails}
 			class="w-full"
 		/>

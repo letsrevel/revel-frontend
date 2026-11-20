@@ -101,6 +101,26 @@ describe('dropClaimedEventToken', () => {
 		);
 	});
 
+	it.each(['/.//evil.com/x?et=et-1', '/a/..//evil.com?et=et-1', '/%2e//evil.com?et=et-1'])(
+		'never turns the safe path %s into a protocol-relative URL',
+		(target) => {
+			const result = dropClaimedEventToken(target, claimed);
+			expect(result.startsWith('//')).toBe(false);
+			expect(result).toBe(target.slice(0, target.indexOf('?')));
+		}
+	);
+
+	it('keeps the other query parts byte for byte', () => {
+		expect(dropClaimedEventToken('/events/o/e?tab&q=a%20b&et=et-1&x=1+2', claimed)).toBe(
+			'/events/o/e?tab&q=a%20b&x=1+2'
+		);
+	});
+
+	it('matches an encoded token value', () => {
+		const special: ClaimResults = { event: { type: 'event', success: true, token: 'a b/c' } };
+		expect(dropClaimedEventToken('/e?et=a%20b%2Fc', special)).toBe('/e');
+	});
+
 	it('keeps a target without ?et= as it is', () => {
 		expect(dropClaimedEventToken('/dashboard', claimed)).toBe('/dashboard');
 	});

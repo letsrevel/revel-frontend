@@ -27,6 +27,21 @@ describe('forgetPendingEventToken', () => {
 		expect(warn).not.toHaveBeenCalled();
 	});
 
+	it('still sends the DELETE where AbortSignal.timeout is missing', async () => {
+		fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+		const original = AbortSignal.timeout;
+		// @ts-expect-error -- simulate an older browser
+		AbortSignal.timeout = undefined;
+		try {
+			await forgetPendingEventToken('et-1');
+		} finally {
+			AbortSignal.timeout = original;
+		}
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+		expect(warn).not.toHaveBeenCalled();
+	});
+
 	it('warns, and does not throw, when the server does not clear the token', async () => {
 		fetchMock.mockResolvedValue(new Response(null, { status: 405 }));
 		await expect(forgetPendingEventToken('et-1')).resolves.toBeUndefined();
