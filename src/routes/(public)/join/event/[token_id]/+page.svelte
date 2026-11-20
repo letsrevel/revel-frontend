@@ -31,11 +31,24 @@
 	const isAuthenticated = $derived(authStore.isAuthenticated);
 	const accessToken = $derived(authStore.accessToken);
 
+	/**
+	 * What one claim acts on, captured when the user clicks. The page component
+	 * is reused when the route param changes, so the callbacks must not read
+	 * `tokenId` or `token` again after the request.
+	 */
+	interface ClaimTarget {
+		id: string;
+		orgSlug: string;
+		eventSlug: string;
+		/** The page path at click time; the redirect only runs while it is current. */
+		fromPath: string;
+	}
+
 	// Claim mutation
 	const claimMutation = createMutation(() => ({
-		mutationFn: async () => {
+		mutationFn: async (target: ClaimTarget) => {
 			const response = await eventpublicdiscoveryClaimInvitation({
-				path: { token: tokenId },
+				path: { token: target.id },
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 			});
 
@@ -49,16 +62,18 @@
 
 			return response.data;
 		},
-		onSuccess: async (evt) => {
+		onSuccess: async (evt, target) => {
 			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
 			// The event page would otherwise read this token from the
 			// pending_event_token cookie and offer the claim again (#1274).
-			await forgetPendingEventToken(tokenId);
+			await forgetPendingEventToken(target.id);
+			// The user may have moved on while the request ran: do not pull them back.
+			if (appPage.url.pathname !== target.fromPath) return;
 			// The claim response carries no organization — the token does.
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: token?.organization_slug ?? '',
-					event_slug: evt.slug ?? token?.event_slug ?? ''
+					org_slug: target.orgSlug,
+					event_slug: evt.slug ?? target.eventSlug
 				})
 			);
 		},
@@ -75,7 +90,12 @@
 			return;
 		}
 
-		claimMutation.mutate();
+		claimMutation.mutate({
+			id: tokenId,
+			orgSlug: token?.organization_slug ?? '',
+			eventSlug: token?.event_slug ?? '',
+			fromPath: appPage.url.pathname
+		});
 	}
 
 	// Guest shortcut (backend #923): when the token's event allows attending

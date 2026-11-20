@@ -1,4 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
+import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
+import * as m from '$lib/paraglide/messages.js';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import JoinEventPage from './+page.svelte';
@@ -8,6 +11,23 @@ import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryClaimInvitation: vi.fn()
 }));
+
+const gotoMock = vi.hoisted(() => vi.fn());
+vi.mock('$app/navigation', () => ({ goto: gotoMock }));
+
+const pageState = vi.hoisted(() => ({ pathname: '/join/event/token-1' }));
+vi.mock('$app/state', () => ({
+	page: {
+		data: {},
+		get url() {
+			return new URL(`http://localhost${pageState.pathname}`);
+		}
+	}
+}));
+
+const forgetMock = vi.hoisted(() => vi.fn());
+vi.mock('$lib/utils/pending-event-token', () => ({ forgetPendingEventToken: forgetMock }));
+vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const authState = vi.hoisted(() => ({
 	isAuthenticated: false,
@@ -84,5 +104,56 @@ describe('join event page — continue as guest', () => {
 		authState.accessToken = 'jwt';
 		renderPage({ canAttendWithoutLogin: true });
 		expect(screen.queryByRole('link', { name: /continue as guest/i })).not.toBeInTheDocument();
+	});
+});
+
+// #1274: a successful claim forgets the pending token, then opens the event,
+// but never pulls back a user who moved on while the request ran.
+describe('join event page — claim', () => {
+	beforeEach(() => {
+		authState.isAuthenticated = true;
+		authState.accessToken = 'tok';
+		pageState.pathname = '/join/event/token-1';
+		gotoMock.mockReset();
+		forgetMock.mockReset();
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockResolvedValue({
+			data: { name: 'Test Event', slug: 'test-event' },
+			error: undefined
+		} as never);
+	});
+
+	async function claim(): Promise<void> {
+		const user = userEvent.setup();
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+	}
+
+	it('forgets the claimed token, then opens the event', async () => {
+		forgetMock.mockResolvedValue(undefined);
+		renderPage({});
+
+		await claim();
+
+		await vi.waitFor(() => expect(gotoMock).toHaveBeenCalled());
+		expect(forgetMock).toHaveBeenCalledWith('token-1');
+		expect(gotoMock.mock.calls[0][0]).toContain('/events/test-org/test-event');
+	});
+
+	it('does not open the event when the user left the page during the cleanup', async () => {
+		let release: () => void = () => undefined;
+		forgetMock.mockImplementation(
+			() =>
+				new Promise<void>((resolve) => {
+					release = resolve;
+				})
+		);
+		renderPage({});
+
+		await claim();
+		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('token-1'));
+		pageState.pathname = '/events';
+		release();
+		await new Promise((r) => setTimeout(r, 0));
+
+		expect(gotoMock).not.toHaveBeenCalled();
 	});
 });

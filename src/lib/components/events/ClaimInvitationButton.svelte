@@ -36,6 +36,8 @@
 		}
 
 		isLoading = true;
+		// The reload below only runs while the user is still on this page.
+		const fromHref = window.location.href;
 
 		try {
 			const response = await eventpublicdiscoveryClaimInvitation({
@@ -71,6 +73,7 @@
 			url.searchParams.delete('et');
 
 			setTimeout(() => {
+				if (window.location.href !== fromHref) return;
 				window.location.replace(url.toString());
 			}, 1000);
 		} catch (err) {

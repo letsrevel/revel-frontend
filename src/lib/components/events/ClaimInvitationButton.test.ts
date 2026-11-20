@@ -59,6 +59,21 @@ describe('ClaimInvitationButton', () => {
 		expect(events).toEqual(['forget', 'replace:http://localhost/events/acme/gala?tab=info']);
 	});
 
+	it('does not reload when the user left the page before the reload', async () => {
+		claimMock.mockResolvedValue({ data: { id: 'inv-1' }, error: undefined });
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		render(ClaimInvitationButton, { props: { tokenId: 'et-1' } });
+
+		await user.click(
+			screen.getByRole('button', { name: m['claimInvitationButton.claimInvitation']() })
+		);
+		await vi.waitFor(() => expect(forgetMock).toHaveBeenCalledWith('et-1'));
+		window.location.href = 'http://localhost/events';
+		await vi.advanceTimersByTimeAsync(1000);
+
+		expect(replace).not.toHaveBeenCalled();
+	});
+
 	it('keeps the pending token and does not reload when the claim fails', async () => {
 		claimMock.mockResolvedValue({ data: undefined, error: { message: 'Token used up' } });
 		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

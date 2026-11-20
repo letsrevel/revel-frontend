@@ -117,6 +117,42 @@ describe('/auth/callback load', () => {
 		expect((await loadRedirect('?token=good')).location).toBe('/dashboard');
 	});
 
+	it('drops the ?et= of the event token that the login just claimed (#1274)', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=et-1'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: true, token: 'et-1' }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala');
+	});
+
+	it('keeps the ?et= when the event claim did not succeed', async () => {
+		mockedExchange.mockResolvedValue({
+			data: {
+				username: 'u',
+				access: 'acc',
+				refresh: 'ref',
+				return_url: '/events/acme/gala?et=et-1'
+			},
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+		vi.mocked(establishSession).mockResolvedValueOnce({
+			event: { type: 'event', success: false }
+		});
+
+		expect((await loadRedirect('?token=good')).location).toBe('/events/acme/gala?et=et-1');
+	});
+
 	it('redirects to the login error page when the exchange throws', async () => {
 		mockedExchange.mockRejectedValue(new Error('network'));
 		expect(await loadRedirect('?token=x')).toEqual({
