@@ -62,6 +62,8 @@
 	const totpActive = $derived(data.totpActive);
 	const provisioningUri = $derived(form?.provisioningUri);
 	const setupSuccess = $derived(form?.verified);
+	// The account's 2FA failure lock is engaged: code entry stays off until a reload.
+	const totpLocked = $derived(!!form && 'totpLocked' in form && form.totpLocked === true);
 	const disableSuccess = $derived(form?.disabled);
 
 	// Extract manual entry code from provisioning URI
@@ -346,7 +348,7 @@
 									}}
 								>
 									<div class="mt-4">
-										<TwoFactorInput bind:value={otpCode} />
+										<TwoFactorInput bind:value={otpCode} disabled={totpLocked} />
 										{#if form?.errors && 'code' in form.errors && form.errors.code}
 											<p class="mt-2 text-sm text-destructive" role="alert">
 												{form.errors.code}
@@ -357,7 +359,7 @@
 									<div class="mt-6 flex gap-3">
 										<button
 											type="submit"
-											disabled={otpCode.length !== 6 || isSubmitting}
+											disabled={otpCode.length !== 6 || isSubmitting || totpLocked}
 											class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
 										>
 											{isSubmitting
@@ -420,7 +422,7 @@
 									}}
 								>
 									<div class="mt-4">
-										<TwoFactorInput bind:value={otpCode} />
+										<TwoFactorInput bind:value={otpCode} disabled={totpLocked} />
 										{#if form?.errors && 'code' in form.errors && form.errors.code}
 											<p class="mt-2 text-sm text-destructive" role="alert">
 												{form.errors.code}
@@ -431,7 +433,7 @@
 									<div class="mt-6 flex gap-3">
 										<button
 											type="submit"
-											disabled={otpCode.length !== 6 || isSubmitting}
+											disabled={otpCode.length !== 6 || isSubmitting || totpLocked}
 											class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 disabled:opacity-50"
 										>
 											{isSubmitting

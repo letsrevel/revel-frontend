@@ -11929,5 +11929,18 @@
 	"unknownHolder.srLabel": "Perfil no compartido: esta persona no tiene ninguna conexión activa con tu organización.",
 	"unknownHolder.explanation": "Esta persona no tiene ninguna conexión activa con tu organización, así que solo se muestran el correo y el nombre que introdujiste.",
 	"unknownHolder.noteUnavailable": "Nota no disponible: esta persona no tiene ninguna conexión activa con tu organización",
-	"attendeesAdmin.invitationRequired": "Esta persona aún no tiene ninguna relación con tu organización, así que no puedes confirmar asistencia por ella. Invítala al evento o pídele que primero confirme asistencia, compre una entrada o solicite unirse por su cuenta."
+	"attendeesAdmin.invitationRequired": "Esta persona aún no tiene ninguna relación con tu organización, así que no puedes confirmar asistencia por ella. Invítala al evento o pídele que primero confirme asistencia, compre una entrada o solicite unirse por su cuenta.",
+	"totpLock.paused": [
+		{
+			"declarations": ["input minutes", "local minutesPlural = minutes: plural"],
+			"selectors": ["minutesPlural"],
+			"match": {
+				"minutesPlural=one": "La verificación en dos pasos está en pausa por tu seguridad. Inténtalo de nuevo en {minutes} minuto.",
+				"minutesPlural=*": "La verificación en dos pasos está en pausa por tu seguridad. Inténtalo de nuevo en {minutes} minutos."
+			}
+		}
+	],
+	"totpLock.pausedNoTime": "La verificación en dos pasos está en pausa por tu seguridad. Inténtalo de nuevo más tarde.",
+	"totpLock.wrongCodeRestart": "Ese código no era correcto. Inicia sesión de nuevo para obtener un nuevo paso de verificación.",
+	"totpLock.rateLimited": "Demasiados intentos. Espera un momento y vuelve a intentarlo."
 }

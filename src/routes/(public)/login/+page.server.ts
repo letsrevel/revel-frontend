@@ -8,6 +8,7 @@ import {
 	authObtainTokenWithOtp
 } from '$lib/api/client';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { classifyOtpFailure, totpLockedMessage } from '$lib/utils/totp-lock';
 import { establishSession, sessionRememberMe } from '$lib/server/session';
 import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
@@ -194,6 +195,40 @@ export const actions = {
 
 			if (isEmailNotVerified(response.response, response.error)) {
 				return fail(403, { emailNotVerified: true, email: data.email });
+			}
+
+			// The backend spends the temporary token on EVERY step-2 attempt, so a
+			// retry with it is always refused (#1264). Wrong code (401) and the
+			// per-account failure lock (429 totp_locked) both send the user back
+			// to the password step with an explanation; the form is returned
+			// WITHOUT requires2FA/tempToken so the spent token is never re-posted.
+			const failure = classifyOtpFailure(response.response, response.error);
+			if (failure === 'locked') {
+				return fail(429, {
+					errors: { form: totpLockedMessage(response.response) },
+					restartedFrom2FA: true,
+					email: data.email,
+					rememberMe: data.rememberMe
+				});
+			}
+			if (failure === 'throttled') {
+				// Ordinary rate limit (rejected before the code was checked): the
+				// token is intact, stay on the code step.
+				return fail(429, {
+					errors: { code: m['totpLock.rateLimited']() },
+					requires2FA: true,
+					tempToken: data.tempToken,
+					email: data.email,
+					rememberMe: data.rememberMe
+				});
+			}
+			if (response.response?.status === 401) {
+				return fail(401, {
+					errors: { form: m['totpLock.wrongCodeRestart']() },
+					restartedFrom2FA: true,
+					email: data.email,
+					rememberMe: data.rememberMe
+				});
 			}
 
 			// If we reach here, there was an error

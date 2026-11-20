@@ -144,6 +144,13 @@
 				return;
 			}
 			await applyAction(result);
+			// Sent back from the 2FA step to the password step (spent token or
+			// locked account): the error alert above is announced, and focus
+			// goes to the password field so the user can sign in again.
+			if (result.type === 'failure' && result.data?.restartedFrom2FA) {
+				await tick();
+				document.getElementById('password')?.focus();
+			}
 		};
 	};
 </script>
