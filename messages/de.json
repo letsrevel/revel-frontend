@@ -2951,7 +2951,9 @@
 		"rejectedExpired": "Deine Einladung zu {eventName} ist abgelaufen.",
 		"rejectedUsedUp": "Dieser Einladungslink zu {eventName} wurde bereits vollständig verwendet.",
 		"rejectedHint": "Wende dich an die Organisator*innen, um eine neue Einladung zu erhalten.",
-		"rejectedCta": "Events durchstöbern"
+		"rejectedCta": "Events durchstöbern",
+		"rejectedGoToEvent": "Zum Event",
+		"rejectedInvitedHint": "Schon eingeladen? Deine Einladung findest du auf der Event-Seite."
 	},
 	"joinOrgPage": {
 		"pageTitle": "{organizationName} beitreten",

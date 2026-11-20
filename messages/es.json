@@ -2951,7 +2951,9 @@
 		"rejectedExpired": "Tu invitación a {eventName} ha caducado.",
 		"rejectedUsedUp": "Este enlace de invitación a {eventName} ya se ha agotado.",
 		"rejectedHint": "Contacta con quien organiza el evento para conseguir una nueva invitación.",
-		"rejectedCta": "Explorar eventos"
+		"rejectedCta": "Explorar eventos",
+		"rejectedGoToEvent": "Ir al evento",
+		"rejectedInvitedHint": "¿Ya tienes una invitación? La encontrarás en la página del evento."
 	},
 	"joinOrgPage": {
 		"pageTitle": "Únete a {organizationName}",

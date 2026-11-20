@@ -57,8 +57,8 @@ function makeToken(overrides: Partial<EventTokenSchema> = {}): EventTokenSchema 
 	};
 }
 
-function renderPage(data: Record<string, unknown>): void {
-	render(QueryClientTestWrapper, {
+function renderPage(data: Record<string, unknown>): ReturnType<typeof render> {
+	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({
 				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
@@ -166,5 +166,85 @@ describe('join event page — claim', () => {
 		await new Promise((r) => setTimeout(r, 0));
 
 		expect(gotoMock).not.toHaveBeenCalled();
+	});
+});
+
+// #1276: a link that no longer works still names its event. A person who
+// already holds an invitation reaches it from there.
+describe('join event page — link no longer works', () => {
+	const rejection = {
+		message: 'gone',
+		reason: 'used_up',
+		event_name: 'Test Event',
+		event_slug: 'test-event',
+		organization_slug: 'test-org'
+	};
+
+	it('offers the event and the event list', () => {
+		renderPage({ token: null, rejection });
+
+		const toEvent = screen.getByRole('link', { name: m['joinEventPage.rejectedGoToEvent']() });
+		expect(toEvent.getAttribute('href')).toContain('/events/test-org/test-event');
+		expect(screen.getByText(m['joinEventPage.rejectedInvitedHint']())).toBeInTheDocument();
+		expect(
+			screen.getByRole('link', { name: m['joinEventPage.rejectedCta']() }).getAttribute('href')
+		).toContain('/events');
+	});
+
+	it('offers only the event list when the event is not named', () => {
+		renderPage({ token: null, rejection: { ...rejection, event_slug: '', organization_slug: '' } });
+
+		expect(
+			screen.queryByRole('link', { name: m['joinEventPage.rejectedGoToEvent']() })
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole('link', { name: m['joinEventPage.rejectedCta']() })
+		).toBeInTheDocument();
+	});
+});
+
+// #1276: the component is reused across /join/event/<token> params; a claim
+// still running for the previous token must not keep the new page busy.
+describe('join event page — token change during a claim', () => {
+	beforeEach(() => {
+		authState.isAuthenticated = true;
+		authState.accessToken = 'tok';
+		navListeners.length = 0;
+	});
+
+	it('enables the claim button for the new token', async () => {
+		vi.mocked(eventpublicdiscoveryClaimInvitation).mockImplementation(
+			() => new Promise(() => undefined) as never
+		);
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+		const props = (id: string) => ({
+			client,
+			component: JoinEventPage,
+			componentProps: {
+				data: {
+					token: makeToken({ id }),
+					rejection: null,
+					tokenId: id,
+					canAttendWithoutLogin: false
+				}
+			}
+		});
+		const { rerender } = render(QueryClientTestWrapper, { props: props('token-1') });
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole('button', { name: m['joinEventPage.claimButton']() }));
+		await vi.waitFor(() =>
+			expect(
+				screen.getByRole('button', { name: m['joinEventPage.claimingButton']() })
+			).toBeDisabled()
+		);
+
+		await rerender(props('token-2'));
+
+		await vi.waitFor(() =>
+			expect(screen.getByRole('button', { name: m['joinEventPage.claimButton']() })).toBeEnabled()
+		);
 	});
 });

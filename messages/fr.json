@@ -2752,7 +2752,9 @@
 		"rejectedExpired": "Votre invitation pour {eventName} a expiré.",
 		"rejectedUsedUp": "Ce lien d'invitation pour {eventName} a déjà été entièrement utilisé.",
 		"rejectedHint": "Contactez l'équipe organisatrice pour obtenir une nouvelle invitation.",
-		"rejectedCta": "Parcourir les événements"
+		"rejectedCta": "Parcourir les événements",
+		"rejectedGoToEvent": "Aller à l'événement",
+		"rejectedInvitedHint": "Vous avez déjà une invitation ? Elle se trouve sur la page de l'événement."
 	},
 	"joinOrgPage": {
 		"pageTitle": "Rejoindre {organizationName}",

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page as appPage } from '$app/state';
 	import { withSiteName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
@@ -89,6 +90,13 @@
 		}
 	}));
 
+	// The page component is reused when the route param changes. A claim still
+	// running for the previous token must not keep this page's button busy.
+	$effect(() => {
+		void tokenId;
+		untrack(() => claimMutation.reset());
+	});
+
 	function handleClaim() {
 		if (!isAuthenticated) {
 			const returnUrl = `/join/event/${tokenId}`;
@@ -127,6 +135,17 @@
 			? m['joinEventPage.rejectedTitle']()
 			: m['joinEventPage.pageTitle']({ eventName: token?.event_name ?? '' })
 	);
+	// The 410 preview still names the event, so a person who already holds an
+	// invitation can reach it (#1276).
+	const rejectionEventHref = $derived(
+		rejection?.organization_slug && rejection.event_slug
+			? resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: rejection.organization_slug,
+					event_slug: rejection.event_slug
+				})
+			: null
+	);
+
 	const rejectionBody = $derived(
 		rejection
 			? rejection.reason === 'expired'
@@ -179,9 +198,29 @@
 			<Card>
 				<CardContent class="space-y-6 p-6 text-center sm:p-8">
 					<p class="text-sm text-muted-foreground">{m['joinEventPage.rejectedHint']()}</p>
-					<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
-						{m['joinEventPage.rejectedCta']()}
-					</Button>
+					{#if rejectionEventHref}
+						<!-- A person who already holds an invitation finds it on the event page. -->
+						<p class="text-sm text-muted-foreground">
+							{m['joinEventPage.rejectedInvitedHint']()}
+						</p>
+						<div class="space-y-3">
+							<Button size="lg" class="w-full" href={rejectionEventHref}>
+								{m['joinEventPage.rejectedGoToEvent']()}
+							</Button>
+							<Button
+								size="lg"
+								variant="outline"
+								class="w-full"
+								href={resolve('/(public)/events', {})}
+							>
+								{m['joinEventPage.rejectedCta']()}
+							</Button>
+						</div>
+					{:else}
+						<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
+							{m['joinEventPage.rejectedCta']()}
+						</Button>
+					{/if}
 				</CardContent>
 			</Card>
 		</div>
