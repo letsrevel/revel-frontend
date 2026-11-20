@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
@@ -174,7 +175,7 @@
 								profilePictureUrl={ticket.user.profile_picture_url}
 								previewUrl={ticket.user.profile_picture_preview_url}
 								thumbnailUrl={ticket.user.profile_picture_thumbnail_url}
-								displayName={getUserDisplayName(ticket.user)}
+								displayName={staffViewDisplayName(ticket.user)}
 								firstName={ticket.user.first_name}
 								lastName={ticket.user.last_name}
 								size="sm"
@@ -190,7 +191,7 @@
 									>
 										<span
 											>{m['ticketTable.purchasedBy']({
-												name: getUserDisplayName(ticket.user)
+												name: staffViewDisplayName(ticket.user)
 											})}</span
 										>
 										{#if ticket.membership}
@@ -201,7 +202,7 @@
 									</div>
 								{:else}
 									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-										<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+										<span class="font-medium">{staffViewDisplayName(ticket.user)}</span>
 										{#if ticket.user.pronouns}
 											<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
 										{/if}
@@ -215,6 +216,9 @@
 								<div class="text-sm text-muted-foreground">
 									{ticket.user.email || 'N/A'}
 								</div>
+								{#if isUnknownHolder(ticket.user)}
+									<UnknownHolderBadge class="mt-1" />
+								{/if}
 								{#if seatInfo}
 									<div class="mt-1 text-xs text-primary">
 										{seatInfo}
@@ -337,7 +341,7 @@
 											{...props}
 											class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
 											aria-label={m['ticketTable.moreActionsFor']({
-												name: getUserDisplayName(ticket.user)
+												name: staffViewDisplayName(ticket.user)
 											})}
 										>
 											<MoreVertical class="h-4 w-4" aria-hidden="true" />
@@ -366,10 +370,17 @@
 										</DropdownMenu.Item>
 									{/if}
 									{#if onEditNote && ticket.user?.id}
-										<DropdownMenu.Item onclick={() => onEditNote(ticket)}>
-											<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['userNote.editAction']()}
-										</DropdownMenu.Item>
+										{#if isUnknownHolder(ticket.user)}
+											<DropdownMenu.Item disabled data-testid="note-unavailable">
+												<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
+												{m['unknownHolder.noteUnavailable']()}
+											</DropdownMenu.Item>
+										{:else}
+											<DropdownMenu.Item onclick={() => onEditNote(ticket)}>
+												<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
+												{m['userNote.editAction']()}
+											</DropdownMenu.Item>
+										{/if}
 									{/if}
 									{#if onRenameHolder && ticket.status !== 'checked_in' && ticket.status !== 'cancelled'}
 										<DropdownMenu.Item onclick={() => onRenameHolder(ticket)}>

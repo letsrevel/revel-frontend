@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -40,7 +40,7 @@
 			<Dialog.Title>{m['attendeesAdmin.editModalTitle']()}</Dialog.Title>
 			<Dialog.Description>
 				{#if rsvp}
-					{m['attendeesAdmin.editModalDescription']({ name: getUserDisplayName(rsvp.user) })}
+					{m['attendeesAdmin.editModalDescription']({ name: staffViewDisplayName(rsvp.user) })}
 				{/if}
 			</Dialog.Description>
 		</Dialog.Header>

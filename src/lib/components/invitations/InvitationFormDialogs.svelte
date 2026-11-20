@@ -8,7 +8,7 @@
 	import type { SvelteSet } from 'svelte/reactivity';
 	import { enhance } from '$app/forms';
 	import { Mail, Edit } from '@lucide/svelte';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName } from '$lib/utils/user-display';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import EmailTagInput from '$lib/components/forms/EmailTagInput.svelte';
@@ -295,7 +295,7 @@
 				{#if editingInvitation}
 					{#if editingType === 'registered' && 'user' in editingInvitation}
 						{m['eventInvitationsAdmin.editDialogDescriptionUser']({
-							userName: getUserDisplayName(
+							userName: staffViewDisplayName(
 								editingInvitation.user,
 								m['eventInvitationsAdmin.unknownUser']()
 							)

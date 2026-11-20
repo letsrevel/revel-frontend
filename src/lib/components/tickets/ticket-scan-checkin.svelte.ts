@@ -5,7 +5,7 @@ import { toast } from 'svelte-sonner';
 import { eventadminticketsCheckInTicket, eventadminticketsGetTicket } from '$lib/api';
 import type { MemberScanResponseSchema } from '$lib/api/generated/types.gen';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
-import { getUserDisplayName } from '$lib/utils/user-display';
+import { staffViewDisplayName } from '$lib/utils/user-display';
 import { needsPaymentConfirmation } from '$lib/utils/ticket-helpers';
 import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 import { isMemberCode, normalizeMemberCode } from '$lib/utils/member-qr';
@@ -114,7 +114,7 @@ export function createTicketScanCheckIn(opts: Options) {
 			// The staff-note dialog (if any) carries the membership; otherwise it
 			// rides in the toast, a live region, so it is announced with the result.
 			const line = scanNoteFrom(outcome.result) ? null : checkInMembershipLine(outcome.result);
-			toast.success(successMessage(getUserDisplayName(outcome.result.user)), {
+			toast.success(successMessage(staffViewDisplayName(outcome.result.user)), {
 				...(line ? { description: line } : {})
 			});
 			return;

@@ -631,7 +631,7 @@
 		"statsYes": "Ja",
 		"statsMaybe": "Vielleicht",
 		"statsNo": "Nein",
-		"searchPlaceholder": "Suche nach Name oder E-Mail …",
+		"searchPlaceholder": "Suche nach E-Mail …",
 		"filterAll": "Alle ({count})",
 		"filterByStatus": "Nach Status filtern",
 		"noRsvpsHeading": "Keine RSVPs gefunden",
@@ -2189,7 +2189,7 @@
 		"statsActive": "Aktiv",
 		"statsCheckedIn": "Eingecheckt",
 		"statsCancelled": "Storniert",
-		"searchPlaceholder": "Suche nach Inhaber*in, Käufer*in, E-Mail oder Kategorie...",
+		"searchPlaceholder": "Suche nach Inhaber*in, E-Mail oder Kategorie...",
 		"filterByStatus": "Nach Status filtern",
 		"filterByPaymentMethod": "Nach Zahlungsart filtern",
 		"filterAll": "Alle",
@@ -8737,7 +8737,7 @@
 	"invitationCard.privExtendedDeadline": "Verlängerte Zusagefrist",
 	"invitationCard.privPriorityAccess": "Bevorzugter Zugang (umgeht die Kapazitätsgrenze)",
 	"invitationCard.privAssignedTiers": "Zugewiesene Kategorien: {tiers}",
-	"invitationListTab.searchPlaceholder": "Nach Name oder E-Mail suchen...",
+	"invitationListTab.searchPlaceholder": "Nach E-Mail oder Nachricht suchen...",
 	"invitationListTab.waivesQuestionnaireTitle": "Hebt die Fragebogenpflicht auf",
 	"invitationListTab.waivesPurchaseTitle": "Hebt die Kaufpflicht auf (kostenloses Ticket)",
 	"invitationListTab.waivesMembershipTitle": "Hebt die Mitgliedschaftspflicht auf",
@@ -11924,5 +11924,10 @@
 	"planCalendar.firstPeriodHintFree": "Der erste Zeitraum bis {date} ist kostenlos. Basiert auf heute; bei Rückdatierung anpassen.",
 	"planCalendar.quotePartial": "Erster Zeitraum bis {date}: {price} (anteilig). Danach {regular}.",
 	"planCalendar.quoteFree": "Kostenlos bis {date}, danach {regular}.",
-	"planCalendar.quoteFull": "Dieser Zeitraum endet am {date}. Wer jetzt beitritt, zahlt den vollen Preis von {price}, auch wenn nur noch wenig Zeit bleibt."
+	"planCalendar.quoteFull": "Dieser Zeitraum endet am {date}. Wer jetzt beitritt, zahlt den vollen Preis von {price}, auch wenn nur noch wenig Zeit bleibt.",
+	"unknownHolder.badge": "Profil nicht geteilt",
+	"unknownHolder.srLabel": "Profil nicht geteilt: Diese Person hat keine aktive Verbindung zu deiner Organisation.",
+	"unknownHolder.explanation": "Diese Person hat keine aktive Verbindung zu deiner Organisation, deshalb werden nur die E-Mail-Adresse und der Name angezeigt, die du eingegeben hast.",
+	"unknownHolder.noteUnavailable": "Notiz nicht verfügbar: Diese Person hat keine aktive Verbindung zu deiner Organisation",
+	"attendeesAdmin.invitationRequired": "Diese Person hat noch keine Verbindung zu deiner Organisation, daher kannst du sie nicht anmelden. Lade sie zur Veranstaltung ein oder bitte sie, sich zuerst selbst anzumelden, ein Ticket zu kaufen oder sich zu bewerben."
 }

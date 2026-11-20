@@ -6,7 +6,8 @@
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import { X, TriangleAlert } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { formatMoney, formatPrice } from '$lib/utils/format';
 	import {
 		getGuestNameIfDifferent,
@@ -19,6 +20,10 @@
 		first_name?: string;
 		last_name?: string;
 		preferred_name?: string;
+		/** Staff-view projection: the name staff supplied for an unknown holder. */
+		display_name?: string;
+		/** False when the account's profile is withheld from staff (ADR-0020). */
+		known?: boolean;
 	}
 
 	interface TicketTier {
@@ -316,6 +321,9 @@
 				<div class="rounded-lg border bg-muted/50">
 					<div class="border-b px-4 py-3">
 						<h3 class="font-semibold">{m['checkInDialog.attendeeInfo']()}</h3>
+						{#if isUnknownHolder(ticket.user)}
+							<UnknownHolderBadge showExplanation class="mt-1" />
+						{/if}
 					</div>
 					<div class="divide-y">
 						{#if guestName}
@@ -326,12 +334,12 @@
 							<div class="flex items-center justify-between px-4 py-3">
 								<span class="text-sm text-muted-foreground">{m['checkInDialog.purchasedBy']()}</span
 								>
-								<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+								<span class="font-medium">{staffViewDisplayName(ticket.user)}</span>
 							</div>
 						{:else}
 							<div class="flex items-center justify-between px-4 py-3">
 								<span class="text-sm text-muted-foreground">{m['checkInDialog.name']()}</span>
-								<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+								<span class="font-medium">{staffViewDisplayName(ticket.user)}</span>
 							</div>
 						{/if}
 						<div class="flex items-center justify-between px-4 py-3">

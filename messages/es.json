@@ -631,7 +631,7 @@
 		"statsYes": "Sí",
 		"statsMaybe": "Quizás",
 		"statsNo": "No",
-		"searchPlaceholder": "Buscar por nombre o correo electrónico...",
+		"searchPlaceholder": "Buscar por correo electrónico...",
 		"filterAll": "Todos ({count})",
 		"filterByStatus": "Filtrar por estado",
 		"noRsvpsHeading": "No se han encontrado confirmaciones de asistencia",
@@ -2189,7 +2189,7 @@
 		"statsActive": "Activo",
 		"statsCheckedIn": "Con check-in",
 		"statsCancelled": "Cancelado",
-		"searchPlaceholder": "Buscar por titular, persona compradora, correo o tipo de entrada...",
+		"searchPlaceholder": "Buscar por titular, correo o tipo de entrada...",
 		"filterByStatus": "Filtrar por estado",
 		"filterByPaymentMethod": "Filtrar por método de pago",
 		"filterAll": "Todos",
@@ -8737,7 +8737,7 @@
 	"invitationCard.privExtendedDeadline": "Plazo de confirmación ampliado",
 	"invitationCard.privPriorityAccess": "Acceso prioritario (ignora el aforo)",
 	"invitationCard.privAssignedTiers": "Tipos de entrada asignados: {tiers}",
-	"invitationListTab.searchPlaceholder": "Buscar por nombre o correo electrónico...",
+	"invitationListTab.searchPlaceholder": "Buscar por correo electrónico o mensaje...",
 	"invitationListTab.waivesQuestionnaireTitle": "Exime del requisito de cuestionario",
 	"invitationListTab.waivesPurchaseTitle": "Exime del requisito de compra (entrada gratuita)",
 	"invitationListTab.waivesMembershipTitle": "Exime del requisito de membresía",
@@ -11924,5 +11924,10 @@
 	"planCalendar.firstPeriodHintFree": "El primer periodo hasta el {date} es gratuito. Basado en hoy; ajústalo si registras con fecha anterior.",
 	"planCalendar.quotePartial": "Primer periodo hasta el {date}: {price} (parcial). Después {regular}.",
 	"planCalendar.quoteFree": "Gratis hasta el {date}, después {regular}.",
-	"planCalendar.quoteFull": "Este periodo termina el {date}. Unirte ahora cuesta el precio completo de {price}, por poco tiempo que quede."
+	"planCalendar.quoteFull": "Este periodo termina el {date}. Unirte ahora cuesta el precio completo de {price}, por poco tiempo que quede.",
+	"unknownHolder.badge": "Perfil no compartido",
+	"unknownHolder.srLabel": "Perfil no compartido: esta persona no tiene ninguna conexión activa con tu organización.",
+	"unknownHolder.explanation": "Esta persona no tiene ninguna conexión activa con tu organización, así que solo se muestran el correo y el nombre que introdujiste.",
+	"unknownHolder.noteUnavailable": "Nota no disponible: esta persona no tiene ninguna conexión activa con tu organización",
+	"attendeesAdmin.invitationRequired": "Esta persona aún no tiene ninguna relación con tu organización, así que no puedes confirmar asistencia por ella. Invítala al evento o pídele que primero confirme asistencia, compre una entrada o solicite unirse por su cuenta."
 }

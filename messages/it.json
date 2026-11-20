@@ -631,7 +631,7 @@
 		"statsYes": "Sì",
 		"statsMaybe": "Forse",
 		"statsNo": "No",
-		"searchPlaceholder": "Cerca per nome o email...",
+		"searchPlaceholder": "Cerca per email...",
 		"filterAll": "Tutti ({count})",
 		"filterByStatus": "Filtra per stato",
 		"noRsvpsHeading": "Nessuna partecipazione trovata",
@@ -2189,7 +2189,7 @@
 		"statsActive": "Attivi",
 		"statsCheckedIn": "Check-in effettuato",
 		"statsCancelled": "Annullati",
-		"searchPlaceholder": "Cerca per intestatario, acquirente, email o tipo di biglietto...",
+		"searchPlaceholder": "Cerca per intestatario, email o tipo di biglietto...",
 		"filterByStatus": "Filtra per stato",
 		"filterByPaymentMethod": "Filtra per metodo di pagamento",
 		"filterAll": "Tutti",
@@ -8737,7 +8737,7 @@
 	"invitationCard.privExtendedDeadline": "Scadenza RSVP estesa",
 	"invitationCard.privPriorityAccess": "Accesso prioritario (ignora la capienza)",
 	"invitationCard.privAssignedTiers": "Categorie assegnate: {tiers}",
-	"invitationListTab.searchPlaceholder": "Cerca per nome o email...",
+	"invitationListTab.searchPlaceholder": "Cerca per email o messaggio...",
 	"invitationListTab.waivesQuestionnaireTitle": "Esonera dal questionario",
 	"invitationListTab.waivesPurchaseTitle": "Esonera dall'acquisto (biglietto gratuito)",
 	"invitationListTab.waivesMembershipTitle": "Esonera dall'iscrizione richiesta",
@@ -11924,5 +11924,10 @@
 	"planCalendar.firstPeriodHintFree": "Il primo periodo fino al {date} è gratuito. Calcolato su oggi; modificalo se registri con data passata.",
 	"planCalendar.quotePartial": "Primo periodo fino al {date}: {price} (parziale). Poi {regular}.",
 	"planCalendar.quoteFree": "Gratis fino al {date}, poi {regular}.",
-	"planCalendar.quoteFull": "Questo periodo termina il {date}. Iscriversi ora costa il prezzo pieno di {price}, anche se resta poco tempo."
+	"planCalendar.quoteFull": "Questo periodo termina il {date}. Iscriversi ora costa il prezzo pieno di {price}, anche se resta poco tempo.",
+	"unknownHolder.badge": "Profilo non condiviso",
+	"unknownHolder.srLabel": "Profilo non condiviso: questa persona non ha alcun legame attivo con la tua organizzazione.",
+	"unknownHolder.explanation": "Questa persona non ha alcun legame attivo con la tua organizzazione, quindi vengono mostrati solo l'email e il nome che hai inserito.",
+	"unknownHolder.noteUnavailable": "Nota non disponibile: questa persona non ha alcun legame attivo con la tua organizzazione",
+	"attendeesAdmin.invitationRequired": "Questa persona non ha ancora alcun legame con la tua organizzazione, quindi non puoi confermare la partecipazione al suo posto. Invitala all'evento o chiedile di confermare, acquistare un biglietto o candidarsi di persona per prima."
 }

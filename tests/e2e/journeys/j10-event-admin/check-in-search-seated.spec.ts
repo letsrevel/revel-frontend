@@ -78,9 +78,7 @@ test.describe('J6 check-in: name search & seat readback @p2', () => {
 		await expect(page.getByRole('heading', { name: 'Manage Tickets' })).toBeVisible();
 
 		// --- 1. Search by surname narrows the list to one attendee ----------
-		await page
-			.getByPlaceholder('Search by holder, purchaser, email, or tier...')
-			.fill(searched.lastName);
+		await page.getByPlaceholder('Search by holder name, email, or tier...').fill(searched.lastName);
 		await expect(page).toHaveURL(new RegExp(`search=${searched.lastName}`), { timeout: 15_000 });
 		const row = page
 			.locator(TICKET_ROW)
@@ -125,9 +123,7 @@ test.describe('J6 check-in: name search & seat readback @p2', () => {
 		await expect(scanDialog).toBeHidden({ timeout: 15_000 });
 
 		// Search the scanned attendee: their ticket is now Checked In too.
-		await page
-			.getByPlaceholder('Search by holder, purchaser, email, or tier...')
-			.fill(scanned.lastName);
+		await page.getByPlaceholder('Search by holder name, email, or tier...').fill(scanned.lastName);
 		await expect(
 			page
 				.locator(TICKET_ROW)

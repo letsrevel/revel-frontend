@@ -1,6 +1,6 @@
 import type { CheckInResponseSchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
-import { getUserDisplayName } from '$lib/utils/user-display';
+import { staffViewDisplayName } from '$lib/utils/user-display';
 import { membershipCalloutFrom, type ScanMembershipCallout } from './scan-membership';
 
 /**
@@ -36,7 +36,7 @@ export function scanNoteFrom(
 	const alreadyShown = !!note && note === options.previewedNote?.trim();
 	if (!note || alreadyShown) return null;
 	return {
-		name: getUserDisplayName(result.user, m['memberVerify.unknownMember']()),
+		name: staffViewDisplayName(result.user, m['memberVerify.unknownMember']()),
 		body: note,
 		membership: membershipCalloutFrom(result.membership)
 	};

@@ -6,7 +6,8 @@
 		TicketTierDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { Search, Mail, UserPlus, Plus, Edit } from '@lucide/svelte';
-	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -167,15 +168,23 @@
 				profilePictureUrl={invitation.user.profile_picture_url}
 				previewUrl={invitation.user.profile_picture_preview_url}
 				thumbnailUrl={invitation.user.profile_picture_thumbnail_url}
-				displayName={getUserDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
+				displayName={staffViewDisplayName(
+					invitation.user,
+					m['eventInvitationsAdmin.unknownUser']()
+				)}
 				firstName={invitation.user.first_name}
 				lastName={invitation.user.last_name}
 				size="sm"
 				clickable={true}
 			/>
-			<span class="text-sm font-medium">
-				{getUserDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
-			</span>
+			<div class="min-w-0">
+				<span class="text-sm font-medium">
+					{staffViewDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
+				</span>
+				{#if isUnknownHolder(invitation.user)}
+					<UnknownHolderBadge class="ml-1" />
+				{/if}
+			</div>
 		</div>
 	</td>
 

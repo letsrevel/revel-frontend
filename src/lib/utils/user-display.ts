@@ -46,3 +46,42 @@ export function getUserRealName(user: UserDisplayInfo): string {
 	if (first && last) return `${first} ${last}`;
 	return first || '';
 }
+
+/** The masked account projection staff see on tickets, RSVPs, invitations and scans. */
+export interface StaffViewUserInfo extends UserDisplayInfo {
+	display_name?: string | null;
+	known?: boolean | null;
+}
+
+/**
+ * Name to show staff for a row's account. The backend's `display_name` wins: for an
+ * unknown holder it is the name staff supplied (or the email), and for a known one
+ * the account's own display name. Falls back to the legacy field chain so partial
+ * objects (older payloads, test fixtures) still render.
+ */
+export function staffViewDisplayName(user: StaffViewUserInfo, fallback = 'Unknown User'): string {
+	const name = user.display_name?.trim();
+	if (name) return name;
+	return getUserDisplayName(user, fallback);
+}
+
+/**
+ * The email to show on a secondary line under the name, or null when the name
+ * shown above it already is the email (an unknown holder with no supplied
+ * name, or any fallback that lands on the email), so the same address is not
+ * printed twice. Compares against the RENDERED name, not `display_name`.
+ */
+export function secondaryEmail(user: StaffViewUserInfo): string | null {
+	const email = user.email?.trim();
+	if (!email) return null;
+	return staffViewDisplayName(user).trim().toLowerCase() === email.toLowerCase() ? null : email;
+}
+
+/**
+ * True when the account's profile is withheld from staff (nothing but the email and the
+ * name staff typed). Only an explicit `known: false` counts: a missing flag means an
+ * older or partial payload and is treated as known so no hint is shown by mistake.
+ */
+export function isUnknownHolder(user: StaffViewUserInfo | null | undefined): boolean {
+	return user?.known === false;
+}
