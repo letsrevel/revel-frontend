@@ -20,7 +20,6 @@
 	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateAll } from '$app/navigation';
-	import { shouldOfferTokenClaim } from '$lib/utils/event-token-claim';
 	import { toast } from 'svelte-sonner';
 	import {
 		Check,
@@ -74,8 +73,13 @@
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const queryClient = useQueryClient();
 
-	// Claim only where it can clear the step; see shouldOfferTokenClaim.
-	const showClaimButton = $derived(shouldOfferTokenClaim(eventTokenDetails, nextStep));
+	// A token that grants an invitation is always offered first: its waivers
+	// (questionnaire, membership, purchase, capacity) may clear the step below,
+	// and a claim on an invitation the user already holds is harmless. The claim
+	// loop of #1115 cannot come back: after a successful claim,
+	// ClaimInvitationButton deletes the pending_event_token cookie and strips
+	// ?et=, so the reload has no token and shows the real next step.
+	const showClaimButton = $derived(!!eventTokenDetails?.grants_invitation);
 
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
@@ -383,7 +387,7 @@
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<!-- Use ClaimInvitationButton where the claim clears the step (see showClaimButton) -->
+	<!-- Use ClaimInvitationButton while a granting token is present (see showClaimButton) -->
 	{#if showClaimButton && eventTokenDetails}
 		<ClaimInvitationButton
 			tokenId={eventTokenDetails.id || ''}
