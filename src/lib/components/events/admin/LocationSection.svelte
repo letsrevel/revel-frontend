@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		CitySchema,
@@ -100,6 +101,20 @@
 			});
 		}
 		userSelectedMode = mode;
+	}
+
+	/**
+	 * "Use a custom address instead" from the venue note: the organizer wants the
+	 * location private, so the venue's public address and city must not carry over
+	 * into the custom-address fields (the plain venue→address switch keeps them).
+	 * Focus then moves to the address field, since the button itself unmounts.
+	 */
+	async function useCustomAddressInstead() {
+		setMode('address');
+		onCitySelect(null);
+		onUpdate({ address: null, city_id: null });
+		await tick();
+		document.getElementById('location-address')?.focus();
 	}
 
 	/**
@@ -429,7 +444,7 @@
 				<p class="text-muted-foreground">{m['locationSection.venuePublicNote']()}</p>
 				<button
 					type="button"
-					onclick={() => setMode('address')}
+					onclick={useCustomAddressInstead}
 					class="mt-2 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['locationSection.useCustomAddressInstead']()}

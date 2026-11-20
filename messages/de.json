@@ -7681,7 +7681,7 @@
 				"addressPlaceholder": "Musterstraße 1, 12345 Musterstadt",
 				"addressHelper": "Das Bearbeiten der Adresse hier geocodiert die Markierung nicht neu. Die Koordinaten müssen separat aktualisiert werden.",
 				"addressVisibilityLabel": "Sichtbarkeit der Adresse",
-				"venuePublicNote": "Der Veranstaltungsort \"{venue}\" ist öffentlich: Name, Adresse und Kartenlinks bleiben für alle sichtbar, unabhängig von dieser Einstellung. Sie gilt nur für die eigene Adresse und die Kartenlinks der Veranstaltung. Um den Ort privat zu halten, verwende statt eines Veranstaltungsorts eine eigene Adresse.",
+				"venuePublicNote": "Der Veranstaltungsort \"{venue}\" ist öffentlich: Name, Adresse und Kartenlinks bleiben für alle sichtbar, die die Veranstaltung sehen können, unabhängig von dieser Einstellung. Sie gilt nur für die eigene Adresse und die Kartenlinks der Veranstaltung. Um die Adresse privat zu halten, verwende für die Veranstaltungen der Reihe statt eines Veranstaltungsorts eine eigene Adresse.",
 				"maxAttendeesLabel": "Maximale Teilnehmer*innenzahl",
 				"maxAttendeesHelper": "Leer lassen für unbegrenzte Kapazität.",
 				"maxTicketsPerUserLabel": "Max. Tickets pro Nutzer*in",

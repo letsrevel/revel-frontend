@@ -21,6 +21,7 @@ const venue = {
 function setup(formData: Record<string, unknown>, selectedVenue: VenueDetailSchema | null = null) {
 	const onUpdate = vi.fn();
 	const onVenueSelect = vi.fn();
+	const onCitySelect = vi.fn();
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	render(QueryClientTestWrapper, {
 		props: {
@@ -33,12 +34,12 @@ function setup(formData: Record<string, unknown>, selectedVenue: VenueDetailSche
 				organizationSlug: 'acme',
 				validationErrors: {},
 				onUpdate,
-				onCitySelect: vi.fn(),
+				onCitySelect,
 				onVenueSelect
 			}
 		}
 	});
-	return { onUpdate, onVenueSelect };
+	return { onUpdate, onVenueSelect, onCitySelect };
 }
 
 describe('LocationSection venue visibility copy (#1254)', () => {
@@ -55,15 +56,23 @@ describe('LocationSection venue visibility copy (#1254)', () => {
 
 	it('switches to custom-address mode from the note', async () => {
 		const user = userEvent.setup();
-		const { onVenueSelect } = setup({ venue_id: 'venue_1', address: venue.address }, venue);
+		const { onVenueSelect, onUpdate, onCitySelect } = setup(
+			{ venue_id: 'venue_1', address: venue.address, city_id: 1 },
+			venue
+		);
 
 		await user.click(
 			screen.getByRole('button', { name: m['locationSection.useCustomAddressInstead']() })
 		);
 
 		expect(onVenueSelect).toHaveBeenCalledWith(null);
+		// The location must stay private: the venue's public address and city do not carry over.
+		expect(onUpdate).toHaveBeenCalledWith({ address: null, city_id: null });
+		expect(onCitySelect).toHaveBeenCalledWith(null);
 		expect(screen.queryByText(m['locationSection.venuePublicNote']())).toBeNull();
 		expect(screen.getByLabelText(m['locationSection.addressVisibility']())).toBeInTheDocument();
+		// The button unmounted: focus moves to the address field, not <body> (WCAG 2.4.3).
+		expect(document.activeElement).toBe(document.getElementById('location-address'));
 	});
 
 	it('shows the reworded hint, without "private venues", in address mode', () => {

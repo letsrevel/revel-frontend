@@ -7651,7 +7651,7 @@
 				"addressPlaceholder": "123 rue Principale, Bureau 100",
 				"addressHelper": "Modifier l'adresse ici ne géocode pas à nouveau le repère. Les coordonnées doivent être mises à jour séparément.",
 				"addressVisibilityLabel": "Visibilité de l'adresse",
-				"venuePublicNote": "Le lieu \"{venue}\" est public : son nom, son adresse et ses liens de carte restent visibles pour tout le monde, quel que soit ce réglage. Ce réglage ne couvre que l'adresse propre de l'événement et ses liens de carte. Pour garder l'emplacement privé, utilise une adresse personnalisée à la place d'un lieu.",
+				"venuePublicNote": "Le lieu \"{venue}\" est public : son nom, son adresse et ses liens de carte restent visibles pour toutes les personnes qui peuvent voir l'événement, quel que soit ce réglage. Ce réglage ne couvre que l'adresse propre de l'événement et ses liens de carte. Pour garder l'adresse privée, utilise une adresse personnalisée pour les événements de la série à la place d'un lieu.",
 				"maxAttendeesLabel": "Nombre maximum de participant·es",
 				"maxAttendeesHelper": "Laisser vide pour une capacité illimitée.",
 				"maxTicketsPerUserLabel": "Max. de billets par personne",
