@@ -11941,6 +11941,6 @@
 		}
 	],
 	"totpLock.pausedNoTime": "Two-factor verification is paused for your security. Please try again later.",
-	"totpLock.wrongCodeRestart": "That code wasn't right. Sign in again to get a new verification step.",
+	"totpLock.wrongCodeRestart": "That didn't work. Please sign in again.",
 	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again."
 }

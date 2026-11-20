@@ -8,17 +8,26 @@ const totpLockedBodySchema = z.object({ code: z.literal('totp_locked') });
 const MAX_RETRY_AFTER_SECONDS = 24 * 60 * 60;
 
 /**
- * Whole minutes (rounded up, minimum 1) for a `Retry-After` header given in
- * seconds. Returns `null` when the header is missing or not a positive integer
- * (HTTP-date values are not sent by this backend).
+ * Whole seconds from a `Retry-After` header. Returns `null` when the header is
+ * missing or not a positive integer (HTTP-date values are not sent by this
+ * backend).
  */
-export function retryAfterToMinutes(header: string | null | undefined): number | null {
+export function retryAfterToSeconds(header: string | null | undefined): number | null {
 	if (header === null || header === undefined) return null;
 	const trimmed = header.trim();
 	if (!/^\d+$/.test(trimmed)) return null;
 	const seconds = Number(trimmed);
 	if (!Number.isFinite(seconds) || seconds <= 0 || seconds > MAX_RETRY_AFTER_SECONDS) return null;
-	return Math.max(1, Math.ceil(seconds / 60));
+	return seconds;
+}
+
+/**
+ * Whole minutes (rounded up, minimum 1) for a `Retry-After` header given in
+ * seconds, or `null` when the header is unusable.
+ */
+export function retryAfterToMinutes(header: string | null | undefined): number | null {
+	const seconds = retryAfterToSeconds(header);
+	return seconds === null ? null : Math.max(1, Math.ceil(seconds / 60));
 }
 
 export type OtpFailureKind = 'locked' | 'throttled' | null;

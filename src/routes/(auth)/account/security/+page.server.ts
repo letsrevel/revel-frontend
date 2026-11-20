@@ -10,7 +10,7 @@ import {
 } from '$lib/api/client';
 import { z } from 'zod';
 import { extractErrorMessage } from '$lib/utils/errors';
-import { classifyOtpFailure, totpLockedMessage } from '$lib/utils/totp-lock';
+import { classifyOtpFailure, retryAfterToSeconds, totpLockedMessage } from '$lib/utils/totp-lock';
 import { emailChangeRequestSchema } from '$lib/schemas/auth';
 import { log } from '$lib/server/logger';
 import { plainOrNull } from '$lib/utils/plain-data';
@@ -23,7 +23,12 @@ import { plainOrNull } from '$lib/utils/plain-data';
 function otpRateFailure(response: Response | undefined, error: unknown) {
 	const kind = classifyOtpFailure(response, error);
 	if (kind === 'locked') {
-		return fail(429, { errors: { code: totpLockedMessage(response) }, totpLocked: true });
+		return fail(429, {
+			errors: { code: totpLockedMessage(response) },
+			totpLocked: true,
+			// Seconds until the lock lifts, so the page can re-enable code entry.
+			retryAfterSeconds: retryAfterToSeconds(response?.headers?.get('Retry-After'))
+		});
 	}
 	if (kind === 'throttled') {
 		return fail(429, { errors: { code: m['totpLock.rateLimited']() } });

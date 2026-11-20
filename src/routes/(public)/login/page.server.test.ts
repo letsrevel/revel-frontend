@@ -279,7 +279,9 @@ describe('verify2FA failures (#1264, totp_locked)', () => {
 		expect(result.data.requires2FA).toBeUndefined();
 		expect(result.data.tempToken).toBeUndefined();
 		expect(result.data.restartedFrom2FA).toBe(true);
-		expect(String((result.data.errors as { form: string }).form)).toContain('14');
+		expect((result.data.errors as { form: string }).form).toBe(
+			'Two-factor verification is paused for your security. Try again in 14 minutes.'
+		);
 	});
 
 	it('totp_locked without Retry-After uses the message without a number', async () => {
@@ -288,7 +290,9 @@ describe('verify2FA failures (#1264, totp_locked)', () => {
 			error: { code: 'totp_locked' }
 		} as never);
 		const result = (await actions.verify2FA(event())) as { data: { errors: { form: string } } };
-		expect(result.data.errors.form).not.toMatch(/\d/);
+		expect(result.data.errors.form).toBe(
+			'Two-factor verification is paused for your security. Please try again later.'
+		);
 	});
 
 	it('a 429 without a code is the generic rate limit and keeps the code step', async () => {
@@ -302,6 +306,8 @@ describe('verify2FA failures (#1264, totp_locked)', () => {
 		};
 		expect(result.status).toBe(429);
 		expect(result.data.requires2FA).toBe(true);
+		// Rejected before the code was checked: the token is intact and is returned.
+		expect(result.data.tempToken).toBe('spent');
 		expect((result.data.errors as { code: string }).code).toBeTruthy();
 		expect(result.data.restartedFrom2FA).toBeUndefined();
 	});

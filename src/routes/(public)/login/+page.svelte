@@ -87,6 +87,8 @@
 	const resendSent = $derived(!!form?.resendSent);
 	const resendError = $derived(resendTransportError || !!form?.resendError);
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
+	// Sent back from the 2FA step (wrong code / spent token / locked account).
+	const restartedFrom2FA = $derived(!!form?.restartedFrom2FA);
 
 	// Handle demo account selection
 	function selectDemoAccount(accountEmail: string) {
@@ -144,12 +146,19 @@
 				return;
 			}
 			await applyAction(result);
+			// A fresh code step must never inherit a previous (wrong) code: it
+			// would leave the submit button enabled with a known-bad value.
+			if (result.type === 'success' && result.data?.requires2FA) {
+				otpCode = '';
+			}
 			// Sent back from the 2FA step to the password step (spent token or
-			// locked account): the error alert above is announced, and focus
-			// goes to the password field so the user can sign in again.
+			// locked account): the polite status notice above is announced after
+			// focus lands on the first field of the step so the user can sign in
+			// again (password, or the account dropdown in demo mode).
 			if (result.type === 'failure' && result.data?.restartedFrom2FA) {
+				otpCode = '';
 				await tick();
-				document.getElementById('password')?.focus();
+				(document.getElementById('password') ?? document.getElementById('demo-account'))?.focus();
 			}
 		};
 	};
@@ -168,11 +177,23 @@
 	<Card>
 		<CardContent class="space-y-6 p-6 sm:p-8">
 			<!-- Error Summary -->
-			{#if errors.form}
+			{#if errors.form && !restartedFrom2FA}
 				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 					<p class="text-sm font-medium text-destructive">{errors.form}</p>
 				</div>
 			{/if}
+
+			<!-- The restart notice is a polite, always-mounted live region: focus is
+			     moved to the first field at the same moment, and an assertive alert
+			     would be cut short by that focus change. `empty:-mb-6` cancels the
+			     space-y gap while the region is empty. -->
+			<div role="status" id="login-restart-notice" class="empty:-mb-6">
+				{#if errors.form && restartedFrom2FA}
+					<div class="rounded-md border border-destructive bg-destructive/10 p-4">
+						<p class="text-sm font-medium text-destructive">{errors.form}</p>
+					</div>
+				{/if}
+			</div>
 
 			{#if emailNotVerified && !requires2FA}
 				<div

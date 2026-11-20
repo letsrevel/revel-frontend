@@ -11941,6 +11941,6 @@
 		}
 	],
 	"totpLock.pausedNoTime": "La vérification en deux étapes est suspendue pour ta sécurité. Réessaie plus tard.",
-	"totpLock.wrongCodeRestart": "Ce code n'était pas le bon. Reconnecte-toi pour obtenir une nouvelle étape de vérification.",
+	"totpLock.wrongCodeRestart": "Ça n'a pas fonctionné. Reconnecte-toi, s'il te plaît.",
 	"totpLock.rateLimited": "Trop de tentatives. Patiente un instant et réessaie."
 }

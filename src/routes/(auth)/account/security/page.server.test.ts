@@ -54,7 +54,10 @@ describe.each([
 		const result = await run();
 		expect(result.status).toBe(429);
 		expect(result.data.totpLocked).toBe(true);
-		expect(result.data.errors.code).toContain('5');
+		expect(result.data.errors.code).toBe(
+			'Two-factor verification is paused for your security. Try again in 5 minutes.'
+		);
+		expect((result.data as { retryAfterSeconds?: number }).retryAfterSeconds).toBe(300);
 	});
 
 	it('429 without code -> generic rate limit, input stays enabled', async () => {

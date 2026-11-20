@@ -11941,6 +11941,6 @@
 		}
 	],
 	"totpLock.pausedNoTime": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente mais tarde.",
-	"totpLock.wrongCodeRestart": "Esse código não estava certo. Inicia sessão novamente para obter um novo passo de verificação.",
+	"totpLock.wrongCodeRestart": "Não funcionou. Inicia sessão novamente.",
 	"totpLock.rateLimited": "Demasiadas tentativas. Aguarda um momento e tenta novamente."
 }
