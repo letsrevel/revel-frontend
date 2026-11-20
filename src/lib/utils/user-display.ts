@@ -67,13 +67,14 @@ export function staffViewDisplayName(user: StaffViewUserInfo, fallback = 'Unknow
 
 /**
  * The email to show on a secondary line under the name, or null when the name
- * already is the email (an unknown holder with no supplied name), so the same
- * address is not printed twice.
+ * shown above it already is the email (an unknown holder with no supplied
+ * name, or any fallback that lands on the email), so the same address is not
+ * printed twice. Compares against the RENDERED name, not `display_name`.
  */
 export function secondaryEmail(user: StaffViewUserInfo): string | null {
 	const email = user.email?.trim();
 	if (!email) return null;
-	return user.display_name?.trim() === email ? null : email;
+	return staffViewDisplayName(user).trim().toLowerCase() === email.toLowerCase() ? null : email;
 }
 
 /**

@@ -90,6 +90,12 @@ describe('secondaryEmail', () => {
 		).toBeNull();
 	});
 
+	it('returns null when a blank display_name makes the shown name fall back to the email', () => {
+		expect(
+			secondaryEmail({ display_name: '  ', first_name: null, email: 'gina@example.com' })
+		).toBeNull();
+	});
+
 	it('returns null when there is no email', () => {
 		expect(secondaryEmail({ display_name: 'Gina', email: null })).toBeNull();
 	});
