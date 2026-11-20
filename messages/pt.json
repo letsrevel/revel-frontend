@@ -11926,9 +11926,9 @@
 	"planCalendar.quoteFree": "Grátis até {date}, depois {regular}.",
 	"planCalendar.quoteFull": "Este período termina em {date}. Aderir agora custa o preço total de {price}, por pouco tempo que reste.",
 	"unknownHolder.badge": "Perfil não partilhado",
-	"unknownHolder.srLabel": "Perfil não partilhado: esta pessoa ainda não interagiu com a tua organização.",
-	"unknownHolder.explanation": "Esta pessoa ainda não interagiu com a tua organização, por isso só são mostrados o email e o nome que indicaste.",
-	"unknownHolder.noteUnavailable": "Nota indisponível: esta pessoa ainda não interagiu com a tua organização",
+	"unknownHolder.srLabel": "Perfil não partilhado: esta pessoa não tem nenhuma ligação ativa com a tua organização.",
+	"unknownHolder.explanation": "Esta pessoa não tem nenhuma ligação ativa com a tua organização, por isso só são mostrados o email e o nome que indicaste.",
+	"unknownHolder.noteUnavailable": "Nota indisponível: esta pessoa não tem nenhuma ligação ativa com a tua organização",
 	"attendeesAdmin.invitationRequired": "Esta pessoa ainda não tem qualquer ligação à tua organização, por isso não podes responder por ela. Convida-a para o evento ou pede-lhe que primeiro responda, compre um bilhete ou se candidate por conta própria.",
 	"orgAdmin.seating.boxOffice.invitationRequired": "Esta conta ainda não tem qualquer ligação à tua organização. Vende para o endereço de email da pessoa ou pede-lhe que primeiro responda ou compre um bilhete por conta própria."
 }

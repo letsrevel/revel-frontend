@@ -11926,9 +11926,9 @@
 	"planCalendar.quoteFree": "Free until {date}, then {regular}.",
 	"planCalendar.quoteFull": "This period ends on {date}. Joining now costs the full {price}, however little of the period is left.",
 	"unknownHolder.badge": "Profile not shared",
-	"unknownHolder.srLabel": "Profile not shared: this person has not interacted with your organization yet.",
-	"unknownHolder.explanation": "This person has not interacted with your organization yet, so only the email and name you entered are shown.",
-	"unknownHolder.noteUnavailable": "Staff note unavailable: this person has not interacted with your organization yet",
+	"unknownHolder.srLabel": "Profile not shared: this person has no active connection to your organization.",
+	"unknownHolder.explanation": "This person has no active connection to your organization, so only the email and name you entered are shown.",
+	"unknownHolder.noteUnavailable": "Staff note unavailable: this person has no active connection to your organization",
 	"attendeesAdmin.invitationRequired": "This person has no connection to your organization yet, so you cannot RSVP for them. Invite them to the event, or ask them to RSVP, buy a ticket or apply themselves first.",
 	"orgAdmin.seating.boxOffice.invitationRequired": "This account has no connection to your organization yet. Sell to the person's email address instead, or ask them to RSVP or buy a ticket themselves first."
 }
