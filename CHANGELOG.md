@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.40.0] - 2026-11-20
+
+### Added
+- Organizers can create calendar-aligned membership plans, where all members renew on the same date. Plan cards show the price of the first period. (#1258)
+- Staff invite an existing account to become a member. The account joins after it accepts. Staff can resend or withdraw pending invitations on the People page. (#1259)
+- The login page tells people when they must verify their email address first, and lets them send the verification email again. (#1256)
+- The login and account security pages show a clear message, with the waiting time, when two-factor verification is paused. (#1268)
+
+### Changed
+- Admin lists show the name and email that staff entered for people who have not yet interacted with the organization, with a "Profile not shared" badge. (#1260)
+- The event form says that the address of a selected venue is public, and offers a custom address instead. (#1261)
+
+### Fixed
+- After a wrong two-factor code at login, the page goes back to the password step with a clear message. (#1268, #1264)
+- On narrow screens, the questionnaire form buttons stay inside their card. (#1273)
+- When an invitation link grants an invitation, the event page offers to claim it before any other step, so the link's waivers apply. After the claim, the page shows the next step. (#1275)
+- When an invitation link no longer works, the join page links to the event, and a signed-out visitor can sign in to see their invitation. (#1277)
+
 ## [2.39.1] - 2026-11-17
 
 ### Changed
