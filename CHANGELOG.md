@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - In the event form, the tag suggestions show in full below the tag field. Before, the next section hid them.
+- On the events and organizations pages, the location filter shows the selected city. Before, it showed an empty search field while the filter was on.
 
 ## [2.40.0] - 2026-11-20
 

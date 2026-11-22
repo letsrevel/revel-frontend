@@ -2,7 +2,20 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import OrganizationFilters from './OrganizationFilters.svelte';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+
+// CityFilter loads the selected city's name with TanStack Query.
+function renderWithQuery(options: { props: Record<string, unknown> }) {
+	return render(QueryClientTestWrapper, {
+		props: {
+			client: new QueryClient(),
+			component: OrganizationFilters,
+			componentProps: options.props
+		}
+	});
+}
 
 describe('OrganizationFilters', () => {
 	const defaultFilters: FilterState = {
@@ -15,7 +28,7 @@ describe('OrganizationFilters', () => {
 		const onUpdateFilters = vi.fn();
 		const onClearFilters = vi.fn();
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: defaultFilters,
 				onUpdateFilters,
@@ -41,7 +54,7 @@ describe('OrganizationFilters', () => {
 			tags: ['LGBTQ+', 'Community']
 		};
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: filtersWithActive,
 				onUpdateFilters,
@@ -62,7 +75,7 @@ describe('OrganizationFilters', () => {
 			search: 'test'
 		};
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: filtersWithActive,
 				onUpdateFilters,
@@ -77,7 +90,7 @@ describe('OrganizationFilters', () => {
 		const onUpdateFilters = vi.fn();
 		const onClearFilters = vi.fn();
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: defaultFilters,
 				onUpdateFilters,
@@ -98,7 +111,7 @@ describe('OrganizationFilters', () => {
 			search: 'test'
 		};
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: filtersWithActive,
 				onUpdateFilters,
@@ -117,7 +130,7 @@ describe('OrganizationFilters', () => {
 		const onUpdateFilters = vi.fn();
 		const onClearFilters = vi.fn();
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: defaultFilters,
 				onUpdateFilters,
@@ -145,7 +158,7 @@ describe('OrganizationFilters', () => {
 			cityId: 123
 		};
 
-		render(OrganizationFilters, {
+		renderWithQuery({
 			props: {
 				filters: filtersWithActive,
 				onUpdateFilters,

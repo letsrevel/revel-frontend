@@ -2,16 +2,40 @@
 	import type { CitySchema } from '$lib/api/generated/types.gen';
 	import { MapPin, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
-	import { cityListCities } from '$lib/api';
+	import { cityGetCity, cityListCities } from '$lib/api';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import * as m from '$lib/paraglide/messages.js';
 
+	type SelectedCity = { id: number; name: string; country: string };
+
 	interface Props {
-		selectedCity?: { id: number; name: string; country: string } | null;
-		onChangeCity: (city: { id: number; name: string; country: string } | null) => void;
+		/** The `city_id` filter. The URL holds only the ID, so we load the name. */
+		selectedCityId?: number | null;
+		onChangeCity: (city: SelectedCity | null) => void;
 		class?: string;
 	}
 
-	const { selectedCity = null, onChangeCity, class: className }: Props = $props();
+	const { selectedCityId = null, onChangeCity, class: className }: Props = $props();
+
+	const queryClient = useQueryClient();
+
+	function cityQueryKey(id: number): ['city', number] {
+		return ['city', id];
+	}
+
+	// A city never changes, so keep it for the session. A pick from the search
+	// list seeds this cache (handleSelectCity), so the name shows at once.
+	const cityQuery = createQuery(() => ({
+		queryKey: cityQueryKey(selectedCityId ?? 0),
+		queryFn: async (): Promise<SelectedCity> => {
+			const id = selectedCityId as number;
+			const { data, error } = await cityGetCity({ path: { city_id: id } });
+			if (error || !data) throw error ?? new Error('City not found');
+			return { id, name: data.name, country: data.country };
+		},
+		enabled: !!selectedCityId,
+		staleTime: Infinity
+	}));
 
 	let searchQuery = $state('');
 	let isSearching = $state(false);
@@ -67,7 +91,9 @@
 
 	function handleSelectCity(city: CitySchema): void {
 		if (city.id) {
-			onChangeCity({ id: city.id, name: city.name, country: city.country });
+			const picked: SelectedCity = { id: city.id, name: city.name, country: city.country };
+			queryClient.setQueryData(cityQueryKey(city.id), picked);
+			onChangeCity(picked);
 			searchQuery = '';
 			searchResults = [];
 			isDropdownOpen = false;
@@ -97,15 +123,25 @@
 		</h3>
 	</div>
 
-	{#if selectedCity}
+	{#if selectedCityId}
 		<!-- Selected City Display -->
 		<div
 			class="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2"
 		>
-			<div class="flex-1">
-				<div class="text-sm font-medium">{selectedCity.name}</div>
-				<div class="text-xs text-muted-foreground">{selectedCity.country}</div>
-			</div>
+			{#if cityQuery.data}
+				<div class="flex-1">
+					<div class="text-sm font-medium">{cityQuery.data.name}</div>
+					<div class="text-xs text-muted-foreground">{cityQuery.data.country}</div>
+				</div>
+			{:else if cityQuery.isError}
+				<!-- Unknown ID (for example an old link): the filter is still on and clearable. -->
+				<div class="flex-1 text-sm font-medium">{m['filters.city.heading']()}</div>
+			{:else}
+				<div class="flex-1 space-y-1.5" aria-busy="true">
+					<div class="h-4 w-24 animate-pulse rounded bg-muted"></div>
+					<div class="h-3 w-16 animate-pulse rounded bg-muted"></div>
+				</div>
+			{/if}
 			<button
 				type="button"
 				onclick={handleClearCity}
