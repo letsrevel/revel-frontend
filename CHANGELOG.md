@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Hover, focus and selected states use a soft neutral tint instead of the brand red, so they no longer look like errors. The red stays for the heart (Follow) and other brand accents. An organization's custom accent colour now sets this heart colour. (#1282)
+- On event and organization pages, the header, the title band, the content and the footer share one left edge. (#1294)
+- The event page shows date, location and capacity once, in the summary card. The summary also shows the end time and held seats. (#1294)
+- The event description column is wider. (#1294)
+- The organization page shows the logo, name and location in its colour band. (#1294)
 - In the calendar, times show in the event's own timezone, as in the list. A zone label shows when the event's zone is different from yours. (#1284)
 - In calendar view, the "Include past events" and Sort Order controls are hidden, because they do not apply to the calendar. (#1284)
 - Toasts show at the top center, below the site header, so they do not cover the header menus. (#1289)
@@ -31,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The location filter on the organizations page says "Filter organizations by city". (#1290)
 - The page header no longer moves sideways between short pages and pages that scroll. (#1290)
 - Resource file cards show only the file name. Before, they showed the signed link parameters. (#1291)
+- Series cards without a description or tags no longer show an empty divider. (#1294)
+- Event and series cards in the same row have the same height. (#1294)
 
 ## [2.40.1] - 2026-11-22
 
