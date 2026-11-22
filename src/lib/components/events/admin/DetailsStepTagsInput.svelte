@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Hash } from '@lucide/svelte';
+	import { onMount, tick } from 'svelte';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
 	interface Props {
@@ -30,12 +31,26 @@
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 	let listEl = $state<HTMLDivElement | null>(null);
 
-	// The list is absolutely positioned inside whatever scrolls around it (the
-	// editor shell, the series settings dialog). Keep it in view when it opens.
-	// `scrollIntoView` is missing in jsdom, hence the optional call.
-	$effect(() => {
-		listEl?.scrollIntoView?.({ block: 'nearest' });
+	/**
+	 * The list is absolutely positioned inside whatever scrolls around it (the
+	 * editor shell, the series settings dialog). Bring it into view after a
+	 * search the user typed, not on every mount (refocus must not jump).
+	 * `scrollIntoView` is missing in jsdom, hence the optional call.
+	 */
+	// A fresh mount has no focus, so the list must start closed. The parent
+	// owns `showSuggestions`; closing the Advanced accordion unmounts us before
+	// the blur timer can reset it, which left the list open on reopen.
+	onMount(() => {
+		showSuggestions = false;
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+		};
 	});
+
+	async function revealSuggestions(): Promise<void> {
+		await tick();
+		listEl?.scrollIntoView?.({ block: 'nearest' });
+	}
 
 	/**
 	 * Fetch tag suggestions from API
@@ -61,6 +76,7 @@
 					.filter((tagName) => !tags.includes(tagName));
 				showSuggestions = tagSuggestions.length > 0;
 				selectedSuggestionIndex = -1;
+				if (showSuggestions) void revealSuggestions();
 			}
 		} catch (error) {
 			console.error('Failed to fetch tag suggestions:', error);
@@ -188,7 +204,7 @@
 					bind:this={listEl}
 					id="tags-suggestions"
 					role="listbox"
-					class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
+					class="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
 					{#each tagSuggestions as suggestion, index (suggestion)}
 						<button

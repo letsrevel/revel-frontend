@@ -134,7 +134,7 @@ describe('DetailsStep', () => {
 		const clipping: string[] = [];
 		let el: HTMLElement | null = screen.getByPlaceholderText('Add tags...');
 		while (el && el !== document.body) {
-			if (/\boverflow-(hidden|clip)\b/.test(el.className)) clipping.push(el.className);
+			if (/\boverflow-(?:[xy]-)?(hidden|clip)\b/.test(el.className)) clipping.push(el.className);
 			el = el.parentElement;
 		}
 		expect(clipping).toEqual([]);
