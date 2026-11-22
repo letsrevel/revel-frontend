@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- In the calendar, times show in the event's own timezone, as in the list. A zone label shows when the event's zone is different from yours. (#1284)
+- In calendar view, the "Include past events" and Sort Order controls are hidden. The calendar always shows the full period, in date order. (#1284)
+- Toasts show at the bottom right, so they do not cover the header menus. (#1289)
+- The date in the event page header is plain text. Use "Add to Calendar" in the sidebar to download the event. (#1289)
+
+### Fixed
+- The calendar popup shows the event description as plain text. Before, it showed Markdown symbols and codes such as `&amp;`. (#1283)
+- The calendar popup shows the end date of events that last more than one day. (#1283)
+- Event names in the month view show in full when you hover over them. Hovering a day keeps its text readable. (#1284, #1282)
+- Search fields show one clear button. Before, Chrome added a second one. (#1286)
+- The notifications menu shows more notifications at a time, with one scroll area. (#1289)
+- Long email addresses in the user menu no longer break in the middle. (#1289)
+- My Tickets and My RSVPs show "Try adjusting your filters" only when a filter is on. (#1290)
+- On My Invitations, the "Status" label without options is gone. (#1290)
+- The full date shows on RSVP cards. (#1290)
+- The location filter on the organizations page says "Filter organizations by city". (#1290)
+- The page header no longer moves sideways between short pages and pages that scroll. (#1290)
+- Resource file cards show only the file name. Before, they showed the signed link parameters. (#1291)
+
 ## [2.40.1] - 2026-11-22
 
 ### Fixed
