@@ -151,12 +151,21 @@ export function filtersToApiParams(filters: EventFilters) {
 	};
 }
 
+/** Options for the active-filter helpers. */
+export interface ActiveFilterOptions {
+	/** Skip includePast, e.g. in calendar view where its control is hidden. */
+	ignoreIncludePast?: boolean;
+}
+
 /**
  * Check if any filters are active (excluding pagination and the sort order)
  * @param filters Filter state object
  * @returns true if any filters are active
  */
-export function hasActiveFilters(filters: EventFilters): boolean {
+export function hasActiveFilters(
+	filters: EventFilters,
+	options: ActiveFilterOptions = {}
+): boolean {
 	return !!(
 		filters.search ||
 		filters.cityId ||
@@ -164,7 +173,7 @@ export function hasActiveFilters(filters: EventFilters): boolean {
 		filters.eventType ||
 		filters.visibility ||
 		(filters.tags && filters.tags.length > 0) ||
-		filters.includePast ||
+		(filters.includePast && !options.ignoreIncludePast) ||
 		filters.ticketType
 	);
 }
@@ -174,7 +183,10 @@ export function hasActiveFilters(filters: EventFilters): boolean {
  * @param filters Filter state object
  * @returns Number of active filters
  */
-export function countActiveFilters(filters: EventFilters): number {
+export function countActiveFilters(
+	filters: EventFilters,
+	options: ActiveFilterOptions = {}
+): number {
 	let count = 0;
 
 	if (filters.search) count++;
@@ -183,7 +195,7 @@ export function countActiveFilters(filters: EventFilters): number {
 	if (filters.eventType) count++;
 	if (filters.visibility) count++;
 	if (filters.tags && filters.tags.length > 0) count += filters.tags.length;
-	if (filters.includePast) count++;
+	if (filters.includePast && !options.ignoreIncludePast) count++;
 	if (filters.ticketType) count++;
 	// The sort order is not a filter: it changes the order, not which events show.
 

@@ -8,6 +8,8 @@
  */
 import {
 	getDateLocale,
+	getTimeZoneAbbreviation,
+	getUtcOffsetKey,
 	formatTimeOfDay,
 	formatEventDate,
 	formatEventDateRange
@@ -15,14 +17,6 @@ import {
 
 function viewerTimeZone(): string {
 	return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
-
-function offsetKey(date: Date, timeZone: string): string {
-	const parts = new Intl.DateTimeFormat('en-US', {
-		timeZone,
-		timeZoneName: 'longOffset'
-	}).formatToParts(date);
-	return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
 
 /**
@@ -37,18 +31,10 @@ export function eventZoneDiffersFromViewer(
 	if (!timeZone) return false;
 	try {
 		const date = new Date(dateString);
-		return offsetKey(date, timeZone) !== offsetKey(date, viewerZone);
+		return getUtcOffsetKey(date, timeZone) !== getUtcOffsetKey(date, viewerZone);
 	} catch {
 		return false;
 	}
-}
-
-function shortAbbreviation(dateString: string, timeZone: string): string {
-	const parts = new Intl.DateTimeFormat(getDateLocale(), {
-		timeZone,
-		timeZoneName: 'short'
-	}).formatToParts(new Date(dateString));
-	return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
 
 /**
@@ -63,7 +49,7 @@ export function formatEventTimeLabel(
 	if (!timeZone) return formatTimeOfDay(dateString);
 	const time = formatTimeOfDay(dateString, timeZone);
 	if (!eventZoneDiffersFromViewer(dateString, timeZone, viewerZone)) return time;
-	const abbr = shortAbbreviation(dateString, timeZone);
+	const abbr = getTimeZoneAbbreviation(new Date(dateString), getDateLocale(), timeZone);
 	return abbr ? `${time} ${abbr}` : time;
 }
 

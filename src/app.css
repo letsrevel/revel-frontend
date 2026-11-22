@@ -235,9 +235,9 @@
 	html {
 		scrollbar-gutter: stable;
 	}
-	/* The app renders its own clear buttons on search inputs; hide Chrome's native X so there aren't two (#1286). */
-	input[type='search']::-webkit-search-cancel-button,
-	input[type='search']::-webkit-search-decoration {
+	/* Search inputs that render their own clear button opt in with .search-custom-clear, which hides Chrome's native X so there aren't two (#1286). Other search inputs keep the native one. */
+	input[type='search'].search-custom-clear::-webkit-search-cancel-button,
+	input[type='search'].search-custom-clear::-webkit-search-decoration {
 		-webkit-appearance: none;
 		appearance: none;
 	}

@@ -14,7 +14,11 @@ const NAMED_ENTITIES: Record<string, string> = {
 	nbsp: ' '
 };
 
-function decodeEntities(text: string): string {
+const ESCAPE_CHARS = '\\`*_{}[]()#+-.!|<>~&';
+const ESCAPE_BASE = 0xe000;
+const ESCAPABLE = /\\([\\`*_{}[\]()#+\-.!|<>~&])/g;
+
+export function decodeHtmlEntities(text: string): string {
 	return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, body: string) => {
 		if (body[0] === '#') {
 			const code =
@@ -41,6 +45,13 @@ export function markdownToPlainText(
 
 	// Fenced code blocks: keep the content, drop the fences.
 	text = text.replace(/^ {0,3}(```|~~~)[^\n]*\n([\s\S]*?)(?:\n {0,3}\1[^\n]*(?=\n|$)|$)/gm, '$2');
+	// Backslash escapes: swap for private-use placeholders so the emphasis and
+	// list passes cannot see the escaped character. Restored at the end.
+	text = text.replace(ESCAPABLE, (_m, ch: string) =>
+		String.fromCharCode(ESCAPE_BASE + ESCAPE_CHARS.indexOf(ch))
+	);
+	// Autolinks <https://…>, <mailto:…>, <me@x.com>: unwrap before tags are stripped.
+	text = text.replace(/<((?:[a-z][a-z0-9+.-]{1,31}:[^\s<>]*)|(?:[^\s<>@]+@[^\s<>@]+))>/gi, '$1');
 	// Images: keep alt text. Links: keep link text. Reference-style definitions: drop.
 	text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
 	text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
@@ -53,7 +64,7 @@ export function markdownToPlainText(
 	text = text.replace(/^ {0,3}#{1,6}\s+/gm, '');
 	text = text.replace(/^ {0,3}(?:[-*_]\s*){3,}$/gm, '');
 	text = text.replace(/^[ \t]*>+[ \t]?/gm, '');
-	text = text.replace(/^[ \t]*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/gm, '');
+	text = text.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])\s+(?:\[[ xX]\]\s+)?/gm, '');
 	text = text.replace(
 		/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm,
 		''
@@ -66,10 +77,10 @@ export function markdownToPlainText(
 	text = text.replace(/(?<!\w)_(?=\S)([^\n_]*?\S)_(?!\w)/g, '$1');
 	text = text.replace(/~~(?=\S)([\s\S]*?\S)~~/g, '$1');
 	text = text.replace(/`+([^`]*)`+/g, '$1');
-	// Backslash escapes of punctuation.
-	text = text.replace(/\\([\\`*_{}[\]()#+\-.!|<>~&])/g, '$1');
 
-	text = decodeEntities(text);
+	text = decodeHtmlEntities(text);
+	// Restore escaped punctuation.
+	text = text.replace(/[\uE000-\uE01F]/g, (c) => ESCAPE_CHARS[c.charCodeAt(0) - 0xe000] ?? c);
 	text = text.replace(/\s+/g, ' ').trim();
 
 	if (maxLength !== undefined && text.length > maxLength) {

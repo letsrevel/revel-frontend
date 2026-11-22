@@ -7,7 +7,7 @@
 	import type { OrganizationInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripMarkdown } from '$lib/seo';
+	import { stripMarkup } from '$lib/seo/text';
 	import { withUtmParams } from '$lib/utils/attribution';
 	import { MapPin, Users, Tag } from '@lucide/svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
@@ -47,7 +47,7 @@
 
 	// Get clean description text (strip markdown formatting for plain text display)
 	const descriptionText = $derived(
-		organization.description ? stripMarkdown(organization.description) : ''
+		organization.description ? stripMarkup(organization.description) : ''
 	);
 
 	// Accessible card label for screen readers

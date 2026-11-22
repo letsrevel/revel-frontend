@@ -19,9 +19,9 @@
 	<Popover.Root>
 		<Popover.Trigger
 			class="relative z-20 inline-block rounded-full px-2 py-0.5 text-xs font-medium text-muted-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label={m['moreTags.trigger']({ count: tags.length })}
 		>
 			{m['moreTags.label']({ count: tags.length })}
+			<span class="sr-only">{m['moreTags.triggerSuffix']({ count: tags.length })}</span>
 		</Popover.Trigger>
 		<Popover.Content class="w-auto max-w-xs">
 			<ul class="flex flex-wrap gap-1" aria-label={m['moreTags.listLabel']()}>

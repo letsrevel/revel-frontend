@@ -61,6 +61,9 @@
 	const viewMode = $derived<'list' | 'calendar'>(
 		($page.url.searchParams.get('viewMode') as 'list' | 'calendar') || 'list'
 	);
+	const calendarAwareCount = $derived(
+		countActiveFilters(currentFilters, { ignoreIncludePast: viewMode === 'calendar' })
+	);
 
 	// Calendar state
 	const calendarParams = $derived(parseCalendarParams($page.url.searchParams));
@@ -332,12 +335,14 @@
 								level={2}
 								icon={Calendar}
 								title={m['browse.events_noEventsFound']()}
-								body={hasActiveFilters(currentFilters)
+								body={hasActiveFilters(currentFilters, {
+									ignoreIncludePast: viewMode === 'calendar'
+								})
 									? m['browse.events_tryAdjustingFilters']()
 									: m['browse.events_noUpcomingEvents']()}
 							>
 								{#snippet action()}
-									{#if hasActiveFilters(currentFilters)}
+									{#if hasActiveFilters( currentFilters, { ignoreIncludePast: viewMode === 'calendar' } )}
 										<Button onclick={handleClearFilters}>
 											{m['browse.events_clearFilters']()}
 										</Button>
@@ -487,12 +492,12 @@
 	>
 		<Filter class="h-4 w-4" aria-hidden="true" />
 		{m['common.filters_filters']()}
-		{#if countActiveFilters(currentFilters) > 0}
+		{#if calendarAwareCount > 0}
 			<span
 				class="rounded-full bg-primary-foreground px-2 py-0.5 text-xs font-medium text-primary"
-				aria-label="{countActiveFilters(currentFilters)} {m['common.filters_activeFilters']()}"
+				aria-label="{calendarAwareCount} {m['common.filters_activeFilters']()}"
 			>
-				{countActiveFilters(currentFilters)}
+				{calendarAwareCount}
 			</span>
 		{/if}
 	</button>

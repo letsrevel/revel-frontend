@@ -82,3 +82,28 @@ describe('dashboard date helpers', () => {
 		expect(formatAgendaDate('2026-01-15T12:00:00Z', 'UTC')).toMatch(/janv/);
 	});
 });
+
+describe('getEventsForDay buckets by event timezone', () => {
+	// 22:30Z = 23:30 Vienna (CET) on Jan 15, but already Jan 16 in Tokyo.
+	const ev = { start: '2026-01-15T22:30:00Z', timezone: 'Europe/Vienna' };
+
+	it('places the event on its day in the event zone', async () => {
+		const { getEventsForDay } = await import('./calendar');
+		expect(getEventsForDay([ev], new Date(2026, 0, 15))).toHaveLength(1);
+		expect(getEventsForDay([ev], new Date(2026, 0, 16))).toHaveLength(0);
+	});
+
+	it('uses the zone, not the viewer, for a Tokyo event', async () => {
+		const { getEventsForDay } = await import('./calendar');
+		const tokyo = { start: '2026-01-15T22:30:00Z', timezone: 'Asia/Tokyo' };
+		expect(getEventsForDay([tokyo], new Date(2026, 0, 16))).toHaveLength(1);
+		expect(getEventsForDay([tokyo], new Date(2026, 0, 15))).toHaveLength(0);
+	});
+
+	it('falls back to the viewer zone when timezone is missing or invalid', async () => {
+		const { getDayKeyInZone } = await import('./calendar');
+		expect(getDayKeyInZone('2026-01-15T12:00:00Z', null)).toBe(
+			getDayKeyInZone('2026-01-15T12:00:00Z', 'Not/AZone')
+		);
+	});
+});

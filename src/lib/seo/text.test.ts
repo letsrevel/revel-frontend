@@ -15,6 +15,12 @@ describe('stripHtml', () => {
 		expect(stripHtml('<p>Hello&nbsp;<b>world</b></p>\n<p>again</p>')).toBe('Hello world again');
 		expect(stripHtml(null)).toBe('');
 	});
+
+	it('decodes entities after stripping tags', () => {
+		expect(stripHtml('Tom &amp; Jerry &mdash; fun')).toBe('Tom & Jerry &mdash; fun');
+		expect(stripHtml('<p>a &lt;b&gt; c</p>')).toBe('a <b> c');
+		expect(stripMarkup('**Rock &amp; Roll**')).toBe('Rock & Roll');
+	});
 });
 
 describe('stripMarkup', () => {

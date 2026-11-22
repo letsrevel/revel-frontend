@@ -313,7 +313,13 @@
 	<SkipLink />
 	<ModeWatcher disableHeadScriptInjection />
 	<QueryClientProvider client={queryClient}>
-		<Toaster richColors position="bottom-right" />
+		<!-- Below the sticky header (h-16 + border = 65px) so toasts never cover the header menus or the fixed bottom bars. -->
+		<Toaster
+			richColors
+			position="top-right"
+			offset={{ top: '4.75rem', right: '1rem' }}
+			mobileOffset={{ top: '4.75rem', right: '1rem', left: '1rem' }}
+		/>
 		<ImpersonationBanner />
 		<DemoBanner />
 		<MaintenanceBanner />

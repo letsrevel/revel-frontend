@@ -34,8 +34,10 @@
 	}: Props = $props();
 
 	// Computed values
-	const activeFilterCount = $derived(countActiveFilters(filters));
-	const hasFilters = $derived(hasActiveFilters(filters));
+	const activeFilterCount = $derived(
+		countActiveFilters(filters, { ignoreIncludePast: hideListControls })
+	);
+	const hasFilters = $derived(hasActiveFilters(filters, { ignoreIncludePast: hideListControls }));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });

@@ -24,3 +24,17 @@ describe('active filter count ignores the sort order', () => {
 		expect(countActiveOrganizationFilters({ cityId: 7, orderBy: 'name' })).toBe(1);
 	});
 });
+
+describe('ignoreIncludePast option', () => {
+	it('excludes includePast from count and hasActive when asked', async () => {
+		const { countActiveFilters, hasActiveFilters } = await import('./filters');
+		const f = { includePast: true };
+		expect(countActiveFilters(f)).toBe(1);
+		expect(hasActiveFilters(f)).toBe(true);
+		expect(countActiveFilters(f, { ignoreIncludePast: true })).toBe(0);
+		expect(hasActiveFilters(f, { ignoreIncludePast: true })).toBe(false);
+		expect(
+			countActiveFilters({ includePast: true, search: 'x' }, { ignoreIncludePast: true })
+		).toBe(1);
+	});
+});

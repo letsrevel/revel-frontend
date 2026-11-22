@@ -132,9 +132,19 @@ describe('NotificationItem', () => {
 			compact: true
 		});
 
-		// Check if the compact-mode line-clamp class is applied
-		const bodyElement = container.querySelector('.line-clamp-2');
-		expect(bodyElement).toBeInTheDocument();
+		// The body itself carries the compact clamp (the title has its own).
+		expect(container.querySelector('.notification-body .line-clamp-2')).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 3 })).toHaveClass('line-clamp-2');
+	});
+
+	it('does not clamp in full mode', () => {
+		const { container } = renderItem({
+			notification: createMockNotification({ body: '<p>Body</p>' }),
+			authToken: mockAuthToken,
+			compact: false
+		});
+
+		expect(container.querySelector('.line-clamp-2')).not.toBeInTheDocument();
 	});
 
 	it('is keyboard accessible and navigates on Enter', async () => {

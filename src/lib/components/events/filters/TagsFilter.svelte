@@ -24,10 +24,15 @@
 	let expanded = $state(false);
 
 	// Selected tags stay visible even when they fall beyond the collapsed limit.
+	// A tag that was selected stays pinned until the next show more/fewer toggle,
+	// so deselecting it does not unmount the focused button (WCAG 2.4.3).
+	let pinned = $state<string[]>([]);
 	const visibleTags = $derived(
 		expanded
 			? availableTags
-			: availableTags.filter((tag, i) => i < COLLAPSED_TAG_COUNT || selectedTags.includes(tag))
+			: availableTags.filter(
+					(tag, i) => i < COLLAPSED_TAG_COUNT || selectedTags.includes(tag) || pinned.includes(tag)
+				)
 	);
 	const hiddenCount = $derived(availableTags.length - visibleTags.length);
 	const canToggle = $derived(availableTags.length > COLLAPSED_TAG_COUNT);
@@ -71,7 +76,14 @@
 		}
 	});
 
+	function toggleExpanded(): void {
+		pinned = [];
+		expanded = !expanded;
+	}
+
 	function handleTagClick(tag: string): void {
+		// Pin before toggling so a later deselect keeps the focused button mounted.
+		if (!pinned.includes(tag)) pinned = [...pinned, tag];
 		onToggleTag(tag);
 	}
 </script>
@@ -122,7 +134,7 @@
 		{#if canToggle && (expanded || hiddenCount > 0)}
 			<button
 				type="button"
-				onclick={() => (expanded = !expanded)}
+				onclick={toggleExpanded}
 				aria-expanded={expanded}
 				aria-controls={listId}
 				class="text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

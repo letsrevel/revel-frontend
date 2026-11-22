@@ -4468,7 +4468,6 @@
 				"title": "Todavía no hay series de eventos",
 				"description": "Empieza creando tu primera serie de eventos"
 			},
-			"tagsMore": "+{count} más",
 			"actions": {
 				"view": "Ver",
 				"edit": "Editar"
@@ -11950,13 +11949,13 @@
 	"totpLock.wrongCodeRestart": "No ha funcionado. Vuelve a iniciar sesión.",
 	"totpLock.rateLimited": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
 	"moreTags.label": "+{count} más",
-	"moreTags.trigger": [
+	"moreTags.triggerSuffix": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "Mostrar 1 etiqueta más",
-				"countPlural=*": "Mostrar {count} etiquetas más"
+				"countPlural=one": "etiqueta",
+				"countPlural=*": "etiquetas"
 			}
 		}
 	],

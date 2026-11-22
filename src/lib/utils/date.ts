@@ -135,12 +135,18 @@ function tzOpt(timeZone?: string): { timeZone?: string } {
  * Returns "" when no timezone is supplied so viewer-local displays are
  * left unchanged.
  */
-function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string): string {
+export function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string): string {
 	if (!timeZone) return '';
 	const parts = getFormatter(locale, {
 		timeZone,
 		timeZoneName: 'short'
 	}).formatToParts(date);
+	return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
+}
+
+/** UTC offset label ("GMT+1") of a zone at an instant; equal keys mean equal offsets. */
+export function getUtcOffsetKey(date: Date, timeZone: string): string {
+	const parts = getFormatter('en-US', { timeZone, timeZoneName: 'longOffset' }).formatToParts(date);
 	return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
 

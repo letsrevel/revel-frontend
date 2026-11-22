@@ -252,7 +252,7 @@
 			     stays the localized, event-timezone rendering. -->
 			<div class="flex items-center gap-2 text-sm">
 				<Calendar class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-				<time datetime={event.start} class="truncate">{formattedDate}</time>
+				<time datetime={event.start} class="min-w-0 break-words">{formattedDate}</time>
 			</div>
 
 			<!-- Location -->

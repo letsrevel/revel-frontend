@@ -4468,7 +4468,6 @@
 				"title": "No event series yet",
 				"description": "Get started by creating your first event series"
 			},
-			"tagsMore": "+{count} more",
 			"actions": {
 				"view": "View",
 				"edit": "Edit"
@@ -11950,13 +11949,13 @@
 	"totpLock.wrongCodeRestart": "That didn't work. Please sign in again.",
 	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again.",
 	"moreTags.label": "+{count} more",
-	"moreTags.trigger": [
+	"moreTags.triggerSuffix": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "Show 1 more tag",
-				"countPlural=*": "Show {count} more tags"
+				"countPlural=one": "tag",
+				"countPlural=*": "tags"
 			}
 		}
 	],

@@ -282,18 +282,43 @@ export function formatWeekRange(year: number, week: number): string {
 	return `${startStr} - ${endStr}`;
 }
 
+const dayKeyFormatters = new Map<string, Intl.DateTimeFormat>();
+
 /**
- * Get events for a specific day from a list of events
+ * Calendar day ("YYYY-MM-DD") of an instant in the given IANA zone, or in the
+ * viewer's zone when none is given (or the zone is invalid).
  */
-export function getEventsForDay<T extends { start: string }>(events: T[], date: Date): T[] {
-	return events.filter((event) => {
-		const eventDate = new Date(event.start);
-		return (
-			eventDate.getDate() === date.getDate() &&
-			eventDate.getMonth() === date.getMonth() &&
-			eventDate.getFullYear() === date.getFullYear()
-		);
-	});
+export function getDayKeyInZone(dateString: string, timeZone?: string | null): string {
+	const key = timeZone || '';
+	let fmt = dayKeyFormatters.get(key);
+	if (!fmt) {
+		const opts: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+		try {
+			fmt = new Intl.DateTimeFormat('en-CA', timeZone ? { ...opts, timeZone } : opts);
+		} catch {
+			fmt = new Intl.DateTimeFormat('en-CA', opts);
+		}
+		dayKeyFormatters.set(key, fmt);
+	}
+	return fmt.format(new Date(dateString));
+}
+
+function localDayKey(date: Date): string {
+	const pad = (n: number): string => String(n).padStart(2, '0');
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/**
+ * Get events for a specific calendar day (a local-midnight Date column).
+ * Each event is placed on its day in the EVENT's timezone (falling back to the
+ * viewer's), so it lands in the column matching the time shown on it.
+ */
+export function getEventsForDay<T extends { start: string; timezone?: string | null }>(
+	events: T[],
+	date: Date
+): T[] {
+	const target = localDayKey(date);
+	return events.filter((event) => getDayKeyInZone(event.start, event.timezone) === target);
 }
 
 /**

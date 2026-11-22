@@ -40,8 +40,10 @@
 	}: Props = $props();
 
 	// Computed values
-	const activeFilterCount = $derived(countActiveFilters(filters));
-	const hasFilters = $derived(hasActiveFilters(filters));
+	const activeFilterCount = $derived(
+		countActiveFilters(filters, { ignoreIncludePast: hideListControls })
+	);
+	const hasFilters = $derived(hasActiveFilters(filters, { ignoreIncludePast: hideListControls }));
 
 	// Swipe gesture state
 	let touchStartY = $state(0);

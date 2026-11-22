@@ -4468,7 +4468,6 @@
 				"title": "Nessuna serie di eventi ancora",
 				"description": "Inizia creando la tua prima serie di eventi"
 			},
-			"tagsMore": "+{count} altri",
 			"actions": {
 				"view": "Visualizza",
 				"edit": "Modifica"
@@ -11950,13 +11949,13 @@
 	"totpLock.wrongCodeRestart": "Non ha funzionato. Accedi di nuovo.",
 	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova.",
 	"moreTags.label": "+{count} altri",
-	"moreTags.trigger": [
+	"moreTags.triggerSuffix": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "Mostra 1 altro tag",
-				"countPlural=*": "Mostra altri {count} tag"
+				"countPlural=one": "tag",
+				"countPlural=*": "tag"
 			}
 		}
 	],

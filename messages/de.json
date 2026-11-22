@@ -4468,7 +4468,6 @@
 				"title": "Noch keine Veranstaltungsreihen",
 				"description": "Beginne mit der Erstellung deiner ersten Veranstaltungsreihe"
 			},
-			"tagsMore": "+{count} weitere",
 			"actions": {
 				"view": "Ansehen",
 				"edit": "Bearbeiten"
@@ -11950,13 +11949,13 @@
 	"totpLock.wrongCodeRestart": "Das hat nicht geklappt. Melde dich bitte erneut an.",
 	"totpLock.rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es dann erneut.",
 	"moreTags.label": "+{count} weitere",
-	"moreTags.trigger": [
+	"moreTags.triggerSuffix": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "1 weiteren Tag anzeigen",
-				"countPlural=*": "{count} weitere Tags anzeigen"
+				"countPlural=one": "Tag",
+				"countPlural=*": "Tags"
 			}
 		}
 	],

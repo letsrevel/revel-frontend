@@ -66,4 +66,23 @@ describe('TagsFilter show more / fewer', () => {
 		await screen.findByRole('button', { name: /Add tag-12 filter/ });
 		expect(screen.queryByRole('button', { name: /more tags|fewer tags/ })).not.toBeInTheDocument();
 	});
+
+	it('keeps a deselected tag beyond the limit mounted and focused', async () => {
+		mockTags();
+		const user = userEvent.setup();
+		const selected = ['tag-15'];
+		const onToggleTag = vi.fn();
+		const { rerender } = render(TagsFilter, {
+			props: { selectedTags: selected, onToggleTag }
+		});
+
+		const chip = await screen.findByRole('button', { name: /Remove tag-15 filter/ });
+		await user.click(chip);
+		expect(onToggleTag).toHaveBeenCalledWith('tag-15');
+
+		await rerender({ selectedTags: [], onToggleTag });
+		const same = screen.getByRole('button', { name: /Add tag-15 filter/ });
+		expect(same).toBe(chip);
+		expect(same).toHaveFocus();
+	});
 });

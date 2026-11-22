@@ -12,6 +12,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { stripMarkup } from '$lib/seo';
+	import MoreTagsPopover from '$lib/components/common/MoreTagsPopover.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -186,11 +187,7 @@
 									</span>
 								{/each}
 								{#if series.tags.length > 3}
-									<span
-										class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium"
-									>
-										{m['orgAdmin.eventSeries.tagsMore']({ count: series.tags.length - 3 })}
-									</span>
+									<MoreTagsPopover tags={series.tags.slice(3)} />
 								{/if}
 							</div>
 						{/if}
