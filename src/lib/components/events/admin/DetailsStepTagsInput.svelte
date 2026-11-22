@@ -28,6 +28,14 @@
 	// Transient fetch state (spinner + debounce handle) stays local
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+	let listEl = $state<HTMLDivElement | null>(null);
+
+	// The list is absolutely positioned inside whatever scrolls around it (the
+	// editor shell, the series settings dialog). Keep it in view when it opens.
+	// `scrollIntoView` is missing in jsdom, hence the optional call.
+	$effect(() => {
+		listEl?.scrollIntoView?.({ block: 'nearest' });
+	});
 
 	/**
 	 * Fetch tag suggestions from API
@@ -177,9 +185,10 @@
 
 			{#if showSuggestions && tagSuggestions.length > 0}
 				<div
+					bind:this={listEl}
 					id="tags-suggestions"
 					role="listbox"
-					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
+					class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
 					{#each tagSuggestions as suggestion, index (suggestion)}
 						<button

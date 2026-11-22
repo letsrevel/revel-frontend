@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- In the event form, the tag suggestions show in full below the tag field. Before, the next section hid them.
+
 ## [2.40.0] - 2026-11-20
 
 ### Added
