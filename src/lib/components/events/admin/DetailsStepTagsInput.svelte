@@ -29,7 +29,21 @@
 	// Transient fetch state (spinner + debounce handle) stays local
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+	let blurTimeout: ReturnType<typeof setTimeout> | null = null;
 	let listEl = $state<HTMLDivElement | null>(null);
+	let inputEl = $state<HTMLInputElement | null>(null);
+
+	// A fresh mount has no focus, so the list must start closed. The parent
+	// owns `showSuggestions`; closing the Advanced accordion unmounts us before
+	// the blur timer can reset it, which left the list open on reopen.
+	onMount(() => {
+		showSuggestions = false;
+		selectedSuggestionIndex = -1;
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+			if (blurTimeout) clearTimeout(blurTimeout);
+		};
+	});
 
 	/**
 	 * The list is absolutely positioned inside whatever scrolls around it (the
@@ -37,16 +51,6 @@
 	 * search the user typed, not on every mount (refocus must not jump).
 	 * `scrollIntoView` is missing in jsdom, hence the optional call.
 	 */
-	// A fresh mount has no focus, so the list must start closed. The parent
-	// owns `showSuggestions`; closing the Advanced accordion unmounts us before
-	// the blur timer can reset it, which left the list open on reopen.
-	onMount(() => {
-		showSuggestions = false;
-		return () => {
-			if (searchTimeout) clearTimeout(searchTimeout);
-		};
-	});
-
 	async function revealSuggestions(): Promise<void> {
 		await tick();
 		listEl?.scrollIntoView?.({ block: 'nearest' });
@@ -68,6 +72,9 @@
 			const response = await tagListTags({
 				query: { search }
 			});
+
+			// Drop a late answer: the user moved on (blur, added the tag, typed more).
+			if (search !== tagInput || document.activeElement !== inputEl) return;
 
 			if (response.data?.results) {
 				// Extract tag names from TagSchema objects and filter out tags that are already added
@@ -111,6 +118,7 @@
 	function addTag(tag?: string): void {
 		const tagToAdd = tag || tagInput.trim();
 		if (tagToAdd && !tags.includes(tagToAdd)) {
+			if (searchTimeout) clearTimeout(searchTimeout);
 			onUpdate({ tags: [...tags, tagToAdd] });
 			tagInput = '';
 			tagSuggestions = [];
@@ -172,6 +180,7 @@
 	<div class="flex gap-2">
 		<div class="relative flex-1">
 			<input
+				bind:this={inputEl}
 				id="tags-input"
 				type="text"
 				value={tagInput}
@@ -184,8 +193,10 @@
 				}}
 				onblur={() => {
 					// Delay hiding to allow clicking on suggestions
-					setTimeout(() => {
+					if (blurTimeout) clearTimeout(blurTimeout);
+					blurTimeout = setTimeout(() => {
 						showSuggestions = false;
+						selectedSuggestionIndex = -1;
 					}, 200);
 				}}
 				placeholder={m['detailsStep.addTagsPlaceholder']()}
