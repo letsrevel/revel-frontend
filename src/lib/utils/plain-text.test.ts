@@ -120,4 +120,10 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 		expect(markdownToPlainText('text\n```js\nline1\nline2')).toBe('text line1 line2');
 		expect(markdownToPlainText('~~~\nline1\nline2\nline3')).toBe('line1 line2 line3');
 	});
+	it('handles empty, info-string and unclosed fenced blocks', () => {
+		expect(markdownToPlainText('```\n```\ntext\n```py\ncode\n```')).toBe('text code');
+		expect(markdownToPlainText('```\na\n```js\nb\n```')).toBe('a js b');
+		expect(markdownToPlainText('~~~\na\nb')).toBe('a b');
+		expect(markdownToPlainText('````\na\n```\nb\n````\nafter')).toBe('a b after');
+	});
 });

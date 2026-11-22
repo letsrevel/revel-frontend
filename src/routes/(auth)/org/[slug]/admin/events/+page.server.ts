@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		eventpublicdiscoveryListEvents({
 			fetch,
 			headers,
-			query: { ...base, include_past: false, order_by: 'start' }
+			query: { ...base, include_past: false, next_events: true, order_by: 'start' }
 		}),
 		eventpublicdiscoveryListEvents({
 			fetch,

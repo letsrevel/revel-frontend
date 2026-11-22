@@ -57,6 +57,32 @@ export function decodeHtmlEntities(text: string): string {
 	});
 }
 
+/**
+ * Drop fenced code block fences, keep their content. Line-based, following
+ * CommonMark: an opening fence is 3+ backticks or tildes (an info string may
+ * follow); the closing fence uses the same character, is at least as long, and
+ * has only whitespace after it. An unclosed block runs to the end of input.
+ */
+function stripFences(text: string): string {
+	const out: string[] = [];
+	let open: { ch: string; len: number } | null = null;
+	for (const line of text.split('\n')) {
+		const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+		if (open) {
+			if (m && m[1][0] === open.ch && m[1].length >= open.len && /^[ \t]*$/.test(m[2])) {
+				open = null;
+			} else {
+				out.push(line);
+			}
+		} else if (m && !(m[1][0] === '`' && m[2].includes('`'))) {
+			open = { ch: m[1][0], len: m[1].length };
+		} else {
+			out.push(line);
+		}
+	}
+	return out.join('\n');
+}
+
 export function markdownToPlainText(
 	markdown: string | null | undefined,
 	maxLength?: number
@@ -65,10 +91,7 @@ export function markdownToPlainText(
 	let text = markdown.replace(/\r\n?/g, '\n');
 
 	// Fenced code blocks: keep the content, drop the fences.
-	text = text.replace(
-		/^ {0,3}(```|~~~)[^\n]*\n([\s\S]*?)(?:\n {0,3}\1[^\n]*(?=\n|$)|(?![\s\S]))/gm,
-		'$2'
-	);
+	text = stripFences(text);
 	// Backslash escapes: swap for NUL-delimited placeholders (NUL cannot occur in stored text) so the emphasis and
 	// list passes cannot see the escaped character. Restored at the end.
 	text = text.replace(ESCAPABLE, (_m, ch: string) => `${NUL}${ESCAPE_CHARS.indexOf(ch)}${NUL}`);
