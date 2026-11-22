@@ -83,6 +83,35 @@ function stripFences(text: string): string {
 	return out.join('\n');
 }
 
+const TABLE_DELIMITER = /^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/;
+
+/**
+ * Flatten Markdown tables: a table is a header line, a delimiter row (which
+ * must contain a pipe, e.g. `|---|---|` or `--- | ---`) and the body lines up
+ * to the next blank line. Pipes are only stripped inside those blocks, so
+ * "Rock | Pop | Jazz" in ordinary prose is left alone.
+ */
+function flattenTables(text: string): string {
+	const lines = text.split('\n');
+	const inTable = new Array<boolean>(lines.length).fill(false);
+	const isDelimiter = new Array<boolean>(lines.length).fill(false);
+	for (let i = 1; i < lines.length; i++) {
+		if (!lines[i].includes('|') || !TABLE_DELIMITER.test(lines[i])) continue;
+		if (lines[i - 1].trim() === '') continue;
+		isDelimiter[i] = true;
+		inTable[i - 1] = true;
+		for (let j = i; j < lines.length && lines[j].trim() !== ''; j++) inTable[j] = true;
+	}
+	const out: string[] = [];
+	lines.forEach((line, i) => {
+		if (isDelimiter[i]) return;
+		out.push(
+			inTable[i] ? line.replace(/^\s*\||\|\s*$/g, '').replace(/[ \t]*\|[ \t]*/g, ' ') : line
+		);
+	});
+	return out.join('\n');
+}
+
 export function markdownToPlainText(
 	markdown: string | null | undefined,
 	maxLength?: number
@@ -113,11 +142,7 @@ export function markdownToPlainText(
 	text = text.replace(/^ {0,3}(?:[-*_]\s*){3,}$/gm, '');
 	text = text.replace(/^[ \t]*>+[ \t]?/gm, '');
 	text = text.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])\s+(?:\[[ xX]\]\s+)?/gm, '');
-	text = text.replace(
-		/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm,
-		''
-	);
-	text = text.replace(/^\s*\||\|\s*$/gm, '').replace(/[ \t]*\|[ \t]*/g, ' ');
+	text = flattenTables(text);
 	// Inline emphasis / code / strike.
 	text = text.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '$1');
 	text = text.replace(/(?<!\w)__(?=\S)([\s\S]*?\S)__(?!\w)/g, '$1');

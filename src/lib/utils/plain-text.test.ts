@@ -126,4 +126,17 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 		expect(markdownToPlainText('~~~\na\nb')).toBe('a b');
 		expect(markdownToPlainText('````\na\n```\nb\n````\nafter')).toBe('a b after');
 	});
+
+	it('keeps pipes that are not part of a table', () => {
+		expect(markdownToPlainText('Rock | Pop | Jazz')).toBe('Rock | Pop | Jazz');
+		expect(markdownToPlainText('Genres: a | b\n\nTitle\n\nx | y')).toBe(
+			'Genres: a | b Title x | y'
+		);
+	});
+	it('still flattens a real table but not the prose around it', () => {
+		expect(markdownToPlainText('a | b\n\n| H1 | H2 |\n|---|---|\n| x | y |\n\nc | d')).toBe(
+			'a | b H1 H2 x y c | d'
+		);
+		expect(markdownToPlainText('H1 | H2\n--- | ---\nx | y')).toBe('H1 H2 x y');
+	});
 });

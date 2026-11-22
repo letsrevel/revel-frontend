@@ -47,10 +47,16 @@ export function formatEventTimeLabel(
 	viewerZone: string = viewerTimeZone()
 ): string {
 	if (!timeZone) return formatTimeOfDay(dateString);
-	const time = formatTimeOfDay(dateString, timeZone);
-	if (!eventZoneDiffersFromViewer(dateString, timeZone, viewerZone)) return time;
-	const abbr = getTimeZoneAbbreviation(new Date(dateString), getDateLocale(), timeZone);
-	return abbr ? `${time} ${abbr}` : time;
+	try {
+		const time = formatTimeOfDay(dateString, timeZone);
+		if (!eventZoneDiffersFromViewer(dateString, timeZone, viewerZone)) return time;
+		const abbr = getTimeZoneAbbreviation(new Date(dateString), getDateLocale(), timeZone);
+		return abbr ? `${time} ${abbr}` : time;
+	} catch (e) {
+		if (!(e instanceof RangeError)) throw e;
+		// Zone unknown to this browser's ICU: fall back to the viewer zone, no label.
+		return formatTimeOfDay(dateString);
+	}
 }
 
 /**
@@ -66,11 +72,19 @@ export function formatEventRangeLabel(
 	viewerZone: string = viewerTimeZone()
 ): string {
 	const tz = timeZone || undefined;
-	const startDiffers = eventZoneDiffersFromViewer(start, tz, viewerZone);
-	if (isOpenEnded || !end) {
-		return formatEventDate(start, tz, startDiffers);
+	try {
+		const startDiffers = eventZoneDiffersFromViewer(start, tz, viewerZone);
+		if (isOpenEnded || !end) {
+			return formatEventDate(start, tz, startDiffers);
+		}
+		// A range can cross a DST change, so the end may differ even when the start does not.
+		const showTz = startDiffers || eventZoneDiffersFromViewer(end, tz, viewerZone);
+		return formatEventDateRange(start, end, tz, showTz);
+	} catch (e) {
+		if (!(e instanceof RangeError)) throw e;
+		// Zone unknown to this browser's ICU: fall back to the viewer zone, no label.
+		return isOpenEnded || !end
+			? formatEventDate(start, undefined, false)
+			: formatEventDateRange(start, end, undefined, false);
 	}
-	// A range can cross a DST change, so the end may differ even when the start does not.
-	const showTz = startDiffers || eventZoneDiffersFromViewer(end, tz, viewerZone);
-	return formatEventDateRange(start, end, tz, showTz);
 }

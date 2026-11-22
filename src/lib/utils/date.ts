@@ -174,9 +174,16 @@ function withTz(formatted: string, abbreviation: string): string {
 /**
  * Day formatter for event dates. Adds the year only when any given instant is
  * outside the current year in that zone, so far-off events are not ambiguous (#1285).
+ * Accepted edge case: the rule compares with "now", so around New Year SSR and the
+ * client can disagree on showing the year. Event surfaces pass the event timezone,
+ * which keeps both sides consistent except within the turn of the year.
  */
-function getEventDateFormatter(locale: string, timeZone: string | undefined, ...dates: Date[]) {
-	const yearOf = (d: Date) =>
+function getEventDateFormatter(
+	locale: string,
+	timeZone: string | undefined,
+	...dates: Date[]
+): Intl.DateTimeFormat {
+	const yearOf = (d: Date): string =>
 		getFormatter('en-CA', { year: 'numeric', ...tzOpt(timeZone) }).format(d);
 	const now = yearOf(new Date());
 	const showYear = dates.some((d) => yearOf(d) !== now);

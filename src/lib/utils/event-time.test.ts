@@ -87,4 +87,12 @@ describe('formatEventRangeLabel', () => {
 		expect(out).toMatch(/8:00 PM$/);
 		expect(out).not.toMatch(/11:00 PM/);
 	});
+
+	it('does not throw for a time zone unknown to the browser', () => {
+		expect(formatEventTimeLabel(SUMMER, 'Not/AZone', 'UTC')).toMatch(/\d{1,2}:\d{2}/);
+		const range = formatEventRangeLabel(SUMMER, '2026-07-10T21:00:00Z', false, 'Not/AZone', 'UTC');
+		expect(range).toMatch(/Jul 10/);
+		const open = formatEventRangeLabel(SUMMER, null, true, 'Not/AZone', 'UTC');
+		expect(open).toMatch(/Jul 10/);
+	});
 });
