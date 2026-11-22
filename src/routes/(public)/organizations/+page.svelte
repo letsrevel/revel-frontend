@@ -75,7 +75,11 @@
 		const params = organizationFiltersToParams({
 			...clearOrganizationFilters(),
 			orderBy: currentFilters.orderBy,
-			pageSize: currentFilters.pageSize ?? 20
+			// Keep only a sane page size; a bad URL value falls back to the default.
+			pageSize:
+				currentFilters.pageSize && currentFilters.pageSize > 0 && currentFilters.pageSize <= 100
+					? currentFilters.pageSize
+					: 20
 		});
 		const target = `${resolve('/(public)/organizations', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()

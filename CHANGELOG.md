@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In the event form, the tag suggestions show in full below the tag field. Before, the next section hid them.
 - On the events and organizations pages, the location filter shows the selected city. Before, it showed an empty search field while the filter was on.
 - The sort order no longer counts as an active filter on the events and organizations pages. "Clear all" keeps the sort order and the page size.
-- When a link has a city that does not exist, the location filter shows "Unknown city" at once. When the city cannot be loaded, the filter says so.
+- When a link has a city that does not exist, the location filter shows "Unknown city" at once. When the app cannot load the city, the filter says so.
 - When no events or organizations match the filters, the page offers "Clear filters" for all filter types, not only search, city and tags.
 - The filter column stays below the site header when you scroll.
 - On the events and organizations pages, the "Distance Sorting" help text shows above the results. Before, the results covered it.

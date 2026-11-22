@@ -94,8 +94,16 @@ describe('CityFilter', () => {
 		expect(screen.getByRole('status')).toHaveTextContent('Loading city');
 	});
 
-	it('stays neutral when the lookup fails for another reason', async () => {
+	it('says the city could not be loaded when the lookup fails for another reason', async () => {
 		cityGetCity.mockResolvedValue({ data: undefined, response: { status: 503 } });
+		renderFilter({ selectedCityId: 7, onChangeCity: vi.fn() });
+
+		expect(await screen.findByText('City could not be loaded')).toBeInTheDocument();
+		expect(screen.queryByText('Unknown city')).not.toBeInTheDocument();
+	});
+
+	it('says the city could not be loaded on a network failure', async () => {
+		cityGetCity.mockRejectedValue(new Error('network'));
 		renderFilter({ selectedCityId: 7, onChangeCity: vi.fn() });
 
 		expect(await screen.findByText('City could not be loaded')).toBeInTheDocument();
