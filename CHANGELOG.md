@@ -12,11 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In calendar view, the "Include past events" and Sort Order controls are hidden. The calendar always shows the full period, in date order. (#1284)
 - Toasts show at the bottom right, so they do not cover the header menus. (#1289)
 - The date in the event page header is plain text. Use "Add to Calendar" in the sidebar to download the event. (#1289)
+- Event dates show the year when the event is not in the current year. (#1285)
+- The organization page shows upcoming events, soonest first, by default. (#1285)
+- Admin Manage Events lists upcoming events soonest first and past events newest first. (#1285)
+- The tag filter shows the most used tags first, with "Show more" for the rest. Selected tags always stay visible. (#1287)
 
 ### Fixed
 - The calendar popup shows the event description as plain text. Before, it showed Markdown symbols and codes such as `&amp;`. (#1283)
 - The calendar popup shows the end date of events that last more than one day. (#1283)
 - Event names in the month view show in full when you hover over them. Hovering a day keeps its text readable. (#1284, #1282)
+- "+N more" on event, organization and series cards now opens a list of the remaining tags. (#1287)
 - Search fields show one clear button. Before, Chrome added a second one. (#1286)
 - The notifications menu shows more notifications at a time, with one scroll area. (#1289)
 - Long email addresses in the user menu no longer break in the middle. (#1289)
