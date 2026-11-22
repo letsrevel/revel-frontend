@@ -74,6 +74,7 @@
 			});
 
 			// Drop a late answer: the user moved on (blur, added the tag, typed more).
+			// Refocus runs a new search, so a dropped answer is not lost.
 			if (search !== tagInput || document.activeElement !== inputEl) return;
 
 			if (response.data?.results) {
@@ -156,6 +157,7 @@
 				selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
 			}
 		} else if (e.key === 'Escape') {
+			if (searchTimeout) clearTimeout(searchTimeout);
 			showSuggestions = false;
 			selectedSuggestionIndex = -1;
 		}
@@ -187,9 +189,10 @@
 				oninput={handleTagInput}
 				onkeydown={handleTagKeydown}
 				onfocus={() => {
-					if (tagInput.trim() && tagSuggestions.length > 0) {
-						showSuggestions = true;
-					}
+					if (blurTimeout) clearTimeout(blurTimeout);
+					// Search again: the stored list can belong to older text, or an
+					// answer that arrived while the input had no focus was dropped.
+					if (tagInput.trim()) void fetchTagSuggestions(tagInput);
 				}}
 				onblur={() => {
 					// Delay hiding to allow clicking on suggestions

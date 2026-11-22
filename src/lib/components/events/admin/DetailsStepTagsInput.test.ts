@@ -65,4 +65,38 @@ describe('DetailsStepTagsInput suggestions', () => {
 		expect(tagListTags).not.toHaveBeenCalled();
 		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 	});
+
+	it('searches again on refocus after an answer was dropped', async () => {
+		const { input } = renderInput();
+		input.focus();
+		await fireEvent.input(input, { target: { value: 'mu' } });
+		input.blur();
+		await settle();
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+		tagListTags.mockResolvedValue({ data: { results: [{ name: 'musical' }] } });
+		input.focus();
+		await fireEvent.focus(input);
+		await settle();
+
+		expect(screen.getByRole('option', { name: /musical/ })).toBeInTheDocument();
+	});
+
+	it('ignores an answer for older text when the user typed more', async () => {
+		let resolveOld: ((v: unknown) => void) | undefined;
+		tagListTags
+			.mockImplementationOnce(() => new Promise((r) => (resolveOld = r)))
+			.mockResolvedValueOnce({ data: { results: [{ name: 'museum' }] } });
+		const { input } = renderInput();
+		input.focus();
+		await fireEvent.input(input, { target: { value: 'mu' } });
+		await settle();
+		await fireEvent.input(input, { target: { value: 'mus' } });
+		await settle();
+		resolveOld?.({ data: { results: [{ name: 'music' }] } });
+		await settle();
+
+		expect(screen.queryByRole('option', { name: /music$/ })).not.toBeInTheDocument();
+		expect(screen.getByRole('option', { name: /museum/ })).toBeInTheDocument();
+	});
 });
