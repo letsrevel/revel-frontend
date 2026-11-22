@@ -19,13 +19,30 @@
 
 	const { organization, logoUrl, locationDisplay }: Props = $props();
 
-	const hasSocialLinks = $derived(
-		!!(
-			organization.instagram_url ||
-			organization.facebook_url ||
-			organization.bluesky_url ||
-			organization.telegram_url
-		)
+	// Social links in display order; entries without a URL are dropped.
+	const socialLinks = $derived(
+		[
+			{
+				url: organization.instagram_url,
+				label: m['organizationProfile.social_instagram'](),
+				Icon: Instagram
+			},
+			{
+				url: organization.facebook_url,
+				label: m['organizationProfile.social_facebook'](),
+				Icon: Facebook
+			},
+			{
+				url: organization.bluesky_url,
+				label: m['organizationProfile.social_bluesky'](),
+				Icon: AtSign
+			},
+			{
+				url: organization.telegram_url,
+				label: m['organizationProfile.social_telegram'](),
+				Icon: Send
+			}
+		].filter((link): link is typeof link & { url: string } => !!link.url)
 	);
 </script>
 
@@ -101,60 +118,21 @@
 					{/if}
 
 					<!-- Social Links -->
-					{#if hasSocialLinks}
+					{#if socialLinks.length > 0}
 						<div class="flex items-center gap-3">
-							{#if organization.instagram_url}
+							{#each socialLinks as link (link.url)}
 								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 								<a
-									href={organization.instagram_url}
+									href={link.url}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
-									aria-label={m['organizationProfile.social_instagram']()}
+									aria-label={link.label}
 								>
-									<Instagram class="h-5 w-5" aria-hidden="true" />
+									<link.Icon class="h-5 w-5" aria-hidden="true" />
 								</a>
 								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{/if}
-							{#if organization.facebook_url}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-								<a
-									href={organization.facebook_url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
-									aria-label={m['organizationProfile.social_facebook']()}
-								>
-									<Facebook class="h-5 w-5" aria-hidden="true" />
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{/if}
-							{#if organization.bluesky_url}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-								<a
-									href={organization.bluesky_url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
-									aria-label={m['organizationProfile.social_bluesky']()}
-								>
-									<AtSign class="h-5 w-5" aria-hidden="true" />
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{/if}
-							{#if organization.telegram_url}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-								<a
-									href={organization.telegram_url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
-									aria-label={m['organizationProfile.social_telegram']()}
-								>
-									<Send class="h-5 w-5" aria-hidden="true" />
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{/if}
+							{/each}
 						</div>
 					{/if}
 				</div>
