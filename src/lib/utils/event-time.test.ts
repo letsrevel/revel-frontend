@@ -61,6 +61,20 @@ describe('formatEventRangeLabel', () => {
 		expect(out).toMatch(/GMT\+2|CEST/);
 	});
 
+	it('appends tz when only the end offset differs (range across a DST change)', () => {
+		const out = formatEventRangeLabel(
+			'2026-03-28T18:00:00Z',
+			'2026-03-29T18:00:00Z',
+			false,
+			'Europe/London',
+			'UTC'
+		);
+		expect(out).toMatch(/GMT\+1|BST/);
+		// Open-ended events only look at the start offset.
+		const open = formatEventRangeLabel('2026-03-28T18:00:00Z', null, true, 'Europe/London', 'UTC');
+		expect(open).not.toMatch(/GMT\+1|BST/);
+	});
+
 	it('shows the start date and time only for open-ended events', () => {
 		const out = formatEventRangeLabel(
 			SUMMER,

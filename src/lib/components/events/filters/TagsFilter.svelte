@@ -2,7 +2,7 @@
 	import { Tag, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { tagListTags } from '$lib/api';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -22,6 +22,8 @@
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
 	let expanded = $state(false);
+	let toggleButton = $state<HTMLButtonElement | null>(null);
+	let listEl = $state<HTMLDivElement | null>(null);
 
 	// Selected tags stay visible even when they fall beyond the collapsed limit.
 	// A tag that was selected stays pinned until the next show more/fewer toggle,
@@ -76,9 +78,17 @@
 		}
 	});
 
-	function toggleExpanded(): void {
+	async function toggleExpanded(): Promise<void> {
 		pinned = [];
 		expanded = !expanded;
+		await tick();
+		// Collapsing can remove the toggle itself (every tag is still visible
+		// because the selected ones stay shown). Move focus to the last tag button
+		// so keyboard focus is not lost (WCAG 2.4.3).
+		if (!toggleButton) {
+			const buttons = listEl?.querySelectorAll<HTMLButtonElement>('button');
+			buttons?.[buttons.length - 1]?.focus();
+		}
 	}
 
 	function handleTagClick(tag: string): void {
@@ -106,7 +116,7 @@
 	{:else if error}
 		<p class="text-xs text-destructive">{m['filters.tags.failed']()}</p>
 	{:else if availableTags.length > 0}
-		<div id={listId} class="flex flex-wrap gap-2">
+		<div id={listId} bind:this={listEl} class="flex flex-wrap gap-2">
 			{#each visibleTags as tag (tag)}
 				{@const isSelected = selectedTags?.includes(tag) ?? false}
 				<button
@@ -134,6 +144,7 @@
 		{#if canToggle && (expanded || hiddenCount > 0)}
 			<button
 				type="button"
+				bind:this={toggleButton}
 				onclick={toggleExpanded}
 				aria-expanded={expanded}
 				aria-controls={listId}

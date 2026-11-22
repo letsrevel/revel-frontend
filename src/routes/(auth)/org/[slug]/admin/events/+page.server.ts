@@ -1,4 +1,5 @@
 import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
+import { mergeEvents } from '$lib/utils/merge-events';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -17,37 +18,40 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		Authorization: `Bearer ${user.accessToken}`
 	};
 
-	// Get all events for this organization (including past events)
-	const eventsResponse = await eventpublicdiscoveryListEvents({
-		fetch,
-		headers,
-		query: {
-			organization: organization.id, // Use UUID, not slug
-			include_past: true, // Include past events in queryset
-			next_events: false, // Don't filter to only upcoming events (default is true)
-			// Newest first, so the page-size cap drops the oldest events, not upcoming ones.
-			// The page sorts upcoming sections soonest first (#1285).
-			order_by: '-start',
-			page_size: 100 // TODO: Add pagination
-		}
-	});
+	// Two requests, so the page-size cap cannot drop the soonest upcoming events:
+	// upcoming (start >= now) soonest first, and past (start < now) newest first.
+	// The page groups and orders them (#1285). TODO: Add pagination.
+	const base = { organization: organization.id, page_size: 100 }; // UUID, not slug
+	const [upcomingResponse, pastResponse] = await Promise.all([
+		eventpublicdiscoveryListEvents({
+			fetch,
+			headers,
+			query: { ...base, include_past: false, order_by: 'start' }
+		}),
+		eventpublicdiscoveryListEvents({
+			fetch,
+			headers,
+			query: { ...base, include_past: true, past_events: true, order_by: '-start' }
+		})
+	]);
 
 	// Handle API errors
-	if (eventsResponse.error) {
-		log.error('admin_events_load_failed', { error: eventsResponse.error, orgId: organization.id });
-		const errorMessage = extractErrorMessage(
-			eventsResponse.error,
-			m['serverErrors.adminEvents.loadEventsRetryLater']()
-		);
-		throw error(500, errorMessage);
-	}
-
-	if (!eventsResponse.data) {
-		throw error(500, m['serverErrors.common.loadEventsFailed']());
+	for (const response of [upcomingResponse, pastResponse]) {
+		if (response.error) {
+			log.error('admin_events_load_failed', { error: response.error, orgId: organization.id });
+			const errorMessage = extractErrorMessage(
+				response.error,
+				m['serverErrors.adminEvents.loadEventsRetryLater']()
+			);
+			throw error(500, errorMessage);
+		}
+		if (!response.data) {
+			throw error(500, m['serverErrors.common.loadEventsFailed']());
+		}
 	}
 
 	return {
-		events: eventsResponse.data.results || [],
+		events: mergeEvents(upcomingResponse.data?.results, pastResponse.data?.results),
 		canCreateEvent
 	};
 };

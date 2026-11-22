@@ -249,7 +249,7 @@
 								</span>
 							{/each}
 							{#if series.tags.length > 3}
-								<MoreTagsPopover tags={series.tags.slice(3)} />
+								<MoreTagsPopover tags={series.tags.slice(3)} static={lean} />
 							{/if}
 						</div>
 					</div>

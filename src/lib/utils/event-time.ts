@@ -66,9 +66,11 @@ export function formatEventRangeLabel(
 	viewerZone: string = viewerTimeZone()
 ): string {
 	const tz = timeZone || undefined;
-	const showTz = eventZoneDiffersFromViewer(start, tz, viewerZone);
+	const startDiffers = eventZoneDiffersFromViewer(start, tz, viewerZone);
 	if (isOpenEnded || !end) {
-		return formatEventDate(start, tz, showTz);
+		return formatEventDate(start, tz, startDiffers);
 	}
+	// A range can cross a DST change, so the end may differ even when the start does not.
+	const showTz = startDiffers || eventZoneDiffersFromViewer(end, tz, viewerZone);
 	return formatEventDateRange(start, end, tz, showTz);
 }

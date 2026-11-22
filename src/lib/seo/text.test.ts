@@ -17,7 +17,8 @@ describe('stripHtml', () => {
 	});
 
 	it('decodes entities after stripping tags', () => {
-		expect(stripHtml('Tom &amp; Jerry &mdash; fun')).toBe('Tom & Jerry &mdash; fun');
+		expect(stripHtml('Tom &amp; Jerry &mdash; fun')).toBe('Tom & Jerry \u2014 fun');
+		expect(stripHtml('a &bogus; b')).toBe('a &bogus; b');
 		expect(stripHtml('<p>a &lt;b&gt; c</p>')).toBe('a <b> c');
 		expect(stripMarkup('**Rock &amp; Roll**')).toBe('Rock & Roll');
 	});

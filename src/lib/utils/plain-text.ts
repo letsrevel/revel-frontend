@@ -11,7 +11,26 @@ const NAMED_ENTITIES: Record<string, string> = {
 	gt: '>',
 	quot: '"',
 	apos: "'",
-	nbsp: ' '
+	nbsp: ' ',
+	mdash: '\u2014',
+	ndash: '\u2013',
+	hellip: '\u2026',
+	laquo: '\u00ab',
+	raquo: '\u00bb',
+	lsquo: '\u2018',
+	rsquo: '\u2019',
+	ldquo: '\u201c',
+	rdquo: '\u201d',
+	bull: '\u2022',
+	middot: '\u00b7',
+	copy: '\u00a9',
+	reg: '\u00ae',
+	trade: '\u2122',
+	euro: '\u20ac',
+	pound: '\u00a3',
+	deg: '\u00b0',
+	times: '\u00d7',
+	shy: ''
 };
 
 const ESCAPE_CHARS = '\\`*_{}[]()#+-.!|<>~&';
@@ -33,7 +52,8 @@ export function decodeHtmlEntities(text: string): string {
 				return match;
 			}
 		}
-		return NAMED_ENTITIES[body.toLowerCase()] ?? match;
+		const key = body.toLowerCase();
+		return Object.hasOwn(NAMED_ENTITIES, key) ? NAMED_ENTITIES[key] : match;
 	});
 }
 
@@ -45,7 +65,10 @@ export function markdownToPlainText(
 	let text = markdown.replace(/\r\n?/g, '\n');
 
 	// Fenced code blocks: keep the content, drop the fences.
-	text = text.replace(/^ {0,3}(```|~~~)[^\n]*\n([\s\S]*?)(?:\n {0,3}\1[^\n]*(?=\n|$)|$)/gm, '$2');
+	text = text.replace(
+		/^ {0,3}(```|~~~)[^\n]*\n([\s\S]*?)(?:\n {0,3}\1[^\n]*(?=\n|$)|(?![\s\S]))/gm,
+		'$2'
+	);
 	// Backslash escapes: swap for NUL-delimited placeholders (NUL cannot occur in stored text) so the emphasis and
 	// list passes cannot see the escaped character. Restored at the end.
 	text = text.replace(ESCAPABLE, (_m, ch: string) => `${NUL}${ESCAPE_CHARS.indexOf(ch)}${NUL}`);

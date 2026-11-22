@@ -295,7 +295,7 @@
 								</span>
 							{/each}
 							{#if event.tags.length > 3}
-								<MoreTagsPopover tags={event.tags.slice(3)} />
+								<MoreTagsPopover tags={event.tags.slice(3)} static={lean} />
 							{/if}
 						</div>
 					</div>

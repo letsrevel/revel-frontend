@@ -85,4 +85,37 @@ describe('TagsFilter show more / fewer', () => {
 		expect(same).toBe(chip);
 		expect(same).toHaveFocus();
 	});
+
+	it('moves focus to the last tag when collapsing removes the toggle', async () => {
+		mockTags(TAGS.slice(0, 13));
+		const user = userEvent.setup();
+		const onToggleTag = vi.fn();
+		const { rerender } = render(TagsFilter, { props: { selectedTags: [], onToggleTag } });
+
+		await user.click(await screen.findByRole('button', { name: /Show 1 more/ }));
+		// Select the 13th tag while expanded.
+		await rerender({ selectedTags: ['tag-13'], onToggleTag });
+
+		const fewer = screen.getByRole('button', { name: 'Show fewer tags' });
+		fewer.focus();
+		await user.keyboard('{Enter}');
+
+		// The 13th tag is selected, so all 13 stay visible and the toggle is gone.
+		expect(screen.queryByRole('button', { name: /more tags|fewer tags/ })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Remove tag-13 filter/ })).toHaveFocus();
+	});
+
+	it('keeps focus on the toggle when it survives collapsing', async () => {
+		mockTags();
+		const user = userEvent.setup();
+		render(TagsFilter, { props: { selectedTags: [], onToggleTag: vi.fn() } });
+
+		await user.click(await screen.findByRole('button', { name: 'Show 8 more tags' }));
+		const fewer = screen.getByRole('button', { name: 'Show fewer tags' });
+		await user.click(fewer);
+
+		const more = screen.getByRole('button', { name: 'Show 8 more tags' });
+		expect(more).toBe(fewer);
+		expect(more).toHaveFocus();
+	});
 });

@@ -67,6 +67,7 @@
 			type="button"
 			class="calendar-day-overlay"
 			aria-label={cellLabel}
+			title={singleEvent?.name}
 			onclick={handleCellClick}
 		></button>
 	{/if}
@@ -81,7 +82,7 @@
 		<span class="calendar-day-events">
 			{#if isCellClickable && singleEvent}
 				<!-- Single event: rendered as a static badge; the whole cell is the button. -->
-				<span class="calendar-event-badge calendar-event-badge--static" title={singleEvent.name}>
+				<span class="calendar-event-badge calendar-event-badge--static">
 					<span class="calendar-event-dot" aria-hidden="true"></span>
 					<span class="calendar-event-name">{singleEvent.name}</span>
 				</span>

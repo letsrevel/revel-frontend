@@ -255,6 +255,12 @@
 		return null;
 	}
 
+	// The checkout link of a revival notice lives in the body, so the compact
+	// clamp must not hide it.
+	const clampBody = $derived(
+		compact && notification.notification_type !== 'subscription_revival_checkout'
+	);
+
 	// ===== Waitlist spot available =====
 	const isWaitlistSpot = $derived(notification.notification_type === 'waitlist_spot_available');
 
@@ -451,7 +457,7 @@
 				<div class="notification-body">
 					<MarkdownContent
 						content={notification.body}
-						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
+						class={cn('text-sm text-muted-foreground', clampBody && 'line-clamp-2')}
 					/>
 				</div>
 				{#if isRefundUnmatched && refundResolveUrl}

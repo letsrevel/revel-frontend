@@ -137,6 +137,20 @@ describe('NotificationItem', () => {
 		expect(screen.getByRole('heading', { level: 3 })).toHaveClass('line-clamp-2');
 	});
 
+	it('does not clamp the body of a subscription revival notice in compact mode', () => {
+		const { container } = renderItem({
+			notification: createMockNotification({
+				notification_type: 'subscription_revival_checkout',
+				body: '<p>Pay here: <a href="https://example.com/checkout">checkout</a></p>'
+			} as never),
+			authToken: mockAuthToken,
+			compact: true
+		});
+
+		expect(container.querySelector('.notification-body')).toBeInTheDocument();
+		expect(container.querySelector('.notification-body .line-clamp-2')).not.toBeInTheDocument();
+	});
+
 	it('does not clamp in full mode', () => {
 		const { container } = renderItem({
 			notification: createMockNotification({ body: '<p>Body</p>' }),

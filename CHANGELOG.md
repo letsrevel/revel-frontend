@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - In the calendar, times show in the event's own timezone, as in the list. A zone label shows when the event's zone is different from yours. (#1284)
-- In calendar view, the "Include past events" and Sort Order controls are hidden. The calendar always shows the full period, in date order. (#1284)
+- In calendar view, the "Include past events" and Sort Order controls are hidden, because they do not apply to the calendar. (#1284)
 - Toasts show at the top center, below the site header, so they do not cover the header menus. (#1289)
 - The date in the event page header is plain text. Use "Add to Calendar" in the sidebar to download the event. (#1289)
 - Event dates show the year when the event is not in the current year. (#1285)

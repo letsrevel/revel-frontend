@@ -48,4 +48,10 @@ describe('MoreTagsPopover', () => {
 		render(MoreTagsPopover, { props: { tags: [] } });
 		expect(screen.queryByRole('button')).not.toBeInTheDocument();
 	});
+
+	it('renders a plain label without a button in static mode', () => {
+		render(MoreTagsPopover, { props: { tags: ['a', 'b'], static: true } });
+		expect(screen.queryByRole('button')).not.toBeInTheDocument();
+		expect(screen.getByText('+2 more tags')).toBeInTheDocument();
+	});
 });
