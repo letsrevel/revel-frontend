@@ -86,6 +86,7 @@
 
 	// Descriptions are markdown; a card shows (and announces) the plain text.
 	const descriptionText = $derived(stripMarkup(series.description));
+	const hasTags = $derived(!!series.tags && series.tags.length > 0);
 
 	// Accessible card label for screen readers
 	const accessibleLabel = $derived.by(() => {
@@ -106,7 +107,7 @@
 	// Container classes based on variant
 	const containerClasses = $derived(
 		cn(
-			'group relative overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-transform',
+			'group relative h-full overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-transform',
 			// Same silhouette and lift on all three discovery cards (event / series /
 			// organization) — see EventCard for why it is spelled out by hand.
 			// `transition-transform`, not `transition-all`: the ring below is a
@@ -223,8 +224,8 @@
 		</div>
 
 		<!-- Series Details -->
-		{#if variant === 'standard'}
-			<div class="flex flex-col gap-2 border-t pt-3">
+		{#if variant === 'standard' && (descriptionText || hasTags)}
+			<div class="flex flex-1 flex-col gap-2 border-t pt-3">
 				<!-- Description -->
 				{#if descriptionText}
 					<p class="line-clamp-2 text-sm text-muted-foreground">
@@ -234,7 +235,7 @@
 
 				<!-- Tags (if available) -->
 				{#if series.tags && series.tags.length > 0}
-					<div class="flex items-start gap-2 text-sm">
+					<div class="mt-auto flex items-start gap-2 pt-1 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
 							<!-- Tag chips: primary on a 10% primary tint. The tint composites

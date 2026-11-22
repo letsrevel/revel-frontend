@@ -234,7 +234,7 @@
 		Note: always the ORGANIZATION logo/initial, never the event's.
 	-->
 	<div class="bg-poster-band">
-		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
+		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
 				class="group -mt-4 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band md:-mt-8"

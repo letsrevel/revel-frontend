@@ -131,6 +131,14 @@
 		return null;
 	});
 
+	// Seats held for waitlist offers: previously only shown in EventDetails'
+	// (now removed) attendance tile, so it lives on the capacity row here.
+	const seatsHeldText = $derived.by(() => {
+		const held = event.seats_held ?? 0;
+		if (held <= 0) return null;
+		return m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: held });
+	});
+
 	const isNearCapacity = $derived.by(() => {
 		const max = event.max_attendees;
 		const count = event.attendee_count;
@@ -204,6 +212,14 @@
 			<time datetime={event.start} class="block font-bold">
 				{formattedStartDate}
 			</time>
+			{#if event.is_open_ended}
+				<span class="block text-xs text-muted-foreground">{m['eventDetails.openEnded']()}</span>
+			{:else if event.end}
+				<time datetime={event.end} class="block text-xs text-muted-foreground">
+					{m['eventDetails.dateTime_ends']()}
+					{formatEventDate(event.end, event.timezone, false)}
+				</time>
+			{/if}
 		</div>
 	</div>
 
@@ -341,6 +357,9 @@
 				<span class="block font-bold">{capacityDisplay}</span>
 				{#if isNearCapacity}
 					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.limitedSpots']()}</span>
+				{/if}
+				{#if seatsHeldText}
+					<span class="block text-xs text-muted-foreground">{seatsHeldText}</span>
 				{/if}
 			</div>
 		</div>

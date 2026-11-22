@@ -317,3 +317,23 @@ describe('EventQuickInfo — virtual events', () => {
 		expect(screen.queryByRole('link', { name: /Open event link/i })).not.toBeInTheDocument();
 	});
 });
+
+describe('EventQuickInfo — end time and held seats', () => {
+	it('shows the end time for a timed event', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, end: '2025-12-01T22:00:00Z', is_open_ended: false } }
+		});
+		expect(screen.getByText(/Ends/i)).toBeInTheDocument();
+	});
+
+	it('shows the open-ended hint instead of an end time', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, is_open_ended: true } } });
+		expect(screen.queryByText(/Ends/i)).not.toBeInTheDocument();
+		expect(screen.getByText(/Open-ended/i)).toBeInTheDocument();
+	});
+
+	it('shows held seats on the capacity row', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 3 } } });
+		expect(screen.getByText(/3/, { selector: 'span.text-xs' })).toBeInTheDocument();
+	});
+});

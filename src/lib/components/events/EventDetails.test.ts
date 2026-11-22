@@ -45,79 +45,35 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 	} as EventDetailSchema;
 }
 
-describe('EventDetails — open-ended end display', () => {
-	it('shows the end time for a timed event', () => {
+describe('EventDetails', () => {
+	it('renders the description', () => {
 		render(EventDetails, { props: { event: createMockEvent() } });
-		expect(screen.getByText(/Ends/i)).toBeInTheDocument();
+		expect(screen.getByText('A test event')).toBeInTheDocument();
 	});
 
-	it('hides the end time and shows the open-ended hint when is_open_ended', () => {
-		render(EventDetails, { props: { event: createMockEvent({ is_open_ended: true }) } });
+	// The metadata grid moved out: date, location, type and capacity live in the
+	// sidebar's EventQuickInfo, so they must not be repeated here.
+	it('does not repeat the event metadata grid', () => {
+		render(EventDetails, {
+			props: { event: createMockEvent({ max_attendees: 50, attendee_count: 45 }) }
+		});
+		expect(screen.queryByText(/Only 5 spots left/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/Ends/i)).not.toBeInTheDocument();
-		expect(screen.getByText(/Open-ended/i)).toBeInTheDocument();
-	});
-});
-
-describe('EventDetails — capacity disclosure', () => {
-	it('reports remaining spots when both numbers are disclosed', () => {
-		const event = createMockEvent({ max_attendees: 50, attendee_count: 45 });
-		render(EventDetails, { props: { event } });
-		expect(screen.getByText(/Only 5 spots left/i)).toBeInTheDocument();
 	});
 
-	it('says the event is full when the capacity is reached', () => {
-		const event = createMockEvent({ max_attendees: 50, attendee_count: 50 });
-		render(EventDetails, { props: { event } });
-		expect(screen.getByText(/Event is full/i)).toBeInTheDocument();
+	it('shows the invitation message only for private events', () => {
+		render(EventDetails, {
+			props: {
+				event: createMockEvent({ visibility: 'private', invitation_message: 'Come along!' })
+			}
+		});
+		expect(screen.getByText('Come along!')).toBeInTheDocument();
 	});
 
-	// #825 regression guard: a withheld `max_attendees` is null, and the previous
-	// `=== undefined` guard let it through — `null - count` is negative, so the
-	// card claimed "Event is full" for every discreet event.
-	it('says nothing about capacity when max_attendees is withheld', () => {
-		const event = createMockEvent({ max_attendees: null, attendee_count: 12 });
-		render(EventDetails, { props: { event } });
-		expect(screen.queryByText(/Event is full/i)).not.toBeInTheDocument();
-		expect(screen.queryByText(/spots left/i)).not.toBeInTheDocument();
-		expect(screen.queryByText(/attending/i)).not.toBeInTheDocument();
-	});
-
-	it('says nothing about capacity when attendee_count is withheld', () => {
-		const event = createMockEvent({ max_attendees: 50, attendee_count: null });
-		render(EventDetails, { props: { event } });
-		expect(screen.queryByText(/Event is full/i)).not.toBeInTheDocument();
-		expect(screen.queryByText(/spots left/i)).not.toBeInTheDocument();
-	});
-
-	// #690: `is_full` is always public, so the one fact the organizer cannot hide
-	// still gets said even when both numbers are withheld.
-	it('still says the event is full when the numbers are withheld but is_full is set', () => {
-		const event = createMockEvent({ max_attendees: null, attendee_count: null, is_full: true });
-		render(EventDetails, { props: { event } });
-		expect(screen.getByText(/Event is full/i)).toBeInTheDocument();
-	});
-
-	// Deliberately no "limited spots" hedge: `is_full === false` is equally true
-	// of an uncapped event, so a scarcity cue there would be invented.
-	it('omits the attendance row entirely when the numbers are withheld and it is not full', () => {
-		const event = createMockEvent({ max_attendees: null, attendee_count: null, is_full: false });
-		render(EventDetails, { props: { event } });
-		expect(screen.queryByText(/Attendance/i)).not.toBeInTheDocument();
-	});
-});
-
-describe('EventDetails — RSVP deadline', () => {
-	// PR #812 regression guard: getRSVPDeadlineRelative returns null for a passed
-	// deadline; the tile must keep showing the translated closed copy, not vanish
-	// (null here means "closed", not "no deadline set").
-	it('shows "RSVP closed" when the deadline has passed', () => {
-		const event = createMockEvent({ rsvp_before: '2020-01-01T00:00:00Z' });
-		render(EventDetails, { props: { event } });
-		expect(screen.getByText(/RSVP closed/i)).toBeInTheDocument();
-	});
-
-	it('omits the deadline tile when no deadline is set', () => {
-		render(EventDetails, { props: { event: createMockEvent({ rsvp_before: null }) } });
-		expect(screen.queryByText(/RSVP Deadline/i)).not.toBeInTheDocument();
+	it('hides the invitation message on public events', () => {
+		render(EventDetails, {
+			props: { event: createMockEvent({ visibility: 'public', invitation_message: 'Come along!' }) }
+		});
+		expect(screen.queryByText('Come along!')).not.toBeInTheDocument();
 	});
 });

@@ -99,7 +99,7 @@
 <footer
 	class="bg-foreground text-background dark:border-t dark:border-border dark:bg-card dark:text-card-foreground"
 >
-	<div class="container mx-auto max-w-5xl px-4 py-10 md:py-14">
+	<div class="container mx-auto px-6 py-10 md:px-8 md:py-14">
 		<!-- Brand lockup: the SAME RevelWordmark the header renders, so the
 		     wordmark reads identically in the navbar and at the bottom of the
 		     page (it used to be hand-set here, and drifted off the guide).
@@ -124,7 +124,9 @@
 		     Collapsing to 2 tracks when hidden lets the remaining columns fill
 		     the row. Mobile is `grid-cols-2` either way, and Legal + Resources
 		     alone are already a balanced 2-up. -->
-		<div class="grid grid-cols-2 gap-8 {hideSolutions ? 'md:grid-cols-2' : 'md:grid-cols-4'}">
+		<div
+			class="grid max-w-5xl grid-cols-2 gap-8 {hideSolutions ? 'md:grid-cols-2' : 'md:grid-cols-4'}"
+		>
 			<!-- Solutions -->
 			{#if !hideSolutions}
 				<div class="col-span-2">

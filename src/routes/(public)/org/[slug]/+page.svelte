@@ -204,12 +204,20 @@
 		to be a 64px thumbnail beside the title; here it is the page's identity
 		mark, which is what an org profile is for.
 
+		The band now carries the identity too, like the event page: the sticker
+		sits left of the kicker, the display name and the location/social row
+		from `sm` up (stacked on mobile). Join/Follow/etc. stay on the wash as
+		the first row below the band.
+
 		Ribbon and sticker are mode-INERT by the imagery rule (a poster panel is
-		not a surface). No copy sits on the band itself — the only text here is
-		the initial tile's letter, measured against the fixed values rather than
-		per-mode. The pair is registered in scripts/audit-brand-themes.py;
-		number pasted from its output:
-		  white on crimson-DEEP →  4.59:1
+		not a surface), and so is every text layer on the band: ALL of it is solid
+		`poster-white` (kicker via PageHeader `onBand` = currentColor, h1, location,
+		social icons) — never primary/muted-foreground, which fail on the band, and
+		never an alpha, since a branded org's band is only guaranteed >= 4.5:1
+		against plain white (#1053). Pairs, default Hearty Purple band:
+		  poster-white on poster-band      →  5.52:1 (kicker, location text, icons)
+		  poster-white on poster-band, h1  →  5.52:1 (large text; AA 3:1)
+		  white on crimson-DEEP            →  4.59:1 (logo-less initial tile)
 		The initial tile's gradient ends on `crimson-deep`, not raw
 		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
 		for the tile's bold letter — the trap app.css documents at the
@@ -219,23 +227,105 @@
 		without a logo (it is pure ornament), and this mark is not ornament.
 	-->
 	<div class="bg-poster-band">
-		<div class="container mx-auto px-6 pb-6 md:px-8">
-			<div
-				class="-mt-8 inline-block -rotate-1 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"
-			>
-				{#if logoUrl}
-					<img
-						src={logoUrl}
-						alt="{organization.name} logo"
-						class="h-16 w-16 rounded-lg object-cover md:h-20 md:w-20"
+		<div class="container mx-auto px-6 pb-8 md:px-8">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+				<div
+					class="-mt-8 inline-block shrink-0 -rotate-1 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"
+				>
+					{#if logoUrl}
+						<img
+							src={logoUrl}
+							alt="{organization.name} logo"
+							class="h-16 w-16 rounded-lg object-cover md:h-20 md:w-20"
+						/>
+					{:else}
+						<div
+							class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-poster-purple to-poster-crimson-deep text-xl font-black text-poster-white md:h-20 md:w-20 md:text-2xl"
+						>
+							{organization.name.charAt(0).toUpperCase()}
+						</div>
+					{/if}
+				</div>
+
+				<!-- Identity: white display title on the band (celebration volume). -->
+				<div class="min-w-0 flex-1 text-poster-white sm:pt-4">
+					<PageHeader
+						volume="celebration"
+						onBand
+						kicker={m['organizationProfile.kicker']()}
+						title={organization.name}
+						class="mb-2"
 					/>
-				{:else}
-					<div
-						class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-poster-purple to-poster-crimson-deep text-xl font-black text-poster-white md:h-20 md:w-20 md:text-2xl"
-					>
-						{organization.name.charAt(0).toUpperCase()}
+
+					<!-- Metadata Row -->
+					<div class="flex flex-wrap items-center gap-4 text-sm text-poster-white">
+						<!-- Location -->
+						{#if locationDisplay}
+							<div class="flex items-center gap-1.5">
+								<MapPin class="h-4 w-4" aria-hidden="true" />
+								<span>{locationDisplay}</span>
+							</div>
+						{/if}
+
+						<!-- Social Links -->
+						{#if hasSocialLinks}
+							<div class="flex items-center gap-3">
+								{#if organization.instagram_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+									<a
+										href={organization.instagram_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+										aria-label={m['organizationProfile.social_instagram']()}
+									>
+										<Instagram class="h-5 w-5" aria-hidden="true" />
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{/if}
+								{#if organization.facebook_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+									<a
+										href={organization.facebook_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+										aria-label={m['organizationProfile.social_facebook']()}
+									>
+										<Facebook class="h-5 w-5" aria-hidden="true" />
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{/if}
+								{#if organization.bluesky_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+									<a
+										href={organization.bluesky_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+										aria-label={m['organizationProfile.social_bluesky']()}
+									>
+										<AtSign class="h-5 w-5" aria-hidden="true" />
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{/if}
+								{#if organization.telegram_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+									<a
+										href={organization.telegram_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-poster-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+										aria-label={m['organizationProfile.social_telegram']()}
+									>
+										<Send class="h-5 w-5" aria-hidden="true" />
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{/if}
+							</div>
+						{/if}
 					</div>
-				{/if}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -250,154 +340,70 @@
 		          foreground 12.36:1 · muted-foreground 6.43:1 · primary 4.97:1
 		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
 		          foreground 15.68:1 · muted-foreground 7.44:1 · primary 6.30:1
-		Everything that lands directly on it here is covered: the h1 and section
-		headings (`foreground`), the metadata/social row and section blurbs
+		Everything that lands directly on it here is covered: the section
+		headings (`foreground`), the section blurbs
 		(`muted-foreground`), and the SectionHeader kickers plus the inline
 		"browse all"/"calendar" links (`primary`).
 	-->
 	<div class="flex-1 bg-secondary/55 dark:bg-secondary/[0.28]">
 		<!-- Main Content -->
 		<div class="container mx-auto px-6 py-8 md:px-8 lg:py-12">
-			<!-- Header with Name and Actions -->
-			<div class="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-				<div class="flex flex-1 gap-4">
-					<!-- Organization Info -->
-					<div class="min-w-0 flex-1">
-						<PageHeader
-							volume="poster"
-							kicker={m['organizationProfile.kicker']()}
-							title={organization.name}
-							class="mb-2"
-						/>
+			<!-- Action Buttons: first row on the wash, right under the band -->
+			<div class="mb-8 flex flex-wrap gap-2">
+				<!-- Edit Button (if user has permission) -->
+				{#if data.canEdit}
+					<a
+						href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Settings class="h-4 w-4" aria-hidden="true" />
+						{m['organizationProfile.editProfile']()}
+					</a>
+				{/if}
 
-						<!-- Metadata Row -->
-						<div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-							<!-- Location -->
-							{#if locationDisplay}
-								<div class="flex items-center gap-1.5">
-									<MapPin class="h-4 w-4" aria-hidden="true" />
-									<span>{locationDisplay}</span>
-								</div>
-							{/if}
+				<!-- Claim Membership Button (if token present and grants membership) -->
+				{#if data.organizationTokenDetails && data.organizationTokenDetails.grants_membership && !data.isMember && !data.isOwner && !data.isStaff}
+					<ClaimMembershipButton
+						tokenId={data.organizationTokenDetails.id || ''}
+						tokenDetails={data.organizationTokenDetails}
+						class="inline-flex items-center gap-2"
+					/>
+					<!-- Membership CTA (if org accepts members and user is not a member) -->
+				{:else if organization.accept_membership_requests}
+					<MembershipCta
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						isAuthenticated={data.isAuthenticated}
+						isMember={data.isMember}
+						membershipTier={data.membershipTier}
+						membershipStatus={data.membershipStatus}
+						isOwner={data.isOwner}
+						isStaff={data.isStaff}
+					/>
+				{/if}
 
-							<!-- Social Links -->
-							{#if hasSocialLinks}
-								<div class="flex items-center gap-3">
-									{#if organization.instagram_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.instagram_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_instagram']()}
-										>
-											<Instagram class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.facebook_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.facebook_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_facebook']()}
-										>
-											<Facebook class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.bluesky_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.bluesky_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_bluesky']()}
-										>
-											<AtSign class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.telegram_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.telegram_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_telegram']()}
-										>
-											<Send class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-				</div>
+				<!-- Follow Button -->
+				<FollowButton
+					entityType="organization"
+					entityId={organization.slug}
+					entityName={organization.name}
+					isAuthenticated={data.isAuthenticated}
+					variant="outline"
+				/>
 
-				<!-- Action Buttons -->
-				<div class="flex flex-shrink-0 flex-wrap gap-2">
-					<!-- Edit Button (if user has permission) -->
-					{#if data.canEdit}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
-							class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							<Settings class="h-4 w-4" aria-hidden="true" />
-							{m['organizationProfile.editProfile']()}
-						</a>
-					{/if}
+				<AnnouncementMuteButton {organization} />
 
-					<!-- Claim Membership Button (if token present and grants membership) -->
-					{#if data.organizationTokenDetails && data.organizationTokenDetails.grants_membership && !data.isMember && !data.isOwner && !data.isStaff}
-						<ClaimMembershipButton
-							tokenId={data.organizationTokenDetails.id || ''}
-							tokenDetails={data.organizationTokenDetails}
-							class="inline-flex items-center gap-2"
-						/>
-						<!-- Membership CTA (if org accepts members and user is not a member) -->
-					{:else if organization.accept_membership_requests}
-						<MembershipCta
-							organizationSlug={organization.slug}
-							organizationName={organization.name}
-							isAuthenticated={data.isAuthenticated}
-							isMember={data.isMember}
-							membershipTier={data.membershipTier}
-							membershipStatus={data.membershipStatus}
-							isOwner={data.isOwner}
-							isStaff={data.isStaff}
-						/>
-					{/if}
-
-					<!-- Follow Button -->
-					<FollowButton
-						entityType="organization"
-						entityId={organization.slug}
-						entityName={organization.name}
+				<!-- Contact Organizer Button -->
+				{#if organization.contact_method && organization.contact_method !== 'none'}
+					<OrgContactButton
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						contactMethod={organization.contact_method}
+						contactEmail={organization.contact_email}
 						isAuthenticated={data.isAuthenticated}
 						variant="outline"
 					/>
-
-					<AnnouncementMuteButton {organization} />
-
-					<!-- Contact Organizer Button -->
-					{#if organization.contact_method && organization.contact_method !== 'none'}
-						<OrgContactButton
-							organizationSlug={organization.slug}
-							organizationName={organization.name}
-							contactMethod={organization.contact_method}
-							contactEmail={organization.contact_email}
-							isAuthenticated={data.isAuthenticated}
-							variant="outline"
-						/>
-					{/if}
-				</div>
+				{/if}
 			</div>
 
 			{#if data.isAuthenticated && organization.id}

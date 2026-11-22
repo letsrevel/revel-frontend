@@ -273,3 +273,24 @@ describe('EventSeriesCard', () => {
 		expect(link).toHaveFocus();
 	});
 });
+
+describe('EventSeriesCard — details divider', () => {
+	it('renders no divider block when there is neither description nor tags', () => {
+		const { container } = render(EventSeriesCard, {
+			props: { series: { ...mockEventSeries, description: null, tags: [] } }
+		});
+		expect(container.querySelector('.border-t')).toBeNull();
+	});
+
+	it('renders the divider block when there are tags', () => {
+		const { container } = render(EventSeriesCard, {
+			props: { series: { ...mockEventSeries, description: null } }
+		});
+		expect(container.querySelector('.border-t')).not.toBeNull();
+	});
+
+	it('is full height so cards in a grid row match', () => {
+		render(EventSeriesCard, { props: { series: mockEventSeries } });
+		expect(screen.getByRole('article')).toHaveClass('h-full');
+	});
+});
