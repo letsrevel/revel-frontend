@@ -50,7 +50,10 @@ export function markdownToPlainText(
 	// list passes cannot see the escaped character. Restored at the end.
 	text = text.replace(ESCAPABLE, (_m, ch: string) => `${NUL}${ESCAPE_CHARS.indexOf(ch)}${NUL}`);
 	// Autolinks <https://…>, <mailto:…>, <me@x.com>: unwrap before tags are stripped.
-	text = text.replace(/<((?:https?:\/\/|mailto:|tel:)[^\s<>]*|[^\s<>@:]+@[^\s<>@]+)>/gi, '$1');
+	text = text.replace(
+		/<((?:[a-z][a-z0-9+.-]*:\/\/|(?:mailto|tel|sms|geo):)[^\s<>]*|[^\s<>@:]+@[^\s<>@]+)>/gi,
+		'$1'
+	);
 	// Images: keep alt text. Links: keep link text. Reference-style definitions: drop.
 	text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
 	text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');

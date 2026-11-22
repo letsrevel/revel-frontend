@@ -116,7 +116,7 @@ describe('getEventsForDay buckets by event timezone', () => {
 
 	it('builds a zero-padded YYYY-MM-DD key from date parts', async () => {
 		const { getDayKeyInZone } = await import('./calendar');
-		expect(getDayKeyInZone('2026-01-05T12:00:00Z', 'UTC')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+		expect(getDayKeyInZone('2026-01-05T12:00:00Z', 'UTC')).toBe('2026-01-05');
 		expect(getDayKeyInZone('2026-01-05T23:30:00Z', 'Asia/Tokyo')).toBe('2026-01-06');
 	});
 });

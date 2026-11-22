@@ -87,6 +87,9 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 
 	it('unwraps only real autolinks, not namespaced tags', () => {
 		expect(markdownToPlainText('<st1:City>Vienna</st1:City>')).toBe('Vienna');
+		expect(markdownToPlainText('Subscribe: <webcal://example.com/cal.ics>')).toBe(
+			'Subscribe: webcal://example.com/cal.ics'
+		);
 		expect(markdownToPlainText('<svg:rect/>x')).toBe('x');
 		expect(markdownToPlainText('see <https://a.b/c> and <tel:+4312345> and <me@x.com>')).toBe(
 			'see https://a.b/c and tel:+4312345 and me@x.com'
