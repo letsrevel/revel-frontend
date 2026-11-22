@@ -2405,7 +2405,9 @@
 			"clear": "Clear city filter",
 			"placeholder": "Search for a city...",
 			"label": "Search for a city",
-			"description": "Filter events by city location"
+			"description": "Filter events by city location",
+			"unknown": "Unknown city",
+			"loading": "Loading city…"
 		},
 		"organization": {
 			"heading": "Organization",

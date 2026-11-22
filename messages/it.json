@@ -2405,7 +2405,9 @@
 			"clear": "Cancella filtro città",
 			"placeholder": "Cerca una città...",
 			"label": "Cerca una città",
-			"description": "Filtra eventi per città"
+			"description": "Filtra eventi per città",
+			"unknown": "Città sconosciuta",
+			"loading": "Caricamento della città…"
 		},
 		"organization": {
 			"heading": "Organizzazione",

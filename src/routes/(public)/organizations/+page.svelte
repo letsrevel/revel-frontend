@@ -136,7 +136,9 @@
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
 				<!-- Filter Sidebar (Desktop) -->
 				<div class="hidden lg:block lg:w-80 lg:shrink-0">
-					<div class="sticky top-8">
+					<!-- z-10: sticky starts a stacking context, so without it the results
+					     grid paints over the sort-order tooltip and the city list. -->
+					<div class="sticky top-8 z-10">
 						<OrganizationFilters
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}

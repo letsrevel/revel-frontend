@@ -2206,7 +2206,9 @@
 			"clear": "Effacer le filtre de ville",
 			"placeholder": "Rechercher une ville...",
 			"label": "Rechercher une ville",
-			"description": "Filtrer les événements par ville"
+			"description": "Filtrer les événements par ville",
+			"unknown": "Ville inconnue",
+			"loading": "Chargement de la ville…"
 		},
 		"organization": {
 			"heading": "Organisation",

@@ -1,8 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import CityFilter from './CityFilter.svelte';
+import { shouldRetry } from '$lib/api/query-retry';
 
 const { cityGetCity, cityListCities } = vi.hoisted(() => ({
 	cityGetCity: vi.fn(),
@@ -10,7 +12,12 @@ const { cityGetCity, cityListCities } = vi.hoisted(() => ({
 }));
 vi.mock('$lib/api', () => ({ cityGetCity, cityListCities }));
 
-function renderFilter(props: Record<string, unknown>, client = new QueryClient()) {
+// Same retry policy as the app's root QueryClient.
+function makeClient(): QueryClient {
+	return new QueryClient({ defaultOptions: { queries: { retry: shouldRetry, retryDelay: 0 } } });
+}
+
+function renderFilter(props: Record<string, unknown>, client = makeClient()) {
 	return render(QueryClientTestWrapper, {
 		props: { client, component: CityFilter, componentProps: props }
 	});
@@ -48,7 +55,7 @@ describe('CityFilter', () => {
 		const onChangeCity = vi.fn();
 		renderFilter({ selectedCityId: 7, onChangeCity });
 
-		await fireEvent.click(await screen.findByRole('button', { name: /clear/i }));
+		await userEvent.click(await screen.findByRole('button', { name: /clear/i }));
 		expect(onChangeCity).toHaveBeenCalledWith(null);
 	});
 
@@ -57,15 +64,33 @@ describe('CityFilter', () => {
 		cityListCities.mockResolvedValue({
 			data: { results: [{ id: 9, name: 'Graz', country: 'Austria' }] }
 		});
-		const client = new QueryClient();
+		const client = makeClient();
 		const onChangeCity = vi.fn();
 		renderFilter({ selectedCityId: undefined, onChangeCity }, client);
 
-		await fireEvent.input(screen.getByRole('textbox'), { target: { value: 'gr' } });
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		await user.type(screen.getByRole('textbox'), 'gr');
 		await vi.advanceTimersByTimeAsync(400);
-		await fireEvent.click(screen.getByRole('button', { name: /Graz/ }));
+		await user.click(screen.getByRole('button', { name: /Graz/ }));
 
 		expect(onChangeCity).toHaveBeenCalledWith({ id: 9, name: 'Graz', country: 'Austria' });
 		expect(client.getQueryData(['city', 9])).toEqual({ id: 9, name: 'Graz', country: 'Austria' });
+	});
+
+	it('shows "Unknown city" at once when the city does not exist', async () => {
+		cityGetCity.mockResolvedValue({ data: undefined, response: { status: 404 } });
+		renderFilter({ selectedCityId: 999, onChangeCity: vi.fn() });
+
+		expect(await screen.findByText('Unknown city')).toBeInTheDocument();
+		// A 404 is not retried.
+		expect(cityGetCity).toHaveBeenCalledTimes(1);
+		expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
+	});
+
+	it('tells screen readers that the city is loading', () => {
+		cityGetCity.mockReturnValue(new Promise<never>(() => undefined));
+		renderFilter({ selectedCityId: 7, onChangeCity: vi.fn() });
+
+		expect(screen.getByRole('status')).toHaveTextContent('Loading city');
 	});
 });

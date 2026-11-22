@@ -29,8 +29,9 @@
 		queryKey: cityQueryKey(selectedCityId ?? 0),
 		queryFn: async (): Promise<SelectedCity> => {
 			const id = selectedCityId as number;
-			const { data, error } = await cityGetCity({ path: { city_id: id } });
-			if (error || !data) throw error ?? new Error('City not found');
+			const { data, response } = await cityGetCity({ path: { city_id: id } });
+			// Carry the status so the global retry policy fails a 404 at once.
+			if (!data) throw { status: response?.status };
 			return { id, name: data.name, country: data.country };
 		},
 		enabled: !!selectedCityId,
@@ -135,11 +136,12 @@
 				</div>
 			{:else if cityQuery.isError}
 				<!-- Unknown ID (for example an old link): the filter is still on and clearable. -->
-				<div class="flex-1 text-sm font-medium">{m['filters.city.heading']()}</div>
+				<div class="flex-1 text-sm font-medium">{m['filters.city.unknown']()}</div>
 			{:else}
-				<div class="flex-1 space-y-1.5" aria-busy="true">
-					<div class="h-4 w-24 animate-pulse rounded bg-muted"></div>
-					<div class="h-3 w-16 animate-pulse rounded bg-muted"></div>
+				<div class="flex-1 space-y-1.5" role="status">
+					<span class="sr-only">{m['filters.city.loading']()}</span>
+					<div class="h-4 w-24 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+					<div class="h-3 w-16 animate-pulse rounded bg-muted" aria-hidden="true"></div>
 				</div>
 			{/if}
 			<button

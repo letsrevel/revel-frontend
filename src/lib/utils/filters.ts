@@ -152,7 +152,7 @@ export function filtersToApiParams(filters: EventFilters) {
 }
 
 /**
- * Check if any filters are active (excluding pagination)
+ * Check if any filters are active (excluding pagination and the sort order)
  * @param filters Filter state object
  * @returns true if any filters are active
  */
@@ -165,8 +165,7 @@ export function hasActiveFilters(filters: EventFilters): boolean {
 		filters.visibility ||
 		(filters.tags && filters.tags.length > 0) ||
 		filters.includePast ||
-		filters.ticketType ||
-		(filters.orderBy && filters.orderBy !== 'distance') // 'distance' is now the default
+		filters.ticketType
 	);
 }
 
@@ -186,7 +185,7 @@ export function countActiveFilters(filters: EventFilters): number {
 	if (filters.tags && filters.tags.length > 0) count += filters.tags.length;
 	if (filters.includePast) count++;
 	if (filters.ticketType) count++;
-	if (filters.orderBy && filters.orderBy !== 'distance') count++; // 'distance' is now the default
+	// The sort order is not a filter: it changes the order, not which events show.
 
 	return count;
 }
