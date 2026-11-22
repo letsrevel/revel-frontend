@@ -273,10 +273,11 @@
 		"cascadeTitle": "Appliquer à toutes mes préférences",
 		"cascadeDescription": "Coche cette option pour appliquer ces paramètres à toutes tes préférences d'organisation, de série et d'événement. Cela remplacera toutes les préférences personnalisées que tu as définies.",
 		"cascadeCheckboxLabel": "Appliquer ces paramètres partout",
-		"saving": "Enregistrement...",
 		"saveChanges": "Enregistrer les modifications",
 		"errorNotLoggedIn": "Tu dois te connecter pour voir les paramètres.",
 		"attendeeListProfileHeading": "Visibilité du profil",
+		"attendeeListProfileHint": "Choisis dans les paramètres qui peut te voir dans les listes des personnes participantes aux événements.",
+		"attendeeListProfileLink": "Ouvrir les paramètres",
 		"billing": {
 			"title": "Informations de facturation",
 			"description": "Tes informations de facturation pour les factures d'achat de billets et les paiements de parrainage."
@@ -6988,6 +6989,7 @@
 		"oneClickFailed": "Ça n'a pas fonctionné. Réessaie.",
 		"processing": "Traitement en cours…"
 	},
+	"accountNav.label": "Sections du compte",
 	"userMenu": {
 		"userMenu": "Menu du compte",
 		"dashboard": "Tableau de bord",

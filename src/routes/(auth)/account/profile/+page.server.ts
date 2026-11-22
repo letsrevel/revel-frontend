@@ -1,11 +1,7 @@
 import * as m from '$lib/paraglide/messages.js';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import {
-	accountMe,
-	accountUpdateProfile,
-	userpreferencesGetGeneralPreferences
-} from '$lib/api/generated';
+import { accountMe, accountUpdateProfile } from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
@@ -16,8 +12,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	if (!accessToken) {
 		return {
-			user: null,
-			generalPreferences: null
+			user: null
 		};
 	}
 
@@ -32,22 +27,12 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	} catch (error) {
 		log.error('profile_user_fetch_failed', { error });
 		return {
-			user: null,
-			generalPreferences: null
+			user: null
 		};
 	}
 
-	// Preferences are non-critical: a failure must not take down the whole profile page.
-	// The component falls back to 'never' when generalPreferences is null.
-	const { data: generalPreferences } = await userpreferencesGetGeneralPreferences({
-		headers: {
-			Authorization: `Bearer ${accessToken}`
-		}
-	}).catch(() => ({ data: undefined }));
-
 	return {
-		user: plainOrNull(user),
-		generalPreferences: plainOrNull(generalPreferences)
+		user: plainOrNull(user)
 	};
 };
 

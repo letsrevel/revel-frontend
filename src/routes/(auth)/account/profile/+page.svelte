@@ -9,20 +9,14 @@
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS, SUPPORTED_LANGUAGES } from '$lib/schemas/profile';
 	import type { SupportedLanguage } from '$lib/schemas/profile';
-	import type { VisibilityValue } from '$lib/schemas/preferences';
 	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail, Eye, Gift } from '@lucide/svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';
 	import ProfilePictureUploader from '$lib/components/profile/ProfilePictureUploader.svelte';
-	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import {
-		accountResendVerificationEmail,
-		userpreferencesUpdateGeneralPreferences
-	} from '$lib/api/generated';
+	import { accountResendVerificationEmail } from '$lib/api/generated';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { toast } from 'svelte-sonner';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
@@ -37,10 +31,6 @@
 	let isSubmitting = $state(false);
 	let manuallyShowingCustom = $state(false);
 	let isResendingVerification = $state(false);
-	let isSavingVisibility = $state(false);
-	let attendeeListVisibility = $state<VisibilityValue>(
-		data.generalPreferences?.show_me_on_attendee_list ?? 'never'
-	);
 	let verificationEmailSent = $state(false);
 	let verificationError = $state<string | null>(null);
 	let resendCooldown = $state(0);
@@ -154,30 +144,6 @@
 			}
 		};
 	});
-
-	async function saveAttendeeVisibility(newValue: VisibilityValue) {
-		if (!authStore.accessToken) return;
-
-		isSavingVisibility = true;
-		try {
-			const { error } = await userpreferencesUpdateGeneralPreferences({
-				headers: { Authorization: `Bearer ${authStore.accessToken}` },
-				body: {
-					show_me_on_attendee_list: newValue
-				}
-			});
-
-			if (error) {
-				toast.error(m['accountSettingsPage.general.updateError']());
-			} else {
-				toast.success(m['accountSettingsPage.general.updateSuccess']());
-			}
-		} catch {
-			toast.error(m['accountSettingsPage.general.updateError']());
-		} finally {
-			isSavingVisibility = false;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -185,7 +151,7 @@
 	<meta name="description" content={m['profilePage.pageDescription']()} />
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl px-4 py-8">
+<div>
 	<PageHeader
 		kicker={m['myInvoices.account']()}
 		title={m['profilePage.heading']()}
@@ -253,25 +219,24 @@
 				}}
 			/>
 
-			<!-- Attendee List Visibility — surfaced here so users can set it right next to their photo -->
+			<!-- Attendee-list visibility lives in Settings only (one place, #1288). -->
 			<div class="rounded-lg border bg-card p-4">
 				<div class="flex items-start gap-3">
 					<Eye class="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-					<div class="flex-1 space-y-3">
+					<div class="flex-1 space-y-1">
 						<h2 class="text-base font-semibold">
 							{m['accountSettingsPage.attendeeListProfileHeading']()}
 						</h2>
-						<AttendeeVisibilitySelect
-							bind:value={attendeeListVisibility}
-							onValueChange={saveAttendeeVisibility}
-							showHeading={false}
-						/>
-						{#if isSavingVisibility}
-							<p class="flex items-center gap-1.5 text-xs text-muted-foreground" aria-live="polite">
-								<Loader2 class="h-3 w-3 animate-spin" aria-hidden="true" />
-								{m['accountSettingsPage.saving']()}
-							</p>
-						{/if}
+						<p class="text-sm text-muted-foreground">
+							{m['accountSettingsPage.attendeeListProfileHint']()}
+						</p>
+						<a
+							href={resolve('/(auth)/account/settings', {})}
+							class="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
+						>
+							<span>{m['accountSettingsPage.attendeeListProfileLink']()}</span>
+							<span aria-hidden="true">→</span>
+						</a>
 					</div>
 				</div>
 			</div>

@@ -303,10 +303,11 @@
 		"cascadeTitle": "Auf alle meine Präferenzen anwenden",
 		"cascadeDescription": "Aktiviere dies, um diese Einstellungen auf alle deine organisations-, reihen- und eventspezifischen Präferenzen anzuwenden. Dadurch werden alle von dir festgelegten individuellen Präferenzen überschrieben.",
 		"cascadeCheckboxLabel": "Diese Einstellungen überall anwenden",
-		"saving": "Wird gespeichert...",
 		"saveChanges": "Änderungen speichern",
 		"errorNotLoggedIn": "Sie müssen angemeldet sein, um die Einstellungen anzuzeigen.",
 		"attendeeListProfileHeading": "Profilsichtbarkeit",
+		"attendeeListProfileHint": "Lege in den Einstellungen fest, wer dich auf Event-Teilnehmer*innenlisten sehen kann.",
+		"attendeeListProfileLink": "Einstellungen öffnen",
 		"billing": {
 			"title": "Rechnungsinformationen",
 			"description": "Ihre Rechnungsdaten für Ticketrechnungen und Empfehlungsauszahlungen."
@@ -7018,6 +7019,7 @@
 		"oneClickFailed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
 		"processing": "Wird bearbeitet…"
 	},
+	"accountNav.label": "Kontobereiche",
 	"userMenu": {
 		"userMenu": "Kontomenü",
 		"dashboard": "Dashboard",

@@ -152,7 +152,7 @@
 	<title>{m['referral.payoutsTitle']()} - Revel</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl px-4 py-8">
+<div>
 	<div class="mb-6 flex items-center gap-4">
 		<a
 			href={resolve('/(auth)/account/referral', {})}

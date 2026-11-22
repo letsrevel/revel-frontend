@@ -300,7 +300,7 @@
 	<title>{title}</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl space-y-6 px-4 py-6">
+<div class="space-y-6">
 	<!-- The not-found state carries its own way back; one link is enough. -->
 	{#if !notFound}
 		<a

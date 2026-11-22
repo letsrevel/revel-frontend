@@ -19,6 +19,7 @@
 	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import PublicLayout from '$lib/components/common/PublicLayout.svelte';
 
 	// Get error details from page store
 	const status = $derived($page.status);
@@ -146,6 +147,11 @@
 
 	const ErrorIcon = $derived(config.icon);
 
+	// +error.svelte renders inside the ROOT layout only, which has no header or
+	// footer (those come from the route-group layouts). Wrap the error body in the
+	// site chrome, except for embed documents, which are bare by design (#689).
+	const withChrome = $derived($page.data?.embed !== true);
+
 	function goBack() {
 		window.history.back();
 	}
@@ -174,91 +180,103 @@
      numbers hold. Both remain decorative art, not a second announcement: the
      h1 is the accessible heading and the status code is separately in the
      errorPage.errorLabel copy. -->
-<main id="main-content" class="min-h-screen bg-background">
-	<section class="bg-secondary text-secondary-foreground">
-		<div class="container mx-auto max-w-2xl px-4 pb-20 pt-12 text-center sm:pt-16">
-			<div class="mb-6 flex justify-center">
-				<span aria-hidden="true">
-					<Sticker tint="purple" rotate={-3} class="text-4xl sm:text-5xl">{status}</Sticker>
-				</span>
+{#snippet errorBody()}
+	<div class="bg-background">
+		<section class="bg-secondary text-secondary-foreground">
+			<div class="container mx-auto max-w-2xl px-4 pb-20 pt-12 text-center sm:pt-16">
+				<div class="mb-6 flex justify-center">
+					<span aria-hidden="true">
+						<Sticker tint="purple" rotate={-3} class="text-4xl sm:text-5xl">{status}</Sticker>
+					</span>
+				</div>
+				<PageHeader
+					volume="poster"
+					onBand
+					kicker={m['errorPage.errorLabel']({ status: status.toString() })}
+					title={config.title()}
+					subtitle={config.description()}
+					class="text-center sm:flex-col sm:items-center"
+				/>
 			</div>
-			<PageHeader
-				volume="poster"
-				onBand
-				kicker={m['errorPage.errorLabel']({ status: status.toString() })}
-				title={config.title()}
-				subtitle={config.description()}
-				class="text-center sm:flex-col sm:items-center"
-			/>
-		</div>
-	</section>
+		</section>
 
-	<div class="container mx-auto -mt-12 max-w-2xl space-y-6 px-4 pb-16">
-		<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster sm:p-8">
-			<div class="flex justify-center">
-				<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
+		<div class="container mx-auto -mt-12 max-w-2xl space-y-6 px-4 pb-16">
+			<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster sm:p-8">
+				<div class="flex justify-center">
+					<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
+				</div>
+
+				<!-- Suggestions -->
+				{#if config.suggestions && config.suggestions().length > 0}
+					<h2 class="mt-6 text-sm font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+						{m['errorPage.whatYouCanDo']()}
+					</h2>
+					<ul class="mt-4 space-y-2 text-left text-sm">
+						{#each config.suggestions() as suggestion, i (i)}
+							<li class="flex items-start gap-2">
+								<span class="mt-1 text-primary" aria-hidden="true">•</span>
+								<span>{suggestion}</span>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+
+				<!-- Action Buttons -->
+				<div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+					{#if config.showBackButton}
+						<button
+							type="button"
+							onclick={goBack}
+							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+							{m['errorPage.goBack']()}
+						</button>
+					{/if}
+
+					{#if config.showLoginButton}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
+						<a
+							href={loginHrefFor($page.url)}
+							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<Lock class="h-4 w-4" aria-hidden="true" />
+							{m['errorPage.signIn']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{/if}
+
+					{#if config.showHomeButton}
+						<a
+							href={resolve('/(public)', {})}
+							class="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<Home class="h-4 w-4" aria-hidden="true" />
+							{m['errorPage.backToHome']()}
+						</a>
+					{/if}
+				</div>
 			</div>
 
-			<!-- Suggestions -->
-			{#if config.suggestions && config.suggestions().length > 0}
-				<h2 class="mt-6 text-sm font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-					{m['errorPage.whatYouCanDo']()}
-				</h2>
-				<ul class="mt-4 space-y-2 text-left text-sm">
-					{#each config.suggestions() as suggestion, i (i)}
-						<li class="flex items-start gap-2">
-							<span class="mt-1 text-primary" aria-hidden="true">•</span>
-							<span>{suggestion}</span>
-						</li>
-					{/each}
-				</ul>
+			<!-- Debug Info (only in development) -->
+			{#if import.meta.env.DEV && message}
+				<div class="rounded-lg border-2 border-muted bg-muted/50 p-4 text-left">
+					<h3 class="mb-2 text-sm font-semibold text-muted-foreground">
+						{m['errorPage.debugInfo']()}
+					</h3>
+					<pre class="overflow-x-auto text-xs text-muted-foreground">{message}</pre>
+				</div>
 			{/if}
-
-			<!-- Action Buttons -->
-			<div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-				{#if config.showBackButton}
-					<button
-						type="button"
-						onclick={goBack}
-						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-						{m['errorPage.goBack']()}
-					</button>
-				{/if}
-
-				{#if config.showLoginButton}
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
-					<a
-						href={loginHrefFor($page.url)}
-						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						<Lock class="h-4 w-4" aria-hidden="true" />
-						{m['errorPage.signIn']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				{/if}
-
-				{#if config.showHomeButton}
-					<a
-						href={resolve('/(public)', {})}
-						class="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						<Home class="h-4 w-4" aria-hidden="true" />
-						{m['errorPage.backToHome']()}
-					</a>
-				{/if}
-			</div>
 		</div>
-
-		<!-- Debug Info (only in development) -->
-		{#if import.meta.env.DEV && message}
-			<div class="rounded-lg border-2 border-muted bg-muted/50 p-4 text-left">
-				<h3 class="mb-2 text-sm font-semibold text-muted-foreground">
-					{m['errorPage.debugInfo']()}
-				</h3>
-				<pre class="overflow-x-auto text-xs text-muted-foreground">{message}</pre>
-			</div>
-		{/if}
 	</div>
-</main>
+{/snippet}
+
+{#if withChrome}
+	<PublicLayout>
+		{@render errorBody()}
+	</PublicLayout>
+{:else}
+	<main id="main-content" class="min-h-screen">
+		{@render errorBody()}
+	</main>
+{/if}

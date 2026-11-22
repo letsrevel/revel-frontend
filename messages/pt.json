@@ -303,10 +303,11 @@
 		"cascadeTitle": "Aplicar a todas as minhas preferências",
 		"cascadeDescription": "Marca esta opção para aplicar estas definições a todas as tuas preferências de organização, série e evento. Isto substituirá quaisquer preferências personalizadas que tenhas definido.",
 		"cascadeCheckboxLabel": "Aplicar estas definições em todo o lado",
-		"saving": "A guardar...",
 		"saveChanges": "Guardar alterações",
 		"errorNotLoggedIn": "Tens de iniciar sessão para ver as definições.",
 		"attendeeListProfileHeading": "Visibilidade do perfil",
+		"attendeeListProfileHint": "Escolhe nas definições quem te pode ver nas listas de participantes dos eventos.",
+		"attendeeListProfileLink": "Abrir as definições",
 		"billing": {
 			"title": "Dados de faturação",
 			"description": "Os teus dados de faturação para as faturas de compra de bilhetes e os pagamentos de indicações."
@@ -7018,6 +7019,7 @@
 		"oneClickFailed": "Não foi possível concluir. Tenta novamente.",
 		"processing": "A processar…"
 	},
+	"accountNav.label": "Secções da conta",
 	"userMenu": {
 		"userMenu": "Menu da conta",
 		"dashboard": "Painel",

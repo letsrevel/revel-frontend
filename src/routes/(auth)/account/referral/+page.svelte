@@ -170,7 +170,7 @@
 	<title>{m['referral.settings']()} - Revel</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl px-4 py-8">
+<div>
 	<PageHeader kicker={m['myInvoices.account']()} title={m['referral.referralProgram']()} />
 
 	{#if !referralCode}

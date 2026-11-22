@@ -303,10 +303,11 @@
 		"cascadeTitle": "Apply to all my preferences",
 		"cascadeDescription": "Check this to apply these settings to all your organization, series, and event-specific preferences. This will override any custom preferences you've set.",
 		"cascadeCheckboxLabel": "Apply these settings everywhere",
-		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "You must be logged in to view settings.",
 		"attendeeListProfileHeading": "Profile visibility",
+		"attendeeListProfileHint": "Choose who can see you on event attendee lists in your settings.",
+		"attendeeListProfileLink": "Open settings",
 		"billing": {
 			"title": "Billing Information",
 			"description": "Your billing details for ticket purchase invoices and referral payouts."
@@ -7018,6 +7019,7 @@
 		"oneClickFailed": "We couldn't process that. Please try again.",
 		"processing": "Working on it…"
 	},
+	"accountNav.label": "Account sections",
 	"userMenu": {
 		"userMenu": "User menu",
 		"dashboard": "Dashboard",
