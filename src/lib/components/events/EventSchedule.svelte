@@ -5,6 +5,7 @@
 	import { AlertCircle, MapPin } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EventTimezoneNote from './EventTimezoneNote.svelte';
 
 	interface Props {
 		/** Display-only timeline entries; times are relative to the event start. */
@@ -13,9 +14,11 @@
 		eventStart: string;
 		/** IANA timezone the event runs in; sessions render in it, not the viewer's. */
 		timezone?: string | null;
+		/** Human place name (e.g. the event's city) for the timezone note. */
+		place?: string | null;
 	}
 
-	const { schedule = [], eventStart, timezone = null }: Props = $props();
+	const { schedule = [], eventStart, timezone = null, place = null }: Props = $props();
 
 	const tz = $derived(timezone ?? undefined);
 	const startMs = $derived(new Date(eventStart).getTime());
@@ -57,9 +60,12 @@
 			title={m['eventSchedule.title']()}
 			class="mb-4"
 		/>
-		<!-- Times are in the event timezone, not the viewer's; the "Times shown in" note
-		     lives once on the page, in the sidebar's EventQuickInfo. -->
-		<p class="mb-6 text-sm text-muted-foreground">{m['eventSchedule.description']()}</p>
+		<p class="mb-2 text-sm text-muted-foreground">{m['eventSchedule.description']()}</p>
+
+		<!-- Times below are in the event timezone, not the viewer's — shown once here. -->
+		<!-- On desktop the sidebar summary carries this note beside the schedule;
+		     on mobile the summary is far above, so repeat it here. -->
+		<EventTimezoneNote start={eventStart} timeZone={timezone} {place} class="mb-6 lg:hidden" />
 
 		<ol class="space-y-3">
 			{#each sessions as session, index (index)}

@@ -593,7 +593,7 @@
 		<!-- Quick Info Section -->
 		<div class="border-t pt-4">
 			<h3 class="sr-only">{m['eventActionSidebar.eventDetails']()}</h3>
-			<EventQuickInfo {event} variant="compact" />
+			<EventQuickInfo {event} variant="compact" showTimezoneNote />
 		</div>
 
 		<!-- Add to Calendar (always available) -->

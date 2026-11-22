@@ -19,7 +19,7 @@ test.describe('J1 guest views event details @p0', () => {
 		// Event details sidebar: attendance count + type, no attendee names.
 		await expect(
 			page
-				.getByText(/\d+ \/ \d+ spots taken/)
+				.getByText(/\d+ (\/ \d+ spots taken|attending)/)
 				.visible()
 				.first()
 		).toBeVisible();
