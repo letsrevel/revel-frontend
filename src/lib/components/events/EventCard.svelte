@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MoreTagsPopover from '$lib/components/common/MoreTagsPopover.svelte';
 	import { page } from '$app/state';
 	import { orgHref } from '$lib/utils/org-links';
 	import { resolve } from '$app/paths';
@@ -294,10 +295,7 @@
 								</span>
 							{/each}
 							{#if event.tags.length > 3}
-								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-									+{event.tags.length - 3}
-									{m['common.text_more']()}
-								</span>
+								<MoreTagsPopover tags={event.tags.slice(3)} />
 							{/if}
 						</div>
 					</div>

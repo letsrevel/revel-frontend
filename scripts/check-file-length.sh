@@ -36,7 +36,7 @@ FAILED=0
 #   handlers from that state threads it through closures and breaks single
 #   ownership (same rationale as auth.svelte.ts). Raised to fit the snap-on-drop
 #   drag fix (blocks were trailing the cursor when snap was on).
-#   utils/date.ts → 650: CLAUDE.md + the ESLint toLocale* ban route ALL
+#   utils/date.ts → 670: CLAUDE.md + the ESLint toLocale* ban route ALL
 #   human-facing date formatting through this one file, so every formatter must
 #   live here — splitting it would weaken that single-entry-point contract.
 #   Roughly half the length is JSDoc documenting non-obvious CLDR/Intl behavior
@@ -45,6 +45,7 @@ FAILED=0
 #   the shared relative-time engine (#826): calendar-day counting + unit ladder
 #   behind getRSVPDeadlineRelative/formatRelativeTime, with the DST fall-back
 #   and numeric:'auto' idiom behavior documented in place per the same rule.
+#   Raised 650→670 for the conditional-year event date formatter (#1285).
 #   invitations/+page.server.ts → 520: eight form actions, each with its own
 #   401/validation/failure copy; every user-facing string now goes through
 #   Paraglide (prettier wraps the m[...]() calls), which pushed it just past 500.
@@ -52,7 +53,7 @@ max_for() {
     case "$1" in
         src/lib/stores/auth.svelte.ts) echo 730 ;;
         src/lib/components/venues/designer/designer-controller.svelte.ts) echo 540 ;;
-        src/lib/utils/date.ts) echo 650 ;;
+        src/lib/utils/date.ts) echo 670 ;;
         'src/routes/(auth)/org/[slug]/admin/events/[event_id]/invitations/+page.server.ts') echo 520 ;;
         *) echo "$2" ;;
     esac

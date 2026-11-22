@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MoreTagsPopover from '$lib/components/common/MoreTagsPopover.svelte';
 	import { onImageError } from '$lib/utils/image-error';
 	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
@@ -214,10 +215,7 @@
 							</span>
 						{/each}
 						{#if organization.tags.length > 3}
-							<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-								+{organization.tags.length - 3}
-								{m['common.text_more']()}
-							</span>
+							<MoreTagsPopover tags={organization.tags.slice(3)} />
 						{/if}
 					</div>
 				</div>

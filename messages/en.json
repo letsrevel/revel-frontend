@@ -1056,7 +1056,6 @@
 		"text_claimed": "claimed",
 		"text_stillNeeded": "still needed",
 		"text_attending": "attending",
-		"text_more": "more",
 		"text_tbd": "TBD",
 		"errors_refreshPage": "Please try refreshing the page or check back later.",
 		"errors_tryAgain": "Please try again.",
@@ -8692,7 +8691,6 @@
 	"eventRSVP.noteNotSaved": "Your RSVP was recorded, but the note wasn't saved — this event no longer accepts RSVP notes.",
 	"eventSeriesCard.byOrganization": "by {name}",
 	"eventSeriesCard.eventSeries": "Event Series",
-	"eventSeriesCard.moreTags": "+{count} more",
 	"eventFilters.eventFilters": "Event filters",
 	"eventFilters.unknownOrganization": "Unknown Organization",
 	"guestRsvpDialog.logIn": "Log in",
@@ -11950,5 +11948,28 @@
 	],
 	"totpLock.pausedNoTime": "Two-factor verification is paused for your security. Please try again later.",
 	"totpLock.wrongCodeRestart": "That didn't work. Please sign in again.",
-	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again."
+	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again.",
+	"moreTags.label": "+{count} more",
+	"moreTags.trigger": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Show 1 more tag",
+				"countPlural=*": "Show {count} more tags"
+			}
+		}
+	],
+	"moreTags.listLabel": "Remaining tags",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Show 1 more tag",
+				"countPlural=*": "Show {count} more tags"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Show fewer tags"
 }

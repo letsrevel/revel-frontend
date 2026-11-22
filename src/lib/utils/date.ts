@@ -166,6 +166,24 @@ function withTz(formatted: string, abbreviation: string): string {
 }
 
 /**
+ * Day formatter for event dates. Adds the year only when any given instant is
+ * outside the current year in that zone, so far-off events are not ambiguous (#1285).
+ */
+function getEventDateFormatter(locale: string, timeZone: string | undefined, ...dates: Date[]) {
+	const yearOf = (d: Date) =>
+		getFormatter('en-CA', { year: 'numeric', ...tzOpt(timeZone) }).format(d);
+	const now = yearOf(new Date());
+	const showYear = dates.some((d) => yearOf(d) !== now);
+	return getFormatter(locale, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		...(showYear ? { year: 'numeric' as const } : {}),
+		...tzOpt(timeZone)
+	});
+}
+
+/**
  * Format a date-time string for event display with locale-aware date ordering,
  * punctuation, and time formats (e.g. "Fri, Oct 20 • 8:00 PM GMT+1" in en-US,
  * "Fr., 20. Okt. • 20:00 MEZ" in de-DE). Hour cycle (12h/24h) is decided by
@@ -184,12 +202,7 @@ export function formatEventDate(
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dateFormatter = getFormatter(locale, {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-		...tzOpt(timeZone)
-	});
+	const dateFormatter = getEventDateFormatter(locale, timeZone, date);
 	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
@@ -219,12 +232,7 @@ export function formatEventDateRange(
 	const end = new Date(endString);
 	const locale = getDateLocale();
 
-	const dateFormatter = getFormatter(locale, {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-		...tzOpt(timeZone)
-	});
+	const dateFormatter = getEventDateFormatter(locale, timeZone, start, end);
 	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',

@@ -25,6 +25,9 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 			organization: organization.id, // Use UUID, not slug
 			include_past: true, // Include past events in queryset
 			next_events: false, // Don't filter to only upcoming events (default is true)
+			// Newest first, so the page-size cap drops the oldest events, not upcoming ones.
+			// The page sorts upcoming sections soonest first (#1285).
+			order_by: '-start',
 			page_size: 100 // TODO: Add pagination
 		}
 	});

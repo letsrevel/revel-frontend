@@ -11,11 +11,26 @@
 		class?: string;
 	}
 
+	/** Tags shown before the "Show more" toggle (the API returns them by usage). */
+	const COLLAPSED_TAG_COUNT = 12;
+	const uid = $props.id();
+	const listId = `tags-filter-list-${uid}`;
+
 	const { selectedTags = [], onToggleTag, class: className }: Props = $props();
 
 	let availableTags = $state<string[]>([]);
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
+	let expanded = $state(false);
+
+	// Selected tags stay visible even when they fall beyond the collapsed limit.
+	const visibleTags = $derived(
+		expanded
+			? availableTags
+			: availableTags.filter((tag, i) => i < COLLAPSED_TAG_COUNT || selectedTags.includes(tag))
+	);
+	const hiddenCount = $derived(availableTags.length - visibleTags.length);
+	const canToggle = $derived(availableTags.length > COLLAPSED_TAG_COUNT);
 
 	// Load tags from API on mount
 	onMount(async () => {
@@ -79,8 +94,8 @@
 	{:else if error}
 		<p class="text-xs text-destructive">{m['filters.tags.failed']()}</p>
 	{:else if availableTags.length > 0}
-		<div class="flex flex-wrap gap-2">
-			{#each availableTags as tag (tag)}
+		<div id={listId} class="flex flex-wrap gap-2">
+			{#each visibleTags as tag (tag)}
 				{@const isSelected = selectedTags?.includes(tag) ?? false}
 				<button
 					type="button"
@@ -103,6 +118,18 @@
 				</button>
 			{/each}
 		</div>
+
+		{#if canToggle && (expanded || hiddenCount > 0)}
+			<button
+				type="button"
+				onclick={() => (expanded = !expanded)}
+				aria-expanded={expanded}
+				aria-controls={listId}
+				class="text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{expanded ? m['tagsFilter.showFewer']() : m['tagsFilter.showMore']({ count: hiddenCount })}
+			</button>
+		{/if}
 
 		{#if selectedTags.length > 0}
 			<p class="text-xs text-muted-foreground">

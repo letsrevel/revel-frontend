@@ -1056,7 +1056,6 @@
 		"text_claimed": "prenotati",
 		"text_stillNeeded": "ancora necessari",
 		"text_attending": "partecipano",
-		"text_more": "altro",
 		"text_tbd": "Da definire",
 		"errors_refreshPage": "Prova a ricaricare la pagina o riprova più tardi.",
 		"errors_tryAgain": "Riprova.",
@@ -8692,7 +8691,6 @@
 	"eventRSVP.noteNotSaved": "Il tuo RSVP è stato registrato, ma la nota non è stata salvata — questo evento non accetta più note RSVP.",
 	"eventSeriesCard.byOrganization": "di {name}",
 	"eventSeriesCard.eventSeries": "Serie di eventi",
-	"eventSeriesCard.moreTags": "+{count} altri",
 	"eventFilters.eventFilters": "Filtri eventi",
 	"eventFilters.unknownOrganization": "Organizzazione sconosciuta",
 	"guestRsvpDialog.logIn": "Accedi",
@@ -11950,5 +11948,28 @@
 	],
 	"totpLock.pausedNoTime": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova più tardi.",
 	"totpLock.wrongCodeRestart": "Non ha funzionato. Accedi di nuovo.",
-	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova."
+	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova.",
+	"moreTags.label": "+{count} altri",
+	"moreTags.trigger": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostra 1 altro tag",
+				"countPlural=*": "Mostra altri {count} tag"
+			}
+		}
+	],
+	"moreTags.listLabel": "Altri tag",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostra 1 altro tag",
+				"countPlural=*": "Mostra altri {count} tag"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Mostra meno tag"
 }

@@ -1056,7 +1056,6 @@
 		"text_claimed": "reservados",
 		"text_stillNeeded": "ainda necessários",
 		"text_attending": "a participar",
-		"text_more": "mais",
 		"text_tbd": "Por definir",
 		"errors_refreshPage": "Tenta atualizar a página ou volta mais tarde.",
 		"errors_tryAgain": "Tenta novamente.",
@@ -8692,7 +8691,6 @@
 	"eventRSVP.noteNotSaved": "A tua confirmação de presença foi registada, mas a nota não foi guardada — este evento já não aceita notas de confirmação de presença.",
 	"eventSeriesCard.byOrganization": "por {name}",
 	"eventSeriesCard.eventSeries": "Série de eventos",
-	"eventSeriesCard.moreTags": "+{count} mais",
 	"eventFilters.eventFilters": "Filtros de eventos",
 	"eventFilters.unknownOrganization": "Organização desconhecida",
 	"guestRsvpDialog.logIn": "Iniciar sessão",
@@ -11950,5 +11948,28 @@
 	],
 	"totpLock.pausedNoTime": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente mais tarde.",
 	"totpLock.wrongCodeRestart": "Não funcionou. Inicia sessão novamente.",
-	"totpLock.rateLimited": "Demasiadas tentativas. Aguarda um momento e tenta novamente."
+	"totpLock.rateLimited": "Demasiadas tentativas. Aguarda um momento e tenta novamente.",
+	"moreTags.label": "+{count} mais",
+	"moreTags.trigger": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostrar mais 1 tag",
+				"countPlural=*": "Mostrar mais {count} tags"
+			}
+		}
+	],
+	"moreTags.listLabel": "Outras tags",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostrar mais 1 tag",
+				"countPlural=*": "Mostrar mais {count} tags"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Mostrar menos tags"
 }
