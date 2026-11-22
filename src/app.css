@@ -231,6 +231,16 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+	/* Reserve the scrollbar gutter so the header doesn't shift between scrolling and non-scrolling pages (#1290). */
+	html {
+		scrollbar-gutter: stable;
+	}
+	/* The app renders its own clear buttons on search inputs; hide Chrome's native X so there aren't two (#1286). */
+	input[type='search']::-webkit-search-cancel-button,
+	input[type='search']::-webkit-search-decoration {
+		-webkit-appearance: none;
+		appearance: none;
+	}
 
 	/*
 	 * GLOBAL KEYBOARD-FOCUS FLOOR (#780).
