@@ -335,14 +335,12 @@
 								level={2}
 								icon={Calendar}
 								title={m['browse.events_noEventsFound']()}
-								body={hasActiveFilters(currentFilters, {
-									ignoreIncludePast: viewMode === 'calendar'
-								})
+								body={hasActiveFilters(currentFilters)
 									? m['browse.events_tryAdjustingFilters']()
 									: m['browse.events_noUpcomingEvents']()}
 							>
 								{#snippet action()}
-									{#if hasActiveFilters( currentFilters, { ignoreIncludePast: viewMode === 'calendar' } )}
+									{#if hasActiveFilters(currentFilters)}
 										<Button onclick={handleClearFilters}>
 											{m['browse.events_clearFilters']()}
 										</Button>
