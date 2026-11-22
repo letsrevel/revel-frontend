@@ -2,7 +2,26 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import MobileOrganizationFilterSheet from './MobileOrganizationFilterSheet.svelte';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+
+// CityFilter loads the selected city's name with TanStack Query: keep that
+// off the network.
+vi.mock('$lib/api', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/api')>()),
+	cityGetCity: vi.fn().mockResolvedValue({ data: { id: 123, name: 'Vienna', country: 'Austria' } })
+}));
+
+function renderWithQuery(options: { props: Record<string, unknown> }) {
+	return render(QueryClientTestWrapper, {
+		props: {
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			component: MobileOrganizationFilterSheet,
+			componentProps: options.props
+		}
+	});
+}
 
 describe('MobileOrganizationFilterSheet', () => {
 	const defaultFilters: FilterState = {
@@ -21,7 +40,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	};
 
 	it('renders when isOpen is true', () => {
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: defaultProps
 		});
 
@@ -31,7 +50,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	});
 
 	it('does not render when isOpen is false', () => {
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				isOpen: false
@@ -48,7 +67,7 @@ describe('MobileOrganizationFilterSheet', () => {
 			tags: ['LGBTQ+']
 		};
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				filters: filtersWithActive
@@ -65,7 +84,7 @@ describe('MobileOrganizationFilterSheet', () => {
 			search: 'test'
 		};
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				filters: filtersWithActive
@@ -79,7 +98,7 @@ describe('MobileOrganizationFilterSheet', () => {
 		const user = userEvent.setup();
 		const onClose = vi.fn();
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				onClose
@@ -98,7 +117,7 @@ describe('MobileOrganizationFilterSheet', () => {
 		const user = userEvent.setup();
 		const onClose = vi.fn();
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				onClose
@@ -115,7 +134,7 @@ describe('MobileOrganizationFilterSheet', () => {
 		const user = userEvent.setup();
 		const onClose = vi.fn();
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				onClose
@@ -128,7 +147,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	});
 
 	it('displays organization count in apply button', () => {
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				totalCount: 42
@@ -139,7 +158,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	});
 
 	it('uses singular form when count is 1', () => {
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				totalCount: 1
@@ -153,7 +172,7 @@ describe('MobileOrganizationFilterSheet', () => {
 		const user = userEvent.setup();
 		const onClose = vi.fn();
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				onClose
@@ -175,7 +194,7 @@ describe('MobileOrganizationFilterSheet', () => {
 			search: 'test'
 		};
 
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: {
 				...defaultProps,
 				filters: filtersWithActive,
@@ -190,7 +209,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	});
 
 	it('is accessible with proper ARIA attributes', () => {
-		render(MobileOrganizationFilterSheet, {
+		renderWithQuery({
 			props: defaultProps
 		});
 
@@ -200,7 +219,7 @@ describe('MobileOrganizationFilterSheet', () => {
 	});
 
 	it('has swipe indicator for mobile UX', () => {
-		const { container } = render(MobileOrganizationFilterSheet, {
+		const { container } = renderWithQuery({
 			props: defaultProps
 		});
 

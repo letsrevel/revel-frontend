@@ -125,6 +125,21 @@ describe('DetailsStep', () => {
 		expect(onUpdate).toHaveBeenCalledWith({ tags: ['social'] });
 	});
 
+	it('does not clip the tag suggestion list with an overflow-hidden ancestor', async () => {
+		// The suggestion list is an absolutely positioned child of the tag input.
+		// An `overflow-hidden` card around it cut the list off below the input.
+		renderStep();
+		await fireEvent.click(screen.getByRole('button', { name: /Advanced/i }));
+
+		const clipping: string[] = [];
+		let el: HTMLElement | null = screen.getByPlaceholderText('Add tags...');
+		while (el && el !== document.body) {
+			if (/\boverflow-(?:[xy]-)?(hidden|clip)\b/.test(el.className)) clipping.push(el.className);
+			el = el.parentElement;
+		}
+		expect(clipping).toEqual([]);
+	});
+
 	it('renders the require-ticket-names toggle only for ticketed events and reports changes', async () => {
 		const onUpdate = vi.fn();
 		renderStep({

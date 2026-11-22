@@ -56,12 +56,6 @@
 		onUpdateFilters({ orderBy });
 	}
 
-	// Derive selected city object from cityId
-	const selectedCity = $derived.by(() => {
-		if (!filters.cityId) return null;
-		return null;
-	});
-
 	function handleApply(): void {
 		onClose();
 	}
@@ -146,7 +140,7 @@
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
 				<!-- City Filter (Top Priority) -->
-				<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+				<CityFilter selectedCityId={filters.cityId} onChangeCity={handleChangeCity} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>

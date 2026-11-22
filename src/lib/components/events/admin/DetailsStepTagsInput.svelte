@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Hash } from '@lucide/svelte';
+	import { onMount, tick } from 'svelte';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
 	interface Props {
@@ -28,23 +29,59 @@
 	// Transient fetch state (spinner + debounce handle) stays local
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+	let blurTimeout: ReturnType<typeof setTimeout> | null = null;
+	let listEl = $state<HTMLDivElement | null>(null);
+	let inputEl = $state<HTMLInputElement | null>(null);
+
+	// A fresh mount has no focus, so the list must start closed. The parent
+	// owns `showSuggestions`; closing the Advanced accordion unmounts us before
+	// the blur timer can reset it, which left the list open on reopen.
+	onMount(() => {
+		showSuggestions = false;
+		selectedSuggestionIndex = -1;
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+			if (blurTimeout) clearTimeout(blurTimeout);
+		};
+	});
+
+	/**
+	 * The list is absolutely positioned inside whatever scrolls around it (the
+	 * editor shell, the series settings dialog). Bring it into view after a
+	 * search the user typed, not on every mount (refocus must not jump).
+	 * `scrollIntoView` is missing in jsdom, hence the optional call.
+	 */
+	async function revealSuggestions(): Promise<void> {
+		await tick();
+		listEl?.scrollIntoView?.({ block: 'nearest' });
+	}
 
 	/**
 	 * Fetch tag suggestions from API
 	 */
-	async function fetchTagSuggestions(search: string): Promise<void> {
+	// Each search takes a number; Escape bumps it, so an answer to a search
+	// that started before the dismissal cannot reopen the list.
+	let searchSeq = 0;
+
+	/** `reveal`: scroll the list into view (typed searches only, not refocus). */
+	async function fetchTagSuggestions(search: string, reveal = false): Promise<void> {
 		if (!search.trim()) {
 			tagSuggestions = [];
 			showSuggestions = false;
 			return;
 		}
 
+		const seq = ++searchSeq;
 		isLoadingSuggestions = true;
 
 		try {
 			const response = await tagListTags({
 				query: { search }
 			});
+
+			// Drop a late answer: the user moved on (blur, Escape, added the tag,
+			// typed more). Refocus runs a new search, so a dropped answer is not lost.
+			if (seq !== searchSeq || search !== tagInput || document.activeElement !== inputEl) return;
 
 			if (response.data?.results) {
 				// Extract tag names from TagSchema objects and filter out tags that are already added
@@ -53,6 +90,7 @@
 					.filter((tagName) => !tags.includes(tagName));
 				showSuggestions = tagSuggestions.length > 0;
 				selectedSuggestionIndex = -1;
+				if (showSuggestions && reveal) void revealSuggestions();
 			}
 		} catch (error) {
 			console.error('Failed to fetch tag suggestions:', error);
@@ -77,7 +115,7 @@
 
 		// Debounce search by 300ms
 		searchTimeout = setTimeout(() => {
-			fetchTagSuggestions(value);
+			fetchTagSuggestions(value, true);
 		}, 300);
 	}
 
@@ -87,6 +125,7 @@
 	function addTag(tag?: string): void {
 		const tagToAdd = tag || tagInput.trim();
 		if (tagToAdd && !tags.includes(tagToAdd)) {
+			if (searchTimeout) clearTimeout(searchTimeout);
 			onUpdate({ tags: [...tags, tagToAdd] });
 			tagInput = '';
 			tagSuggestions = [];
@@ -124,6 +163,8 @@
 				selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
 			}
 		} else if (e.key === 'Escape') {
+			searchSeq++;
+			if (searchTimeout) clearTimeout(searchTimeout);
 			showSuggestions = false;
 			selectedSuggestionIndex = -1;
 		}
@@ -148,20 +189,24 @@
 	<div class="flex gap-2">
 		<div class="relative flex-1">
 			<input
+				bind:this={inputEl}
 				id="tags-input"
 				type="text"
 				value={tagInput}
 				oninput={handleTagInput}
 				onkeydown={handleTagKeydown}
 				onfocus={() => {
-					if (tagInput.trim() && tagSuggestions.length > 0) {
-						showSuggestions = true;
-					}
+					if (blurTimeout) clearTimeout(blurTimeout);
+					// Search again: the stored list can belong to older text, or an
+					// answer that arrived while the input had no focus was dropped.
+					if (tagInput.trim()) void fetchTagSuggestions(tagInput);
 				}}
 				onblur={() => {
 					// Delay hiding to allow clicking on suggestions
-					setTimeout(() => {
+					if (blurTimeout) clearTimeout(blurTimeout);
+					blurTimeout = setTimeout(() => {
 						showSuggestions = false;
+						selectedSuggestionIndex = -1;
 					}, 200);
 				}}
 				placeholder={m['detailsStep.addTagsPlaceholder']()}
@@ -177,9 +222,10 @@
 
 			{#if showSuggestions && tagSuggestions.length > 0}
 				<div
+					bind:this={listEl}
 					id="tags-suggestions"
 					role="listbox"
-					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
+					class="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
 					{#each tagSuggestions as suggestion, index (suggestion)}
 						<button

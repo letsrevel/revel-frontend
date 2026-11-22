@@ -94,12 +94,6 @@
 		onUpdateFilters({ orderBy });
 	}
 
-	// Derive selected city object from cityId
-	const selectedCity = $derived.by(() => {
-		if (!filters.cityId) return null;
-		return null;
-	});
-
 	// Derive selected organization object from filters
 	const selectedOrganization = $derived.by(() => {
 		if (!filters.organizationId) return null;
@@ -284,7 +278,7 @@
 				<div class="border-t" role="separator"></div>
 
 				<!-- City Filter -->
-				<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+				<CityFilter selectedCityId={filters.cityId} onChangeCity={handleChangeCity} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>

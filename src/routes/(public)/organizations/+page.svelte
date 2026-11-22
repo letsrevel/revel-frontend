@@ -13,7 +13,8 @@
 		parseOrganizationFilters,
 		organizationFiltersToParams,
 		clearOrganizationFilters,
-		countActiveOrganizationFilters
+		countActiveOrganizationFilters,
+		hasActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
 	import { withUtmParams } from '$lib/utils/attribution';
@@ -70,7 +71,16 @@
 	}
 
 	function handleClearFilters(): void {
-		const params = organizationFiltersToParams(clearOrganizationFilters());
+		// Sort order and page size are no filters, so "Clear all" keeps them.
+		const params = organizationFiltersToParams({
+			...clearOrganizationFilters(),
+			orderBy: currentFilters.orderBy,
+			// Keep only a sane page size; a bad URL value falls back to the default.
+			pageSize:
+				currentFilters.pageSize && currentFilters.pageSize > 0 && currentFilters.pageSize <= 100
+					? currentFilters.pageSize
+					: 20
+		});
 		const target = `${resolve('/(public)/organizations', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
 		goto(withUtmParams(target, $page.url), { replaceState: false });
@@ -136,7 +146,11 @@
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
 				<!-- Filter Sidebar (Desktop) -->
 				<div class="hidden lg:block lg:w-80 lg:shrink-0">
-					<div class="sticky top-8">
+					<!-- z-30: sticky starts a stacking context, so the column must sit above
+					     the result cards (their stretched link is z-10, badges z-20) or they
+					     cover the sort-order help tooltip. The site header is z-50. top-20
+					     clears that header (h-16). -->
+					<div class="sticky top-20 z-30">
 						<OrganizationFilters
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
@@ -169,12 +183,12 @@
 							level={2}
 							icon={Users}
 							title={m['browse.organizations_noOrganizationsFound']()}
-							body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+							body={hasActiveOrganizationFilters(currentFilters)
 								? m['browse.organizations_tryAdjustingFilters']()
 								: m['browse.organizations_noOrganizations']()}
 						>
 							{#snippet action()}
-								{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
+								{#if hasActiveOrganizationFilters(currentFilters)}
 									<Button onclick={handleClearFilters}>
 										{m['browse.organizations_clearFilters']()}
 									</Button>

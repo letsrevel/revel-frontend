@@ -2,16 +2,46 @@
 	import type { CitySchema } from '$lib/api/generated/types.gen';
 	import { MapPin, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
-	import { cityListCities } from '$lib/api';
+	import { cityGetCity, cityListCities } from '$lib/api';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import * as m from '$lib/paraglide/messages.js';
 
+	type SelectedCity = { id: number; name: string; country: string };
+
 	interface Props {
-		selectedCity?: { id: number; name: string; country: string } | null;
-		onChangeCity: (city: { id: number; name: string; country: string } | null) => void;
+		/** The `city_id` filter. The URL holds only the ID, so we load the name. */
+		selectedCityId?: number | null;
+		onChangeCity: (city: SelectedCity | null) => void;
 		class?: string;
 	}
 
-	const { selectedCity = null, onChangeCity, class: className }: Props = $props();
+	const { selectedCityId = null, onChangeCity, class: className }: Props = $props();
+
+	const queryClient = useQueryClient();
+
+	/** The queryFn throws `{ status }`; a network failure throws an Error instead. */
+	function isNotFound(error: unknown): boolean {
+		return !!error && typeof error === 'object' && 'status' in error && error.status === 404;
+	}
+
+	function cityQueryKey(id: number): ['city', number] {
+		return ['city', id];
+	}
+
+	// A city never changes, so keep it for the session. A pick from the search
+	// list seeds this cache (handleSelectCity), so the name shows at once.
+	const cityQuery = createQuery(() => ({
+		queryKey: cityQueryKey(selectedCityId ?? 0),
+		queryFn: async (): Promise<SelectedCity> => {
+			const id = selectedCityId as number;
+			const { data, response } = await cityGetCity({ path: { city_id: id } });
+			// Carry the status so the global retry policy fails a 404 at once.
+			if (!data) throw { status: response?.status };
+			return { id, name: data.name, country: data.country };
+		},
+		enabled: !!selectedCityId,
+		staleTime: Infinity
+	}));
 
 	let searchQuery = $state('');
 	let isSearching = $state(false);
@@ -67,7 +97,9 @@
 
 	function handleSelectCity(city: CitySchema): void {
 		if (city.id) {
-			onChangeCity({ id: city.id, name: city.name, country: city.country });
+			const picked: SelectedCity = { id: city.id, name: city.name, country: city.country };
+			queryClient.setQueryData(cityQueryKey(city.id), picked);
+			onChangeCity(picked);
 			searchQuery = '';
 			searchResults = [];
 			isDropdownOpen = false;
@@ -97,14 +129,32 @@
 		</h3>
 	</div>
 
-	{#if selectedCity}
+	{#if selectedCityId}
 		<!-- Selected City Display -->
 		<div
 			class="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2"
 		>
-			<div class="flex-1">
-				<div class="text-sm font-medium">{selectedCity.name}</div>
-				<div class="text-xs text-muted-foreground">{selectedCity.country}</div>
+			<!-- One live region for the whole box, so the change from "loading" to the
+			     city name is announced. -->
+			<div class="flex-1" role="status">
+				{#if cityQuery.data}
+					<div class="text-sm font-medium">{cityQuery.data.name}</div>
+					<div class="text-xs text-muted-foreground">{cityQuery.data.country}</div>
+				{:else if cityQuery.isError}
+					<!-- 404 (for example an old link) or another failure: say which.
+					     The filter is still on and the user can clear it. -->
+					<div class="text-sm font-medium">
+						{isNotFound(cityQuery.error)
+							? m['filters.city.unknown']()
+							: m['filters.city.loadError']()}
+					</div>
+				{:else}
+					<div class="space-y-1.5">
+						<span class="sr-only">{m['filters.city.loading']()}</span>
+						<div class="h-4 w-24 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+						<div class="h-3 w-16 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+					</div>
+				{/if}
 			</div>
 			<button
 				type="button"

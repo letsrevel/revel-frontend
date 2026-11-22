@@ -44,15 +44,6 @@
 	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
 		onUpdateFilters({ orderBy });
 	}
-
-	// Derive selected city object from cityId
-	const selectedCity = $derived.by(() => {
-		if (!filters.cityId) return null;
-		// We don't have the full city object, just the ID
-		// In a real implementation, you might want to store the full city object in the URL
-		// or fetch it. For now, we'll just track the ID and let the component handle it.
-		return null;
-	});
 </script>
 
 <aside
@@ -90,7 +81,7 @@
 	<div class="border-t" role="separator"></div>
 
 	<!-- City Filter (Top Priority) -->
-	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+	<CityFilter selectedCityId={filters.cityId} onChangeCity={handleChangeCity} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>

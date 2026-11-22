@@ -88,17 +88,12 @@ export function organizationFiltersToApiParams(filters: OrganizationFilters) {
 }
 
 /**
- * Check if any filters are active (excluding pagination)
+ * Check if any filters are active (excluding pagination and the sort order)
  * @param filters Filter state object
  * @returns true if any filters are active
  */
 export function hasActiveOrganizationFilters(filters: OrganizationFilters): boolean {
-	return !!(
-		filters.search ||
-		filters.cityId ||
-		(filters.tags && filters.tags.length > 0) ||
-		(filters.orderBy && filters.orderBy !== 'distance')
-	);
+	return !!(filters.search || filters.cityId || (filters.tags && filters.tags.length > 0));
 }
 
 /**
@@ -112,7 +107,7 @@ export function countActiveOrganizationFilters(filters: OrganizationFilters): nu
 	if (filters.search) count++;
 	if (filters.cityId) count++;
 	if (filters.tags && filters.tags.length > 0) count += filters.tags.length;
-	if (filters.orderBy && filters.orderBy !== 'distance') count++;
+	// The sort order is not a filter: it changes the order, not which organizations show.
 
 	return count;
 }

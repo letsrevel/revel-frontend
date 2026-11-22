@@ -307,12 +307,17 @@
 		onAssignQuestionnaire={() => (isQuestionnaireModalOpen = true)}
 	/>
 
-	<!-- Advanced Section -->
-	<div class="overflow-hidden rounded-lg border border-border">
+	<!-- Advanced Section. No `overflow-hidden` here: it clips the tag
+	     suggestion list. The header rounds its own corners instead. -->
+	<div class="rounded-lg border border-border">
 		<button
 			type="button"
 			onclick={() => toggleSection('advanced')}
-			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			class="flex w-full items-center justify-between rounded-t-[calc(var(--radius)-1px)] bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {isSectionOpen(
+				'advanced'
+			)
+				? ''
+				: 'rounded-b-[calc(var(--radius)-1px)]'}"
 			aria-expanded={isSectionOpen('advanced')}
 		>
 			<div class="flex items-center gap-2 font-semibold">
