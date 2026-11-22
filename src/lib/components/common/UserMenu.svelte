@@ -204,9 +204,9 @@
 				lastName={user?.last_name}
 				size="md"
 			/>
-			<div class="flex-1">
-				<p class="font-medium">{displayName}</p>
-				<p class="text-sm text-muted-foreground">{user?.email}</p>
+			<div class="min-w-0 flex-1">
+				<p class="truncate font-medium">{displayName}</p>
+				<p class="truncate text-sm text-muted-foreground" title={user?.email}>{user?.email}</p>
 			</div>
 		</div>
 
@@ -346,7 +346,7 @@
 				<!-- User Info -->
 				<div class="border-b px-4 py-3">
 					<p class="text-sm font-medium">{displayName}</p>
-					<p class="text-xs text-muted-foreground">{user?.email}</p>
+					<p class="truncate text-xs text-muted-foreground" title={user?.email}>{user?.email}</p>
 				</div>
 
 				<!-- Menu Items -->

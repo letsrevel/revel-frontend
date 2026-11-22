@@ -73,7 +73,7 @@
 	<DropdownMenu.Content
 		align="end"
 		sideOffset={8}
-		class="flex max-h-[80vh] w-[400px] max-w-[90vw] flex-col overflow-hidden p-0 md:max-h-[600px]"
+		class="flex max-h-[min(70vh,600px)] w-[400px] max-w-[90vw] flex-col overflow-hidden p-0"
 	>
 		<!-- Header -->
 		<div class="flex shrink-0 items-center justify-between border-b px-4 py-3">

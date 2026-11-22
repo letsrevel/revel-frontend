@@ -5,8 +5,6 @@
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import { cityPartsNotIn, getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
 	import { asHttpUrl, getImageUrl } from '$lib/utils/url';
-	import { page } from '$app/state';
-	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
@@ -73,11 +71,6 @@
 			toast.error(m['eventHeader.failedToCopyLink']());
 		}
 	}
-
-	// Download iCal file for this event
-	function handleDownloadCalendar(): void {
-		downloadRevelEventICalFile(event, page.data);
-	}
 </script>
 
 {#snippet titleBlock(onBand: boolean)}
@@ -106,29 +99,16 @@
 				onBand ? 'text-poster-white' : 'text-poster-white/90'
 			)}
 		>
-			<!-- Date (clickable to download iCal) -->
-			<button
-				type="button"
-				onclick={handleDownloadCalendar}
-				class={cn(
-					'group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2',
-					onBand
-						? 'focus-visible:ring-offset-poster-band'
-						: 'focus-visible:ring-offset-poster-ink/50'
-				)}
-				title={m['eventHeader.downloadCalendarEventTitle']()}
-			>
+			<!-- Date (plain text; the sidebar "Add to Calendar" owns the .ics download) -->
+			<div class="flex items-center gap-2">
 				<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
-				<span class="sr-only"
-					>{m['eventHeader.downloadCalendarEventFor']({ name: event.name })}</span
-				>
-				<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
+				<time datetime={event.start}>{dateRange}</time>
 				{#if event.is_open_ended}
 					<span class={cn('ml-1 text-sm', !onBand && 'opacity-90')}
 						>· {m['eventDetails.openEnded']()}</span
 					>
 				{/if}
-			</button>
+			</div>
 
 			<!-- Location -->
 			{#if mapsUrl}

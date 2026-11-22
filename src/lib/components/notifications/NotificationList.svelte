@@ -135,11 +135,7 @@
 </script>
 
 <div
-	class={cn(
-		'notification-list flex flex-col',
-		compact ? 'max-h-[400px]' : 'min-h-[400px]',
-		className
-	)}
+	class={cn('notification-list flex flex-col', !compact && 'min-h-[400px]', className)}
 	role="region"
 	aria-label={m['notificationList.regionAriaLabel']()}
 	aria-live="polite"

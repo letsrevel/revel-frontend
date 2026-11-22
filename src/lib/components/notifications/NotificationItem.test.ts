@@ -133,7 +133,7 @@ describe('NotificationItem', () => {
 		});
 
 		// Check if the compact-mode line-clamp class is applied
-		const bodyElement = container.querySelector('.line-clamp-4');
+		const bodyElement = container.querySelector('.line-clamp-2');
 		expect(bodyElement).toBeInTheDocument();
 	});
 

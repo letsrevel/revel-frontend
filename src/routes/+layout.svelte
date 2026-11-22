@@ -313,7 +313,7 @@
 	<SkipLink />
 	<ModeWatcher disableHeadScriptInjection />
 	<QueryClientProvider client={queryClient}>
-		<Toaster richColors position="top-right" />
+		<Toaster richColors position="bottom-right" />
 		<ImpersonationBanner />
 		<DemoBanner />
 		<MaintenanceBanner />
