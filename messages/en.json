@@ -1760,6 +1760,8 @@
 		"dateTime_ends": "Ends:",
 		"openEnded": "Open-ended",
 		"rsvpDeadline_label": "RSVP Deadline",
+		"eventType_ticketed": "Ticketed event",
+		"eventType_freeRsvp": "Free RSVP",
 		"tags_heading": "Tags",
 		"series_heading": "Part of a series",
 		"series_viewSeries": "View series",

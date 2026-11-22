@@ -1760,6 +1760,8 @@
 		"dateTime_ends": "Fine:",
 		"openEnded": "A tempo indeterminato",
 		"rsvpDeadline_label": "Scadenza Conferma",
+		"eventType_ticketed": "Evento con biglietti",
+		"eventType_freeRsvp": "Conferma gratuita",
 		"tags_heading": "Tag",
 		"series_heading": "Parte di una serie",
 		"series_viewSeries": "Vedi la serie",

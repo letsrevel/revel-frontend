@@ -21,6 +21,7 @@
 		Info,
 		Video
 	} from '@lucide/svelte';
+	import EventTimezoneNote from './EventTimezoneNote.svelte';
 	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
 	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 	import { asHttpUrl } from '$lib/utils/url';
@@ -29,9 +30,11 @@
 		event: EventDetailSchema;
 		variant?: 'compact' | 'detailed';
 		class?: string;
+		/** Show the "Times shown in {place}" note under the date (event page sidebar). */
+		showTimezoneNote?: boolean;
 	}
 
-	const { event, variant = 'compact', class: className }: Props = $props();
+	const { event, variant = 'compact', class: className, showTimezoneNote = true }: Props = $props();
 
 	// Computed values
 	const formattedStartDate = $derived(formatEventDate(event.start, event.timezone));
@@ -220,6 +223,16 @@
 					{formatEventDate(event.end, event.timezone, false)}
 				</time>
 			{/if}
+			{#if showTimezoneNote}
+				<!-- The one place the event page states the timezone: EventHeader's date
+				     range drops the abbreviation and relies on this note. -->
+				<EventTimezoneNote
+					start={event.start}
+					timeZone={event.timezone}
+					place={event.city?.name}
+					class="mt-1"
+				/>
+			{/if}
 		</div>
 	</div>
 
@@ -328,6 +341,11 @@
 			<IconComponent class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
 				<span class="block">{eventTypeDisplay}</span>
+				<span class="block text-xs text-muted-foreground">
+					{event.requires_ticket
+						? m['eventDetails.eventType_ticketed']()
+						: m['eventDetails.eventType_freeRsvp']()}
+				</span>
 				{#if visibilityMismatch}
 					<span class="block text-xs text-muted-foreground">
 						{m['eventQuickInfo.visibilityNote']({ visibility: visibilityMismatch })}

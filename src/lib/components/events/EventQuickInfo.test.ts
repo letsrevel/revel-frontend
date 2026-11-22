@@ -62,6 +62,32 @@ describe('EventQuickInfo', () => {
 		expect(screen.getByText('Public Event')).toBeInTheDocument();
 	});
 
+	it('states "Free RSVP" for an event without tickets', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: false } } });
+		expect(screen.getByText('Free RSVP')).toBeInTheDocument();
+		expect(screen.queryByText('Ticketed event')).not.toBeInTheDocument();
+	});
+
+	it('states "Ticketed event" for an event that requires a ticket', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: true } } });
+		expect(screen.getByText('Ticketed event')).toBeInTheDocument();
+		expect(screen.queryByText('Free RSVP')).not.toBeInTheDocument();
+	});
+
+	it('shows the timezone note once when the event has a timezone', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, timezone: 'Europe/Berlin' } }
+		});
+		expect(screen.getAllByText(/Times shown in/)).toHaveLength(1);
+	});
+
+	it('omits the timezone note when showTimezoneNote is false', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, timezone: 'Europe/Berlin' }, showTimezoneNote: false }
+		});
+		expect(screen.queryByText(/Times shown in/)).not.toBeInTheDocument();
+	});
+
 	it('displays private event type', () => {
 		const privateEvent = { ...mockEvent, event_type: 'private' as const };
 		render(EventQuickInfo, { props: { event: privateEvent } });
@@ -152,7 +178,7 @@ describe('EventQuickInfo', () => {
 	it('does not display RSVP deadline when rsvp_before is not set', () => {
 		const eventWithoutDeadline = { ...mockEvent, rsvp_before: null };
 		render(EventQuickInfo, { props: { event: eventWithoutDeadline } });
-		expect(screen.queryByText(/RSVP/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/RSVP deadline|RSVP closed/i)).not.toBeInTheDocument();
 	});
 
 	it('shows the address when there is no city', () => {

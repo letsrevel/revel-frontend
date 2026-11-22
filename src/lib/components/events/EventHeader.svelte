@@ -51,8 +51,8 @@
 	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
 
 	// Date range, rendered in the event's own timezone (#474). The abbreviation is
-	// suppressed here because EventDetails on the same page carries the canonical
-	// "Times shown in {place} ({offset})" label — avoids showing the tz twice.
+	// suppressed here because EventQuickInfo (the sidebar) on the same page carries
+	// the canonical "Times shown in {place} ({offset})" label — avoids showing the tz twice.
 	const dateRange = $derived(
 		event.is_open_ended
 			? formatEventDate(event.start, event.timezone, false)

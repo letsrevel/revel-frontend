@@ -533,7 +533,6 @@
 						schedule={event.schedule}
 						eventStart={event.start}
 						timezone={event.timezone}
-						place={event.city?.name}
 					/>
 
 					<!-- Resources Section -->

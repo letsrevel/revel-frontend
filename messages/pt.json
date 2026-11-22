@@ -1760,6 +1760,8 @@
 		"dateTime_ends": "Termina:",
 		"openEnded": "Sem hora de fim",
 		"rsvpDeadline_label": "Prazo de presença",
+		"eventType_ticketed": "Evento com bilhetes",
+		"eventType_freeRsvp": "Presença gratuita",
 		"tags_heading": "Etiquetas",
 		"series_heading": "Parte de uma série",
 		"series_viewSeries": "Ver a série",

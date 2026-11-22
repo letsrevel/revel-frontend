@@ -1760,6 +1760,8 @@
 		"dateTime_ends": "Termina:",
 		"openEnded": "Sin hora de fin",
 		"rsvpDeadline_label": "Fecha límite de confirmación",
+		"eventType_ticketed": "Evento con entradas",
+		"eventType_freeRsvp": "Confirmación gratuita",
 		"tags_heading": "Etiquetas",
 		"series_heading": "Parte de una serie",
 		"series_viewSeries": "Ver la serie",

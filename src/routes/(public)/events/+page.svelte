@@ -226,7 +226,7 @@
 		organization to speak for, and the Revel mark is never filler.
 	-->
 	<section class="bg-secondary text-secondary-foreground">
-		<div class="container mx-auto px-4 pb-16 pt-8">
+		<div class="container mx-auto px-6 pb-16 pt-8 md:px-8">
 			<!-- Skip to content link for keyboard navigation -->
 			<a
 				href="#events-content"
@@ -289,7 +289,7 @@
 		`shadow-poster` over paper, overlapping the cut.
 	-->
 	<div class="pb-16">
-		<div class="container mx-auto px-4">
+		<div class="container mx-auto px-6 md:px-8">
 			<!-- Main Content: Sidebar + Event Grid -->
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
 				<!-- Filter Sidebar (Desktop) -->

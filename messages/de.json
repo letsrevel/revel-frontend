@@ -1760,6 +1760,8 @@
 		"dateTime_ends": "Endet:",
 		"openEnded": "Zeitlich offen",
 		"rsvpDeadline_label": "Zusagefrist",
+		"eventType_ticketed": "Ticketpflichtige Veranstaltung",
+		"eventType_freeRsvp": "Kostenlose Zusage",
 		"tags_heading": "Tags",
 		"series_heading": "Teil einer Serie",
 		"series_viewSeries": "Serie ansehen",

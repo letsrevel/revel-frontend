@@ -108,7 +108,7 @@
 		sticker-chip rule forbids the Revel mark as filler.
 	-->
 	<section class="bg-secondary text-secondary-foreground">
-		<div class="container mx-auto px-4 pb-16 pt-8">
+		<div class="container mx-auto px-6 pb-16 pt-8 md:px-8">
 			<!-- Skip to content link for keyboard navigation -->
 			<a
 				href="#organizations-content"
@@ -141,7 +141,7 @@
 	     under it (they land 5 points of lightness apart and the block stops
 	     reading as a block). The float is the cards' `shadow-poster`. -->
 	<div class="pb-16">
-		<div class="container mx-auto px-4">
+		<div class="container mx-auto px-6 md:px-8">
 			<!-- Main Content: Sidebar + Organization Grid -->
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
 				<!-- Filter Sidebar (Desktop) -->

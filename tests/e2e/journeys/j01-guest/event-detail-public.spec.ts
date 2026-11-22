@@ -17,7 +17,7 @@ test.describe('J1 guest views event details @p0', () => {
 		await expect(page.getByRole('heading', { name: 'About this event' })).toBeVisible();
 
 		// Event details sidebar: attendance count + type, no attendee names.
-		await expect(page.getByText(/\d+ attending/)).toBeVisible();
+		await expect(page.getByText(/\d+ \/ \d+ spots taken/)).toBeVisible();
 		await expect(page.getByText('Ticketed event')).toBeVisible();
 
 		// Public tiers with price and a purchase CTA are visible to guests.
