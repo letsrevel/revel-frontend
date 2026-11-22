@@ -52,6 +52,11 @@
 	// Debounce search input
 	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
+	// `debouncedSearch` is an object; its `.value` is the text.
+	const hasActiveFilters = $derived(
+		!!(statusFilter || paymentMethodFilter || debouncedSearch.value)
+	);
+
 	// On a tenant host every "my" call is scoped to the tenant org (#1056).
 	const orgFilter = $derived(tenantOrgFilter(page.data));
 
@@ -267,7 +272,7 @@
 	{:else if tickets.length === 0}
 		<!-- Empty State -->
 		{#snippet ticketsEmptyAction()}
-			{#if statusFilter || paymentMethodFilter || debouncedSearch}
+			{#if hasActiveFilters}
 				<button
 					type="button"
 					onclick={() => {
@@ -292,7 +297,7 @@
 		<EmptyState
 			icon={Ticket}
 			title={m['dashboardTicketsPage.noResults']()}
-			body={statusFilter || paymentMethodFilter || debouncedSearch
+			body={hasActiveFilters
 				? m['dashboardTicketsPage.noResultsFiltered']()
 				: m['dashboardTicketsPage.emptyHint']()}
 			action={ticketsEmptyAction}

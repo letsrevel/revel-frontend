@@ -12,10 +12,17 @@
 		/** The `city_id` filter. The URL holds only the ID, so we load the name. */
 		selectedCityId?: number | null;
 		onChangeCity: (city: SelectedCity | null) => void;
+		/** Which list the filter narrows; picks the helper text. */
+		entity?: 'events' | 'organizations';
 		class?: string;
 	}
 
-	const { selectedCityId = null, onChangeCity, class: className }: Props = $props();
+	const {
+		selectedCityId = null,
+		onChangeCity,
+		entity = 'events',
+		class: className
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -217,6 +224,10 @@
 			{/if}
 		</div>
 
-		<p class="text-xs text-muted-foreground">{m['filters.city.description']()}</p>
+		<p class="text-xs text-muted-foreground">
+			{entity === 'organizations'
+				? m['filters.city.descriptionOrganizations']()
+				: m['filters.city.description']()}
+		</p>
 	{/if}
 </div>

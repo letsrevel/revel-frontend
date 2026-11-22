@@ -2207,6 +2207,7 @@
 			"placeholder": "Rechercher une ville...",
 			"label": "Rechercher une ville",
 			"description": "Filtrer les événements par ville",
+			"descriptionOrganizations": "Filtrer les organisations par ville",
 			"unknown": "Ville inconnue",
 			"loading": "Chargement de la ville…",
 			"loadError": "Impossible de charger la ville"
@@ -8646,7 +8647,6 @@
 	"eventActionSidebar.eventActionsAriaLabel": "Actions de l'événement",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Télécharger l'événement du calendrier",
 	"tierForm.whatsIncludedPlaceholder": "Qu'est-ce qui est inclus dans cette catégorie ?",
-	"eventHeader.downloadCalendarEventFor": "Télécharger l'événement du calendrier pour {name}",
 	"eventHeader.coverImageAlt": "Image de couverture de {name}",
 	"eventHeader.shareEvent": "Partager l'événement",
 	"eventHeader.organizationLogoAlt": "Logo de {name}",
@@ -8679,7 +8679,6 @@
 	"potluckItemEditModal.closeModal": "Fermer la fenêtre",
 	"potluckItemEditModal.quantityHelp": "p. ex. « pour 8 personnes » ou « 2 bouteilles »",
 	"potluckItemForm.closeForm": "Fermer le formulaire",
-	"eventHeader.downloadCalendarEventTitle": "Télécharger l'événement du calendrier",
 	"requestInvitationButton.alreadyRequestedAriaLabel": "Tu as déjà demandé une invitation",
 	"cityAutocomplete.clearSelection": "Effacer la ville sélectionnée",
 	"cityAutocomplete.searchPlaceholder": "Rechercher une ville...",

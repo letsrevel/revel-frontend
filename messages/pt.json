@@ -2406,6 +2406,7 @@
 			"placeholder": "Pesquisar uma cidade...",
 			"label": "Pesquisar uma cidade",
 			"description": "Filtrar eventos por cidade",
+			"descriptionOrganizations": "Filtrar organizações por cidade",
 			"unknown": "Cidade desconhecida",
 			"loading": "A carregar a cidade…",
 			"loadError": "Não foi possível carregar a cidade"
@@ -8676,7 +8677,6 @@
 	"eventActionSidebar.eventActionsAriaLabel": "Ações do evento",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Transferir evento do calendário",
 	"tierForm.whatsIncludedPlaceholder": "O que está incluído neste tipo de bilhete?",
-	"eventHeader.downloadCalendarEventFor": "Transferir evento do calendário de {name}",
 	"eventHeader.coverImageAlt": "Imagem de capa de {name}",
 	"eventHeader.shareEvent": "Partilhar evento",
 	"eventHeader.organizationLogoAlt": "Logótipo de {name}",
@@ -8709,7 +8709,6 @@
 	"potluckItemEditModal.closeModal": "Fechar janela",
 	"potluckItemEditModal.quantityHelp": "ex.: \"para 8 pessoas\" ou \"2 garrafas\"",
 	"potluckItemForm.closeForm": "Fechar formulário",
-	"eventHeader.downloadCalendarEventTitle": "Transferir evento do calendário",
 	"requestInvitationButton.alreadyRequestedAriaLabel": "Já pediste um convite",
 	"cityAutocomplete.clearSelection": "Limpar a cidade selecionada",
 	"cityAutocomplete.searchPlaceholder": "Procurar uma cidade...",

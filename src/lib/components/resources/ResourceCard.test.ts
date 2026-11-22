@@ -48,4 +48,18 @@ describe('ResourceCard', () => {
 			'noopener,noreferrer'
 		);
 	});
+
+	it('shows a clean file name for a relative signed file URL', () => {
+		render(ResourceCard, {
+			resource: {
+				id: 'r3',
+				name: 'Menu',
+				resource_type: 'file',
+				file_url: '/media/protected/Summer%20Menu.pdf?exp=1700000000&sig=abc'
+			}
+		});
+
+		expect(screen.getByText('Summer Menu.pdf')).toBeInTheDocument();
+		expect(screen.queryByText(/sig=/)).not.toBeInTheDocument();
+	});
 });
