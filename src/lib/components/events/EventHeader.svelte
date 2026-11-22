@@ -207,8 +207,12 @@
 			></div>
 
 			<!-- Header Content Overlay -->
-			<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
-				{@render titleBlock(false)}
+			<!-- The title shares the page container, so it lines up with the header,
+			     the content and the footer (#1294). -->
+			<div class="absolute inset-0 flex flex-col justify-end pb-12">
+				<div class="container mx-auto px-6 md:px-8">
+					{@render titleBlock(false)}
+				</div>
 				{@render shareButton(false)}
 			</div>
 		</div>
