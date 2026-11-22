@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.40.1] - 2026-11-22
+
 ### Fixed
-- In the event form, the tag suggestions show in full below the tag field. Before, the next section hid them.
-- On the events and organizations pages, the location filter shows the selected city. Before, it showed an empty search field while the filter was on.
-- The sort order no longer counts as an active filter on the events and organizations pages. "Clear all" keeps the sort order and the page size.
-- When a link has a city that does not exist, the location filter shows "Unknown city" at once. When the app cannot load the city, the filter says so.
-- When no events or organizations match the filters, the page offers "Clear filters" for all filter types, not only search, city and tags.
-- The filter column stays below the site header when you scroll.
-- On the events and organizations pages, the "Distance Sorting" help text shows above the results. Before, the results covered it.
+- In the event form, the tag suggestions show in full below the tag field. Before, the next section hid them. After Escape, the suggestions stay closed. (#1279)
+- On the events and organizations pages, the location filter shows the selected city. Before, it showed an empty search field while the filter was on. (#1279)
+- The sort order no longer counts as an active filter on the events and organizations pages. "Clear all" keeps the sort order and the page size. (#1279)
+- When a link has a city that does not exist, the location filter shows "Unknown city" at once. When the app cannot load the city, the filter says so. (#1279)
+- When no events or organizations match the filters, the page offers "Clear filters" for all filter types, not only search, city and tags. (#1279)
+- The filter column stays below the site header when you scroll. (#1279)
+- On the events and organizations pages, the "Distance Sorting" help text shows above the results. Before, the results covered it. (#1279)
+
+### Security
+- The build tool (Vite) is updated to 8.3.7, following a Vite security advisory. (#1263)
 
 ## [2.40.0] - 2026-11-20
 
