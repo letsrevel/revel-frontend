@@ -146,10 +146,11 @@
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
 				<!-- Filter Sidebar (Desktop) -->
 				<div class="hidden lg:block lg:w-80 lg:shrink-0">
-					<!-- z-10: sticky starts a stacking context, so without it the results
-					     grid paints over the sort-order help tooltip. top-20 clears the
-					     sticky site header (h-16). -->
-					<div class="sticky top-20 z-10">
+					<!-- z-30: sticky starts a stacking context, so the column must sit above
+					     the result cards (their stretched link is z-10, badges z-20) or they
+					     cover the sort-order help tooltip. The site header is z-50. top-20
+					     clears that header (h-16). -->
+					<div class="sticky top-20 z-30">
 						<OrganizationFilters
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
