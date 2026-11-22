@@ -32,6 +32,21 @@ describe('OrgIdentityBand', () => {
 		}
 	});
 
+	it('renders two platforms that share a URL as two links', () => {
+		render(OrgIdentityBand, {
+			props: {
+				organization: {
+					name: 'Dup',
+					instagram_url: 'https://example.com/dup',
+					facebook_url: 'https://example.com/dup'
+				},
+				logoUrl: null,
+				locationDisplay: null
+			}
+		});
+		expect(screen.getAllByRole('link')).toHaveLength(2);
+	});
+
 	it('shows the initial tile when there is no logo', () => {
 		render(OrgIdentityBand, {
 			props: { organization: { name: 'beta' }, logoUrl: null, locationDisplay: null }

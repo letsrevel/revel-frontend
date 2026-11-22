@@ -80,7 +80,7 @@
 	<div class="container mx-auto px-6 pb-8 md:px-8">
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
 			<div
-				class="-mt-8 inline-block shrink-0 -rotate-1 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"
+				class="-mt-8 inline-block shrink-0 -rotate-1 self-start rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"
 			>
 				{#if logoUrl}
 					<img
@@ -120,7 +120,7 @@
 					<!-- Social Links -->
 					{#if socialLinks.length > 0}
 						<div class="flex items-center gap-3">
-							{#each socialLinks as link (link.url)}
+							{#each socialLinks as link (link.label)}
 								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 								<a
 									href={link.url}

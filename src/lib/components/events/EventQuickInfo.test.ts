@@ -366,6 +366,23 @@ describe('EventQuickInfo — end time and held seats', () => {
 		).toBeInTheDocument();
 	});
 
+	it('shows held seats even when the attendee count is withheld', () => {
+		render(EventQuickInfo, {
+			props: {
+				event: {
+					...mockEvent,
+					attendee_count: null,
+					max_attendees: 0,
+					is_full: false,
+					seats_held: 3
+				}
+			}
+		});
+		expect(
+			screen.getByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 3 }))
+		).toBeInTheDocument();
+	});
+
 	it('shows no held-seats hint when no seats are held', () => {
 		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 0 } } });
 		expect(

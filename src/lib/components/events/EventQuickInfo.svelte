@@ -356,7 +356,7 @@
 	{/if}
 
 	<!-- Capacity Status (if max_capacity exists) -->
-	{#if capacityDisplay}
+	{#if capacityDisplay || seatsHeldText}
 		<!-- `text-warning` compiled to nothing (no `--warning` token; the tone
 		     vocabulary maps warning -> highlight), so this row rendered plain.
 		     These are compact sidebar rows with no container to tint, so the
@@ -372,7 +372,9 @@
 		>
 			<Users class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
-				<span class="block font-bold">{capacityDisplay}</span>
+				{#if capacityDisplay}
+					<span class="block font-bold">{capacityDisplay}</span>
+				{/if}
 				{#if isNearCapacity}
 					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.limitedSpots']()}</span>
 				{/if}
