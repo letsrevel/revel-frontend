@@ -69,6 +69,10 @@ export default {
 					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
 					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
 				},
+				heart: {
+					DEFAULT: 'hsl(var(--heart) / <alpha-value>)',
+					foreground: 'hsl(var(--heart-foreground) / <alpha-value>)'
+				},
 				// Amber "highlight" pop from the brand palette (badges, callouts).
 				highlight: {
 					DEFAULT: 'hsl(var(--highlight) / <alpha-value>)',

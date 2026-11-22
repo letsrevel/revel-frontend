@@ -87,7 +87,7 @@
 						{#if max}
 							<div class="h-3 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
 								<div
-									class="h-full rounded-full {event.is_full ? 'bg-accent' : 'bg-primary'}"
+									class="h-full rounded-full {event.is_full ? 'bg-heart' : 'bg-primary'}"
 									style="width: {fillPercent}%"
 								></div>
 							</div>

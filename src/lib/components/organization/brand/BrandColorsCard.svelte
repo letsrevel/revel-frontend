@@ -356,10 +356,10 @@
 							? hexToHslTriplet(colors.primary_foreground)
 							: undefined}
 						style:--ring={colors ? hexToHslTriplet(colors.primary) : undefined}
-						style:--accent={colors?.accent && colors.accent_foreground
+						style:--heart={colors?.accent && colors.accent_foreground
 							? hexToHslTriplet(colors.accent)
 							: undefined}
-						style:--accent-foreground={colors?.accent && colors.accent_foreground
+						style:--heart-foreground={colors?.accent && colors.accent_foreground
 							? hexToHslTriplet(colors.accent_foreground)
 							: undefined}
 					>
@@ -420,7 +420,7 @@
 									{m['orgAdmin.settings.brandColors.previewPrimaryButton']()}
 								</Button>
 								<Button type="button" size="sm" variant="outline" tabindex={-1}>
-									<Heart class="mr-1.5 h-4 w-4 fill-current text-accent" aria-hidden="true" />
+									<Heart class="mr-1.5 h-4 w-4 fill-current text-heart" aria-hidden="true" />
 									{m['orgAdmin.settings.brandColors.previewFollow']()}
 								</Button>
 							</div>
@@ -430,7 +430,7 @@
 								</span>
 								<Badge>{m['orgAdmin.settings.brandColors.previewBadge']()}</Badge>
 								<span
-									class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-foreground"
+									class="rounded-full bg-heart px-2.5 py-0.5 text-xs font-semibold text-heart-foreground"
 								>
 									{m['orgAdmin.settings.brandColors.previewAccentButton']()}
 								</span>

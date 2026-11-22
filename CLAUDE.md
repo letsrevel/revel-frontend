@@ -214,7 +214,7 @@ The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/lo
 | Ink            | `#0D1E1C` | `hsl(173 40% 8%)`   | Text (light) / dark surfaces |
 | White          | `#FFFFFF` | `hsl(0 0% 100%)`    | Text on dark               |
 
-**The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent, amber as highlight, maroon destructive. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
+**The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent (`--heart`/`--heart-foreground`, Tailwind `bg-heart`/`text-heart`), amber as highlight, maroon destructive. `--accent` keeps its shadcn meaning, a soft neutral interaction tint (lavender light, lifted aubergine dark) for hover/focus/highlighted/selected surfaces; never use it for the brand crimson, and org white-label `accent_color` maps to `--heart`. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
 
 - **Logo:** the "let's revel." lockup (`RevelWordmark.svelte` + `RevelMark.svelte`); the mark's gradient is `--logo-from`/`--logo-to` (Hearty Purple → Light Crimson).
 - **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the ACIDHAIRS deck is that agency's own deck typography, **not** a licensed brand asset. The Digital Brand Styleguide (below) later added **BBH Bartle** as a display face — but for **social-media assets only**; the app and web stay Nata Sans (all weights allowed).
@@ -339,7 +339,7 @@ introduce new raw palette hues.
   reverse: hand-written ratios were wrong repeatedly during the 2026-08 rebrand
   (#783), and the script now FAILS on unknown token names instead of skipping
   them, so a token rename can't silently disarm rows.
-- **Color-blind safety:** separate semantic colors (primary/accent/destructive/highlight) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
+- **Color-blind safety:** separate semantic colors (primary/heart/destructive/highlight; `--accent` is a neutral surface, not a semantic colour) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
 - **Validate after any theme edit:** `python3 scripts/audit-brand-themes.py` checks the WCAG pairs and simulated color-blind separation. Keep it at 0 failures.
 
 ## Notes to Claude

@@ -29,12 +29,12 @@ describe('buildBrandThemeCss', () => {
 		expect(buildBrandThemeCss(undefined)).toBeNull();
 	});
 
-	it('emits primary tokens and no accent for a primary-only theme', () => {
+	it('emits primary tokens and no heart for a primary-only theme', () => {
 		const css = buildBrandThemeCss(valid) ?? '';
 		expect(css).toContain('--primary:');
 		expect(css).toContain('--primary-foreground:');
 		expect(css).toContain('--ring:');
-		expect(css).not.toContain('--accent');
+		expect(css).not.toContain('--heart');
 		expect(css.startsWith(':root:not(.dark){')).toBe(true);
 		expect(css).toContain(':root.dark{');
 	});
@@ -46,14 +46,14 @@ describe('buildBrandThemeCss', () => {
 		expect(css).not.toContain(`--poster-band:${hexToHslTriplet(valid.dark.primary)}`);
 	});
 
-	it('emits accent tokens when an accent is set', () => {
+	it('emits heart tokens (the org accent colour) when an accent is set', () => {
 		const css =
 			buildBrandThemeCss({
 				light: { ...valid.light, accent: '#F9B233', accent_foreground: '#000000' },
 				dark: { ...valid.dark, accent: '#F9B233', accent_foreground: '#000000' }
 			}) ?? '';
-		expect(css).toContain('--accent:38.48 94.29% 58.82%');
-		expect(css).toContain('--accent-foreground:0 0% 0%');
+		expect(css).toContain('--heart:38.48 94.29% 58.82%');
+		expect(css).toContain('--heart-foreground:0 0% 0%');
 	});
 
 	it('returns null if either mode has an invalid hex', () => {

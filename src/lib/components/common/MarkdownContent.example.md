@@ -103,7 +103,7 @@ You can override or extend these with the `class` prop:
 <MarkdownContent content={content} class="my-8" />
 
 <!-- Custom borders -->
-<MarkdownContent content={content} class="border-l-4 border-accent pl-6" />
+<MarkdownContent content={content} class="border-l-4 border-heart pl-6" />
 ```
 
 ## Markdown Features

@@ -165,10 +165,20 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("info", "background", 3.0, "info as icon/accent on page"),
     ("info", "card", 3.0, "info as icon/accent on card"),
     # FollowButton's filled heart (outline button: page or card behind it). On
-    # hover the button fills with --accent and the heart switches to
-    # accent-foreground, which the "accent label" row above covers.
-    ("accent", "background", 3.0, "accent heart icon on page"),
-    ("accent", "card", 3.0, "accent heart icon on card"),
+    # hover the button fills with --accent and the heart (text-heart) must
+    # stay readable on it: see the "heart on hovered row" row below.
+    ("heart", "background", 3.0, "heart icon on page"),
+    ("heart", "card", 3.0, "heart icon on card"),
+    ("heart-foreground", "heart", 4.5, "heart label"),
+    # --accent is the neutral hover/selected surface (shadcn meaning). It is a
+    # fill under ordinary text, so those texts keep their floors on it, and it
+    # must be a visible step away from the surfaces it hovers on.
+    ("foreground", "accent", 4.5, "body text on hovered/selected row"),
+    ("muted-foreground", "accent", 4.5, "muted text on hovered/selected row"),
+    ("primary", "accent", 3.0, "primary link text on hovered/selected row"),
+    ("heart", "accent", 3.0, "FollowButton heart on its own hover fill"),
+    ("accent", "background", 1.15, "accent hover fill visible on page (advisory)"),
+    ("accent", "card", 1.15, "accent hover fill visible on card (advisory)"),
     ("primary", "background", 3.0, "primary as text-primary/link on page"),
     ("primary", "card", 3.0, "primary on card"),
     ("ring", "background", 3.0, "focus ring visibility"),
@@ -370,7 +380,7 @@ COMPOSITED_PAIRS = [
 ]
 
 SEMANTIC = [
-    "primary", "secondary", "accent", "destructive", "destructive-text",
+    "primary", "secondary", "heart", "destructive", "destructive-text",
     "highlight", "success", "info",
 ]
 # destructive and destructive-text are the same semantic in two roles (fill vs

@@ -202,12 +202,9 @@
 					{#if isLoading}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					{:else}
-						<!-- The outline button hovers to bg-accent, so the heart flips to
-						     accent-foreground there instead of vanishing (accent on accent). -->
-						<Heart
-							class="h-4 w-4 fill-current text-accent group-hover:text-accent-foreground"
-							aria-hidden="true"
-						/>
+						<!-- The outline button hovers to the neutral bg-accent tint; the heart
+						     stays crimson and remains readable on it (3:1+, see the audit). -->
+						<Heart class="h-4 w-4 fill-current text-heart" aria-hidden="true" />
 					{/if}
 					{m['follow.following']()}
 					<ChevronDown class="h-4 w-4" aria-hidden="true" />

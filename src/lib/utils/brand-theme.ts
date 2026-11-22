@@ -67,8 +67,9 @@ export function hexToHslTriplet(hex: string): string | null {
 
 /**
  * The token declarations for one mode. `--ring` follows `--primary`, as it does
- * in app.css. Accent tokens are emitted only when the org set an accent; with
- * no accent the Revel accent stays in place.
+ * in app.css. The org accent colour is the brand "heart", so it is emitted as
+ * `--heart`/`--heart-foreground` (not `--accent`, the neutral hover tint), and
+ * only when the org set one; otherwise the Revel crimson heart stays in place.
  */
 function modeDeclarations(colors: BrandModeColors): string | null {
 	const primary = hexToHslTriplet(colors.primary);
@@ -86,7 +87,7 @@ function modeDeclarations(colors: BrandModeColors): string | null {
 		? hexToHslTriplet(colors.accent_foreground)
 		: null;
 	if (accent && accentForeground) {
-		declarations.push(`--accent:${accent}`, `--accent-foreground:${accentForeground}`);
+		declarations.push(`--heart:${accent}`, `--heart-foreground:${accentForeground}`);
 	}
 
 	return declarations.join(';');
