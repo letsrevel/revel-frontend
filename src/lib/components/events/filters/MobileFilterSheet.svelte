@@ -22,6 +22,8 @@
 		onClose: () => void;
 		/** Tenant host: the list is already scoped to one organization (#1056). */
 		hideOrganization?: boolean;
+		/** Calendar view: sort order and "include past" don't apply (the calendar shows the whole period, ordered by start). */
+		hideListControls?: boolean;
 		class?: string;
 	}
 
@@ -33,6 +35,7 @@
 		onClearFilters,
 		onClose,
 		hideOrganization = false,
+		hideListControls = false,
 		class: className
 	}: Props = $props();
 
@@ -237,14 +240,16 @@
 		<!-- Scrollable filter content -->
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
-				<!-- Order By Filter (Top Priority) -->
-				<OrderByFilter
-					orderBy={filters.orderBy ?? 'distance'}
-					onChangeOrderBy={handleChangeOrderBy}
-				/>
+				{#if !hideListControls}
+					<!-- Order By Filter (Top Priority) -->
+					<OrderByFilter
+						orderBy={filters.orderBy ?? 'distance'}
+						onChangeOrderBy={handleChangeOrderBy}
+					/>
 
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
+					<!-- Divider -->
+					<div class="border-t" role="separator"></div>
+				{/if}
 
 				<!-- Search Input -->
 				<div class="space-y-2">
@@ -262,11 +267,13 @@
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
-				<!-- Date Filter -->
-				<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
+				{#if !hideListControls}
+					<!-- Date Filter -->
+					<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
+					<!-- Divider -->
+					<div class="border-t" role="separator"></div>
+				{/if}
 
 				<!-- Ticket Type Filter -->
 				<TicketedFilter

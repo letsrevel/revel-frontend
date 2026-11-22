@@ -81,7 +81,7 @@
 		<span class="calendar-day-events">
 			{#if isCellClickable && singleEvent}
 				<!-- Single event: rendered as a static badge; the whole cell is the button. -->
-				<span class="calendar-event-badge calendar-event-badge--static">
+				<span class="calendar-event-badge calendar-event-badge--static" title={singleEvent.name}>
 					<span class="calendar-event-dot" aria-hidden="true"></span>
 					<span class="calendar-event-name">{singleEvent.name}</span>
 				</span>
@@ -94,6 +94,7 @@
 							onEventClick?.(event);
 						}}
 						aria-label={event.name}
+						title={event.name}
 					>
 						<span class="calendar-event-dot" aria-hidden="true"></span>
 						<span class="calendar-event-name">{event.name}</span>
@@ -116,7 +117,7 @@
 
 <style>
 	.calendar-day {
-		@apply relative block min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent;
+		@apply relative block min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent hover:text-accent-foreground;
 		@apply md:min-h-24 md:p-3;
 	}
 

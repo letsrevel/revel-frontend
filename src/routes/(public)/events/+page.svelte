@@ -301,6 +301,7 @@
 							onUpdateFilters={handleUpdateFilters}
 							onClearFilters={handleClearFilters}
 							hideOrganization={isTenant}
+							hideListControls={viewMode === 'calendar'}
 						/>
 					</div>
 				</div>
@@ -505,6 +506,7 @@
 		onClearFilters={handleClearFilters}
 		onClose={handleCloseMobileFilters}
 		hideOrganization={isTenant}
+		hideListControls={viewMode === 'calendar'}
 	/>
 
 	<!-- Event Modal (for calendar clicks) -->

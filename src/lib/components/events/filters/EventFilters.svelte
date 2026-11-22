@@ -19,6 +19,8 @@
 		onClearFilters: () => void;
 		/** Tenant host: the list is already scoped to one organization (#1056). */
 		hideOrganization?: boolean;
+		/** Calendar view: sort order and "include past" don't apply (the calendar shows the whole period, ordered by start). */
+		hideListControls?: boolean;
 		class?: string;
 	}
 
@@ -27,6 +29,7 @@
 		onUpdateFilters,
 		onClearFilters,
 		hideOrganization = false,
+		hideListControls = false,
 		class: className
 	}: Props = $props();
 
@@ -134,11 +137,13 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
-	<!-- Order By Filter -->
-	<OrderByFilter orderBy={filters.orderBy ?? 'distance'} onChangeOrderBy={handleChangeOrderBy} />
+	{#if !hideListControls}
+		<!-- Order By Filter -->
+		<OrderByFilter orderBy={filters.orderBy ?? 'distance'} onChangeOrderBy={handleChangeOrderBy} />
 
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
+		<!-- Divider -->
+		<div class="border-t" role="separator"></div>
+	{/if}
 
 	<!-- Search Input -->
 	<div class="space-y-2">
@@ -154,11 +159,13 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
-	<!-- Date Filter -->
-	<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
+	{#if !hideListControls}
+		<!-- Date Filter -->
+		<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
+		<!-- Divider -->
+		<div class="border-t" role="separator"></div>
+	{/if}
 
 	<!-- Ticket Type Filter -->
 	<TicketedFilter ticketType={filters.ticketType} onChangeTicketType={handleChangeTicketType} />
