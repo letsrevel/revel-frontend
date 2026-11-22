@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- The account pages have a shared section navigation: a side column on desktop and a scrollable row on mobile. (#1288)
+- Tickets, RSVPs and Invitations use one filter bar with the same layout. (#1290)
+
 ### Changed
+- `/account` opens the profile page. Before, it showed "Page not found". (#1288)
+- All account pages use the same width. My Invoices has the same header as the other account pages. (#1288)
+- Profile visibility is set on the Settings page only. The profile page links there. (#1288)
+- The error page shows the site header and footer. (#1288)
+- The dashboard pages have the same name in the navigation and in their title: My Tickets, My Passes, My RSVPs, My Invitations. (#1290)
+- When you are signed in, the header shows the menu button up to 1280 px wide, so the navigation never wraps onto two lines. (#1290)
 - Hover, focus and selected states use a soft neutral tint instead of the brand red, so they no longer look like errors. The red stays for the heart (Follow) and other brand accents. An organization's custom accent colour now sets this heart colour. (#1282)
 - On event and organization pages, the header, the title band, the content and the footer share one left edge. (#1294)
 - The event page shows date, location and capacity once, in the summary card. The summary also shows the end time and held seats. (#1294)
@@ -23,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The tag filter shows the most used tags first, with "Show more" for the rest. Selected tags always stay visible. (#1287)
 
 ### Fixed
+- The Settings page no longer says "You must be logged in" while it restores your session after a page load. (#1288)
 - The calendar popup shows the event description as plain text. Before, it showed Markdown symbols and codes such as `&amp;`. (#1283)
 - The calendar popup shows the end date of events that last more than one day. (#1283)
 - Event names in the month view show in full when you hover over them. Hovering a day keeps its text readable. (#1284, #1282)
