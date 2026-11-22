@@ -99,4 +99,38 @@ describe('DetailsStepTagsInput suggestions', () => {
 		expect(screen.queryByRole('option', { name: /music$/ })).not.toBeInTheDocument();
 		expect(screen.getByRole('option', { name: /museum/ })).toBeInTheDocument();
 	});
+
+	it('does not reopen the list after Escape, even when the search already started', async () => {
+		let resolveSearch: ((v: unknown) => void) | undefined;
+		tagListTags.mockImplementationOnce(() => new Promise((r) => (resolveSearch = r)));
+		const { input } = renderInput();
+		input.focus();
+		await fireEvent.input(input, { target: { value: 'mu' } });
+		await settle(); // the search is now in flight
+		await fireEvent.keyDown(input, { key: 'Escape' });
+		resolveSearch?.({ data: { results: [{ name: 'music' }] } });
+		await settle();
+
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+	});
+
+	it('scrolls the list into view after typing, not after a refocus search', async () => {
+		const scroll = vi.fn();
+		Element.prototype.scrollIntoView = scroll;
+		const { input } = renderInput();
+		input.focus();
+		await fireEvent.input(input, { target: { value: 'mu' } });
+		await settle();
+		expect(scroll).toHaveBeenCalledTimes(1);
+
+		input.blur();
+		await settle();
+		input.focus();
+		await fireEvent.focus(input);
+		await settle();
+		expect(screen.getByRole('listbox')).toBeInTheDocument();
+		expect(scroll).toHaveBeenCalledTimes(1);
+		// jsdom has no scrollIntoView; remove the stub so other tests see the real shape.
+		delete (Element.prototype as Partial<Element>).scrollIntoView;
+	});
 });

@@ -59,13 +59,19 @@
 	/**
 	 * Fetch tag suggestions from API
 	 */
-	async function fetchTagSuggestions(search: string): Promise<void> {
+	// Each search takes a number; Escape bumps it, so an answer to a search
+	// that started before the dismissal cannot reopen the list.
+	let searchSeq = 0;
+
+	/** `reveal`: scroll the list into view (typed searches only, not refocus). */
+	async function fetchTagSuggestions(search: string, reveal = false): Promise<void> {
 		if (!search.trim()) {
 			tagSuggestions = [];
 			showSuggestions = false;
 			return;
 		}
 
+		const seq = ++searchSeq;
 		isLoadingSuggestions = true;
 
 		try {
@@ -73,9 +79,9 @@
 				query: { search }
 			});
 
-			// Drop a late answer: the user moved on (blur, added the tag, typed more).
-			// Refocus runs a new search, so a dropped answer is not lost.
-			if (search !== tagInput || document.activeElement !== inputEl) return;
+			// Drop a late answer: the user moved on (blur, Escape, added the tag,
+			// typed more). Refocus runs a new search, so a dropped answer is not lost.
+			if (seq !== searchSeq || search !== tagInput || document.activeElement !== inputEl) return;
 
 			if (response.data?.results) {
 				// Extract tag names from TagSchema objects and filter out tags that are already added
@@ -84,7 +90,7 @@
 					.filter((tagName) => !tags.includes(tagName));
 				showSuggestions = tagSuggestions.length > 0;
 				selectedSuggestionIndex = -1;
-				if (showSuggestions) void revealSuggestions();
+				if (showSuggestions && reveal) void revealSuggestions();
 			}
 		} catch (error) {
 			console.error('Failed to fetch tag suggestions:', error);
@@ -109,7 +115,7 @@
 
 		// Debounce search by 300ms
 		searchTimeout = setTimeout(() => {
-			fetchTagSuggestions(value);
+			fetchTagSuggestions(value, true);
 		}, 300);
 	}
 
@@ -157,6 +163,7 @@
 				selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
 			}
 		} else if (e.key === 'Escape') {
+			searchSeq++;
 			if (searchTimeout) clearTimeout(searchTimeout);
 			showSuggestions = false;
 			selectedSuggestionIndex = -1;
