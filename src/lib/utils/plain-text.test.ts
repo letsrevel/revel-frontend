@@ -84,4 +84,17 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 	it('exports the entity decoder', () => {
 		expect(decodeHtmlEntities('a &amp; b &#x41;')).toBe('a & b A');
 	});
+
+	it('unwraps only real autolinks, not namespaced tags', () => {
+		expect(markdownToPlainText('<st1:City>Vienna</st1:City>')).toBe('Vienna');
+		expect(markdownToPlainText('<svg:rect/>x')).toBe('x');
+		expect(markdownToPlainText('see <https://a.b/c> and <tel:+4312345> and <me@x.com>')).toBe(
+			'see https://a.b/c and tel:+4312345 and me@x.com'
+		);
+	});
+
+	it('keeps private-use characters in the input intact', () => {
+		expect(markdownToPlainText('a\uE005b \\*lit\\*')).toBe('a\uE005b *lit*');
+		expect(markdownToPlainText('\\*not italic\\* and *italic*')).toBe('*not italic* and italic');
+	});
 });

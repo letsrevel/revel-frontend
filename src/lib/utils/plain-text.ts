@@ -15,7 +15,8 @@ const NAMED_ENTITIES: Record<string, string> = {
 };
 
 const ESCAPE_CHARS = '\\`*_{}[]()#+-.!|<>~&';
-const ESCAPE_BASE = 0xe000;
+const NUL = String.fromCharCode(0);
+const PLACEHOLDER = new RegExp(`${NUL}(\\d+)${NUL}`, 'g');
 const ESCAPABLE = /\\([\\`*_{}[\]()#+\-.!|<>~&])/g;
 
 export function decodeHtmlEntities(text: string): string {
@@ -45,13 +46,11 @@ export function markdownToPlainText(
 
 	// Fenced code blocks: keep the content, drop the fences.
 	text = text.replace(/^ {0,3}(```|~~~)[^\n]*\n([\s\S]*?)(?:\n {0,3}\1[^\n]*(?=\n|$)|$)/gm, '$2');
-	// Backslash escapes: swap for private-use placeholders so the emphasis and
+	// Backslash escapes: swap for NUL-delimited placeholders (NUL cannot occur in stored text) so the emphasis and
 	// list passes cannot see the escaped character. Restored at the end.
-	text = text.replace(ESCAPABLE, (_m, ch: string) =>
-		String.fromCharCode(ESCAPE_BASE + ESCAPE_CHARS.indexOf(ch))
-	);
+	text = text.replace(ESCAPABLE, (_m, ch: string) => `${NUL}${ESCAPE_CHARS.indexOf(ch)}${NUL}`);
 	// Autolinks <https://…>, <mailto:…>, <me@x.com>: unwrap before tags are stripped.
-	text = text.replace(/<((?:[a-z][a-z0-9+.-]{1,31}:[^\s<>]*)|(?:[^\s<>@]+@[^\s<>@]+))>/gi, '$1');
+	text = text.replace(/<((?:https?:\/\/|mailto:|tel:)[^\s<>]*|[^\s<>@:]+@[^\s<>@]+)>/gi, '$1');
 	// Images: keep alt text. Links: keep link text. Reference-style definitions: drop.
 	text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
 	text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
@@ -80,7 +79,7 @@ export function markdownToPlainText(
 
 	text = decodeHtmlEntities(text);
 	// Restore escaped punctuation.
-	text = text.replace(/[\uE000-\uE01F]/g, (c) => ESCAPE_CHARS[c.charCodeAt(0) - 0xe000] ?? c);
+	text = text.replace(PLACEHOLDER, (m, i: string) => ESCAPE_CHARS[Number(i)] ?? m);
 	text = text.replace(/\s+/g, ' ').trim();
 
 	if (maxLength !== undefined && text.length > maxLength) {

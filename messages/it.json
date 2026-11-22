@@ -11948,14 +11948,13 @@
 	"totpLock.pausedNoTime": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova più tardi.",
 	"totpLock.wrongCodeRestart": "Non ha funzionato. Accedi di nuovo.",
 	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova.",
-	"moreTags.label": "+{count} altri",
-	"moreTags.triggerSuffix": [
+	"moreTags.label": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "tag",
-				"countPlural=*": "tag"
+				"countPlural=one": "+1 altro tag",
+				"countPlural=*": "+{count} altri tag"
 			}
 		}
 	],

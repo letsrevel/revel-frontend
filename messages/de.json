@@ -11948,14 +11948,13 @@
 	"totpLock.pausedNoTime": "Die Zwei-Faktor-Bestätigung ist zu deiner Sicherheit pausiert. Bitte versuche es später erneut.",
 	"totpLock.wrongCodeRestart": "Das hat nicht geklappt. Melde dich bitte erneut an.",
 	"totpLock.rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es dann erneut.",
-	"moreTags.label": "+{count} weitere",
-	"moreTags.triggerSuffix": [
+	"moreTags.label": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "Tag",
-				"countPlural=*": "Tags"
+				"countPlural=one": "+1 weiterer Tag",
+				"countPlural=*": "+{count} weitere Tags"
 			}
 		}
 	],

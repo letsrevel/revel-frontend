@@ -11948,14 +11948,13 @@
 	"totpLock.pausedNoTime": "A verificação em dois passos está em pausa para a tua segurança. Tenta novamente mais tarde.",
 	"totpLock.wrongCodeRestart": "Não funcionou. Inicia sessão novamente.",
 	"totpLock.rateLimited": "Demasiadas tentativas. Aguarda um momento e tenta novamente.",
-	"moreTags.label": "+{count} mais",
-	"moreTags.triggerSuffix": [
+	"moreTags.label": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "tag",
-				"countPlural=*": "tags"
+				"countPlural=one": "+1 tag a mais",
+				"countPlural=*": "+{count} tags a mais"
 			}
 		}
 	],

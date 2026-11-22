@@ -11948,14 +11948,13 @@
 	"totpLock.pausedNoTime": "Two-factor verification is paused for your security. Please try again later.",
 	"totpLock.wrongCodeRestart": "That didn't work. Please sign in again.",
 	"totpLock.rateLimited": "Too many attempts. Please wait a moment and try again.",
-	"moreTags.label": "+{count} more",
-	"moreTags.triggerSuffix": [
+	"moreTags.label": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "tag",
-				"countPlural=*": "tags"
+				"countPlural=one": "+1 more tag",
+				"countPlural=*": "+{count} more tags"
 			}
 		}
 	],

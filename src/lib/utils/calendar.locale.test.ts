@@ -106,4 +106,17 @@ describe('getEventsForDay buckets by event timezone', () => {
 			getDayKeyInZone('2026-01-15T12:00:00Z', 'Not/AZone')
 		);
 	});
+
+	it('returns an empty key for invalid dates so they match no day', async () => {
+		const { getDayKeyInZone, getEventsForDay } = await import('./calendar');
+		expect(getDayKeyInZone('', 'Europe/Vienna')).toBe('');
+		expect(getDayKeyInZone('garbage')).toBe('');
+		expect(getEventsForDay([{ start: 'garbage' }], new Date(2026, 0, 15))).toHaveLength(0);
+	});
+
+	it('builds a zero-padded YYYY-MM-DD key from date parts', async () => {
+		const { getDayKeyInZone } = await import('./calendar');
+		expect(getDayKeyInZone('2026-01-05T12:00:00Z', 'UTC')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+		expect(getDayKeyInZone('2026-01-05T23:30:00Z', 'Asia/Tokyo')).toBe('2026-01-06');
+	});
 });

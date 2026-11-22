@@ -11948,14 +11948,13 @@
 	"totpLock.pausedNoTime": "La vérification en deux étapes est suspendue pour ta sécurité. Réessaie plus tard.",
 	"totpLock.wrongCodeRestart": "Ça n'a pas fonctionné. Reconnecte-toi, s'il te plaît.",
 	"totpLock.rateLimited": "Trop de tentatives. Patiente un instant et réessaie.",
-	"moreTags.label": "+{count} autres",
-	"moreTags.triggerSuffix": [
+	"moreTags.label": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
 			"selectors": ["countPlural"],
 			"match": {
-				"countPlural=one": "tag",
-				"countPlural=*": "tags"
+				"countPlural=one": "+1 autre tag",
+				"countPlural=*": "+{count} autres tags"
 			}
 		}
 	],

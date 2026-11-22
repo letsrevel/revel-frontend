@@ -289,6 +289,8 @@ const dayKeyFormatters = new Map<string, Intl.DateTimeFormat>();
  * viewer's zone when none is given (or the zone is invalid).
  */
 export function getDayKeyInZone(dateString: string, timeZone?: string | null): string {
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return '';
 	const key = timeZone || '';
 	let fmt = dayKeyFormatters.get(key);
 	if (!fmt) {
@@ -300,7 +302,9 @@ export function getDayKeyInZone(dateString: string, timeZone?: string | null): s
 		}
 		dayKeyFormatters.set(key, fmt);
 	}
-	return fmt.format(new Date(dateString));
+	const parts = fmt.formatToParts(date);
+	const part = (type: string): string => parts.find((p) => p.type === type)?.value ?? '';
+	return `${part('year').padStart(4, '0')}-${part('month').padStart(2, '0')}-${part('day').padStart(2, '0')}`;
 }
 
 function localDayKey(date: Date): string {
