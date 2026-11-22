@@ -98,7 +98,7 @@ describe('CityFilter', () => {
 		cityGetCity.mockResolvedValue({ data: undefined, response: { status: 503 } });
 		renderFilter({ selectedCityId: 7, onChangeCity: vi.fn() });
 
-		expect(await screen.findByText('Location', { selector: 'div' })).toBeInTheDocument();
+		expect(await screen.findByText('City could not be loaded')).toBeInTheDocument();
 		expect(screen.queryByText('Unknown city')).not.toBeInTheDocument();
 	});
 });

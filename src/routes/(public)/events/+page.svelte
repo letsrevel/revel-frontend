@@ -158,8 +158,12 @@
 	}
 
 	function handleClearFilters(): void {
-		// The sort order is no filter, so "Clear all" keeps it.
-		const params = filtersToParams({ ...clearFilters(), orderBy: currentFilters.orderBy });
+		// Sort order and page size are no filters, so "Clear all" keeps them.
+		const params = filtersToParams({
+			...clearFilters(),
+			orderBy: currentFilters.orderBy,
+			pageSize: currentFilters.pageSize ?? 20
+		});
 		const target = `${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
 		goto(withUtmParams(target, $page.url), { replaceState: false });

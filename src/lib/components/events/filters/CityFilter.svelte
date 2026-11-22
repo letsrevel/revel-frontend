@@ -19,13 +19,18 @@
 
 	const queryClient = useQueryClient();
 
+	/** The queryFn throws `{ status }`; a network failure throws an Error instead. */
+	function isNotFound(error: unknown): boolean {
+		return !!error && typeof error === 'object' && 'status' in error && error.status === 404;
+	}
+
 	function cityQueryKey(id: number): ['city', number] {
 		return ['city', id];
 	}
 
 	// A city never changes, so keep it for the session. A pick from the search
 	// list seeds this cache (handleSelectCity), so the name shows at once.
-	const cityQuery = createQuery<SelectedCity, { status?: number }>(() => ({
+	const cityQuery = createQuery(() => ({
 		queryKey: cityQueryKey(selectedCityId ?? 0),
 		queryFn: async (): Promise<SelectedCity> => {
 			const id = selectedCityId as number;
@@ -136,12 +141,12 @@
 					<div class="text-sm font-medium">{cityQuery.data.name}</div>
 					<div class="text-xs text-muted-foreground">{cityQuery.data.country}</div>
 				{:else if cityQuery.isError}
-					<!-- 404 (for example an old link): say so. Other errors: stay neutral.
+					<!-- 404 (for example an old link) or another failure: say which.
 					     The filter is still on and the user can clear it. -->
 					<div class="text-sm font-medium">
-						{cityQuery.error?.status === 404
+						{isNotFound(cityQuery.error)
 							? m['filters.city.unknown']()
-							: m['filters.city.heading']()}
+							: m['filters.city.loadError']()}
 					</div>
 				{:else}
 					<div class="space-y-1.5">

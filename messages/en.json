@@ -2407,7 +2407,8 @@
 			"label": "Search for a city",
 			"description": "Filter events by city location",
 			"unknown": "Unknown city",
-			"loading": "Loading city…"
+			"loading": "Loading city…",
+			"loadError": "City could not be loaded"
 		},
 		"organization": {
 			"heading": "Organization",

@@ -2407,7 +2407,8 @@
 			"label": "Buscar una ciudad",
 			"description": "Filtrar eventos por ciudad",
 			"unknown": "Ciudad desconocida",
-			"loading": "Cargando la ciudad…"
+			"loading": "Cargando la ciudad…",
+			"loadError": "No se pudo cargar la ciudad"
 		},
 		"organization": {
 			"heading": "Organización",

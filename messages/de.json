@@ -2407,7 +2407,8 @@
 			"label": "Nach einer Stadt suchen",
 			"description": "Veranstaltungen nach Stadtort filtern",
 			"unknown": "Unbekannte Stadt",
-			"loading": "Stadt wird geladen…"
+			"loading": "Stadt wird geladen…",
+			"loadError": "Stadt konnte nicht geladen werden"
 		},
 		"organization": {
 			"heading": "Organisation",

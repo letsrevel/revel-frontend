@@ -71,10 +71,11 @@
 	}
 
 	function handleClearFilters(): void {
-		// The sort order is no filter, so "Clear all" keeps it.
+		// Sort order and page size are no filters, so "Clear all" keeps them.
 		const params = organizationFiltersToParams({
 			...clearOrganizationFilters(),
-			orderBy: currentFilters.orderBy
+			orderBy: currentFilters.orderBy,
+			pageSize: currentFilters.pageSize ?? 20
 		});
 		const target = `${resolve('/(public)/organizations', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
