@@ -31,10 +31,13 @@
 	const authNavItems = $derived([
 		{ href: resolve('/(public)/events', {}), label: m['nav.browseEvents']() },
 		{ href: resolve('/(public)/organizations', {}), label: m['nav.organizations']() },
-		{ href: resolve('/(auth)/dashboard/tickets', {}), label: m['nav.myTickets']() },
-		{ href: resolve('/(auth)/dashboard/passes', {}), label: m['nav.myPasses']() },
-		{ href: resolve('/(auth)/dashboard/rsvps', {}), label: m['nav.rsvps']() },
-		{ href: resolve('/(auth)/dashboard/invitations', {}), label: m['nav.invitations']() }
+		{ href: resolve('/(auth)/dashboard/tickets', {}), label: m['dashboard.tickets.title']() },
+		{ href: resolve('/(auth)/dashboard/passes', {}), label: m['seriesPass.myPassesTitle']() },
+		{ href: resolve('/(auth)/dashboard/rsvps', {}), label: m['dashboard.rsvps.title']() },
+		{
+			href: resolve('/(auth)/dashboard/invitations', {}),
+			label: m['dashboard.invitations.title']()
+		}
 	]);
 
 	// Determine which nav items to show

@@ -1138,7 +1138,7 @@
 			"noOrganizationsHint": "Le organizzazioni ti aiutano a gestire eventi e costruire la tua community."
 		},
 		"invitations": {
-			"title": "I Miei Inviti",
+			"title": "I miei inviti",
 			"description": "Visualizza e gestisci i tuoi inviti agli eventi",
 			"tabs": "Schede inviti",
 			"received": "Ricevuti",
@@ -1165,7 +1165,7 @@
 			"showAccepted": "Mostra già accettati"
 		},
 		"rsvps": {
-			"title": "Le Mie Conferme",
+			"title": "Le mie conferme",
 			"description": "Visualizza e gestisci tutte le tue conferme agli eventi",
 			"searchPlaceholder": "Cerca per nome evento...",
 			"showing": "Mostrando {count} di {total}",
@@ -1183,7 +1183,7 @@
 			"nextPage": "Pagina successiva"
 		},
 		"tickets": {
-			"title": "I Miei Biglietti",
+			"title": "I miei biglietti",
 			"description": "Visualizza e gestisci tutti i tuoi biglietti per eventi",
 			"searchPlaceholder": "Cerca per nome evento o categoria biglietto...",
 			"showing": "Mostrando {count} di {total}",
@@ -3470,14 +3470,10 @@
 		"skipToContent": "Passa al contenuto principale",
 		"browseEvents": "Sfoglia Eventi",
 		"organizations": "Organizzazioni",
-		"myTickets": "I Miei Biglietti",
-		"rsvps": "RSVP",
-		"invitations": "Inviti",
 		"toggleMenu": "Attiva/disattiva menu di navigazione",
 		"menu": "Menu",
 		"closeMenu": "Chiudi menu",
-		"mobileNavigation": "Navigazione mobile",
-		"myPasses": "I miei pass"
+		"mobileNavigation": "Navigazione mobile"
 	},
 	"newEventPage": {
 		"title": "Crea Evento - Revel",

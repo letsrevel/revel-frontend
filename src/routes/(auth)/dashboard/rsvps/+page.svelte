@@ -8,7 +8,10 @@
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
 	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
-	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
+	import DashboardFilterBar, {
+		type FilterChipGroup
+	} from '$lib/components/dashboard/DashboardFilterBar.svelte';
+	import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
@@ -125,6 +128,41 @@
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { replaceState: true, noScroll: true });
 	}
+
+	function clearFilters() {
+		searchQuery = '';
+		setStatuses([]);
+	}
+
+	const chipGroups = $derived<FilterChipGroup[]>([
+		{
+			id: 'status',
+			label: m['dashboard.rsvps.status'](),
+			chips: [
+				{
+					label: m['dashboard.rsvps.status_all'](),
+					active: selectedStatuses.length === 0,
+					onSelect: () => setStatuses([])
+				},
+				...statusToggles.map((toggle) => ({
+					label: toggle.label,
+					active: selectedStatuses.includes(toggle.value),
+					onSelect: () => toggleStatus(toggle.value)
+				}))
+			]
+		}
+	]);
+
+	// Empty while loading or when there is nothing to count, so the live region
+	// stays mounted and announces the number once it arrives.
+	const resultCount = $derived(
+		!rsvpsQuery.isPending && totalCount > 0
+			? `${m['dashboard.rsvps.showing']({
+					count: rsvps.length.toString(),
+					total: totalCount.toString()
+				})} ${totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}`
+			: ''
+	);
 </script>
 
 <svelte:head>
@@ -134,88 +172,36 @@
 
 <!-- Celebration band + floating controls card (uplift) — twin of the tickets
      page; see DashboardBandLayout for the band's contrast contract. -->
+{#snippet options()}
+	<label class="flex min-h-11 cursor-pointer items-center gap-2 sm:min-h-0">
+		<input
+			type="checkbox"
+			bind:checked={includePast}
+			onchange={() => navigateToPage(1)}
+			class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+		/>
+		<span class="text-sm">{m['dashboard.rsvps.includePast']()}</span>
+	</label>
+{/snippet}
+
 <DashboardBandLayout
 	title={m['dashboard.rsvps.title']()}
 	subtitle={m['dashboard.rsvps.description']()}
 	kicker={m['userMenu.dashboard']()}
 >
-	<div class="mb-8 space-y-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
-		<!-- RSVP Count -->
-		{#if !rsvpsQuery.isPending && totalCount > 0}
-			<p class="text-sm text-muted-foreground">
-				{m['dashboard.rsvps.showing']({
-					count: rsvps.length.toString(),
-					total: totalCount.toString()
-				})}
-				{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
-			</p>
-		{/if}
-
-		<!-- Search Bar -->
-		<div>
-			<label for="search" class="sr-only">{m['dashboard.rsvps.searchPlaceholder']()}</label>
-			<input
-				id="search"
-				type="search"
-				bind:value={searchQuery}
-				placeholder={m['dashboard.rsvps.searchPlaceholder']()}
-				class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			/>
-		</div>
-
-		<!-- Filters -->
-		<div class="space-y-4">
-			<!-- Status Filter -->
-			<div>
-				<div class="mb-2 flex items-center gap-2">
-					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-					<span class="text-sm font-medium">{m['dashboard.rsvps.status']()}</span>
-				</div>
-				<div class="flex flex-wrap gap-2">
-					<button
-						type="button"
-						aria-pressed={selectedStatuses.length === 0}
-						onclick={() => setStatuses([])}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {selectedStatuses.length ===
-						0
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{m['dashboard.rsvps.status_all']()}
-					</button>
-					{#each statusToggles as toggle (toggle.value)}
-						{@const active = selectedStatuses.includes(toggle.value)}
-						<button
-							type="button"
-							aria-pressed={active}
-							onclick={() => toggleStatus(toggle.value)}
-							class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
-								? 'bg-primary text-primary-foreground hover:bg-primary/90'
-								: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-						>
-							{toggle.label}
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<!-- Include Past Events Checkbox -->
-			<div>
-				<div class="mb-2">
-					<span class="text-sm font-medium">{m['dashboardRsvpsPage.options']()}</span>
-				</div>
-				<label class="flex cursor-pointer items-center gap-2">
-					<input
-						type="checkbox"
-						bind:checked={includePast}
-						onchange={() => navigateToPage(1)}
-						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['dashboard.rsvps.includePast']()}</span>
-				</label>
-			</div>
-		</div>
-	</div>
+	<DashboardFilterBar
+		searchValue={searchQuery}
+		onSearch={(value) => (searchQuery = value)}
+		searchLabel={m['dashboard.rsvps.searchPlaceholder']()}
+		searchPlaceholder={m['dashboard.rsvps.searchPlaceholder']()}
+		{chipGroups}
+		{options}
+		optionsLabel={m['dashboardRsvpsPage.options']()}
+		{resultCount}
+		{hasActiveFilters}
+		onClear={clearFilters}
+		clearLabel={m['dashboardRsvpsPage.clearFilters']()}
+	/>
 
 	<!-- RSVPs List -->
 	{#if rsvpsQuery.isPending}
@@ -227,25 +213,12 @@
 	{:else if rsvps.length === 0}
 		<!-- Empty State -->
 		{#snippet rsvpsEmptyAction()}
-			{#if hasActiveFilters}
-				<button
-					type="button"
-					onclick={() => {
-						searchQuery = '';
-						setStatuses([]);
-					}}
-					class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					{m['dashboardRsvpsPage.clearFilters']()}
-				</button>
-			{:else}
-				<a
-					href={resolve('/(public)/events', {})}
-					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					{m['dashboardRsvpsPage.browseEvents']()}
-				</a>
-			{/if}
+			<a
+				href={resolve('/(public)/events', {})}
+				class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			>
+				{m['dashboardRsvpsPage.browseEvents']()}
+			</a>
 		{/snippet}
 		<EmptyState
 			icon={CheckCircle2}
@@ -253,7 +226,7 @@
 			body={hasActiveFilters
 				? m['dashboardRsvpsPage.noResultsFiltered']()
 				: m['dashboardRsvpsPage.emptyHint']()}
-			action={rsvpsEmptyAction}
+			action={hasActiveFilters ? undefined : rsvpsEmptyAction}
 			level={2}
 		/>
 	{:else}

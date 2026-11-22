@@ -3271,14 +3271,10 @@
 		"skipToContent": "Aller au contenu principal",
 		"browseEvents": "Parcourir les événements",
 		"organizations": "Organisations",
-		"myTickets": "Mes billets",
-		"rsvps": "Participations",
-		"invitations": "Invitations",
 		"toggleMenu": "Afficher/masquer le menu de navigation",
 		"menu": "Menu",
 		"closeMenu": "Fermer le menu",
-		"mobileNavigation": "Navigation mobile",
-		"myPasses": "Mes pass"
+		"mobileNavigation": "Navigation mobile"
 	},
 	"newEventPage": {
 		"title": "Créer un événement - Revel",

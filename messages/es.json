@@ -3470,14 +3470,10 @@
 		"skipToContent": "Saltar al contenido principal",
 		"browseEvents": "Explorar eventos",
 		"organizations": "Organizaciones",
-		"myTickets": "Mis entradas",
-		"rsvps": "Asistencias",
-		"invitations": "Invitaciones",
 		"toggleMenu": "Mostrar u ocultar el menú de navegación",
 		"menu": "Menú",
 		"closeMenu": "Cerrar menú",
-		"mobileNavigation": "Navegación móvil",
-		"myPasses": "Mis pases"
+		"mobileNavigation": "Navegación móvil"
 	},
 	"newEventPage": {
 		"title": "Crear evento - Revel",

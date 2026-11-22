@@ -1165,7 +1165,7 @@
 			"showAccepted": "Mostrar já aceites"
 		},
 		"rsvps": {
-			"title": "As minhas confirmações de presença",
+			"title": "As minhas confirmações",
 			"description": "Consulta e gere todas as tuas confirmações de presença",
 			"searchPlaceholder": "Pesquisar por nome do evento...",
 			"showing": "A mostrar {count} de {total}",
@@ -3470,14 +3470,10 @@
 		"skipToContent": "Saltar para o conteúdo principal",
 		"browseEvents": "Explorar eventos",
 		"organizations": "Organizações",
-		"myTickets": "Os meus bilhetes",
-		"rsvps": "Presenças",
-		"invitations": "Convites",
 		"toggleMenu": "Alternar menu de navegação",
 		"menu": "Menu",
 		"closeMenu": "Fechar menu",
-		"mobileNavigation": "Navegação móvel",
-		"myPasses": "Os meus passes"
+		"mobileNavigation": "Navegação móvel"
 	},
 	"newEventPage": {
 		"title": "Criar evento - Revel",

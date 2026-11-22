@@ -3470,14 +3470,10 @@
 		"skipToContent": "Skip to main content",
 		"browseEvents": "Browse Events",
 		"organizations": "Organizations",
-		"myTickets": "My Tickets",
-		"rsvps": "RSVPs",
-		"invitations": "Invitations",
 		"toggleMenu": "Toggle navigation menu",
 		"menu": "Menu",
 		"closeMenu": "Close menu",
-		"mobileNavigation": "Mobile navigation",
-		"myPasses": "My passes"
+		"mobileNavigation": "Mobile navigation"
 	},
 	"newEventPage": {
 		"title": "Create Event - Revel",
@@ -10035,10 +10031,10 @@
 		"checkoutFailed": "Could not complete the pass checkout",
 		"paymentStartFailed": "Your pass is reserved, but the payment could not be started. Please try again.",
 		"passClaimed": "Season pass claimed!",
-		"passClaimedDesc": "Your pass is ready — find it under My passes.",
+		"passClaimedDesc": "Your pass is ready — find it under My Passes.",
 		"passReserved": "Season pass reserved!",
 		"passReservedDesc": "Complete the payment at the venue to activate your pass.",
-		"myPassesTitle": "My passes",
+		"myPassesTitle": "My Passes",
 		"myPassesDescription": "View and manage your season passes",
 		"loading": "Loading…",
 		"noPassesTitle": "No season passes yet",
