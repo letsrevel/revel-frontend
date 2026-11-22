@@ -25,7 +25,7 @@
 
 	// A city never changes, so keep it for the session. A pick from the search
 	// list seeds this cache (handleSelectCity), so the name shows at once.
-	const cityQuery = createQuery(() => ({
+	const cityQuery = createQuery<SelectedCity, { status?: number }>(() => ({
 		queryKey: cityQueryKey(selectedCityId ?? 0),
 		queryFn: async (): Promise<SelectedCity> => {
 			const id = selectedCityId as number;
@@ -129,21 +129,28 @@
 		<div
 			class="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2"
 		>
-			{#if cityQuery.data}
-				<div class="flex-1">
+			<!-- One live region for the whole box, so the change from "loading" to the
+			     city name is announced. -->
+			<div class="flex-1" role="status">
+				{#if cityQuery.data}
 					<div class="text-sm font-medium">{cityQuery.data.name}</div>
 					<div class="text-xs text-muted-foreground">{cityQuery.data.country}</div>
-				</div>
-			{:else if cityQuery.isError}
-				<!-- Unknown ID (for example an old link): the filter is still on and clearable. -->
-				<div class="flex-1 text-sm font-medium">{m['filters.city.unknown']()}</div>
-			{:else}
-				<div class="flex-1 space-y-1.5" role="status">
-					<span class="sr-only">{m['filters.city.loading']()}</span>
-					<div class="h-4 w-24 animate-pulse rounded bg-muted" aria-hidden="true"></div>
-					<div class="h-3 w-16 animate-pulse rounded bg-muted" aria-hidden="true"></div>
-				</div>
-			{/if}
+				{:else if cityQuery.isError}
+					<!-- 404 (for example an old link): say so. Other errors: stay neutral.
+					     The filter is still on and the user can clear it. -->
+					<div class="text-sm font-medium">
+						{cityQuery.error?.status === 404
+							? m['filters.city.unknown']()
+							: m['filters.city.heading']()}
+					</div>
+				{:else}
+					<div class="space-y-1.5">
+						<span class="sr-only">{m['filters.city.loading']()}</span>
+						<div class="h-4 w-24 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+						<div class="h-3 w-16 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+					</div>
+				{/if}
+			</div>
 			<button
 				type="button"
 				onclick={handleClearCity}

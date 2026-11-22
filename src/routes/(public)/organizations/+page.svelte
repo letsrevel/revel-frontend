@@ -13,7 +13,8 @@
 		parseOrganizationFilters,
 		organizationFiltersToParams,
 		clearOrganizationFilters,
-		countActiveOrganizationFilters
+		countActiveOrganizationFilters,
+		hasActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
 	import { withUtmParams } from '$lib/utils/attribution';
@@ -70,7 +71,11 @@
 	}
 
 	function handleClearFilters(): void {
-		const params = organizationFiltersToParams(clearOrganizationFilters());
+		// The sort order is no filter, so "Clear all" keeps it.
+		const params = organizationFiltersToParams({
+			...clearOrganizationFilters(),
+			orderBy: currentFilters.orderBy
+		});
 		const target = `${resolve('/(public)/organizations', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
 		goto(withUtmParams(target, $page.url), { replaceState: false });
@@ -137,8 +142,9 @@
 				<!-- Filter Sidebar (Desktop) -->
 				<div class="hidden lg:block lg:w-80 lg:shrink-0">
 					<!-- z-10: sticky starts a stacking context, so without it the results
-					     grid paints over the sort-order tooltip and the city list. -->
-					<div class="sticky top-8 z-10">
+					     grid paints over the sort-order help tooltip. top-20 clears the
+					     sticky site header (h-16). -->
+					<div class="sticky top-20 z-10">
 						<OrganizationFilters
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
@@ -171,12 +177,12 @@
 							level={2}
 							icon={Users}
 							title={m['browse.organizations_noOrganizationsFound']()}
-							body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+							body={hasActiveOrganizationFilters(currentFilters)
 								? m['browse.organizations_tryAdjustingFilters']()
 								: m['browse.organizations_noOrganizations']()}
 						>
 							{#snippet action()}
-								{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
+								{#if hasActiveOrganizationFilters(currentFilters)}
 									<Button onclick={handleClearFilters}>
 										{m['browse.organizations_clearFilters']()}
 									</Button>

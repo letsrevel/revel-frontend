@@ -15,7 +15,8 @@
 		parseFilters,
 		filtersToParams,
 		clearFilters,
-		countActiveFilters
+		countActiveFilters,
+		hasActiveFilters
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
@@ -157,7 +158,8 @@
 	}
 
 	function handleClearFilters(): void {
-		const params = filtersToParams(clearFilters());
+		// The sort order is no filter, so "Clear all" keeps it.
+		const params = filtersToParams({ ...clearFilters(), orderBy: currentFilters.orderBy });
 		const target = `${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
 		goto(withUtmParams(target, $page.url), { replaceState: false });
@@ -282,8 +284,9 @@
 				<!-- Filter Sidebar (Desktop) -->
 				<div class="hidden lg:block lg:w-80 lg:shrink-0">
 					<!-- z-10: sticky starts a stacking context, so without it the results
-					     grid paints over the sort-order tooltip and the city list. -->
-					<div class="sticky top-8 z-10">
+					     grid paints over the sort-order help tooltip. top-20 clears the
+					     sticky site header (h-16). -->
+					<div class="sticky top-20 z-10">
 						<EventFilters
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
@@ -319,12 +322,12 @@
 								level={2}
 								icon={Calendar}
 								title={m['browse.events_noEventsFound']()}
-								body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+								body={hasActiveFilters(currentFilters)
 									? m['browse.events_tryAdjustingFilters']()
 									: m['browse.events_noUpcomingEvents']()}
 							>
 								{#snippet action()}
-									{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
+									{#if hasActiveFilters(currentFilters)}
 										<Button onclick={handleClearFilters}>
 											{m['browse.events_clearFilters']()}
 										</Button>

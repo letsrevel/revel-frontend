@@ -93,4 +93,12 @@ describe('CityFilter', () => {
 
 		expect(screen.getByRole('status')).toHaveTextContent('Loading city');
 	});
+
+	it('stays neutral when the lookup fails for another reason', async () => {
+		cityGetCity.mockResolvedValue({ data: undefined, response: { status: 503 } });
+		renderFilter({ selectedCityId: 7, onChangeCity: vi.fn() });
+
+		expect(await screen.findByText('Location', { selector: 'div' })).toBeInTheDocument();
+		expect(screen.queryByText('Unknown city')).not.toBeInTheDocument();
+	});
 });

@@ -4,19 +4,19 @@ import { userEvent } from '@testing-library/user-event';
 import MobileOrganizationFilterSheet from './MobileOrganizationFilterSheet.svelte';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
 
-// CityFilter loads the selected city's name; keep that off the network.
+// CityFilter loads the selected city's name with TanStack Query: keep that
+// off the network.
 vi.mock('$lib/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/api')>()),
 	cityGetCity: vi.fn().mockResolvedValue({ data: { id: 123, name: 'Vienna', country: 'Austria' } })
 }));
-import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
 
-// CityFilter loads the selected city's name with TanStack Query.
 function renderWithQuery(options: { props: Record<string, unknown> }) {
 	return render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient(),
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: MobileOrganizationFilterSheet,
 			componentProps: options.props
 		}
