@@ -139,7 +139,7 @@ describe('EventSeriesCard', () => {
 		expect(screen.getByText('technology')).toBeInTheDocument();
 		expect(screen.getByText('web-development')).toBeInTheDocument();
 		expect(screen.getByText('software-engineering')).toBeInTheDocument();
-		expect(screen.getByText('+1 more')).toBeInTheDocument();
+		expect(screen.getByText('+1 more tag')).toBeInTheDocument();
 	});
 
 	it('does not display tags in compact variant', () => {
