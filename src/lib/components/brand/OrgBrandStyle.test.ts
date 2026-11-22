@@ -29,6 +29,7 @@ describe('OrgBrandStyle', () => {
 		expect(css).toContain('--primary:');
 		expect(css).toContain('--ring:');
 		expect(css).toContain('--heart:');
+		expect(css).not.toMatch(/--accent(-foreground)?:/);
 	});
 
 	it('renders nothing when theme is null', () => {

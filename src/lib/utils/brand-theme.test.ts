@@ -54,6 +54,8 @@ describe('buildBrandThemeCss', () => {
 			}) ?? '';
 		expect(css).toContain('--heart:38.48 94.29% 58.82%');
 		expect(css).toContain('--heart-foreground:0 0% 0%');
+		// The org accent must not override the neutral interaction tint (#1282).
+		expect(css).not.toMatch(/--accent(-foreground)?:/);
 	});
 
 	it('returns null if either mode has an invalid hex', () => {

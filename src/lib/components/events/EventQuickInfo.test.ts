@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import EventQuickInfo from './EventQuickInfo.svelte';
+import * as m from '$lib/paraglide/messages.js';
 import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 
 // Mock event data
@@ -334,6 +335,15 @@ describe('EventQuickInfo — end time and held seats', () => {
 
 	it('shows held seats on the capacity row', () => {
 		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 3 } } });
-		expect(screen.getByText(/3/, { selector: 'span.text-xs' })).toBeInTheDocument();
+		expect(
+			screen.getByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 3 }))
+		).toBeInTheDocument();
+	});
+
+	it('shows no held-seats hint when no seats are held', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 0 } } });
+		expect(
+			screen.queryByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 0 }))
+		).not.toBeInTheDocument();
 	});
 });
