@@ -326,7 +326,7 @@
 				<EmptyState
 					icon={Send}
 					title={m['dashboard.invitations.noRequests']()}
-					body={requestsDebounced || requestsStatus !== 'pending'
+					body={requestsDebounced || requestsStatus !== null
 						? m['dashboard.invitations.tryAdjustingFilters']()
 						: m['dashboard.invitations.noSentInvitations']()}
 					level={2}
