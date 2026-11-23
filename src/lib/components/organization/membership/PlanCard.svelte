@@ -206,11 +206,18 @@
 	 */
 	const state = $derived.by(() => {
 		if (action === 'current') return 'current';
-		if (action === 'own_tier' || viewerState === 'own_tier_paid') return 'own_tier';
+		if (action === 'own_tier') return 'own_tier';
 		if (plan.sold_out) return 'sold_out';
 		if (plan.sales_status === 'paused') return 'paused';
 		return null;
 	});
+
+	/**
+	 * Own tier on a paid plan keeps its Subscribe CTA, so its "current tier" badge
+	 * sits next to the sales state instead of replacing it. When the plan is sold
+	 * out or paused, the card shows both and the reason for the missing CTA.
+	 */
+	const showOwnTierBadge = $derived(viewerState === 'own_tier_paid' || state === 'own_tier');
 
 	/**
 	 * A PENDING row means a hosted Checkout was started and never finished (or
@@ -282,10 +289,11 @@
 	<!-- Tones separated by what the state MEANS, not merely "this is a state":
 	     sold out is a hard stop, paused is temporary, "your plan" is good news.
 	     Every one carries its own words, so nothing is conveyed by fill alone. -->
+	{#if showOwnTierBadge}
+		<StatusBadge tone="success" size="sm" label={m['membershipPlanCta.currentTier']()} />
+	{/if}
 	{#if state === 'current'}
 		<StatusBadge tone="success" size="sm" label={m['membershipPlans.yourPlan']()} />
-	{:else if state === 'own_tier'}
-		<StatusBadge tone="success" size="sm" label={m['membershipPlanCta.currentTier']()} />
 	{:else if state === 'sold_out'}
 		<StatusBadge tone="danger" size="sm" label={m['membershipPlans.soldOut']()} />
 	{:else if state === 'paused'}

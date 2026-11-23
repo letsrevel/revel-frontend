@@ -136,7 +136,14 @@
 	 * member rules to staff who are members); the owner wins over everything and
 	 * is handled by the first branch. Callers pass `isStaff` unmasked.
 	 */
-	const showStaffBadge = $derived(isStaff && !isMember);
+	const showStaffBadge = $derived.by(() => {
+		const staff = isStaff;
+		const member = isMember;
+		const tierMode = isTierMode;
+		// Tier mode is a join surface: staff who are not members join like anyone
+		// else. The badge stays only as a standing display in summary mode.
+		return staff && !member && !tierMode;
+	});
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -146,7 +153,8 @@
 		const owner = isOwner;
 		const staff = isStaff;
 		const member = isMember;
-		return owner || staff || member;
+		const tierMode = isTierMode;
+		return owner || (staff && !tierMode) || member;
 	});
 
 	// The badge branches answer the question on their own — asking the backend

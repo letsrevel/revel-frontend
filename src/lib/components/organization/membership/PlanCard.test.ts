@@ -144,6 +144,15 @@ describe('PlanCard', () => {
 			).toHaveAttribute('href', '/account/memberships');
 		});
 
+		it('keeps the sold-out state next to the current-tier badge on a sold-out PAID plan', () => {
+			renderCard({ viewer: activeGold, plan: makePlan({ sold_out: true }) });
+
+			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.soldOut']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.soldOutHelper']())).toBeInTheDocument();
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+		});
+
 		it('shows the current-tier badge AND keeps Subscribe on a PAID plan of their own tier', () => {
 			renderCard({ viewer: activeGold });
 

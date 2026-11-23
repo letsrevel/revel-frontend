@@ -54,6 +54,17 @@ describe('QrCameraScanner', () => {
 			expect(screen.getByRole('button', { name: /scan with camera/i })).toBeTruthy();
 		});
 
+		it('keeps keyboard focus on the same button when it toggles Start and Stop', async () => {
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			const button = screen.getByRole('button', { name: /scan with camera/i });
+			button.focus();
+			await user.keyboard('{Enter}');
+			const stopButton = await screen.findByRole('button', { name: /stop camera/i });
+			expect(stopButton).toBe(button);
+			expect(document.activeElement).toBe(button);
+		});
+
 		it('shows a denied camera as a neutral hint with card wording', async () => {
 			start.mockRejectedValue(new DOMException('denied', 'NotAllowedError'));
 			const user = userEvent.setup();

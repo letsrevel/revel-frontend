@@ -413,6 +413,31 @@ describe('MembershipCta', () => {
 		expect(screen.queryByRole('button', { name: /join acme/i })).toBeNull();
 	});
 
+	it('lets a non-member staff viewer join a tier like anyone else', async () => {
+		mockEligibility(makeEligibility({ allowed: true }));
+		renderTierCta({ isStaff: true });
+
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+		expect(screen.queryByText(/staff/i)).toBeNull();
+	});
+
+	it('shows member standing to a member staff viewer in tier mode, with no Join', () => {
+		renderTierCta({ isStaff: true, isMember: true, membershipStatus: 'active' });
+
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+		expect(screen.getByRole('status')).toHaveTextContent(/member/i);
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
+	it('shows no Join to the owner in tier mode', () => {
+		renderTierCta({ isOwner: true, isStaff: true });
+
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
 	it('shows the staff badge without asking for eligibility', () => {
 		renderCta({ isStaff: true });
 

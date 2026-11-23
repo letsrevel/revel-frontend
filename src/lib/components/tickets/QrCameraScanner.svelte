@@ -317,17 +317,22 @@
 
 {#if manualStart}
 	<div class="mb-4 flex flex-wrap items-center gap-2">
-		{#if cameraRequested}
-			<Button type="button" variant="outline" onclick={stopCamera}>
+		<!-- ONE button whose role switches, so keyboard focus stays on it across
+		     Start/Stop and after a camera error (WCAG 2.4.3). Stop is never disabled. -->
+		<Button
+			type="button"
+			variant={cameraRequested ? 'outline' : 'default'}
+			onclick={cameraRequested ? stopCamera : startCamera}
+			disabled={!cameraRequested && transitioning}
+		>
+			{#if cameraRequested}
 				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.stopCamera']()}
-			</Button>
-		{:else}
-			<Button type="button" onclick={startCamera} disabled={transitioning}>
+			{:else}
 				<Camera class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.startCamera']()}
-			</Button>
-		{/if}
+			{/if}
+		</Button>
 	</div>
 {/if}
 
