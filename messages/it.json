@@ -5714,7 +5714,15 @@
 		"error_notReadable": "La fotocamera è già in uso da un'altra app. Chiudila e riprova oppure inserisci il codice del biglietto qui sotto.",
 		"error_insecureContext": "L'accesso alla fotocamera richiede una connessione sicura (HTTPS). Inserisci il codice del biglietto qui sotto.",
 		"error_generic": "Impossibile accedere alla fotocamera. Inserisci il codice del biglietto qui sotto.",
-		"error_processFailed": "Impossibile elaborare il biglietto scansionato. Riprova."
+		"error_processFailed": "Impossibile elaborare il biglietto scansionato. Riprova.",
+		"startCamera": "Scansiona con la fotocamera",
+		"stopCamera": "Ferma la fotocamera",
+		"cardError_permissionDenied": "L'accesso alla fotocamera è stato negato. Attiva il permesso nelle impostazioni del browser, oppure inserisci il codice della tessera qui sotto.",
+		"cardError_notFound": "Nessuna fotocamera trovata su questo dispositivo. Inserisci il codice della tessera qui sotto.",
+		"cardError_notReadable": "La fotocamera è già in uso da un'altra app. Chiudila e riprova, oppure inserisci il codice della tessera qui sotto.",
+		"cardError_insecureContext": "L'accesso alla fotocamera richiede una connessione sicura (HTTPS). Inserisci il codice della tessera qui sotto.",
+		"cardError_generic": "Impossibile accedere alla fotocamera. Inserisci il codice della tessera qui sotto.",
+		"cardError_processFailed": "Impossibile elaborare la tessera scansionata. Riprova."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Nessuna opzione selezionata",

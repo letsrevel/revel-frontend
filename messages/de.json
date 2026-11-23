@@ -5714,7 +5714,15 @@
 		"error_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut oder gib den Ticket-Code unten manuell ein.",
 		"error_insecureContext": "Der Kamerazugriff erfordert eine sichere (HTTPS-)Verbindung. Gib den Ticket-Code unten manuell ein.",
 		"error_generic": "Kein Zugriff auf die Kamera möglich. Gib den Ticket-Code unten manuell ein.",
-		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut."
+		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+		"startCamera": "Mit Kamera scannen",
+		"stopCamera": "Kamera stoppen",
+		"cardError_permissionDenied": "Der Kamerazugriff wurde verweigert. Aktiviere die Kameraberechtigung in den Browser-Einstellungen oder gib den Ausweiscode unten manuell ein.",
+		"cardError_notFound": "Auf diesem Gerät wurde keine Kamera gefunden. Gib den Ausweiscode unten manuell ein.",
+		"cardError_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut, oder gib den Ausweiscode unten manuell ein.",
+		"cardError_insecureContext": "Der Kamerazugriff erfordert eine sichere Verbindung (HTTPS). Gib den Ausweiscode unten manuell ein.",
+		"cardError_generic": "Kein Zugriff auf die Kamera möglich. Gib den Ausweiscode unten manuell ein.",
+		"cardError_processFailed": "Der gescannte Ausweis konnte nicht verarbeitet werden. Bitte versuche es erneut."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Keine Option ausgewählt",

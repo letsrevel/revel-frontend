@@ -5714,7 +5714,15 @@
 		"error_notReadable": "A câmara já está a ser utilizada por outra aplicação. Fecha-a e tenta novamente ou introduz o código do bilhete manualmente abaixo.",
 		"error_insecureContext": "O acesso à câmara requer uma ligação segura (HTTPS). Introduz o código do bilhete manualmente abaixo.",
 		"error_generic": "Não foi possível aceder à câmara. Introduz o código do bilhete manualmente abaixo.",
-		"error_processFailed": "Não foi possível processar o bilhete lido. Tenta novamente."
+		"error_processFailed": "Não foi possível processar o bilhete lido. Tenta novamente.",
+		"startCamera": "Digitalizar com a câmara",
+		"stopCamera": "Parar a câmara",
+		"cardError_permissionDenied": "O acesso à câmara foi negado. Ativa a permissão nas definições do navegador ou introduz o código do cartão manualmente abaixo.",
+		"cardError_notFound": "Não foi encontrada nenhuma câmara neste dispositivo. Introduz o código do cartão manualmente abaixo.",
+		"cardError_notReadable": "A câmara já está a ser usada por outra aplicação. Fecha-a e tenta novamente, ou introduz o código do cartão manualmente abaixo.",
+		"cardError_insecureContext": "O acesso à câmara requer uma ligação segura (HTTPS). Introduz o código do cartão manualmente abaixo.",
+		"cardError_generic": "Não foi possível aceder à câmara. Introduz o código do cartão manualmente abaixo.",
+		"cardError_processFailed": "Não foi possível processar o cartão digitalizado. Tenta novamente."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Nenhuma opção selecionada",

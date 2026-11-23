@@ -59,7 +59,7 @@
 	<title>{m['memberVerify.pageTitle']()}</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl space-y-6 px-4 py-6">
+<div class="space-y-6 px-4 md:px-0">
 	<PageHeader
 		volume="studio"
 		kicker={data.organization.name}
@@ -67,10 +67,12 @@
 		subtitle={m['memberVerify.pageSubtitle']()}
 	/>
 
-	<Card>
+	<Card class="max-w-2xl">
 		<CardContent class="p-4">
 			<QrCameraScanner
 				active={true}
+				manualStart={true}
+				codeNoun="card"
 				continuous={true}
 				onScan={verify}
 				manualLabel={m['memberVerify.manualEntryLabel']()}

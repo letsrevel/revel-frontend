@@ -5714,7 +5714,15 @@
 		"error_notReadable": "La cámara ya está en uso por otra aplicación. Ciérrala e inténtalo de nuevo, o introduce el código de la entrada manualmente más abajo.",
 		"error_insecureContext": "El acceso a la cámara requiere una conexión segura (HTTPS). Introduce el código de la entrada manualmente más abajo.",
 		"error_generic": "No se ha podido acceder a la cámara. Introduce el código de la entrada manualmente más abajo.",
-		"error_processFailed": "No se ha podido procesar la entrada escaneada. Inténtalo de nuevo."
+		"error_processFailed": "No se ha podido procesar la entrada escaneada. Inténtalo de nuevo.",
+		"startCamera": "Escanear con la cámara",
+		"stopCamera": "Detener la cámara",
+		"cardError_permissionDenied": "Se ha denegado el acceso a la cámara. Activa el permiso en los ajustes del navegador o introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_notFound": "No se ha encontrado ninguna cámara en este dispositivo. Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_notReadable": "Otra aplicación ya está usando la cámara. Ciérrala e inténtalo de nuevo, o introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_insecureContext": "El acceso a la cámara requiere una conexión segura (HTTPS). Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_generic": "No se ha podido acceder a la cámara. Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_processFailed": "No se ha podido procesar la tarjeta escaneada. Inténtalo de nuevo."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Ninguna opción seleccionada",

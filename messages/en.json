@@ -5714,7 +5714,15 @@
 		"error_notReadable": "The camera is already in use by another app. Close it and try again, or enter the ticket code manually below.",
 		"error_insecureContext": "Camera access requires a secure (HTTPS) connection. Enter the ticket code manually below.",
 		"error_generic": "Couldn't access the camera. Enter the ticket code manually below.",
-		"error_processFailed": "Failed to process the scanned ticket. Please try again."
+		"error_processFailed": "Failed to process the scanned ticket. Please try again.",
+		"startCamera": "Scan with camera",
+		"stopCamera": "Stop camera",
+		"cardError_permissionDenied": "Camera access was denied. Enable camera permissions in your browser settings, or enter the card code manually below.",
+		"cardError_notFound": "No camera was found on this device. Enter the card code manually below.",
+		"cardError_notReadable": "The camera is already in use by another app. Close it and try again, or enter the card code manually below.",
+		"cardError_insecureContext": "Camera access requires a secure (HTTPS) connection. Enter the card code manually below.",
+		"cardError_generic": "Couldn't access the camera. Enter the card code manually below.",
+		"cardError_processFailed": "Failed to process the scanned card. Please try again."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "No option selected",

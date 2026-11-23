@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import { Html5Qrcode } from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button';
 	import { classifyCameraError } from '$lib/utils/camera-errors';
-	import { Camera, AlertCircle, KeyRound } from '@lucide/svelte';
+	import { Camera, CameraOff, AlertCircle, Info, KeyRound } from '@lucide/svelte';
 
 	/**
 	 * The camera surface itself: getUserMedia lifecycle, the front-camera
@@ -37,6 +37,18 @@
 		 * button that claims otherwise is a lie about what just happened.
 		 */
 		manualSubmitLabel?: string;
+		/**
+		 * What is being scanned, for the error copy. `ticket` (default) is the event
+		 * check-in wording; `card` is the membership-card wording of the org door page.
+		 */
+		codeNoun?: 'ticket' | 'card';
+		/**
+		 * Opt-in: do not ask for the camera on mount. The camera starts only when the
+		 * user presses "Scan with camera" (and can be stopped again), manual entry is
+		 * shown as an equal option, and a camera failure is a neutral hint rather than
+		 * a destructive alert. Off by default, so ticket check-in is unchanged.
+		 */
+		manualStart?: boolean;
 	}
 
 	const {
@@ -45,7 +57,9 @@
 		continuous = false,
 		manualLabel = m['qrScannerModal.manualEntryLabel'](),
 		manualPlaceholder = m['qrScannerModal.manualEntryPlaceholder'](),
-		manualSubmitLabel = m['qrScannerModal.manualEntrySubmit']()
+		manualSubmitLabel = m['qrScannerModal.manualEntrySubmit'](),
+		codeNoun = 'ticket',
+		manualStart = false
 	}: Props = $props();
 
 	// Unique per instance: html5-qrcode addresses its container by DOM id, and the
@@ -62,25 +76,41 @@
 	let scanSuccess = $state(false);
 	let manualCode = $state('');
 	let isSubmittingManual = $state(false);
+	// With `manualStart` the camera waits for an explicit click. `manualStart` is a
+	// mount-time choice, so reading it once here is intended.
+	let cameraRequested = $state(untrack(() => !manualStart));
+	const running = $derived(active && cameraRequested);
+	const isCard = $derived(codeNoun === 'card');
 
 	/** Map a camera failure to a localized, actionable message. */
 	function cameraErrorMessage(err: unknown): string {
 		switch (classifyCameraError(err)) {
 			case 'permission-denied':
-				return m['qrScannerModal.error_permissionDenied']();
+				return isCard
+					? m['qrScannerModal.cardError_permissionDenied']()
+					: m['qrScannerModal.error_permissionDenied']();
 			case 'not-found':
-				return m['qrScannerModal.error_notFound']();
+				return isCard
+					? m['qrScannerModal.cardError_notFound']()
+					: m['qrScannerModal.error_notFound']();
 			case 'not-readable':
-				return m['qrScannerModal.error_notReadable']();
+				return isCard
+					? m['qrScannerModal.cardError_notReadable']()
+					: m['qrScannerModal.error_notReadable']();
 			default:
-				return m['qrScannerModal.error_generic']();
+				return isCard
+					? m['qrScannerModal.cardError_generic']()
+					: m['qrScannerModal.error_generic']();
 		}
 	}
 
 	async function startScanner(facingMode: 'environment' | 'user' = 'environment', isRetry = false) {
 		// Camera access requires a secure context (HTTPS or localhost).
 		if (typeof window !== 'undefined' && !window.isSecureContext) {
-			error = m['qrScannerModal.error_insecureContext']();
+			error = isCard
+				? m['qrScannerModal.cardError_insecureContext']()
+				: m['qrScannerModal.error_insecureContext']();
+			if (manualStart) cameraRequested = false;
 			return;
 		}
 
@@ -108,7 +138,20 @@
 			}
 
 			error = cameraErrorMessage(err);
+			// Hand control back so the button doubles as "try again".
+			if (manualStart) cameraRequested = false;
 		}
+	}
+
+	function startCamera() {
+		error = null;
+		cameraRequested = true;
+	}
+
+	function stopCamera() {
+		error = null;
+		scanSuccess = false;
+		cameraRequested = false;
 	}
 
 	async function stopScanner() {
@@ -120,6 +163,12 @@
 				console.error('Failed to stop scanner:', err);
 			}
 		}
+	}
+
+	function processFailedMessage(): string {
+		return isCard
+			? m['qrScannerModal.cardError_processFailed']()
+			: m['qrScannerModal.error_processFailed']();
 	}
 
 	/**
@@ -138,11 +187,11 @@
 			await stopScanner();
 			await onScan(code);
 			manualCode = '';
-			if (continuous) await startScanner();
+			if (continuous && running) await startScanner();
 		} catch (err) {
 			console.error('Manual scan handling failed:', err);
-			error = m['qrScannerModal.error_processFailed']();
-			if (continuous) await startScanner();
+			error = processFailedMessage();
+			if (continuous && running) await startScanner();
 		} finally {
 			isSubmittingManual = false;
 		}
@@ -157,7 +206,7 @@
 				// Brief pause so the success line is readable before the viewfinder
 				// comes back and the next person steps up.
 				setTimeout(() => {
-					if (active) {
+					if (running) {
 						scanSuccess = false;
 						startScanner();
 					}
@@ -165,11 +214,11 @@
 			}
 		} catch (err) {
 			console.error('Scan processing error:', err);
-			error = m['qrScannerModal.error_processFailed']();
+			error = processFailedMessage();
 			scanSuccess = false;
 			// Restart scanner after error
 			setTimeout(() => {
-				if (active) {
+				if (running) {
 					startScanner();
 				}
 			}, 2000);
@@ -184,7 +233,7 @@
 	}
 
 	$effect(() => {
-		if (active) {
+		if (running) {
 			startScanner();
 		} else {
 			stopScanner();
@@ -200,14 +249,30 @@
 	});
 </script>
 
-<div class="relative mb-4">
+{#if manualStart}
+	<div class="mb-4 flex flex-wrap items-center gap-2">
+		{#if cameraRequested}
+			<Button type="button" variant="outline" onclick={stopCamera}>
+				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['qrScannerModal.stopCamera']()}
+			</Button>
+		{:else}
+			<Button type="button" onclick={startCamera}>
+				<Camera class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['qrScannerModal.startCamera']()}
+			</Button>
+		{/if}
+	</div>
+{/if}
+
+<div class="relative mb-4" class:hidden={manualStart && !cameraRequested}>
 	<div
 		id={readerId}
 		class="overflow-hidden rounded-lg border-2 border-primary"
 		style="width: 100%; max-width: 500px; margin: 0 auto;"
 	></div>
 
-	{#if !isScanning && !error}
+	{#if running && !isScanning && !error}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="text-center">
 				<Camera class="mx-auto mb-2 h-12 w-12 text-muted-foreground" aria-hidden="true" />
@@ -218,16 +283,28 @@
 </div>
 
 {#if error}
-	<div
-		class="mb-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
-		role="alert"
-	>
-		<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
-		<div>
-			<p class="font-medium">{m['qrScannerModal.error']()}</p>
+	{#if manualStart}
+		<!-- Neutral hint: no camera is a normal state on a desktop, not a failure. A
+		     polite status, not an alert, and no destructive tone. -->
+		<div
+			class="mb-4 flex items-start gap-2 rounded-lg border border-border bg-muted p-3 text-sm text-foreground"
+			role="status"
+		>
+			<Info class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 			<p>{error}</p>
 		</div>
-	</div>
+	{:else}
+		<div
+			class="mb-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+			role="alert"
+		>
+			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<div>
+				<p class="font-medium">{m['qrScannerModal.error']()}</p>
+				<p>{error}</p>
+			</div>
+		</div>
+	{/if}
 {/if}
 
 {#if scanSuccess}
