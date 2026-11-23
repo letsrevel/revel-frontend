@@ -261,6 +261,20 @@ describe('AuthStore', () => {
 		});
 	});
 
+	describe('bootstrapState', () => {
+		it('returns to idle on logout after settling', () => {
+			authStore.setBootstrapState('settled');
+			authStore.logout();
+			expect(authStore.bootstrapState).toBe('idle');
+		});
+
+		it('returns to idle on resetForSwap', () => {
+			authStore.setBootstrapState('settled');
+			authStore.resetForSwap();
+			expect(authStore.bootstrapState).toBe('idle');
+		});
+	});
+
 	describe('Bootstrap gate', () => {
 		/** True once waitForAuthReady() has resolved (after a microtask flush). */
 		async function isReady(): Promise<boolean> {

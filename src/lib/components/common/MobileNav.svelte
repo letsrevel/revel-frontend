@@ -4,6 +4,7 @@
 	import { navLoginHref } from '$lib/utils/safe-redirect';
 	import { X } from '@lucide/svelte';
 	import UserMenu from './UserMenu.svelte';
+	import { BREAKPOINT_MD_PX, BREAKPOINT_XL_PX } from '$lib/utils/breakpoints';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -58,7 +59,9 @@
 		if (!open || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
 			return undefined;
 		}
-		const query = window.matchMedia(wideNav ? '(min-width: 1280px)' : '(min-width: 768px)');
+		const query = window.matchMedia(
+			`(min-width: ${wideNav ? BREAKPOINT_XL_PX : BREAKPOINT_MD_PX}px)`
+		);
 		const onChange = (event: MediaQueryListEvent): void => {
 			if (event.matches) onClose();
 		};
@@ -104,6 +107,8 @@
 		? 'xl:hidden'
 		: 'md:hidden'} {open ? 'translate-x-0' : 'translate-x-full'}"
 	{id}
+	inert={!open}
+	aria-hidden={open ? undefined : 'true'}
 	role="dialog"
 	aria-modal="true"
 	aria-label={m['nav.mobileNavigation']()}

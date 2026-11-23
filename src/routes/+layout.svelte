@@ -197,6 +197,7 @@
 			// Release the latch so the new identity can bootstrap below (Case 1).
 			// A bootstrap for the previous identity may still be in flight; its
 			// generation guard makes it bail out when it resolves.
+			bootstrapGeneration++;
 			initializationPromise = null;
 		}
 
@@ -212,6 +213,9 @@
 		else if (!hasServerAccessToken && currentAccessToken) {
 			authStore.logout();
 			queryClient.clear();
+			// Drop the latch and invalidate any in-flight bootstrap so its
+			// `.finally` cannot write 'settled' over the logged-out state.
+			bootstrapGeneration++;
 			initializationPromise = null;
 		}
 		// Case 3: Access token cookie expired but refresh token is still valid

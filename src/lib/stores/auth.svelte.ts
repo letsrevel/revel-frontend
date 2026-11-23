@@ -320,16 +320,12 @@ class AuthStore {
 		// Release any request waiting on the bootstrap gate: the session is
 		// gone, so gated requests should proceed and surface their real 401s.
 		this.settleBootstrapGate();
+		this._bootstrapState = 'idle';
 
-		// Note: Refresh token cookie will be cleared by server-side hook
-		// or by calling a logout endpoint if needed.
-		//
-		// Intentionally do NOT reset `_isLoggingOut` here. logout() runs
-		// synchronously, so a refresh fetch that is already in flight only
-		// resolves *after* this method returns; if we cleared the flag now the
-		// guard in _performRefresh() would see `false` and resurrect the
-		// session. The flag stays set until an intentional new login
-		// (login()/loginWithOTP()) clears it.
+		// The refresh cookie is cleared server-side. Do NOT reset `_isLoggingOut`
+		// here: an in-flight refresh resolves after this returns and
+		// _performRefresh() must still see it, or it resurrects the session. It
+		// stays set until login()/loginWithOTP() clears it.
 	}
 
 	/**
@@ -639,8 +635,8 @@ class AuthStore {
 		this._user = null;
 		this._accessToken = null;
 		this._permissions = null;
-		// Until the new identity's token lands, API requests must wait again —
-		// otherwise they'd go out unauthenticated during the re-bootstrap.
+		this._bootstrapState = 'idle';
+		// API requests must wait again until the new identity's token lands.
 		this.markBootstrapPending();
 	}
 

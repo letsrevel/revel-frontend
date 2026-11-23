@@ -56,10 +56,36 @@ describe('MobileNav breakpoint behaviour', () => {
 	});
 
 	it('closes immediately when already past the breakpoint', () => {
-		mockMatchMedia(true);
+		const mq = mockMatchMedia(true);
 		const onClose = vi.fn();
 		render(MobileNav, { props: { ...base, open: true, onClose } });
 		expect(onClose).toHaveBeenCalled();
+		expect(mq.listeners.size).toBe(0);
+	});
+
+	it('removes its listener when re-rendered closed', async () => {
+		const mq = mockMatchMedia();
+		const { rerender } = render(MobileNav, { props: { ...base, open: true, onClose: vi.fn() } });
+		expect(mq.listeners.size).toBe(1);
+		await rerender({ ...base, open: false, onClose: vi.fn() });
+		expect(mq.listeners.size).toBe(0);
+	});
+
+	it('keeps the closed drawer inert and out of the accessibility tree', () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...base, open: false, onClose: vi.fn() } });
+		const drawer = screen.getByRole('dialog', { hidden: true });
+		expect((drawer as HTMLElement & { inert?: boolean }).inert).toBe(true);
+		expect(drawer).toHaveAttribute('aria-hidden', 'true');
+		expect(screen.queryByRole('dialog')).toBeNull();
+	});
+
+	it('makes the drawer interactive when open', () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...base, open: true, onClose: vi.fn() } });
+		const drawer = screen.getByRole('dialog');
+		expect((drawer as HTMLElement & { inert?: boolean }).inert).toBeFalsy();
+		expect(drawer).not.toHaveAttribute('aria-hidden');
 	});
 
 	it('hides the backdrop with the same breakpoint class as the drawer', () => {
@@ -67,7 +93,7 @@ describe('MobileNav breakpoint behaviour', () => {
 		const { container } = render(MobileNav, { props: { ...base, open: true, onClose: vi.fn() } });
 		const backdrop = container.querySelector('[role="presentation"]');
 		expect(backdrop).toHaveClass('md:hidden');
-		expect(screen.getByRole('dialog', { hidden: true })).toHaveClass('md:hidden');
+		expect(screen.getByRole('dialog')).toHaveClass('md:hidden');
 	});
 
 	it('uses xl:hidden on the backdrop for a wide nav', () => {
