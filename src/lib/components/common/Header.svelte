@@ -57,8 +57,14 @@
 	}
 
 	// Close mobile menu
-	function closeMobileMenu() {
+	let menuButton = $state<HTMLButtonElement>();
+
+	function closeMobileMenu(): void {
+		// The closed drawer is inert, so focus inside it would fall to <body>.
+		// Return it to the menu button instead (WCAG 2.4.3).
+		const focusWasInDrawer = !!document.activeElement?.closest('[role="dialog"]');
 		mobileMenuOpen = false;
+		if (focusWasInDrawer) menuButton?.focus();
 	}
 </script>
 
@@ -142,6 +148,7 @@
 
 			<!-- Mobile Menu Button -->
 			<button
+				bind:this={menuButton}
 				type="button"
 				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring {menuButtonClass}"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}

@@ -106,10 +106,10 @@
 	let previousServerHasToken = $state<boolean | null>(null);
 	let previousFingerprint = $state<string | null | undefined>(undefined);
 	let initializationPromise = $state<Promise<void> | null>(null);
-	// Incremented every time a bootstrap starts. A session swap that lands while
-	// a bootstrap is in flight bumps it (indirectly, via a fresh bootstrap), so
-	// the stale in-flight promise can detect it was superseded and bail out
-	// instead of loading the previous identity's data.
+	// Incremented every time a bootstrap starts, and directly whenever the latch
+	// is dropped without a new bootstrap (session swap, server session gone).
+	// A stale in-flight promise sees it was superseded and bails out instead of
+	// loading the previous identity's data or writing its lifecycle state.
 	let bootstrapGeneration = 0;
 
 	/**

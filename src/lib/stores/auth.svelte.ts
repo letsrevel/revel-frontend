@@ -320,7 +320,7 @@ class AuthStore {
 		// Release any request waiting on the bootstrap gate: the session is
 		// gone, so gated requests should proceed and surface their real 401s.
 		this.settleBootstrapGate();
-		this._bootstrapState = 'idle';
+		this._bootstrapState = 'settled'; // finished, without a token
 
 		// The refresh cookie is cleared server-side. Do NOT reset `_isLoggingOut`
 		// here: an in-flight refresh resolves after this returns and

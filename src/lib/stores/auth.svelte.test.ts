@@ -262,10 +262,10 @@ describe('AuthStore', () => {
 	});
 
 	describe('bootstrapState', () => {
-		it('returns to idle on logout after settling', () => {
-			authStore.setBootstrapState('settled');
+		it('is settled after an in-place logout, so pages show the signed-out state', () => {
+			authStore.setBootstrapState('pending');
 			authStore.logout();
-			expect(authStore.bootstrapState).toBe('idle');
+			expect(authStore.bootstrapState).toBe('settled');
 		});
 
 		it('returns to idle on resetForSwap', () => {

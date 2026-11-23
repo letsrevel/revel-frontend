@@ -100,14 +100,10 @@ describe('settings page session handling', () => {
 		expect(screen.getByRole('alert')).toHaveTextContent(/must be logged in/i);
 	});
 
-	it('falls back to the server flags after a logout resets a settled bootstrap to idle', () => {
-		// The store's own reset is covered in auth.svelte.test.ts; here we assert
-		// the page reaction to the resulting idle state with server flags true.
-		state.bootstrap = 'settled';
-		state.bootstrap = 'idle';
-		setPage({ hasAccessToken: true, hasRefreshToken: true });
+	it('shows the spinner while pending even when the server flags are false', () => {
+		state.bootstrap = 'pending';
+		setPage({ hasAccessToken: false, hasRefreshToken: false });
 		render(Page, { props: { data } });
 		expect(screen.getByTestId('settings-session-pending')).toBeInTheDocument();
-		expect(screen.queryByRole('alert')).toBeNull();
 	});
 });
