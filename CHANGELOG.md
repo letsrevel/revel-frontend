@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tickets, RSVPs and Invitations use one filter bar with the same layout. (#1290)
 
 ### Changed
+- The organization admin breadcrumb shows the current section. Admin pages use one header style, with the organization name above a short title. Create buttons read "New event", "New venue" and so on. (#1291)
+- On admin event cards, Invitations and Waitlist are in the card menu, so the action buttons fit on one row. (#1291)
+- On Verify members, the camera starts only when you select "Scan with camera". Manual card-code entry is available from the start, and a blocked camera shows a neutral hint. (#1292)
+- On the membership page, current members see "Your current tier" on their own tier's plans, with a link to My Memberships, instead of "Join". Owners and staff do not see "Join". A single tier uses the full width. (#1293)
 - `/account` opens the profile page. Before, it showed "Page not found". (#1288)
 - All account pages use the same width. My Invoices has the same header as the other account pages. (#1288)
 - Profile visibility is set on the Settings page only. The profile page links there. (#1288)
