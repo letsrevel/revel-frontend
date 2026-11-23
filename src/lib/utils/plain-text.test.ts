@@ -147,7 +147,8 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 	});
 	it('restores code placeholders nested inside an inline code span', () => {
 		const out = markdownToPlainText('`a\n```\ncode\n```\nb`');
-		expect(out).not.toMatch(/\u0000|\bc\d+\b/);
+		expect(out.includes(String.fromCharCode(0))).toBe(false);
+		expect(out).not.toMatch(/\bc\d+\b/);
 		expect(out).toContain('code');
 	});
 });
