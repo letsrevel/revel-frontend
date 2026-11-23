@@ -55,11 +55,9 @@ class AuthStore {
 	// as soon as a token lands (`setAccessToken`) or the session is truly gone
 	// (`logout`). See waitForAuthReady().
 	private _bootstrapGate: { promise: Promise<void>; resolve: () => void } | null = null;
-	// Reactive lifecycle of the root layout's token bootstrap, for UI that must
-	// tell "still loading the session" from "the session could not be loaded".
-	// 'idle' = not started yet (cold load, before hydration), 'pending' = in
-	// flight, 'settled' = finished (successfully or not). The gate above is not
-	// reactive and settles on logout too, so it cannot drive that.
+	// Reactive lifecycle of the root layout's token bootstrap: 'idle' (not
+	// started), 'pending' (in flight), 'settled' (done, with or without a token).
+	// The gate above is not reactive and settles on logout too.
 	private _bootstrapState = $state<'idle' | 'pending' | 'settled'>('idle');
 
 	// Public computed state using $derived
