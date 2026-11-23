@@ -50,8 +50,10 @@ describe('EventQuickInfo', () => {
 	it('renders with required props', () => {
 		render(EventQuickInfo, { props: { event: mockEvent } });
 
-		// The start date renders (the end line may repeat the same day, so allow several)
-		expect(screen.getAllByText(/Oct 25/i).length).toBeGreaterThan(0);
+		// The start time element renders the start date.
+		const start = document.querySelector(`time[datetime="${mockEvent.start}"]`);
+		expect(start).not.toBeNull();
+		expect(start).toHaveTextContent(/Oct 2[4-6]/i); // date varies with the runner zone
 
 		// Check that location is rendered
 		expect(screen.getByText('San Francisco, USA')).toBeInTheDocument();
@@ -388,5 +390,10 @@ describe('EventQuickInfo — end time and held seats', () => {
 		expect(
 			screen.queryByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 0 }))
 		).not.toBeInTheDocument();
+	});
+	it('treats an unknown ticket requirement as ticketed', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: null } } });
+		expect(screen.getByText(m['eventDetails.eventType_ticketed']())).toBeInTheDocument();
+		expect(screen.queryByText(m['eventDetails.eventType_freeRsvp']())).toBeNull();
 	});
 });

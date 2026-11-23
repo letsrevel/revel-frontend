@@ -46,7 +46,7 @@
 		--secondary-foreground: 226 65% 20%;
 		--muted: 268 40% 92%;
 		--muted-foreground: 268 18% 32%;
-		--accent: 268 55% 88%; /* soft lavender hover/selected surface (shadcn meaning). Audit: label 10.98:1, foreground 10.98:1, muted-foreground 5.21:1, primary 4.41:1, heart 3.40:1; 1.56:1 vs --background, 1.42:1 vs --card */
+		--accent: 268 55% 88%; /* soft lavender hover/selected surface (shadcn meaning). Audit: label 11.95:1, foreground 11.95:1, muted-foreground 6.22:1, primary 4.81:1, heart 3.97:1; 1.29:1 vs --background, 1.46:1 vs --card */
 		--accent-foreground: 173 40% 8%;
 		--heart: 3 76% 44%; /* the heart: crimson pop (brand accent, NOT a hover fill) */
 		--heart-foreground: 0 0% 100%;
@@ -156,7 +156,7 @@
 		--secondary-foreground: 226 90% 88%;
 		--muted: 270 25% 18%;
 		--muted-foreground: 270 12% 70%;
-		--accent: 270 28% 26%; /* lifted aubergine hover/selected surface. Audit: label 11.95:1, muted-foreground 6.22:1, primary 4.81:1, heart 3.97:1; 1.29:1 vs --background, 1.46:1 vs --card */
+		--accent: 270 28% 24%; /* lifted aubergine hover/selected surface. Audit: label 11.75:1, muted-foreground 5.57:1, primary 4.72:1, heart 3.64:1; 1.45:1 vs --background, 1.33:1 vs --card */
 		--accent-foreground: 0 0% 97%;
 		--heart: 3 85% 62%; /* neon heart, ink label */
 		--heart-foreground: 173 40% 8%;

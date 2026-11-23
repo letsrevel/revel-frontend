@@ -342,9 +342,10 @@
 			<div class={textClasses}>
 				<span class="block">{eventTypeDisplay}</span>
 				<span class="block text-xs text-muted-foreground">
-					{event.requires_ticket
-						? m['eventDetails.eventType_ticketed']()
-						: m['eventDetails.eventType_freeRsvp']()}
+					<!-- Fail closed like EventActionSidebar: only an explicit false is free. -->
+					{event.requires_ticket === false
+						? m['eventDetails.eventType_freeRsvp']()
+						: m['eventDetails.eventType_ticketed']()}
 				</span>
 				{#if visibilityMismatch}
 					<span class="block text-xs text-muted-foreground">

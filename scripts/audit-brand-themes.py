@@ -175,7 +175,7 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     # must be a visible step away from the surfaces it hovers on.
     ("foreground", "accent", 4.5, "body text on hovered/selected row"),
     ("muted-foreground", "accent", 4.5, "muted text on hovered/selected row"),
-    ("primary", "accent", 3.0, "primary link text on hovered/selected row"),
+    ("primary", "accent", 4.5, "primary link text on hovered/selected row"),
     ("heart", "accent", 3.0, "FollowButton heart on its own hover fill"),
     ("accent", "background", 1.15, "accent hover fill visible on page (advisory)"),
     ("accent", "card", 1.15, "accent hover fill visible on card (advisory)"),
