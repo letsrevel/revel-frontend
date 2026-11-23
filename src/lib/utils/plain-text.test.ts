@@ -145,4 +145,9 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 		);
 		expect(markdownToPlainText('H1 | H2\n--- | ---\nx | y')).toBe('H1 H2 x y');
 	});
+	it('restores code placeholders nested inside an inline code span', () => {
+		const out = markdownToPlainText('`a\n```\ncode\n```\nb`');
+		expect(out).not.toMatch(/\u0000|\bc\d+\b/);
+		expect(out).toContain('code');
+	});
 });

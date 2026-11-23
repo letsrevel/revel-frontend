@@ -167,7 +167,11 @@ export function markdownToPlainText(
 	text = text.replace(/`+([^`]*)`+/g, '$1');
 
 	text = decodeHtmlEntities(text);
-	text = text.replace(CODE_PLACEHOLDER, (m, i: string) => code[Number(i)] ?? m);
+	// A code span can wrap a fenced-block placeholder, so restore until stable.
+	for (let prev = ''; prev !== text;) {
+		prev = text;
+		text = text.replace(CODE_PLACEHOLDER, (m, i: string) => code[Number(i)] ?? m);
+	}
 	// Restore escaped punctuation.
 	text = text.replace(PLACEHOLDER, (m, i: string) => ESCAPE_CHARS[Number(i)] ?? m);
 	text = text.replace(/\s+/g, ' ').trim();
