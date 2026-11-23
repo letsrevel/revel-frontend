@@ -50,8 +50,8 @@ describe('EventQuickInfo', () => {
 	it('renders with required props', () => {
 		render(EventQuickInfo, { props: { event: mockEvent } });
 
-		// Check that event date is rendered
-		expect(screen.getByText(/Oct 25/i)).toBeInTheDocument();
+		// The start date renders (the end line may repeat the same day, so allow several)
+		expect(screen.getAllByText(/Oct 25/i).length).toBeGreaterThan(0);
 
 		// Check that location is rendered
 		expect(screen.getByText('San Francisco, USA')).toBeInTheDocument();
