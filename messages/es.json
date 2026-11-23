@@ -9640,7 +9640,7 @@
 	"announcementsAdminPage.searchPlaceholder": "Buscar...",
 	"discountCodeEditPage.backToDiscountCodes": "Volver a los códigos de descuento",
 	"discountCodeEditPage.title": "Editar código de descuento",
-	"discountCodeEditPage.editing": "Editando",
+	"discountCodeEditPage.editing": "Editando {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Cargando código de descuento",
 	"discountCodeEditPage.loadError": "No se ha podido cargar el código de descuento. Puede que se haya eliminado.",
 	"discountCodeEditPage.updateError": "No se ha podido actualizar el código de descuento",
@@ -11973,5 +11973,7 @@
 	"membershipPlanCta.manageLink": "Gestionar en Mis membresías",
 	"membershipPlanCta.manageLinkAria": "Gestionar en Mis membresías, plan {plan}",
 	"membershipPlanCta.freeOtherTierHelper": "Ya eres miembro, así que no puedes unirte a un plan gratuito de otro nivel.",
-	"membershipPlanCta.staffNote": "Gestionas esta organización, así que no puedes unirte a sus planes."
+	"membershipPlanCta.ownerNote": "Esta organización es tuya, así que no puedes unirte a sus planes.",
+	"membershipPlanCta.pausedNote": "Tu membresía está en pausa. Contacta con la organización.",
+	"membershipPlanCta.bannedNote": "Tu membresía está suspendida. Contacta con la organización."
 }

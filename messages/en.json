@@ -528,7 +528,7 @@
 	"announcements.confirm.sendDescription": "This announcement will be sent to the selected recipients. This action cannot be undone.",
 	"announcements.create": "Create Announcement",
 	"announcements.delete": "Delete",
-	"announcements.edit": "Edit Announcement",
+	"announcements.edit": "Edit announcement",
 	"announcements.empty.drafts": "No draft announcements",
 	"announcements.empty.draftsDescription": "Create a new announcement to get started.",
 	"announcements.empty.sent": "No sent announcements",
@@ -9640,7 +9640,7 @@
 	"announcementsAdminPage.searchPlaceholder": "Search...",
 	"discountCodeEditPage.backToDiscountCodes": "Back to discount codes",
 	"discountCodeEditPage.title": "Edit Discount Code",
-	"discountCodeEditPage.editing": "Editing",
+	"discountCodeEditPage.editing": "Editing {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Loading discount code",
 	"discountCodeEditPage.loadError": "Failed to load discount code. It may have been deleted.",
 	"discountCodeEditPage.updateError": "Failed to update discount code",
@@ -11973,5 +11973,7 @@
 	"membershipPlanCta.manageLink": "Manage in My Memberships",
 	"membershipPlanCta.manageLinkAria": "Manage in My Memberships, {plan} plan",
 	"membershipPlanCta.freeOtherTierHelper": "You are already a member, so you cannot join a free plan of another tier.",
-	"membershipPlanCta.staffNote": "You manage this organization, so you cannot join its plans."
+	"membershipPlanCta.ownerNote": "You own this organization, so you cannot join its plans.",
+	"membershipPlanCta.pausedNote": "Your membership is paused. Contact the organization.",
+	"membershipPlanCta.bannedNote": "Your membership is suspended. Contact the organization."
 }

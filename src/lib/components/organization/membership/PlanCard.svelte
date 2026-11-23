@@ -82,10 +82,10 @@
 		 */
 		gateRequirementsId?: string | null;
 		/**
-		 * The viewer's standing in the org (member, tier, owner, staff). A member
-		 * without a subscription row (owner-added, imported, open-ended) has
-		 * `subscription: null` but still cannot join: the backend refuses
-		 * `already_member`. See `planCtaState`.
+		 * The viewer's standing in the org (member, tier, owner). A member without
+		 * a subscription row (owner-added, imported, open-ended) has
+		 * `subscription: null` but still gets member rules. These mirror
+		 * revel-backend#1518. See `planCtaState`.
 		 */
 		viewer?: PlanViewer;
 	}
@@ -153,7 +153,8 @@
 			viewer,
 			planTierId: plan.tier_id,
 			planIsFree: isFreePlan(plan),
-			hasSubscription: !!subscription
+			hasSubscription: !!subscription,
+			subscriptionLoading
 		})
 	);
 
@@ -166,8 +167,12 @@
 			return isThisPlan ? 'current' : 'member';
 		}
 		// The viewer's standing outranks the plan's sales state, like a subscription.
+		// `own_tier_paid` is not here on purpose: it keeps the Subscribe CTA, and
+		// only the badge (see `state`) says it is their tier.
 		if (viewerState === 'own_tier') return 'own_tier';
-		if (viewerState === 'staff') return 'staff';
+		if (viewerState === 'owner') return 'owner';
+		if (viewerState === 'paused') return 'paused';
+		if (viewerState === 'banned') return 'banned';
 		if (viewerState === 'free_other_tier') return 'free_other_tier';
 		if (plan.sold_out) return 'none';
 		if (plan.sales_status === 'paused') return 'none';
@@ -201,7 +206,7 @@
 	 */
 	const state = $derived.by(() => {
 		if (action === 'current') return 'current';
-		if (action === 'own_tier') return 'own_tier';
+		if (action === 'own_tier' || viewerState === 'own_tier_paid') return 'own_tier';
 		if (plan.sold_out) return 'sold_out';
 		if (plan.sales_status === 'paused') return 'paused';
 		return null;
@@ -319,8 +324,12 @@
 			</a>
 		{:else if action === 'free_other_tier'}
 			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.freeOtherTierHelper']()}</p>
-		{:else if action === 'staff'}
-			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.staffNote']()}</p>
+		{:else if action === 'owner'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.ownerNote']()}</p>
+		{:else if action === 'paused'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.pausedNote']()}</p>
+		{:else if action === 'banned'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.bannedNote']()}</p>
 		{:else if action === 'member'}
 			<p class="text-sm text-muted-foreground">{m['membershipPlans.alreadySubscribed']()}</p>
 			{#if canSwitch}

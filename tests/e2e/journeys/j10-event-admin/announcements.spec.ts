@@ -36,7 +36,7 @@ test.describe('J10 announcements @p1', () => {
 
 		// ---- Draft → Send ----
 		const sentTitle = uniqueName('News');
-		const modal = page.getByRole('dialog', { name: /New Announcement|Edit Announcement/ });
+		const modal = page.getByRole('dialog', { name: /^(New announcement|Edit announcement)$/ });
 		await page.getByRole('button', { name: 'New announcement' }).first().click();
 		await expect(modal).toBeVisible();
 		await modal.getByLabel('Title').fill(sentTitle);

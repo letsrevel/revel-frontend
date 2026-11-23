@@ -199,7 +199,29 @@ describe('MembershipSection', () => {
 		expect(second.container.querySelector('.sm\\:grid-cols-2')).not.toBeNull();
 	});
 
-	it('shows an active member without a subscription their current tier, not Join', () => {
+	it('shows an active member of a FREE own tier their current tier, not Join', async () => {
+		renderSection({
+			tiers: [
+				makeTier({
+					id: 't-gold',
+					name: 'Gold',
+					plans: [makePlan({ tier_id: 't-gold', payment_method: 'free', price: '0.00' })]
+				})
+			],
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTier: { id: 't-gold', name: 'Gold' }
+		});
+
+		expect(
+			(await screen.findAllByText(m['membershipPlanCta.currentTier']())).length
+		).toBeGreaterThan(0);
+		expect(
+			screen.queryByRole('button', { name: m['membershipPlans.joinFreeCta']() })
+		).not.toBeInTheDocument();
+	});
+
+	it('shows the current tier AND keeps Subscribe on a PAID own-tier plan', async () => {
 		renderSection({
 			tiers: [makeTier({ id: 't-gold', name: 'Gold', plans: [makePlan({ tier_id: 't-gold' })] })],
 			isMember: true,
@@ -207,10 +229,12 @@ describe('MembershipSection', () => {
 			membershipTier: { id: 't-gold', name: 'Gold' }
 		});
 
-		expect(screen.getAllByText(m['membershipPlanCta.currentTier']()).length).toBeGreaterThan(0);
 		expect(
-			screen.queryByRole('button', { name: m['membershipPlans.subscribeCta']() })
-		).not.toBeInTheDocument();
+			(await screen.findAllByText(m['membershipPlanCta.currentTier']())).length
+		).toBeGreaterThan(0);
+		expect(
+			screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+		).toBeInTheDocument();
 	});
 
 	// `display_order` is the organizer's decision and the backend already applied

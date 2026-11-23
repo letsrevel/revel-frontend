@@ -528,7 +528,7 @@
 	"announcements.confirm.sendDescription": "Questo annuncio verrà inviato ai destinatari selezionati. Questa azione non può essere annullata.",
 	"announcements.create": "Crea Annuncio",
 	"announcements.delete": "Elimina",
-	"announcements.edit": "Modifica Annuncio",
+	"announcements.edit": "Modifica annuncio",
 	"announcements.empty.drafts": "Nessuna bozza",
 	"announcements.empty.draftsDescription": "Crea un nuovo annuncio per iniziare.",
 	"announcements.empty.sent": "Nessun annuncio inviato",
@@ -9640,7 +9640,7 @@
 	"announcementsAdminPage.searchPlaceholder": "Cerca...",
 	"discountCodeEditPage.backToDiscountCodes": "Torna ai codici sconto",
 	"discountCodeEditPage.title": "Modifica codice sconto",
-	"discountCodeEditPage.editing": "Stai modificando",
+	"discountCodeEditPage.editing": "Stai modificando {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Caricamento del codice sconto",
 	"discountCodeEditPage.loadError": "Impossibile caricare il codice sconto. Potrebbe essere stato eliminato.",
 	"discountCodeEditPage.updateError": "Impossibile aggiornare il codice sconto",
@@ -11969,9 +11969,11 @@
 	],
 	"tagsFilter.showFewer": "Mostra meno tag",
 	"membershipPlanCta.currentTier": "Il tuo livello attuale",
-	"membershipPlanCta.ownTierHelper": "Sei già iscritto a questo livello.",
+	"membershipPlanCta.ownTierHelper": "Fai già parte di questo livello.",
 	"membershipPlanCta.manageLink": "Gestisci in Le mie iscrizioni",
 	"membershipPlanCta.manageLinkAria": "Gestisci in Le mie iscrizioni, piano {plan}",
-	"membershipPlanCta.freeOtherTierHelper": "Sei già iscritto, quindi non puoi aderire a un piano gratuito di un altro livello.",
-	"membershipPlanCta.staffNote": "Gestisci questa organizzazione, quindi non puoi aderire ai suoi piani."
+	"membershipPlanCta.freeOtherTierHelper": "Fai già parte dell'organizzazione, quindi non puoi aderire a un piano gratuito di un altro livello.",
+	"membershipPlanCta.ownerNote": "Questa organizzazione è tua, quindi non puoi aderire ai suoi piani.",
+	"membershipPlanCta.pausedNote": "La tua iscrizione è in pausa. Contatta l'organizzazione.",
+	"membershipPlanCta.bannedNote": "La tua iscrizione è sospesa. Contatta l'organizzazione."
 }

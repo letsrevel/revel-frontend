@@ -9610,7 +9610,7 @@
 	"announcementsAdminPage.searchPlaceholder": "Rechercher...",
 	"discountCodeEditPage.backToDiscountCodes": "Retour aux codes de réduction",
 	"discountCodeEditPage.title": "Modifier le code de réduction",
-	"discountCodeEditPage.editing": "Modification de",
+	"discountCodeEditPage.editing": "Modification de {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Chargement du code de réduction",
 	"discountCodeEditPage.loadError": "Impossible de charger le code de réduction. Il a peut-être été supprimé.",
 	"discountCodeEditPage.updateError": "Impossible de mettre à jour le code de réduction",
@@ -11973,5 +11973,7 @@
 	"membershipPlanCta.manageLink": "Gérer dans Mes adhésions",
 	"membershipPlanCta.manageLinkAria": "Gérer dans Mes adhésions, formule {plan}",
 	"membershipPlanCta.freeOtherTierHelper": "Tu es déjà membre, donc tu ne peux pas rejoindre une formule gratuite d'un autre niveau.",
-	"membershipPlanCta.staffNote": "Tu gères cette organisation, donc tu ne peux pas rejoindre ses formules."
+	"membershipPlanCta.ownerNote": "Cette organisation est la tienne, donc tu ne peux pas rejoindre ses formules.",
+	"membershipPlanCta.pausedNote": "Ton adhésion est en pause. Contacte l'organisation.",
+	"membershipPlanCta.bannedNote": "Ton adhésion est suspendue. Contacte l'organisation."
 }

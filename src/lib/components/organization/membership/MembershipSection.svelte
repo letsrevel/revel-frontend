@@ -78,26 +78,19 @@
 	let sectionEl = $state<HTMLElement | null>(null);
 
 	/**
-	 * Owners and staff already have standing here; the page is configuration to
-	 * them, not an offer. Suppressing the per-tier CTA also spares them one
+	 * Only the owner is shut out of joining (revel-backend#1518); staff are treated
+	 * like any other viewer. Suppressing the per-tier CTA also spares the owner one
 	 * eligibility round trip per tier for a question they never asked — their
 	 * badge is rendered once, above the grid.
 	 */
-	const showJoinCtas = $derived.by(() => {
-		// Both operands read unconditionally: `||` inside a `$derived` would leave
-		// the skipped one untracked.
-		const owner = isOwner;
-		const staff = isStaff;
-		return !owner && !staff;
-	});
+	const showJoinCtas = $derived(!isOwner);
 
-	/** Forwarded to every plan card so a member never sees "Join" on their own tier. */
+	/** Forwarded to every plan card so a member gets the member rules (revel-backend#1518). */
 	const viewer = $derived<PlanViewer>({
 		isMember,
 		membershipStatus,
 		membershipTierId: membershipTier?.id ?? null,
-		isOwner,
-		isStaff
+		isOwner
 	});
 
 	/** The viewer's standing, shown once rather than repeated on every card. */

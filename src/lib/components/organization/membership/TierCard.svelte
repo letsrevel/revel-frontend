@@ -25,7 +25,7 @@
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
-	import { NO_PLAN_VIEWER, type PlanViewer } from '$lib/utils/plan-cta-state';
+	import { NO_PLAN_VIEWER, planCtaState, type PlanViewer } from '$lib/utils/plan-cta-state';
 
 	interface Props {
 		tier: PublicMembershipTierSchema;
@@ -269,8 +269,39 @@
 	// already have an active subscription" beside "awaiting payment". Plan-less
 	// tiers have no plan cards, so they keep their own CTA verdict.
 	const hasLiveSubscription = $derived(!!subscription);
+	/**
+	 * A plan-less tier is free, and its own CTA must follow the viewer's standing
+	 * like a free plan card does (revel-backend#1518). Tiers with plans leave this
+	 * to their plan cards.
+	 */
+	const tierState = $derived(
+		hasPlans
+			? 'default'
+			: planCtaState({
+					viewer,
+					planTierId: tierId ?? '',
+					planIsFree: true,
+					hasSubscription: hasLiveSubscription,
+					subscriptionLoading
+				})
+	);
+	const tierNote = $derived.by(() => {
+		switch (tierState) {
+			case 'owner':
+				return m['membershipPlanCta.ownerNote']();
+			case 'free_other_tier':
+				return m['membershipPlanCta.freeOtherTierHelper']();
+			case 'paused':
+				return m['membershipPlanCta.pausedNote']();
+			case 'banned':
+				return m['membershipPlanCta.bannedNote']();
+			default:
+				return null;
+		}
+	});
 	const showCta = $derived(
-		showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans)
+		!!tierNote ||
+			(showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans))
 	);
 
 	/**
@@ -396,15 +427,19 @@
 {/snippet}
 
 {#snippet actions()}
-	<MembershipCta
-		{organizationSlug}
-		{organizationName}
-		{isAuthenticated}
-		{tierId}
-		tierName={tier.name}
-		planId={ctaPlanId}
-		plansInline={hasPlans}
-	/>
+	{#if tierNote}
+		<p class="text-sm text-muted-foreground">{tierNote}</p>
+	{:else}
+		<MembershipCta
+			{organizationSlug}
+			{organizationName}
+			{isAuthenticated}
+			{tierId}
+			tierName={tier.name}
+			planId={ctaPlanId}
+			plansInline={hasPlans}
+		/>
+	{/if}
 {/snippet}
 
 <!-- `actions` is left out entirely (not rendered empty) when there is no CTA to

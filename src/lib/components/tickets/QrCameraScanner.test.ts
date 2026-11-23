@@ -64,5 +64,87 @@ describe('QrCameraScanner', () => {
 			// The button comes back so the user can retry.
 			expect(screen.getByRole('button', { name: /scan with camera/i })).toBeTruthy();
 		});
+
+		it('keeps the status region mounted while empty, then fills it', async () => {
+			start.mockRejectedValue(new DOMException('denied', 'NotAllowedError'));
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			const region = screen.getByRole('status');
+			expect(region.textContent).toBe('');
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(region.textContent).toContain('camera'));
+			// Same node, not a new one.
+			expect(screen.getByRole('status')).toBe(region);
+		});
+
+		it('shows a processing failure as the destructive alert, not the hint', async () => {
+			const failing = vi.fn(() => Promise.reject(new Error('boom')));
+			const user = userEvent.setup();
+			render(QrCameraScanner, {
+				props: { active: true, manualStart: true, codeNoun: 'card', onScan: failing }
+			});
+			await user.type(screen.getByRole('textbox'), 'ABC');
+			await user.keyboard('{Enter}');
+			const alert = await screen.findByRole('alert');
+			expect(alert.textContent).toContain('card');
+			expect(screen.getByRole('status').textContent).toBe('');
+		});
+
+		describe('start/stop race', () => {
+			function deferredStart() {
+				let resolveStart: () => void = () => undefined;
+				start.mockImplementation(
+					() =>
+						new Promise<void>((resolve) => {
+							resolveStart = () => resolve();
+						})
+				);
+				return () => resolveStart();
+			}
+
+			it('stops the camera once a start that was stopped meanwhile resolves', async () => {
+				const resolveStart = deferredStart();
+				const user = userEvent.setup();
+				render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+
+				// Stop while start() is still pending: not a no-op.
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+				expect(stop).not.toHaveBeenCalled();
+
+				resolveStart();
+				await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+			});
+
+			it('disables Scan while a start is pending, so it cannot start twice', async () => {
+				const resolveStart = deferredStart();
+				const user = userEvent.setup();
+				render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+
+				const scan = screen.getByRole('button', { name: /scan with camera/i });
+				expect(scan).toBeDisabled();
+				await user.click(scan);
+				expect(start).toHaveBeenCalledTimes(1);
+
+				resolveStart();
+				await waitFor(() => expect(scan).not.toBeDisabled());
+				expect(screen.queryByRole('status')?.textContent).toBe('');
+			});
+
+			it('keeps the camera running when a start resolves and it is still wanted', async () => {
+				const resolveStart = deferredStart();
+				const user = userEvent.setup();
+				render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				resolveStart();
+				await screen.findByRole('button', { name: /stop camera/i });
+				expect(stop).not.toHaveBeenCalled();
+			});
+		});
 	});
 });

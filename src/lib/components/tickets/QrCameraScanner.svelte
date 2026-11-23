@@ -72,7 +72,16 @@
 
 	let scanner: Html5Qrcode | null = null;
 	let isScanning = $state(false);
+	/** Camera availability / permission problem. A neutral hint when `manualStart`. */
 	let error = $state<string | null>(null);
+	/** The scan was read but handling it failed. Always the destructive alert. */
+	let processError = $state<string | null>(null);
+	// A start or a stop is in flight. The buttons wait for it, so a second click
+	// cannot start the camera twice or race a stop against a pending start.
+	let starting = $state(false);
+	let stopping = $state(false);
+	const transitioning = $derived(starting || stopping);
+	let pendingStart: Promise<void> | null = null;
 	let scanSuccess = $state(false);
 	let manualCode = $state('');
 	let isSubmittingManual = $state(false);
@@ -104,7 +113,28 @@
 		}
 	}
 
-	async function startScanner(facingMode: 'environment' | 'user' = 'environment', isRetry = false) {
+	/**
+	 * Start the camera, tracking the in-flight start so a second call joins it
+	 * (no double start) and `stopScanner` can wait for it.
+	 */
+	function startScanner(): Promise<void> {
+		if (pendingStart) return pendingStart;
+		if (isScanning) return Promise.resolve();
+		starting = true;
+		const attempt: Promise<void> = doStartScanner().finally(() => {
+			if (pendingStart === attempt) {
+				pendingStart = null;
+				starting = false;
+			}
+		});
+		pendingStart = attempt;
+		return attempt;
+	}
+
+	async function doStartScanner(
+		facingMode: 'environment' | 'user' = 'environment',
+		isRetry = false
+	): Promise<void> {
 		// Camera access requires a secure context (HTTPS or localhost).
 		if (typeof window !== 'undefined' && !window.isSecureContext) {
 			error = isCard
@@ -127,13 +157,26 @@
 				handleScanError
 			);
 
+			// Stop was asked for (or the component went away) while the camera was
+			// still opening: it is on now, so turn it off again.
+			if (!running) {
+				try {
+					await scanner.stop();
+				} catch (stopErr) {
+					console.error('Failed to stop scanner:', stopErr);
+				}
+				return;
+			}
+
 			isScanning = true;
 		} catch (err) {
 			console.error('Failed to start scanner:', err);
+			// Nobody is waiting for this camera any more, so its failure is not news.
+			if (!running) return;
 
 			// The back camera can't satisfy the constraint — try the front camera once.
 			if (classifyCameraError(err) === 'overconstrained' && !isRetry) {
-				await startScanner('user', true);
+				await doStartScanner('user', true);
 				return;
 			}
 
@@ -145,22 +188,37 @@
 
 	function startCamera() {
 		error = null;
+		processError = null;
 		cameraRequested = true;
 	}
 
 	function stopCamera() {
 		error = null;
+		processError = null;
 		scanSuccess = false;
 		cameraRequested = false;
 	}
 
-	async function stopScanner() {
+	/**
+	 * Stop the camera. A start still in flight is awaited first: it turns the
+	 * camera off itself when it lands and nobody wants it, so a Stop pressed
+	 * during the permission prompt is not lost. `onlyIfUnwanted` lets the effect
+	 * back out when the camera was requested again in the meantime.
+	 */
+	async function stopScanner(onlyIfUnwanted = false) {
+		if (pendingStart) {
+			await pendingStart.catch(() => undefined);
+			if (onlyIfUnwanted && running) return;
+		}
 		if (scanner && isScanning) {
+			stopping = true;
 			try {
 				await scanner.stop();
 				isScanning = false;
 			} catch (err) {
 				console.error('Failed to stop scanner:', err);
+			} finally {
+				stopping = false;
 			}
 		}
 	}
@@ -183,6 +241,7 @@
 
 		isSubmittingManual = true;
 		error = null;
+		processError = null;
 		try {
 			await stopScanner();
 			await onScan(code);
@@ -190,7 +249,7 @@
 			if (continuous && running) await startScanner();
 		} catch (err) {
 			console.error('Manual scan handling failed:', err);
-			error = processFailedMessage();
+			processError = processFailedMessage();
 			if (continuous && running) await startScanner();
 		} finally {
 			isSubmittingManual = false;
@@ -199,6 +258,7 @@
 
 	async function handleScanSuccess(decodedText: string) {
 		try {
+			processError = null;
 			scanSuccess = true;
 			await stopScanner();
 			await onScan(decodedText);
@@ -214,7 +274,7 @@
 			}
 		} catch (err) {
 			console.error('Scan processing error:', err);
-			error = processFailedMessage();
+			processError = processFailedMessage();
 			scanSuccess = false;
 			// Restart scanner after error
 			setTimeout(() => {
@@ -236,7 +296,7 @@
 		if (running) {
 			startScanner();
 		} else {
-			stopScanner();
+			stopScanner(true);
 		}
 	});
 
@@ -252,12 +312,12 @@
 {#if manualStart}
 	<div class="mb-4 flex flex-wrap items-center gap-2">
 		{#if cameraRequested}
-			<Button type="button" variant="outline" onclick={stopCamera}>
+			<Button type="button" variant="outline" onclick={stopCamera} disabled={stopping}>
 				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.stopCamera']()}
 			</Button>
 		{:else}
-			<Button type="button" onclick={startCamera}>
+			<Button type="button" onclick={startCamera} disabled={transitioning}>
 				<Camera class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.startCamera']()}
 			</Button>
@@ -282,29 +342,36 @@
 	{/if}
 </div>
 
-{#if error}
-	{#if manualStart}
-		<!-- Neutral hint: no camera is a normal state on a desktop, not a failure. A
-		     polite status, not an alert, and no destructive tone. -->
-		<div
-			class="mb-4 flex items-start gap-2 rounded-lg border border-border bg-muted p-3 text-sm text-foreground"
-			role="status"
-		>
+{#if manualStart}
+	<!-- Neutral hint: no camera is a normal state on a desktop, not a failure. A
+	     polite status, not an alert, and no destructive tone. The region stays
+	     mounted and only its content changes, because a live region that appears
+	     together with its text is often not announced. -->
+	<div
+		class={error
+			? 'mb-4 flex items-start gap-2 rounded-lg border border-border bg-muted p-3 text-sm text-foreground'
+			: undefined}
+		role="status"
+	>
+		{#if error}
 			<Info class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 			<p>{error}</p>
+		{/if}
+	</div>
+{/if}
+
+{#if processError || (!manualStart && error)}
+	<!-- A scan that was read but could not be handled is a real failure, in every mode. -->
+	<div
+		class="mb-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+		role="alert"
+	>
+		<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+		<div>
+			<p class="font-medium">{m['qrScannerModal.error']()}</p>
+			<p>{processError ?? error}</p>
 		</div>
-	{:else}
-		<div
-			class="mb-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
-			role="alert"
-		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
-			<div>
-				<p class="font-medium">{m['qrScannerModal.error']()}</p>
-				<p>{error}</p>
-			</div>
-		</div>
-	{/if}
+	</div>
 {/if}
 
 {#if scanSuccess}

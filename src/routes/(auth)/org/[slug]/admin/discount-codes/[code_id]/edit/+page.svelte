@@ -138,15 +138,25 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-		<PageHeader
-			volume="studio"
-			kicker={organization.name}
-			title={m['discountCodeEditPage.title']()}
-			subtitle={existingCode
-				? `${m['discountCodeEditPage.editing']()} ${existingCode.code}`
-				: undefined}
-			class="flex-1"
-		/>
+		<div class="min-w-0 flex-1">
+			<PageHeader
+				volume="studio"
+				kicker={organization.name}
+				title={m['discountCodeEditPage.title']()}
+			/>
+			{#if existingCode}
+				<!-- The whole sentence is read once, parameterized; the visible part is the
+				     code alone, in mono, because the title above already says "edit". -->
+				<p class="mt-2">
+					<span class="sr-only"
+						>{m['discountCodeEditPage.editing']({ code: existingCode.code })}</span
+					>
+					<span aria-hidden="true" class="font-mono font-bold text-muted-foreground"
+						>{existingCode.code}</span
+					>
+				</p>
+			{/if}
+		</div>
 	</div>
 
 	<!-- Content -->

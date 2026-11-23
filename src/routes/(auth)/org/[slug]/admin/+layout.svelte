@@ -75,6 +75,12 @@
 	const currentSection = $derived(
 		allNavItems(nav).find((item) => item.href === mobileItemsActiveHref && item !== nav.dashboard)
 	);
+	// `aria-current="page"` only where the crumb IS the page: on a nested page
+	// (e.g. one event) the last crumb is its section, which is not the current page.
+	function isCurrentCrumb(href: string): boolean {
+		const strip = (path: string) => (path.length > 1 ? path.replace(/\/+$/, '') : path);
+		return strip(href) === strip(currentPath);
+	}
 	const breadcrumbs = $derived([
 		{ href: resolve('/(public)', {}), label: m['orgAdmin.breadcrumbs.home']() },
 		{
@@ -175,7 +181,7 @@
 									href={crumb.href}
 									onclick={closeMobileMenu}
 									class="text-muted-foreground/80 transition-colors hover:text-foreground"
-									aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
+									aria-current={isCurrentCrumb(crumb.href) ? 'page' : undefined}
 								>
 									{crumb.label}
 								</a>
@@ -259,7 +265,7 @@
 							<a
 								href={crumb.href}
 								class="text-muted-foreground/80 transition-colors hover:text-foreground"
-								aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
+								aria-current={isCurrentCrumb(crumb.href) ? 'page' : undefined}
 							>
 								{crumb.label}
 							</a>

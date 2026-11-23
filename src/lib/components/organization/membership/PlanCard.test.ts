@@ -129,8 +129,11 @@ describe('PlanCard', () => {
 			membershipTierId: 'tier-1'
 		};
 
-		it('shows a current-tier state and a manage link on a plan of their own tier', () => {
-			renderCard({ viewer: activeGold });
+		it('shows a current-tier state and a manage link on a FREE plan of their own tier', () => {
+			renderCard({
+				viewer: activeGold,
+				plan: makePlan({ payment_method: 'free', price: '0.00' })
+			});
 
 			expect(screen.queryByRole('button')).not.toBeInTheDocument();
 			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
@@ -139,6 +142,33 @@ describe('PlanCard', () => {
 					name: m['membershipPlanCta.manageLinkAria']({ plan: 'Monthly' })
 				})
 			).toHaveAttribute('href', '/account/memberships');
+		});
+
+		it('shows the current-tier badge AND keeps Subscribe on a PAID plan of their own tier', () => {
+			renderCard({ viewer: activeGold });
+
+			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+			expect(
+				screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+			).toBeInTheDocument();
+		});
+
+		it('does not flash the own-tier state while the subscription is loading', () => {
+			renderCard({ viewer: activeGold, subscriptionLoading: true });
+
+			expect(screen.queryByText(m['membershipPlanCta.currentTier']())).not.toBeInTheDocument();
+		});
+
+		it('shows a note and no CTA to a paused or banned member', () => {
+			for (const [status, key] of [
+				['paused', 'membershipPlanCta.pausedNote'],
+				['banned', 'membershipPlanCta.bannedNote']
+			] as const) {
+				const { unmount } = renderCard({ viewer: { ...activeGold, membershipStatus: status } });
+				expect(screen.queryByRole('button')).not.toBeInTheDocument();
+				expect(screen.getByText(m[key]())).toBeInTheDocument();
+				unmount();
+			}
 		});
 
 		it('shows no join control on a FREE plan of another tier', () => {
@@ -159,13 +189,10 @@ describe('PlanCard', () => {
 			).toBeInTheDocument();
 		});
 
-		it('never offers Join to an owner or to staff', () => {
-			for (const flag of ['isOwner', 'isStaff'] as const) {
-				const { unmount } = renderCard({ viewer: { ...NO_PLAN_VIEWER, [flag]: true } });
-				expect(screen.queryByRole('button')).not.toBeInTheDocument();
-				expect(screen.getByText(m['membershipPlanCta.staffNote']())).toBeInTheDocument();
-				unmount();
-			}
+		it('never offers Join to the owner', () => {
+			renderCard({ viewer: { ...NO_PLAN_VIEWER, isOwner: true } });
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlanCta.ownerNote']())).toBeInTheDocument();
 		});
 
 		it('lets an existing subscription keep driving the card', () => {

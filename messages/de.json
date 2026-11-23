@@ -9640,7 +9640,7 @@
 	"announcementsAdminPage.searchPlaceholder": "Suchen...",
 	"discountCodeEditPage.backToDiscountCodes": "Zurück zu den Rabattcodes",
 	"discountCodeEditPage.title": "Rabattcode bearbeiten",
-	"discountCodeEditPage.editing": "Bearbeitung von",
+	"discountCodeEditPage.editing": "Bearbeitung von {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Rabattcode wird geladen",
 	"discountCodeEditPage.loadError": "Rabattcode konnte nicht geladen werden. Möglicherweise wurde er gelöscht.",
 	"discountCodeEditPage.updateError": "Rabattcode konnte nicht aktualisiert werden",
@@ -11973,5 +11973,7 @@
 	"membershipPlanCta.manageLink": "In Meine Mitgliedschaften verwalten",
 	"membershipPlanCta.manageLinkAria": "In Meine Mitgliedschaften verwalten, Tarif {plan}",
 	"membershipPlanCta.freeOtherTierHelper": "Du bist bereits Mitglied und kannst daher keinem kostenlosen Tarif einer anderen Stufe beitreten.",
-	"membershipPlanCta.staffNote": "Du verwaltest diese Organisation und kannst daher keinem ihrer Tarife beitreten."
+	"membershipPlanCta.ownerNote": "Diese Organisation gehört dir, daher kannst du keinem ihrer Tarife beitreten.",
+	"membershipPlanCta.pausedNote": "Deine Mitgliedschaft ist pausiert. Wende dich an die Organisation.",
+	"membershipPlanCta.bannedNote": "Deine Mitgliedschaft ist gesperrt. Wende dich an die Organisation."
 }
