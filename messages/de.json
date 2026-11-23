@@ -11972,6 +11972,7 @@
 	"membershipPlanCta.ownTierHelper": "Du bist bereits Mitglied in dieser Stufe.",
 	"membershipPlanCta.manageLink": "In Meine Mitgliedschaften verwalten",
 	"membershipPlanCta.manageLinkAria": "In Meine Mitgliedschaften verwalten, Tarif {plan}",
+	"membershipPlanCta.manageTierLinkAria": "In Meine Mitgliedschaften verwalten, Stufe {tier}",
 	"membershipPlanCta.freeOtherTierHelper": "Du bist bereits Mitglied und kannst daher keinem kostenlosen Tarif einer anderen Stufe beitreten.",
 	"membershipPlanCta.ownerNote": "Diese Organisation gehört dir, daher kannst du keinem ihrer Tarife beitreten.",
 	"membershipPlanCta.pausedNote": "Deine Mitgliedschaft ist pausiert. Wende dich an die Organisation.",

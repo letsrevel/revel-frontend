@@ -11972,6 +11972,7 @@
 	"membershipPlanCta.ownTierHelper": "You are already a member at this tier.",
 	"membershipPlanCta.manageLink": "Manage in My Memberships",
 	"membershipPlanCta.manageLinkAria": "Manage in My Memberships, {plan} plan",
+	"membershipPlanCta.manageTierLinkAria": "Manage in My Memberships, {tier} tier",
 	"membershipPlanCta.freeOtherTierHelper": "You are already a member, so you cannot join a free plan of another tier.",
 	"membershipPlanCta.ownerNote": "You own this organization, so you cannot join its plans.",
 	"membershipPlanCta.pausedNote": "Your membership is paused. Contact the organization.",

@@ -420,6 +420,20 @@ describe('MembershipCta', () => {
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 	});
 
+	it('shows member standing, not Staff, when the viewer is both staff and member', () => {
+		renderCta({ isStaff: true, isMember: true, membershipStatus: 'active' });
+
+		const badge = screen.getByRole('status');
+		expect(badge).not.toHaveTextContent(/staff/i);
+		expect(badge).toHaveTextContent(/member/i);
+	});
+
+	it('shows the owner badge when the viewer is owner, staff and member', () => {
+		renderCta({ isOwner: true, isStaff: true, isMember: true });
+
+		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
+	});
+
 	it('shows the member badge with status and tier from the server props', () => {
 		renderCta({
 			isMember: true,

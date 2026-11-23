@@ -4,6 +4,7 @@
 	import { Html5Qrcode } from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button';
 	import { classifyCameraError } from '$lib/utils/camera-errors';
+	import { CameraController, type CameraPhase } from '$lib/utils/camera-controller';
 	import { Camera, CameraOff, AlertCircle, Info, KeyRound } from '@lucide/svelte';
 
 	/**
@@ -71,28 +72,30 @@
 	const readerId = `qr-reader-${instanceId}`;
 
 	let scanner: Html5Qrcode | null = null;
-	let isScanning = $state(false);
+	/** Mirrors the controller's phase; the single source of truth for the camera state. */
+	let phase = $state<CameraPhase>('off');
 	/** Camera availability / permission problem. A neutral hint when `manualStart`. */
 	let error = $state<string | null>(null);
 	/** The scan was read but handling it failed. Always the destructive alert. */
 	let processError = $state<string | null>(null);
-	// A start or a stop is in flight. The buttons wait for it, so a second click
-	// cannot start the camera twice or race a stop against a pending start.
-	let starting = $state(false);
-	let stopping = $state(false);
-	const transitioning = $derived(starting || stopping);
-	let pendingStart: Promise<void> | null = null;
-	// The in-flight `scanner.stop()`. Every later stop caller joins it instead of
-	// calling `stop()` again (the second call throws), and a start waits for it.
-	let pendingStop: Promise<void> | null = null;
 	let scanSuccess = $state(false);
 	let manualCode = $state('');
 	let isSubmittingManual = $state(false);
+	// One scan is handled at a time: overlapping decoder callbacks (and a manual
+	// submit during a camera hit) must not call `onScan` twice for one code.
+	let handlingScan = false;
+	let destroyed = false;
 	// With `manualStart` the camera waits for an explicit click. `manualStart` is a
 	// mount-time choice, so reading it once here is intended.
 	let cameraRequested = $state(untrack(() => !manualStart));
-	const running = $derived(active && cameraRequested);
+	/** Whether the camera should be running. */
+	const wanted = $derived(manualStart ? cameraRequested && active : active);
+	const transitioning = $derived(phase === 'starting' || phase === 'stopping');
+	const canStop = $derived(phase === 'starting' || phase === 'on');
 	const isCard = $derived(codeNoun === 'card');
+
+	/** Camera access requires a secure context (HTTPS or localhost). */
+	class InsecureContextError extends Error {}
 
 	/** Map a camera failure to a localized, actionable message. */
 	function cameraErrorMessage(err: unknown): string {
@@ -116,78 +119,58 @@
 		}
 	}
 
-	/**
-	 * Start the camera, tracking the in-flight start so a second call joins it
-	 * (no double start) and `stopScanner` can wait for it.
-	 */
-	function startScanner(): Promise<void> {
-		if (pendingStart) return pendingStart;
-		if (isScanning && !pendingStop) return Promise.resolve();
-		starting = true;
-		const attempt: Promise<void> = (async () => {
-			// A stop is still in flight: let it land, then start only if the camera
-			// is still wanted (a stop that finished meanwhile may have been the last word).
-			if (pendingStop) {
-				await pendingStop;
-				if (!running || isScanning) return;
-			}
-			await doStartScanner();
-		})().finally(() => {
-			if (pendingStart === attempt) {
-				pendingStart = null;
-				starting = false;
-			}
-		});
-		pendingStart = attempt;
-		return attempt;
-	}
-
-	async function doStartScanner(
+	async function startWith(
 		facingMode: 'environment' | 'user' = 'environment',
 		isRetry = false
 	): Promise<void> {
-		// Camera access requires a secure context (HTTPS or localhost).
-		if (typeof window !== 'undefined' && !window.isSecureContext) {
-			error = isCard
-				? m['qrScannerModal.cardError_insecureContext']()
-				: m['qrScannerModal.error_insecureContext']();
-			if (manualStart) cameraRequested = false;
-			return;
-		}
-
+		scanner ??= new Html5Qrcode(readerId);
 		try {
-			error = null;
-			if (!scanner) {
-				scanner = new Html5Qrcode(readerId);
-			}
-
 			await scanner.start(
 				{ facingMode }, // Back camera by default, front camera as fallback
 				{ fps: 10, qrbox: { width: 250, height: 250 } },
 				handleScanSuccess,
 				handleScanError
 			);
-
-			isScanning = true;
-			// Stop was asked for (or the component went away) while the camera was
-			// still opening: it is on now, so turn it off again.
-			if (!running) await stopHardware();
 		} catch (err) {
-			console.error('Failed to start scanner:', err);
-			// Nobody is waiting for this camera any more, so its failure is not news.
-			if (!running) return;
-
-			// The back camera can't satisfy the constraint — try the front camera once.
-			if (classifyCameraError(err) === 'overconstrained' && !isRetry) {
-				await doStartScanner('user', true);
-				return;
+			// The back camera can't satisfy the constraint: try the front camera once.
+			if (!isRetry && classifyCameraError(err) === 'overconstrained') {
+				return startWith('user', true);
 			}
-
-			error = cameraErrorMessage(err);
-			// Hand control back so the button doubles as "try again".
-			if (manualStart) cameraRequested = false;
+			throw err;
 		}
 	}
+
+	const controller = new CameraController(
+		{
+			async start() {
+				if (typeof window !== 'undefined' && !window.isSecureContext) {
+					throw new InsecureContextError();
+				}
+				error = null;
+				await startWith();
+			},
+			async stop() {
+				await scanner?.stop();
+			}
+		},
+		{
+			onPhase: (p) => (phase = p),
+			onStartError(err) {
+				if (!(err instanceof InsecureContextError)) console.error('Failed to start scanner:', err);
+				// Nobody is waiting for this camera any more, so its failure is not news.
+				if (destroyed || !wanted) return;
+				error =
+					err instanceof InsecureContextError
+						? isCard
+							? m['qrScannerModal.cardError_insecureContext']()
+							: m['qrScannerModal.error_insecureContext']()
+						: cameraErrorMessage(err);
+				// Hand control back so the button doubles as "try again".
+				if (manualStart) cameraRequested = false;
+			},
+			onStopError: (err) => console.error('Failed to stop scanner:', err)
+		}
+	);
 
 	function startCamera() {
 		error = null;
@@ -202,41 +185,6 @@
 		cameraRequested = false;
 	}
 
-	/**
-	 * Stop the camera. A start still in flight is awaited first: it turns the
-	 * camera off itself when it lands and nobody wants it, so a Stop pressed
-	 * during the permission prompt is not lost. `onlyIfUnwanted` lets the effect
-	 * back out when the camera was requested again in the meantime.
-	 */
-	async function stopScanner(onlyIfUnwanted = false) {
-		if (pendingStart) {
-			await pendingStart.catch(() => undefined);
-			if (onlyIfUnwanted && running) return;
-		}
-		await stopHardware();
-	}
-
-	/** Stop the running camera exactly once; concurrent callers join the same stop. */
-	function stopHardware(): Promise<void> {
-		if (pendingStop) return pendingStop;
-		if (!scanner || !isScanning) return Promise.resolve();
-		const active = scanner;
-		stopping = true;
-		const attempt: Promise<void> = (async () => {
-			try {
-				await active.stop();
-				isScanning = false;
-			} catch (err) {
-				console.error('Failed to stop scanner:', err);
-			}
-		})().finally(() => {
-			if (pendingStop === attempt) pendingStop = null;
-			stopping = false;
-		});
-		pendingStop = attempt;
-		return attempt;
-	}
-
 	function processFailedMessage(): string {
 		return isCard
 			? m['qrScannerModal.cardError_processFailed']()
@@ -244,58 +192,57 @@
 	}
 
 	/**
-	 * Submit a manually-entered code — the guaranteed fallback when the camera
+	 * Pause the camera, run `onScan`, then resume (continuous mode). Returns false
+	 * when a scan is already being handled or handling failed.
+	 */
+	async function processCode(code: string): Promise<boolean> {
+		if (handlingScan) return false;
+		handlingScan = true;
+		processError = null;
+		let ok = false;
+		controller.setWanted(false);
+		await controller.idle();
+		try {
+			await onScan(code);
+			ok = true;
+		} catch (err) {
+			console.error('Scan processing error:', err);
+			processError = processFailedMessage();
+		} finally {
+			if (continuous && wanted && !destroyed) controller.setWanted(true);
+			handlingScan = false;
+		}
+		return ok;
+	}
+
+	/**
+	 * Submit a manually-entered code: the guaranteed fallback when the camera
 	 * can't start, and the only keyboard-operable path in. Routes through the same
 	 * `onScan` as a camera hit.
 	 */
 	async function submitManualCode(event?: SubmitEvent) {
 		event?.preventDefault();
 		const code = manualCode.trim();
-		if (!code || isSubmittingManual) return;
+		if (!code || isSubmittingManual || handlingScan) return;
 
 		isSubmittingManual = true;
 		error = null;
-		processError = null;
 		try {
-			await stopScanner();
-			await onScan(code);
-			manualCode = '';
-			if (continuous && running) await startScanner();
-		} catch (err) {
-			console.error('Manual scan handling failed:', err);
-			processError = processFailedMessage();
-			if (continuous && running) await startScanner();
+			if (await processCode(code)) manualCode = '';
 		} finally {
 			isSubmittingManual = false;
 		}
 	}
 
 	async function handleScanSuccess(decodedText: string) {
-		try {
-			processError = null;
-			scanSuccess = true;
-			await stopScanner();
-			await onScan(decodedText);
-			if (continuous) {
-				// Brief pause so the success line is readable before the viewfinder
-				// comes back and the next person steps up.
-				setTimeout(() => {
-					if (running) {
-						scanSuccess = false;
-						startScanner();
-					}
-				}, 1200);
-			}
-		} catch (err) {
-			console.error('Scan processing error:', err);
-			processError = processFailedMessage();
+		if (handlingScan) return;
+		scanSuccess = true;
+		const ok = await processCode(decodedText);
+		if (!ok) {
 			scanSuccess = false;
-			// Restart scanner after error
-			setTimeout(() => {
-				if (running) {
-					startScanner();
-				}
-			}, 2000);
+		} else if (continuous) {
+			// Brief pause so the success line is readable while the viewfinder returns.
+			setTimeout(() => (scanSuccess = false), 1200);
 		}
 	}
 
@@ -307,26 +254,23 @@
 	}
 
 	$effect(() => {
-		if (running) {
-			startScanner();
-		} else {
-			stopScanner(true);
-		}
+		controller.setWanted(wanted);
 	});
 
-	onDestroy(async () => {
-		await stopScanner();
-		if (scanner) {
-			await scanner.clear();
-			scanner = null;
-		}
+	onDestroy(() => {
+		destroyed = true;
+		void controller
+			.destroy()
+			.then(() => scanner?.clear())
+			.catch((err) => console.error('Failed to clear scanner:', err))
+			.finally(() => (scanner = null));
 	});
 </script>
 
 {#if manualStart}
 	<div class="mb-4 flex flex-wrap items-center gap-2">
 		{#if cameraRequested}
-			<Button type="button" variant="outline" onclick={stopCamera} disabled={stopping}>
+			<Button type="button" variant="outline" onclick={stopCamera} disabled={!canStop}>
 				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.stopCamera']()}
 			</Button>
@@ -346,7 +290,7 @@
 		style="width: 100%; max-width: 500px; margin: 0 auto;"
 	></div>
 
-	{#if running && !isScanning && !error}
+	{#if wanted && phase !== 'on' && !error}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="text-center">
 				<Camera class="mx-auto mb-2 h-12 w-12 text-muted-foreground" aria-hidden="true" />

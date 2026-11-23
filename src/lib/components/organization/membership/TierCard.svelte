@@ -435,7 +435,7 @@
 		{#if tierState === 'own_tier'}
 			<a
 				href={membershipsHref}
-				aria-label={m['membershipPlanCta.manageLinkAria']({ plan: tier.name })}
+				aria-label={m['membershipPlanCta.manageTierLinkAria']({ tier: tier.name })}
 				class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['membershipPlanCta.manageLink']()}<span aria-hidden="true"> →</span>

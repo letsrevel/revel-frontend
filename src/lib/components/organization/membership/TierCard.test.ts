@@ -141,12 +141,17 @@ describe('TierCard', () => {
 
 		it('tells an active member of THIS plan-less tier it is theirs, not Join', () => {
 			renderCard({
-				tier: makeTier({ id: 't-gold', plans: [] }),
+				tier: makeTier({ id: 't-gold', name: 'Gold', plans: [] }),
 				viewer: { ...active, membershipTierId: 't-gold' }
 			});
 
 			expect(screen.getByText(m['membershipPlanCta.ownTierHelper']())).toBeInTheDocument();
-			expect(screen.getByRole('link', { name: /manage/i })).toBeInTheDocument();
+			// Names the tier, not a "plan" (this tier has none).
+			expect(
+				screen.getByRole('link', {
+					name: m['membershipPlanCta.manageTierLinkAria']({ tier: 'Gold' })
+				})
+			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 		});
 

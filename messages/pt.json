@@ -11972,6 +11972,7 @@
 	"membershipPlanCta.ownTierHelper": "Já fazes parte deste nível.",
 	"membershipPlanCta.manageLink": "Gerir em As minhas subscrições",
 	"membershipPlanCta.manageLinkAria": "Gerir em As minhas subscrições, plano {plan}",
+	"membershipPlanCta.manageTierLinkAria": "Gerir em As minhas subscrições, nível {tier}",
 	"membershipPlanCta.freeOtherTierHelper": "Já és membro, por isso não podes aderir a um plano gratuito de outro nível.",
 	"membershipPlanCta.ownerNote": "Esta organização é tua, por isso não podes aderir aos seus planos.",
 	"membershipPlanCta.pausedNote": "A tua subscrição está em pausa. Contacta a organização.",

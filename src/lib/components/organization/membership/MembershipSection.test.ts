@@ -357,6 +357,12 @@ describe('MembershipSection', () => {
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 	});
 
+	it('does not render the owner note when there are no tiers', () => {
+		renderSection({ isOwner: true, tiers: [] });
+
+		expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+	});
+
 	it('shows member standing, not Staff, for a staff viewer who is also a member', () => {
 		renderSection({
 			isStaff: true,

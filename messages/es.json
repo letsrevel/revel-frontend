@@ -11972,6 +11972,7 @@
 	"membershipPlanCta.ownTierHelper": "Ya formas parte de este nivel.",
 	"membershipPlanCta.manageLink": "Gestionar en Mis membresías",
 	"membershipPlanCta.manageLinkAria": "Gestionar en Mis membresías, plan {plan}",
+	"membershipPlanCta.manageTierLinkAria": "Gestionar en Mis membresías, nivel {tier}",
 	"membershipPlanCta.freeOtherTierHelper": "Ya eres miembro, así que no puedes unirte a un plan gratuito de otro nivel.",
 	"membershipPlanCta.ownerNote": "Esta organización es tuya, así que no puedes unirte a sus planes.",
 	"membershipPlanCta.pausedNote": "Tu membresía está en pausa. Contacta con la organización.",
