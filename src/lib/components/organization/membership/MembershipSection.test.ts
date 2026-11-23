@@ -349,10 +349,31 @@ describe('MembershipSection', () => {
 		});
 
 		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
+		// The owner note is said once, not on every card.
+		expect(screen.getAllByText(m['membershipPlanCta.ownerNote']())).toHaveLength(1);
 		await waitFor(() => {
 			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 		});
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+	});
+
+	it('shows member standing, not Staff, for a staff viewer who is also a member', () => {
+		renderSection({
+			isStaff: true,
+			isMember: true,
+			membershipStatus: 'active',
+			tiers: [makeTier({ id: 't-gold', name: 'Gold' })]
+		});
+
+		const badge = screen.getAllByRole('status')[0];
+		expect(badge).not.toHaveTextContent(/staff/i);
+		expect(badge).toHaveTextContent(/member/i);
+	});
+
+	it('still shows Staff for a staff viewer who is not a member', () => {
+		renderSection({ isStaff: true, tiers: [makeTier({ id: 't-gold', name: 'Gold' })] });
+
+		expect(screen.getAllByRole('status')[0]).toHaveTextContent(/staff/i);
 	});
 
 	// The grid is one query away from the truth `OrgMembershipInline` already

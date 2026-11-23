@@ -82,6 +82,9 @@
 	let stopping = $state(false);
 	const transitioning = $derived(starting || stopping);
 	let pendingStart: Promise<void> | null = null;
+	// The in-flight `scanner.stop()`. Every later stop caller joins it instead of
+	// calling `stop()` again (the second call throws), and a start waits for it.
+	let pendingStop: Promise<void> | null = null;
 	let scanSuccess = $state(false);
 	let manualCode = $state('');
 	let isSubmittingManual = $state(false);
@@ -119,9 +122,17 @@
 	 */
 	function startScanner(): Promise<void> {
 		if (pendingStart) return pendingStart;
-		if (isScanning) return Promise.resolve();
+		if (isScanning && !pendingStop) return Promise.resolve();
 		starting = true;
-		const attempt: Promise<void> = doStartScanner().finally(() => {
+		const attempt: Promise<void> = (async () => {
+			// A stop is still in flight: let it land, then start only if the camera
+			// is still wanted (a stop that finished meanwhile may have been the last word).
+			if (pendingStop) {
+				await pendingStop;
+				if (!running || isScanning) return;
+			}
+			await doStartScanner();
+		})().finally(() => {
 			if (pendingStart === attempt) {
 				pendingStart = null;
 				starting = false;
@@ -157,18 +168,10 @@
 				handleScanError
 			);
 
+			isScanning = true;
 			// Stop was asked for (or the component went away) while the camera was
 			// still opening: it is on now, so turn it off again.
-			if (!running) {
-				try {
-					await scanner.stop();
-				} catch (stopErr) {
-					console.error('Failed to stop scanner:', stopErr);
-				}
-				return;
-			}
-
-			isScanning = true;
+			if (!running) await stopHardware();
 		} catch (err) {
 			console.error('Failed to start scanner:', err);
 			// Nobody is waiting for this camera any more, so its failure is not news.
@@ -210,17 +213,28 @@
 			await pendingStart.catch(() => undefined);
 			if (onlyIfUnwanted && running) return;
 		}
-		if (scanner && isScanning) {
-			stopping = true;
+		await stopHardware();
+	}
+
+	/** Stop the running camera exactly once; concurrent callers join the same stop. */
+	function stopHardware(): Promise<void> {
+		if (pendingStop) return pendingStop;
+		if (!scanner || !isScanning) return Promise.resolve();
+		const active = scanner;
+		stopping = true;
+		const attempt: Promise<void> = (async () => {
 			try {
-				await scanner.stop();
+				await active.stop();
 				isScanning = false;
 			} catch (err) {
 				console.error('Failed to stop scanner:', err);
-			} finally {
-				stopping = false;
 			}
-		}
+		})().finally(() => {
+			if (pendingStop === attempt) pendingStop = null;
+			stopping = false;
+		});
+		pendingStop = attempt;
+		return attempt;
 	}
 
 	function processFailedMessage(): string {

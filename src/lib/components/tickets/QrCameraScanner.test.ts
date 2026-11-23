@@ -145,6 +145,57 @@ describe('QrCameraScanner', () => {
 				await screen.findByRole('button', { name: /stop camera/i });
 				expect(stop).not.toHaveBeenCalled();
 			});
+
+			describe('stop in flight', () => {
+				function deferredStop() {
+					let resolveStop: () => void = () => undefined;
+					stop.mockImplementation(
+						() =>
+							new Promise<void>((resolve) => {
+								resolveStop = () => resolve();
+							})
+					);
+					return () => resolveStop();
+				}
+
+				it('starts again when the camera is wanted during a pending stop', async () => {
+					const resolveStop = deferredStop();
+					const { rerender } = render(QrCameraScanner, { props: { active: true, onScan } });
+					await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+					await screen.findByRole('textbox');
+					await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+					await new Promise((r) => setTimeout(r, 0));
+
+					await rerender({ active: false, onScan });
+					await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+					// Wanted again while the stop has not resolved: must not be lost.
+					await rerender({ active: true, onScan });
+					expect(start).toHaveBeenCalledTimes(1);
+
+					resolveStop();
+					await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+					expect(stop).toHaveBeenCalledTimes(1);
+				});
+
+				it('calls scanner.stop() once for overlapping stops', async () => {
+					const resolveStop = deferredStop();
+					const user = userEvent.setup();
+					const { rerender } = render(QrCameraScanner, { props: { active: true, onScan } });
+					await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+					await new Promise((r) => setTimeout(r, 0));
+
+					await rerender({ active: false, onScan });
+					await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+					// A manual submit also asks for a stop while the first is pending.
+					await user.type(screen.getByRole('textbox'), 'ABC');
+					await user.keyboard('{Enter}');
+					expect(stop).toHaveBeenCalledTimes(1);
+
+					resolveStop();
+					await waitFor(() => expect(onScan).toHaveBeenCalledWith('ABC'));
+					expect(stop).toHaveBeenCalledTimes(1);
+				});
+			});
 		});
 	});
 });

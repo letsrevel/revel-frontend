@@ -324,8 +324,6 @@
 			</a>
 		{:else if action === 'free_other_tier'}
 			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.freeOtherTierHelper']()}</p>
-		{:else if action === 'owner'}
-			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.ownerNote']()}</p>
 		{:else if action === 'paused'}
 			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.pausedNote']()}</p>
 		{:else if action === 'banned'}
@@ -476,7 +474,7 @@
 	priceNote={neverExpires ? m['subscriptions.neverExpires']() : undefined}
 	{badges}
 	{meta}
-	{actions}
+	actions={action === 'owner' ? undefined : actions}
 >
 	{#if alignmentLabel}
 		<p class="text-sm font-medium text-foreground">{alignmentLabel}</p>

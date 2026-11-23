@@ -192,7 +192,8 @@ describe('PlanCard', () => {
 		it('never offers Join to the owner', () => {
 			renderCard({ viewer: { ...NO_PLAN_VIEWER, isOwner: true } });
 			expect(screen.queryByRole('button')).not.toBeInTheDocument();
-			expect(screen.getByText(m['membershipPlanCta.ownerNote']())).toBeInTheDocument();
+			// The page summary says it once; the card stays silent.
+			expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
 		});
 
 		it('lets an existing subscription keep driving the card', () => {

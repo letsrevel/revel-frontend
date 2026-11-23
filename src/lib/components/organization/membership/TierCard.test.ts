@@ -132,10 +132,22 @@ describe('TierCard', () => {
 			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 		});
 
-		it('shows the owner note to the owner', () => {
+		it('renders nothing in the CTA slot for the owner (the page says it once)', () => {
 			renderCard({ viewer: { ...NO_PLAN_VIEWER, isOwner: true }, showJoinCta: false });
 
-			expect(screen.getByText(m['membershipPlanCta.ownerNote']())).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+		});
+
+		it('tells an active member of THIS plan-less tier it is theirs, not Join', () => {
+			renderCard({
+				tier: makeTier({ id: 't-gold', plans: [] }),
+				viewer: { ...active, membershipTierId: 't-gold' }
+			});
+
+			expect(screen.getByText(m['membershipPlanCta.ownTierHelper']())).toBeInTheDocument();
+			expect(screen.getByRole('link', { name: /manage/i })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 		});
 
 		it('shows the paused note to a paused member', () => {

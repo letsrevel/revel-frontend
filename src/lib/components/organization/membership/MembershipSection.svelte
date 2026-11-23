@@ -93,7 +93,12 @@
 		isOwner
 	});
 
-	/** The viewer's standing, shown once rather than repeated on every card. */
+	/**
+	 * The viewer's standing, shown once rather than repeated on every card. The
+	 * summary badge shows member standing when `isMember` (staff included), since
+	 * the cards apply member rules to them; only a staff viewer who is NOT a member
+	 * sees the Staff badge. The owner always wins.
+	 */
 	const hasStanding = $derived.by(() => {
 		const owner = isOwner;
 		const staff = isStaff;
@@ -201,8 +206,12 @@
 			{membershipTier}
 			{membershipStatus}
 			{isOwner}
-			{isStaff}
+			isStaff={isStaff && !isMember}
 		/>
+		{#if isOwner}
+			<!-- Said once here; the plan and tier cards render nothing for the owner. -->
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.ownerNote']()}</p>
+		{/if}
 	{/if}
 
 	{#if tiers.length === 0}
