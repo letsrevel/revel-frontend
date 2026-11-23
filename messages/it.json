@@ -558,7 +558,7 @@
 	"announcements.form.noEventsDescription": "Crea prima un evento: potrai poi annunciarlo ai suoi partecipanti.",
 	"announcements.form.noUpcomingEvents": "Nessun evento in programma",
 	"announcements.form.noUpcomingEventsDescription": "Abilita gli eventi passati per cercare tra quelli precedenti.",
-	"announcements.new": "Nuovo Annuncio",
+	"announcements.new": "Nuovo annuncio",
 	"announcements.pageDescription": "Crea e gestisci annunci per i membri della tua organizzazione e le persone partecipanti agli eventi.",
 	"announcements.public.empty": "Nessun annuncio ancora",
 	"announcements.public.audienceLabel": "Chi può vederlo",
@@ -3782,7 +3782,7 @@
 					"organization": "Organizzazione"
 				}
 			},
-			"createEventButton": "Crea Evento",
+			"createEventButton": "Nuovo evento",
 			"organizationDetailsHeading": "Dettagli Organizzazione",
 			"aboutHeading": "Informazioni su {orgName}",
 			"quickActions": {
@@ -3839,7 +3839,7 @@
 			}
 		},
 		"settings": {
-			"pageTitle": "Impostazioni Organizzazione",
+			"pageTitle": "Impostazioni",
 			"pageDescription": "Gestisci il profilo e le preferenze della tua organizzazione",
 			"metaDescription": "Gestisci le impostazioni della tua organizzazione",
 			"viewPublicProfile": "Visualizza Profilo Pubblico",
@@ -3962,7 +3962,7 @@
 			"pageTitle": "Eventi",
 			"pageDescription": "Gestisci gli eventi della tua organizzazione",
 			"metaDescription": "Gestisci eventi per {orgName}",
-			"createEventButton": "Crea Evento",
+			"createEventButton": "Nuovo evento",
 			"empty": {
 				"title": "Nessun evento ancora",
 				"description": "Inizia creando il tuo primo evento"
@@ -4014,7 +4014,7 @@
 			}
 		},
 		"members": {
-			"pageTitle": "Membri & Staff",
+			"pageTitle": "Membri e staff",
 			"pageDescription": "Gestisci membri, staff e richieste di iscrizione dell'organizzazione",
 			"metaDescription": "Gestisci membri e staff per {orgName}",
 			"tabs": {
@@ -4448,7 +4448,7 @@
 			"verifyCard": "Verifica una tessera"
 		},
 		"eventSeries": {
-			"pageTitle": "Serie di Eventi",
+			"pageTitle": "Serie di eventi",
 			"pageDescription": "Gestisci serie di eventi ricorrenti per la tua organizzazione",
 			"metaDescription": "Gestisci serie di eventi per {orgName}",
 			"createSeriesButton": "Crea Serie",
@@ -4465,7 +4465,7 @@
 		"questionnaires": {
 			"pageTitle": "Questionari",
 			"pageDescription": "Crea e gestisci questionari per ammissioni agli eventi e iscrizioni alle organizzazioni.",
-			"createQuestionnaireButton": "Crea Questionario",
+			"createQuestionnaireButton": "Nuovo questionario",
 			"searchPlaceholder": "Cerca questionari...",
 			"noResults": {
 				"title": "Nessun questionario trovato",
@@ -4580,7 +4580,7 @@
 		"polls": {
 			"pageTitle": "Sondaggi",
 			"pageDescription": "Crea sondaggi per la tua organizzazione o un evento.",
-			"createPollButton": "Crea sondaggio",
+			"createPollButton": "Nuovo sondaggio",
 			"searchPlaceholder": "Cerca sondaggi per nome…",
 			"empty": {
 				"title": "Ancora nessun sondaggio",
@@ -4609,12 +4609,12 @@
 	"orgAdmin.events.confirmations.deleteCancelled": "Questo evento è già stato annullato e le persone partecipanti sono state notificate. Eliminandolo definitivamente sparirà anche dai tuoi archivi. Continuare?",
 	"orgAdmin.events.confirmations.publish": "Vuoi davvero pubblicare questo evento?",
 	"orgAdmin.events.confirmations.reopen": "Vuoi davvero riaprire questo evento?",
-	"orgAdmin.events.createEventButton": "Crea Evento",
+	"orgAdmin.events.createEventButton": "Nuovo evento",
 	"orgAdmin.events.empty.description": "Crea il tuo primo evento per iniziare",
 	"orgAdmin.events.empty.title": "Nessun Evento Ancora",
 	"orgAdmin.events.metaDescription": "Gestisci eventi per {orgName}",
 	"orgAdmin.events.pageDescription": "Crea e gestisci eventi per la tua organizzazione",
-	"orgAdmin.events.pageTitle": "Gestisci Eventi",
+	"orgAdmin.events.pageTitle": "Eventi",
 	"orgAdmin.events.sections.cancelled": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
@@ -4864,7 +4864,7 @@
 		"pageTitle": "Questionari",
 		"metaDescription": "Gestisci moduli di ammissione e sondaggi per {orgName}",
 		"pageDescription": "Gestisci moduli di ammissione, candidature e sondaggi per i tuoi eventi",
-		"createQuestionnaireButton": "Crea Questionario",
+		"createQuestionnaireButton": "Nuovo questionario",
 		"searchPlaceholder": "Cerca questionari...",
 		"noResults": {
 			"title": "Nessun questionario trovato",
@@ -4880,7 +4880,7 @@
 	"orgAdmin.resources": {
 		"pageTitle": "Risorse",
 		"pageDescription": "Gestisci file, link e contenuti per la tua organizzazione",
-		"addResourceButton": "Aggiungi Risorsa",
+		"addResourceButton": "Nuova risorsa",
 		"searchPlaceholder": "Cerca risorse...",
 		"filters": {
 			"type": {
@@ -5130,7 +5130,7 @@
 			}
 		}
 	],
-	"orgAdmin.venues.createButton": "Crea Luogo",
+	"orgAdmin.venues.createButton": "Nuovo luogo",
 	"orgAdmin.venues.delete.confirm": "Vuoi davvero eliminare questo luogo? Verranno eliminati anche tutti i settori e i posti.",
 	"orgAdmin.venues.delete.error": "Impossibile eliminare il luogo",
 	"orgAdmin.venues.delete.success": "Luogo eliminato con successo",
@@ -5196,7 +5196,7 @@
 	],
 	"orgAdminTokensPage": {
 		"pageTitle": "Link di Invito - {organizationName}",
-		"title": "Link di Invito",
+		"title": "Link di invito",
 		"subtitle": "Crea e gestisci link di invito condivisibili per la tua organizzazione",
 		"createButton": "Crea Link",
 		"searchPlaceholder": "Cerca link per nome...",
@@ -9646,7 +9646,7 @@
 	"discountCodeEditPage.updateError": "Impossibile aggiornare il codice sconto",
 	"blacklistAdminPage.metaTitle": "Gestione blacklist - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Gestisci le persone in blacklist per {name}",
-	"blacklistAdminPage.title": "Gestione blacklist",
+	"blacklistAdminPage.title": "Blacklist",
 	"blacklistAdminPage.pageDescription": "Gestisci le persone in blacklist e le richieste di verifica della tua organizzazione.",
 	"blacklistAdminPage.addToBlacklist": "Aggiungi alla blacklist",
 	"blacklistAdminPage.tabBlacklist": "Lista nera",
@@ -10479,7 +10479,7 @@
 	"integrations.import.remoteStatus.cancelled": "Annullato",
 	"orgAdmin.events.actions.embed": "Incorpora nel tuo sito",
 	"orgAdminEmbedPage.pageTitle": "Incorpora - {organizationName}",
-	"orgAdminEmbedPage.title": "Incorpora nel tuo sito",
+	"orgAdminEmbedPage.title": "Incorpora",
 	"orgAdminEmbedPage.subtitle": "Mostra i tuoi eventi sul tuo sito. Configura, guarda l'anteprima e copia il codice.",
 	"orgAdminEmbedPage.pickersFailed": "Non siamo riusciti a caricare i tuoi eventi e le tue serie, quindi quelle opzioni non sono disponibili. Puoi comunque incorporare l'elenco completo degli eventi della tua organizzazione.",
 	"orgAdminEmbedPage.eventNotEmbeddable": "Questo evento non si può incorporare: gli incorporamenti vengono caricati da persone in visita anonime, quindi compaiono solo gli eventi pubblicati, pubblici o non elencati.",

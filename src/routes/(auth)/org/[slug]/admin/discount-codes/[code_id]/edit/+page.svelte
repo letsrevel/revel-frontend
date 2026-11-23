@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmindiscountcodesGetDiscountCode,
@@ -137,17 +138,15 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-		<div>
-			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
-				{m['discountCodeEditPage.title']()}
-			</h1>
-			{#if existingCode}
-				<p class="mt-2 text-muted-foreground">
-					{m['discountCodeEditPage.editing']()}
-					<span class="font-mono font-bold">{existingCode.code}</span>
-				</p>
-			{/if}
-		</div>
+		<PageHeader
+			volume="studio"
+			kicker={organization.name}
+			title={m['discountCodeEditPage.title']()}
+			subtitle={existingCode
+				? `${m['discountCodeEditPage.editing']()} ${existingCode.code}`
+				: undefined}
+			class="flex-1"
+		/>
 	</div>
 
 	<!-- Content -->

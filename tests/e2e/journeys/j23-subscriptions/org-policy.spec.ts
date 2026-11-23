@@ -68,7 +68,9 @@ test.describe('J23 org subscription policy fields @p2', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Organization Settings' })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { name: 'Settings', level: 1, exact: true })
+		).toBeVisible();
 
 		const graceInput = page.locator('#membership_grace_period_days');
 
@@ -157,7 +159,9 @@ test.describe('J23 org subscription policy fields @p2', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Organization Settings' })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { name: 'Settings', level: 1, exact: true })
+		).toBeVisible();
 
 		const revivalInput = page.getByLabel('Revival window (days)');
 		const questionnairePicker = page.getByLabel('Default membership questionnaire');

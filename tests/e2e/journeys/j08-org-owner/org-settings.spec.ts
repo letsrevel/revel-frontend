@@ -24,7 +24,9 @@ test.describe('J8 org settings @p1', () => {
 		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
 		await waitForClientAuth(page);
 
-		await expect(page.getByRole('heading', { name: 'Organization Settings' })).toBeVisible();
+		await expect(
+			page.getByRole('heading', { name: 'Settings', level: 1, exact: true })
+		).toBeVisible();
 
 		// contact_method rule: link/form options are disabled while the contact
 		// email is unverified, with the explanatory hint shown.

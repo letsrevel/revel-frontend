@@ -3752,7 +3752,7 @@
 					"organization": "Organisation"
 				}
 			},
-			"createEventButton": "Créer un événement",
+			"createEventButton": "Nouvel événement",
 			"organizationDetailsHeading": "Détails de l'organisation",
 			"aboutHeading": "À propos de {orgName}",
 			"quickActions": {
@@ -3809,7 +3809,7 @@
 			}
 		},
 		"settings": {
-			"pageTitle": "Paramètres de l'organisation",
+			"pageTitle": "Paramètres",
 			"pageDescription": "Gère le profil et les préférences de ton organisation",
 			"metaDescription": "Gère les paramètres de ton organisation",
 			"viewPublicProfile": "Voir le profil public",
@@ -3932,7 +3932,7 @@
 			"pageTitle": "Événements",
 			"pageDescription": "Gère les événements de ton organisation",
 			"metaDescription": "Gère les événements pour {orgName}",
-			"createEventButton": "Créer un événement",
+			"createEventButton": "Nouvel événement",
 			"empty": {
 				"title": "Aucun événement pour l'instant",
 				"description": "Commence par créer ton premier événement"
@@ -4435,7 +4435,7 @@
 		"questionnaires": {
 			"pageTitle": "Questionnaires",
 			"pageDescription": "Crée et gère des questionnaires pour les admissions aux événements et les adhésions aux organisations.",
-			"createQuestionnaireButton": "Créer un questionnaire",
+			"createQuestionnaireButton": "Nouveau questionnaire",
 			"searchPlaceholder": "Rechercher des questionnaires...",
 			"noResults": {
 				"title": "Aucun questionnaire trouvé",
@@ -4550,7 +4550,7 @@
 		"polls": {
 			"pageTitle": "Sondages",
 			"pageDescription": "Crée des sondages pour ton organisation ou un événement.",
-			"createPollButton": "Créer un sondage",
+			"createPollButton": "Nouveau sondage",
 			"searchPlaceholder": "Rechercher des sondages par nom…",
 			"empty": {
 				"title": "Aucun sondage pour l'instant",
@@ -4579,12 +4579,12 @@
 	"orgAdmin.events.confirmations.deleteCancelled": "Cet événement a déjà été annulé et les participant·e·s ont été averti·e·s. Le supprimer définitivement le retirera aussi de tes archives. Continuer ?",
 	"orgAdmin.events.confirmations.publish": "Es-tu sûr·e de vouloir publier cet événement ?",
 	"orgAdmin.events.confirmations.reopen": "Es-tu sûr·e de vouloir rouvrir cet événement ?",
-	"orgAdmin.events.createEventButton": "Créer un événement",
+	"orgAdmin.events.createEventButton": "Nouvel événement",
 	"orgAdmin.events.empty.description": "Crée ton premier événement pour commencer",
 	"orgAdmin.events.empty.title": "Aucun événement pour l'instant",
 	"orgAdmin.events.metaDescription": "Gérer les événements de {orgName}",
 	"orgAdmin.events.pageDescription": "Crée et gère les événements de ton organisation",
-	"orgAdmin.events.pageTitle": "Gérer les événements",
+	"orgAdmin.events.pageTitle": "Événements",
 	"orgAdmin.events.sections.cancelled": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
@@ -4834,7 +4834,7 @@
 		"pageTitle": "Questionnaires",
 		"metaDescription": "Gère les formulaires d'admission et les sondages de {orgName}",
 		"pageDescription": "Gère les formulaires d'admission, les candidatures et les sondages de tes événements",
-		"createQuestionnaireButton": "Créer un questionnaire",
+		"createQuestionnaireButton": "Nouveau questionnaire",
 		"searchPlaceholder": "Rechercher des questionnaires...",
 		"noResults": {
 			"title": "Aucun questionnaire trouvé",
@@ -4850,7 +4850,7 @@
 	"orgAdmin.resources": {
 		"pageTitle": "Ressources",
 		"pageDescription": "Gère les fichiers, liens et contenus de ton organisation",
-		"addResourceButton": "Ajouter une ressource",
+		"addResourceButton": "Nouvelle ressource",
 		"searchPlaceholder": "Rechercher des ressources...",
 		"filters": {
 			"type": {
@@ -5100,7 +5100,7 @@
 			}
 		}
 	],
-	"orgAdmin.venues.createButton": "Créer un lieu",
+	"orgAdmin.venues.createButton": "Nouveau lieu",
 	"orgAdmin.venues.delete.confirm": "Es-tu sûr·e de vouloir supprimer ce lieu ? Tous les secteurs et toutes les places seront également supprimés.",
 	"orgAdmin.venues.delete.error": "Échec de la suppression du lieu",
 	"orgAdmin.venues.delete.success": "Lieu supprimé avec succès",
@@ -9616,7 +9616,7 @@
 	"discountCodeEditPage.updateError": "Impossible de mettre à jour le code de réduction",
 	"blacklistAdminPage.metaTitle": "Gestion de la liste noire - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Gère les personnes sur liste noire pour {name}",
-	"blacklistAdminPage.title": "Gestion de la liste noire",
+	"blacklistAdminPage.title": "Liste noire",
 	"blacklistAdminPage.pageDescription": "Gère les personnes sur liste noire et les demandes de vérification de ton organisation.",
 	"blacklistAdminPage.addToBlacklist": "Ajouter à la liste noire",
 	"blacklistAdminPage.tabBlacklist": "Liste noire",
@@ -10479,7 +10479,7 @@
 	"integrations.import.remoteStatus.cancelled": "Annulé",
 	"orgAdmin.events.actions.embed": "Intégrer sur ton site",
 	"orgAdminEmbedPage.pageTitle": "Intégration - {organizationName}",
-	"orgAdminEmbedPage.title": "Intégrer sur ton site",
+	"orgAdminEmbedPage.title": "Intégrer",
 	"orgAdminEmbedPage.subtitle": "Affiche tes événements sur ton propre site. Configure, prévisualise, copie le code.",
 	"orgAdminEmbedPage.pickersFailed": "Tes événements et tes séries n'ont pas pu être chargés, ces options sont donc indisponibles. Tu peux quand même intégrer la liste complète des événements de ton organisation.",
 	"orgAdminEmbedPage.eventNotEmbeddable": "Cet événement ne peut pas être intégré : les intégrations sont chargées par des visiteur·ses anonymes, donc seuls les événements publiés, publics ou non répertoriés s'affichent.",

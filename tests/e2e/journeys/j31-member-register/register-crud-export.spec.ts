@@ -40,7 +40,7 @@ test.describe('J31 register: create, edit, end, filter, export, delete @p1', () 
 			// empty register, not as "no entries match these filters".
 			await gotoHydrated(page, `/org/${org.slug}/admin/members`);
 			await waitForClientAuth(page);
-			await expect(page.getByRole('heading', { name: 'Members & Staff', level: 1 })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Members & staff', level: 1 })).toBeVisible();
 			await expect(page.getByText('No register entries yet')).toBeVisible({ timeout: 15_000 });
 
 			// Create an account-less entry.

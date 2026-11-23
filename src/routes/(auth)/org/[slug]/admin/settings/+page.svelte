@@ -135,6 +135,8 @@
 		</Button>
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
 		title={m['orgAdmin.settings.pageTitle']()}
 		subtitle={m['orgAdmin.settings.pageDescription']()}
 		actions={publicProfileAction}

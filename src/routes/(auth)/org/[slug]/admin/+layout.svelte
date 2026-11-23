@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { billingNeedsAttention } from '$lib/utils/org-setup-progress';
-	import { buildAdminNav, activeNavHref } from '$lib/components/org-admin/admin-nav';
+	import { buildAdminNav, activeNavHref, allNavItems } from '$lib/components/org-admin/admin-nav';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
@@ -69,7 +69,12 @@
 		mobileMenuOpen = !mobileMenuOpen;
 	}
 
-	// Breadcrumb structure
+	// Breadcrumb structure. Ends at the current admin section (derived from the
+	// nav model) so the trail always names the page; on the admin home "Admin"
+	// stays last.
+	const currentSection = $derived(
+		allNavItems(nav).find((item) => item.href === mobileItemsActiveHref && item !== nav.dashboard)
+	);
 	const breadcrumbs = $derived([
 		{ href: resolve('/(public)', {}), label: m['orgAdmin.breadcrumbs.home']() },
 		{
@@ -83,7 +88,8 @@
 		{
 			href: resolve('/(auth)/org/[slug]/admin', { slug: data.organization.slug }),
 			label: m['orgAdmin.breadcrumbs.admin']()
-		}
+		},
+		...(currentSection ? [{ href: currentSection.href, label: currentSection.label }] : [])
 	]);
 </script>
 

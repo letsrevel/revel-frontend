@@ -21,7 +21,12 @@
 </svelte:head>
 
 <section class="space-y-6">
-	<PageHeader title={m['orgAdmin.tickets.title']()} subtitle={m['orgAdmin.tickets.subtitle']()} />
+	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
+		title={m['orgAdmin.tickets.title']()}
+		subtitle={m['orgAdmin.tickets.subtitle']()}
+	/>
 
 	{#if events.length === 0}
 		{#snippet goToEventsAction()}

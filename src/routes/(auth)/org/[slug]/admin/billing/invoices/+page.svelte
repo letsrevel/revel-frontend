@@ -171,8 +171,9 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</a>
-		<!-- No kicker: the back-to-billing link above already says it. -->
 		<PageHeader
+			volume="studio"
+			kicker={data.organization.name}
 			title={m['orgAdmin.billing.invoices.title']()}
 			subtitle={m['orgAdmin.billing.invoices.description']()}
 			class="flex-1"

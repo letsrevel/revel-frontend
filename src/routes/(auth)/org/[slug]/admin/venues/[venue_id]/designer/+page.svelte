@@ -271,7 +271,8 @@
 		</div>
 	{:else}
 		<PageHeader
-			kicker={m['orgAdmin.nav.venues']()}
+			volume="studio"
+			kicker={organization.name}
 			title={pageTitle}
 			subtitle={m['seatDesigner.pageDescription']()}
 		/>

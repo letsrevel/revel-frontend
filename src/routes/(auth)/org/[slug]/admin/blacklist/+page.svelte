@@ -417,6 +417,8 @@
 		</Button>
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['blacklistAdminPage.title']()}
 		subtitle={m['blacklistAdminPage.pageDescription']()}
 		actions={headerActions}

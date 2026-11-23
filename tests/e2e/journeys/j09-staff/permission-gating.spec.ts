@@ -83,12 +83,12 @@ test.describe('J9 permission gating @p2', () => {
 			await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeVisible();
 		}
 
-		// create_event=false: no Create Event button, and the wizard URL is
+		// create_event=false: no New event button, and the wizard URL is
 		// server-blocked too.
 		await gotoHydrated(page, `/org/${org.slug}/admin/events`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Events', level: 1 })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Create Event' })).toBeHidden();
+		await expect(page.getByRole('button', { name: 'New event' })).toBeHidden();
 		await page.goto(`/org/${org.slug}/admin/events/new`);
 		await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeVisible();
 
@@ -96,7 +96,7 @@ test.describe('J9 permission gating @p2', () => {
 		await setStaffPermissions(org.owner, org.slug, staffUserId, { create_event: true });
 		await gotoHydrated(page, `/org/${org.slug}/admin/events`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('button', { name: 'Create Event' }).first()).toBeVisible();
+		await expect(page.getByRole('button', { name: 'New event' }).first()).toBeVisible();
 		await page.goto(`/org/${org.slug}/admin/events/new`);
 		await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeHidden();
 

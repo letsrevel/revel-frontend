@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationadmindiscountcodesCreateDiscountCode } from '$lib/api/generated/sdk.gen';
 	import type { DiscountCodeCreateSchema } from '$lib/api/generated/types.gen';
@@ -111,12 +112,13 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-		<div>
-			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
-				{m['discountCodeNewPage.title']()}
-			</h1>
-			<p class="mt-2 text-muted-foreground">{m['discountCodeNewPage.subtitle']()}</p>
-		</div>
+		<PageHeader
+			volume="studio"
+			kicker={organization.name}
+			title={m['discountCodeNewPage.title']()}
+			subtitle={m['discountCodeNewPage.subtitle']()}
+			class="flex-1"
+		/>
 	</div>
 
 	<!-- Form -->

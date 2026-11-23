@@ -130,6 +130,8 @@
 		<RevenueReportButton {slug} {period} />
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
 		title={m['financials.title']()}
 		subtitle={m['financials.subtitle']()}
 		actions={financialsActions}

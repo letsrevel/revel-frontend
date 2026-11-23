@@ -137,6 +137,8 @@
 	{/snippet}
 
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdmin.resources.pageTitle']()}
 		subtitle={m['orgAdmin.resources.pageDescription']()}
 		actions={resourcesHeaderActions}

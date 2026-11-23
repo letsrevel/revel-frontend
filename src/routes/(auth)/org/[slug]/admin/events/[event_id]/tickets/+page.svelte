@@ -385,6 +385,8 @@
 			/>
 		{/snippet}
 		<PageHeader
+			volume="studio"
+			kicker={data.organization.name}
 			title={m['eventTicketsAdmin.pageTitle']()}
 			subtitle={m['eventTicketsAdmin.pageDescription']()}
 			actions={ticketsHeaderActions}

@@ -37,7 +37,7 @@ test.describe('J10 announcements @p1', () => {
 		// ---- Draft → Send ----
 		const sentTitle = uniqueName('News');
 		const modal = page.getByRole('dialog', { name: /New Announcement|Edit Announcement/ });
-		await page.getByRole('button', { name: 'New Announcement' }).first().click();
+		await page.getByRole('button', { name: 'New announcement' }).first().click();
 		await expect(modal).toBeVisible();
 		await modal.getByLabel('Title').fill(sentTitle);
 		await modal.locator('[contenteditable="true"]').fill('Hello members — E2E announcement.');
@@ -66,7 +66,7 @@ test.describe('J10 announcements @p1', () => {
 		const scheduledTitle = uniqueName('Later');
 		const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
 		const sendAtValue = `${tomorrow.toISOString().slice(0, 11)}10:00`;
-		await page.getByRole('button', { name: 'New Announcement' }).first().click();
+		await page.getByRole('button', { name: 'New announcement' }).first().click();
 		await expect(modal).toBeVisible();
 		await modal.getByLabel('Title').fill(scheduledTitle);
 		await modal.locator('[contenteditable="true"]').fill('Scheduled body — E2E.');

@@ -233,6 +233,8 @@
 		</Button>
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['discountCodesAdmin.heading']()}
 		subtitle={m['discountCodesAdmin.description']()}
 		actions={headerActions}

@@ -224,7 +224,8 @@
 			</button>
 		{/snippet}
 		<PageHeader
-			kicker={m['orgAdmin.nav.venues']()}
+			volume="studio"
+			kicker={organization.name}
 			title={m['orgAdmin.sectors.pageTitle']({ venueName: venue.name })}
 			subtitle={m['orgAdmin.sectors.pageDescription']()}
 			actions={headerActions}

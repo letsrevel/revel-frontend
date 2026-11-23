@@ -43,6 +43,8 @@
 		</button>
 		<div class="flex-1">
 			<PageHeader
+				volume="studio"
+				kicker={organization.name}
 				title={m['recurringEvents.wizard.title']()}
 				subtitle={m['recurringEvents.wizard.pageDescription']({
 					organizationName: organization.name

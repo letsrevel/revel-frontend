@@ -195,6 +195,8 @@
 		</Button>
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdminTokensPage.title']()}
 		subtitle={m['orgAdminTokensPage.subtitle']()}
 		actions={headerActions}

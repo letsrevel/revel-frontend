@@ -26,6 +26,8 @@
 
 <div class="space-y-6">
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={pageTitle}
 		subtitle={m['orgAdmin.seating.pageDescription']({ eventName: data.event.name })}
 	/>

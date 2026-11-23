@@ -146,9 +146,9 @@
 			{m['orgAdmin.venues.createButton']()}
 		</button>
 	{/snippet}
-	<!-- No kicker: orgAdmin.nav.venues and orgAdmin.venues.pageTitle are both
-	     literally "Venues" — a kicker repeating the title verbatim is noise. -->
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdmin.venues.pageTitle']()}
 		subtitle={m['orgAdmin.venues.pageDescription']()}
 		actions={headerActions}
