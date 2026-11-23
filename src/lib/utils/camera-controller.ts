@@ -83,10 +83,13 @@ export class CameraController {
 				this.setPhase('stopping');
 				try {
 					await this.driver.stop();
+					this.actual = 'off';
 				} catch (error) {
+					// The camera may still be running: keep `actual` as it is and leave the
+					// loop rather than retrying hot. The next `setWanted` retries the stop.
 					this.hooks.onStopError?.(error);
+					break;
 				}
-				this.actual = 'off';
 			}
 		}
 		this.setPhase(this.actual === 'on' ? 'on' : 'off');

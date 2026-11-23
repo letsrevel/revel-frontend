@@ -1,14 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import QrCameraScanner from './QrCameraScanner.svelte';
 
 const start = vi.hoisted(() => vi.fn());
 const stop = vi.hoisted(() => vi.fn());
+const getState = vi.hoisted(() => vi.fn());
 vi.mock('html5-qrcode', () => ({
+	Html5QrcodeScannerState: { UNKNOWN: 0, NOT_STARTED: 1, SCANNING: 2, PAUSED: 3 },
 	Html5Qrcode: class {
 		start = start;
 		stop = stop;
+		getState = getState;
 		clear = vi.fn();
 	}
 }));
@@ -19,6 +22,7 @@ beforeEach(() => {
 	vi.clearAllMocks();
 	start.mockResolvedValue(undefined);
 	stop.mockResolvedValue(undefined);
+	getState.mockReturnValue(2);
 	Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true });
 });
 
@@ -188,7 +192,7 @@ describe('QrCameraScanner', () => {
 			await getCb()('CODE');
 			expect(onScan).toHaveBeenCalledWith('CODE');
 			expect(stop).toHaveBeenCalledTimes(1);
-			await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+			await waitFor(() => expect(start).toHaveBeenCalledTimes(2), { timeout: 3000 });
 		});
 
 		it('does not resume after a scan when not continuous', async () => {
@@ -216,6 +220,171 @@ describe('QrCameraScanner', () => {
 			await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
 			await new Promise((r) => setTimeout(r, 20));
 			expect(start).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe('pacing and robustness', () => {
+		function captureCb(): () => (text: string) => Promise<void> {
+			let cb: (text: string) => Promise<void> = () => Promise.resolve();
+			start.mockImplementation(
+				(_c: unknown, _o: unknown, onSuccess: (text: string) => Promise<void>) => {
+					cb = onSuccess;
+					return Promise.resolve();
+				}
+			);
+			return () => cb;
+		}
+
+		describe('with fake timers', () => {
+			beforeEach(() => {
+				vi.useFakeTimers({ shouldAdvanceTime: true });
+			});
+			afterEach(() => {
+				vi.useRealTimers();
+			});
+
+			it('resumes 1200 ms after a success, not immediately', async () => {
+				const getCb = captureCb();
+				render(QrCameraScanner, { props: { active: true, continuous: true, onScan } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				await vi.advanceTimersByTimeAsync(1000);
+				expect(start).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(300);
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+			});
+
+			it('ignores the same text within the dedupe window, accepts it after', async () => {
+				const getCb = captureCb();
+				render(QrCameraScanner, { props: { active: true, continuous: true, onScan } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				await getCb()('CODE');
+				expect(onScan).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2100);
+				await getCb()('CODE');
+				expect(onScan).toHaveBeenCalledTimes(2);
+			});
+
+			it('resumes 2000 ms after a failure even when not continuous', async () => {
+				const getCb = captureCb();
+				const failing = vi.fn(() => Promise.reject(new Error('boom')));
+				render(QrCameraScanner, { props: { active: true, onScan: failing } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				await vi.advanceTimersByTimeAsync(1500);
+				expect(start).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(600);
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+			});
+
+			it('does not resume after unmount', async () => {
+				const getCb = captureCb();
+				const { unmount } = render(QrCameraScanner, {
+					props: { active: true, continuous: true, onScan }
+				});
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				unmount();
+				await vi.advanceTimersByTimeAsync(3000);
+				expect(start).toHaveBeenCalledTimes(1);
+			});
+
+			it('does not resume after the camera is stopped by the user', async () => {
+				const getCb = captureCb();
+				const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+				render(QrCameraScanner, {
+					props: { active: true, manualStart: true, continuous: true, onScan }
+				});
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+				await vi.advanceTimersByTimeAsync(3000);
+				expect(start).toHaveBeenCalledTimes(1);
+			});
+
+			it('a new success restarts the banner timer instead of being cut short', async () => {
+				const getCb = captureCb();
+				render(QrCameraScanner, { props: { active: true, continuous: true, onScan } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('A');
+				await vi.advanceTimersByTimeAsync(1100);
+				await getCb()('B');
+				await vi.advanceTimersByTimeAsync(300);
+				// The first timer would have fired by now; the banner must survive.
+				expect(screen.getByText(/scan/i, { selector: '[role="status"]' })).toBeTruthy();
+				await vi.advanceTimersByTimeAsync(1000);
+				await waitFor(() => expect(document.querySelector('.bg-success')).toBeNull());
+			});
+		});
+
+		it('treats a failed stop as stopped when the scanner is NOT_STARTED', async () => {
+			const user = userEvent.setup();
+			stop.mockRejectedValue(new Error('not running'));
+			getState.mockReturnValue(1);
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+			await user.click(await screen.findByRole('button', { name: /stop camera/i }));
+			await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+		});
+
+		it('keeps Stop enabled while the camera is requested but still starting', async () => {
+			start.mockImplementation(() => new Promise<void>(() => undefined));
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+			expect(screen.getByRole('button', { name: /stop camera/i })).not.toBeDisabled();
+		});
+
+		it('disables manual submit while a scan is being handled', async () => {
+			let finish: () => void = () => undefined;
+			const slow = vi.fn(
+				() =>
+					new Promise<void>((resolve) => {
+						finish = resolve;
+					})
+			);
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan: slow } });
+			const input = screen.getByRole('textbox');
+			await user.type(input, 'ABC');
+			const submit = screen.getByRole('button', { name: /check in/i });
+			await user.click(submit);
+			await waitFor(() => expect(slow).toHaveBeenCalledTimes(1));
+			await user.type(input, 'D');
+			expect(submit).toBeDisabled();
+			finish();
+			await waitFor(() => expect((input as HTMLInputElement).value).toBe(''));
+			await user.type(input, 'E');
+			expect(submit).not.toBeDisabled();
+		});
+
+		it('manual submit does not wait for an unanswered camera permission prompt', async () => {
+			start.mockImplementation(() => new Promise<void>(() => undefined));
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+			await user.type(screen.getByRole('textbox'), 'ABC');
+			await user.keyboard('{Enter}');
+			await waitFor(() => expect(onScan).toHaveBeenCalledWith('ABC'));
+		});
+
+		it('shows the initializing overlay only while starting, not after a camera error', async () => {
+			start.mockRejectedValue(new DOMException('denied', 'NotAllowedError'));
+			const user = userEvent.setup();
+			render(QrCameraScanner, { props: { active: true, manualStart: true, onScan } });
+			await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+			await waitFor(() => expect(screen.getByRole('status').textContent).toContain('camera'));
+			await user.type(screen.getByRole('textbox'), 'ABC');
+			await user.keyboard('{Enter}');
+			await waitFor(() => expect(onScan).toHaveBeenCalled());
+			expect(screen.queryByText(/initializing/i)).toBeNull();
 		});
 	});
 });

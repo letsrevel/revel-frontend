@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { onDestroy, untrack } from 'svelte';
-	import { Html5Qrcode } from 'html5-qrcode';
+	import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button';
 	import { classifyCameraError } from '$lib/utils/camera-errors';
 	import { CameraController, type CameraPhase } from '$lib/utils/camera-controller';
@@ -83,15 +83,22 @@
 	let isSubmittingManual = $state(false);
 	// One scan is handled at a time: overlapping decoder callbacks (and a manual
 	// submit during a camera hit) must not call `onScan` twice for one code.
-	let handlingScan = false;
+	let handlingScan = $state(false);
 	let destroyed = false;
+	// Pacing: how long the viewfinder stays off after a handled scan, and how long the
+	// same decoded text is ignored afterwards (the card is usually still in frame).
+	const RESUME_AFTER_SUCCESS_MS = 1200;
+	const RESUME_AFTER_FAILURE_MS = 2000;
+	const DEDUPE_WINDOW_MS = 2000;
+	let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+	let bannerTimer: ReturnType<typeof setTimeout> | null = null;
+	let lastHandled: { text: string; at: number } | null = null;
 	// With `manualStart` the camera waits for an explicit click. `manualStart` is a
 	// mount-time choice, so reading it once here is intended.
 	let cameraRequested = $state(untrack(() => !manualStart));
 	/** Whether the camera should be running. */
 	const wanted = $derived(manualStart ? cameraRequested && active : active);
 	const transitioning = $derived(phase === 'starting' || phase === 'stopping');
-	const canStop = $derived(phase === 'starting' || phase === 'on');
 	const isCard = $derived(codeNoun === 'card');
 
 	/** Camera access requires a secure context (HTTPS or localhost). */
@@ -150,7 +157,13 @@
 				await startWith();
 			},
 			async stop() {
-				await scanner?.stop();
+				try {
+					await scanner?.stop();
+				} catch (err) {
+					// html5-qrcode throws when it is not running: that is a stopped camera.
+					if (scanner?.getState() === Html5QrcodeScannerState.NOT_STARTED) return;
+					throw err;
+				}
 			}
 		},
 		{
@@ -178,7 +191,22 @@
 		cameraRequested = true;
 	}
 
+	function clearResumeTimer() {
+		if (resumeTimer) clearTimeout(resumeTimer);
+		resumeTimer = null;
+	}
+
+	function scheduleResume(delayMs: number) {
+		clearResumeTimer();
+		resumeTimer = setTimeout(() => {
+			resumeTimer = null;
+			if (destroyed || !wanted) return;
+			controller.setWanted(true);
+		}, delayMs);
+	}
+
 	function stopCamera() {
+		clearResumeTimer();
 		error = null;
 		processError = null;
 		scanSuccess = false;
@@ -192,16 +220,19 @@
 	}
 
 	/**
-	 * Pause the camera, run `onScan`, then resume (continuous mode). Returns false
-	 * when a scan is already being handled or handling failed.
+	 * Pause the camera, run `onScan`, then schedule the camera to resume (after a
+	 * success in continuous mode, after any failure). Returns false when a scan is
+	 * already being handled or handling failed. A manual submit does not wait for
+	 * the camera to finish stopping: an unanswered permission prompt would hang it.
 	 */
-	async function processCode(code: string): Promise<boolean> {
+	async function processCode(code: string, manual = false): Promise<boolean> {
 		if (handlingScan) return false;
 		handlingScan = true;
 		processError = null;
+		clearResumeTimer();
 		let ok = false;
 		controller.setWanted(false);
-		await controller.idle();
+		if (!manual) await controller.idle();
 		try {
 			await onScan(code);
 			ok = true;
@@ -209,8 +240,11 @@
 			console.error('Scan processing error:', err);
 			processError = processFailedMessage();
 		} finally {
-			if (continuous && wanted && !destroyed) controller.setWanted(true);
+			lastHandled = { text: code, at: Date.now() };
 			handlingScan = false;
+			if (!destroyed && (ok ? continuous : true)) {
+				scheduleResume(ok ? RESUME_AFTER_SUCCESS_MS : RESUME_AFTER_FAILURE_MS);
+			}
 		}
 		return ok;
 	}
@@ -228,7 +262,7 @@
 		isSubmittingManual = true;
 		error = null;
 		try {
-			if (await processCode(code)) manualCode = '';
+			if (await processCode(code, true)) manualCode = '';
 		} finally {
 			isSubmittingManual = false;
 		}
@@ -236,13 +270,25 @@
 
 	async function handleScanSuccess(decodedText: string) {
 		if (handlingScan) return;
+		if (
+			lastHandled &&
+			lastHandled.text === decodedText &&
+			Date.now() - lastHandled.at < DEDUPE_WINDOW_MS
+		) {
+			return;
+		}
+		if (bannerTimer) clearTimeout(bannerTimer);
+		bannerTimer = null;
 		scanSuccess = true;
 		const ok = await processCode(decodedText);
 		if (!ok) {
 			scanSuccess = false;
 		} else if (continuous) {
 			// Brief pause so the success line is readable while the viewfinder returns.
-			setTimeout(() => (scanSuccess = false), 1200);
+			bannerTimer = setTimeout(() => {
+				bannerTimer = null;
+				scanSuccess = false;
+			}, RESUME_AFTER_SUCCESS_MS);
 		}
 	}
 
@@ -259,6 +305,8 @@
 
 	onDestroy(() => {
 		destroyed = true;
+		clearResumeTimer();
+		if (bannerTimer) clearTimeout(bannerTimer);
 		void controller
 			.destroy()
 			.then(() => scanner?.clear())
@@ -270,7 +318,7 @@
 {#if manualStart}
 	<div class="mb-4 flex flex-wrap items-center gap-2">
 		{#if cameraRequested}
-			<Button type="button" variant="outline" onclick={stopCamera} disabled={!canStop}>
+			<Button type="button" variant="outline" onclick={stopCamera}>
 				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.stopCamera']()}
 			</Button>
@@ -290,7 +338,7 @@
 		style="width: 100%; max-width: 500px; margin: 0 auto;"
 	></div>
 
-	{#if wanted && phase !== 'on' && !error}
+	{#if phase === 'starting'}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="text-center">
 				<Camera class="mx-auto mb-2 h-12 w-12 text-muted-foreground" aria-hidden="true" />
@@ -364,7 +412,7 @@
 			spellcheck="false"
 			class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		/>
-		<Button type="submit" disabled={!manualCode.trim() || isSubmittingManual}>
+		<Button type="submit" disabled={!manualCode.trim() || isSubmittingManual || handlingScan}>
 			{manualSubmitLabel}
 		</Button>
 	</div>

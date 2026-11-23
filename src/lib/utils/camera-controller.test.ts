@@ -108,7 +108,7 @@ describe('CameraController', () => {
 		expect(t.phases.at(-1)).toBe('off');
 	});
 
-	it('a stop that throws still ends off, and a later start works', async () => {
+	it('a stop that throws keeps the camera on, reports it, and does not spin', async () => {
 		const t = setup();
 		t.controller.setWanted(true);
 		t.startCalls[0].resolve();
@@ -116,13 +116,39 @@ describe('CameraController', () => {
 		t.controller.setWanted(false);
 		t.stopCalls[0].reject(new Error('stop failed'));
 		await t.controller.idle();
+		await tick();
 		expect(t.onStopError).toHaveBeenCalledTimes(1);
-		expect(t.phases.at(-1)).toBe('off');
+		expect(t.driver.stop).toHaveBeenCalledTimes(1);
+		expect(t.phases.at(-1)).toBe('on');
+	});
 
+	it('the next setWanted(false) retries a failed stop', async () => {
+		const t = setup();
 		t.controller.setWanted(true);
-		expect(t.driver.start).toHaveBeenCalledTimes(2);
-		t.startCalls[1].resolve();
+		t.startCalls[0].resolve();
 		await t.controller.idle();
+		t.controller.setWanted(false);
+		t.stopCalls[0].reject(new Error('stop failed'));
+		await t.controller.idle();
+		t.controller.setWanted(false);
+		expect(t.driver.stop).toHaveBeenCalledTimes(2);
+		t.stopCalls[1].resolve();
+		await t.controller.idle();
+		expect(t.phases.at(-1)).toBe('off');
+		expect(t.driver.start).toHaveBeenCalledTimes(1);
+	});
+
+	it('after a failed stop a later start is a no-op because the camera is still on', async () => {
+		const t = setup();
+		t.controller.setWanted(true);
+		t.startCalls[0].resolve();
+		await t.controller.idle();
+		t.controller.setWanted(false);
+		t.stopCalls[0].reject(new Error('stop failed'));
+		await t.controller.idle();
+		t.controller.setWanted(true);
+		await t.controller.idle();
+		expect(t.driver.start).toHaveBeenCalledTimes(1);
 		expect(t.phases.at(-1)).toBe('on');
 	});
 
