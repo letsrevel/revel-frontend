@@ -121,6 +121,7 @@
 	function bootstrapAuth(impersonated: boolean): void {
 		if (initializationPromise) return;
 		const generation = ++bootstrapGeneration;
+		authStore.setBootstrapState('pending');
 		const acquire = impersonated ? authStore.loadSessionToken() : authStore.refreshAccessToken();
 		initializationPromise = acquire
 			.then(async () => {
@@ -153,7 +154,10 @@
 			.finally(() => {
 				// Only the current bootstrap clears the latch; a superseded one must
 				// not release the latch now held by its replacement.
-				if (generation === bootstrapGeneration) initializationPromise = null;
+				if (generation === bootstrapGeneration) {
+					initializationPromise = null;
+					authStore.setBootstrapState('settled');
+				}
 			});
 	}
 

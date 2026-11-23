@@ -52,6 +52,24 @@
 		}
 	}
 
+	// The drawer is hidden by CSS above the breakpoint; close it there too so the
+	// backdrop and the body scroll lock cannot outlive it after a resize/rotate.
+	$effect(() => {
+		if (!open || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+			return undefined;
+		}
+		const query = window.matchMedia(wideNav ? '(min-width: 1280px)' : '(min-width: 768px)');
+		const onChange = (event: MediaQueryListEvent): void => {
+			if (event.matches) onClose();
+		};
+		if (query.matches) {
+			onClose();
+			return undefined;
+		}
+		query.addEventListener('change', onChange);
+		return () => query.removeEventListener('change', onChange);
+	});
+
 	// Focus trap management
 	$effect(() => {
 		if (open) {
@@ -72,7 +90,9 @@
 <!-- Backdrop -->
 {#if open}
 	<div
-		class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+		class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm {wideNav
+			? 'xl:hidden'
+			: 'md:hidden'}"
 		onclick={handleBackdropClick}
 		role="presentation"
 	></div>

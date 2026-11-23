@@ -4,13 +4,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Page from './+page.svelte';
 import type { PageData } from './$types';
 
-const state = vi.hoisted(() => ({ token: null as string | null }));
+const state = vi.hoisted(() => ({
+	token: null as string | null,
+	bootstrap: 'idle' as 'idle' | 'pending' | 'settled'
+}));
 const pageStore = vi.hoisted(() => ({ current: null as unknown }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: {
 		get accessToken() {
 			return state.token;
+		},
+		get bootstrapState() {
+			return state.bootstrap;
 		}
 	}
 }));
@@ -54,6 +60,7 @@ function setPage(auth: { hasAccessToken: boolean; hasRefreshToken: boolean }): v
 describe('settings page session handling', () => {
 	beforeEach(() => {
 		state.token = null;
+		state.bootstrap = 'idle';
 	});
 
 	it('shows a loading state, not "not logged in", while the session token bootstraps', () => {
@@ -76,5 +83,20 @@ describe('settings page session handling', () => {
 		render(Page, { props: { data } });
 		expect(screen.queryByTestId('settings-session-pending')).toBeNull();
 		expect(screen.queryByRole('alert')).toBeNull();
+	});
+
+	it('shows the spinner while the bootstrap is pending', () => {
+		state.bootstrap = 'pending';
+		setPage({ hasAccessToken: false, hasRefreshToken: false });
+		render(Page, { props: { data } });
+		expect(screen.getByTestId('settings-session-pending')).toBeInTheDocument();
+	});
+
+	it('shows the alert after a failed bootstrap even though the server flags are true', () => {
+		state.bootstrap = 'settled';
+		setPage({ hasAccessToken: true, hasRefreshToken: true });
+		render(Page, { props: { data } });
+		expect(screen.queryByTestId('settings-session-pending')).toBeNull();
+		expect(screen.getByRole('alert')).toHaveTextContent(/must be logged in/i);
 	});
 });

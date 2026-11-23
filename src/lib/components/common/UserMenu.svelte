@@ -5,25 +5,11 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
-	import {
-		User,
-		Settings,
-		LogOut,
-		Building2,
-		Shield,
-		Lock,
-		LayoutDashboard,
-		PlusCircle,
-		Gift,
-		FileText,
-		Receipt,
-		CreditCard,
-		Plug,
-		CodeXml
-	} from '@lucide/svelte';
+	import { LogOut, Building2, Shield, LayoutDashboard, PlusCircle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { postLogout } from '$lib/utils/logout';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import { getAccountNavItems } from '$lib/components/common/account-nav';
 
 	interface Props {
 		mobile?: boolean;
@@ -66,7 +52,6 @@
 	}));
 
 	const userOrganizations = $derived(isTenant ? [] : organizationsQuery.data || []);
-	const isReferrer = $derived(!isTenant && !!user?.referral_code);
 	const canCreateOrganization = $derived(
 		!isTenant && !ownsOrganization() && !!features.organization_creation
 	);
@@ -110,51 +95,26 @@
 		user?.preferred_name || user?.first_name || user?.email.split('@')[0] || 'User'
 	);
 
-	// Menu items - using derived for reactivity
+	// Account pages come from the shared list (also used by the account area's
+	// nav); the dashboard link sits in front, and the referral pair keeps its own
+	// section below.
+	const accountNav = $derived(
+		getAccountNavItems({
+			// Flag-gated (fail-closed): the route 404s without the provider.
+			oauthEnabled: !!features.oauth_provider,
+			isTenant,
+			referralCode: user?.referral_code
+		})
+	);
 	const menuItems = $derived([
 		{
 			href: resolve('/(auth)/dashboard', {}),
 			label: m['userMenu.dashboard'](),
 			icon: LayoutDashboard
 		},
-		{ href: resolve('/(auth)/account/profile', {}), label: m['userMenu.profile'](), icon: User },
-		{
-			href: resolve('/(auth)/account/security', {}),
-			label: m['userMenu.security'](),
-			icon: Shield
-		},
-		{ href: resolve('/(auth)/account/privacy', {}), label: m['userMenu.privacy'](), icon: Lock },
-		{
-			href: resolve('/(auth)/account/settings', {}),
-			label: m['userMenu.settings'](),
-			icon: Settings
-		},
-		{
-			href: resolve('/(auth)/account/invoices', {}),
-			label: m['userMenu.invoices'](),
-			icon: Receipt
-		},
-		{
-			href: resolve('/(auth)/account/memberships', {}),
-			label: m['userMenu.memberships'](),
-			icon: CreditCard
-		},
-		// Flag-gated (fail-closed): the route 404s without the provider.
-		...(features.oauth_provider
-			? [
-					{
-						href: resolve('/(auth)/account/connected-apps', {}),
-						label: m['userMenu.connectedApps'](),
-						icon: Plug
-					},
-					{
-						href: resolve('/(auth)/account/developer-apps', {}),
-						label: m['userMenu.developerApps'](),
-						icon: CodeXml
-					}
-				]
-			: [])
+		...accountNav.filter((i) => i.group === 'account')
 	]);
+	const referralItems = $derived(accountNav.filter((i) => i.group === 'referral'));
 
 	async function handleLogout() {
 		if (onItemClick) onItemClick();
@@ -225,7 +185,7 @@
 		{/each}
 
 		<!-- Referral Section (Mobile) -->
-		{#if isReferrer}
+		{#if referralItems.length > 0}
 			<div class="space-y-2 border-t pt-4">
 				<div
 					role="heading"
@@ -234,22 +194,19 @@
 				>
 					{m['referral.referralProgram']()}
 				</div>
-				<a
-					href={resolve('/(auth)/account/referral', {})}
-					class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-					onclick={handleItemClick}
-				>
-					<Gift class="h-5 w-5" aria-hidden="true" />
-					<span>{m['referral.settings']()}</span>
-				</a>
-				<a
-					href={resolve('/(auth)/account/referral/payouts', {})}
-					class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-					onclick={handleItemClick}
-				>
-					<FileText class="h-5 w-5" aria-hidden="true" />
-					<span>{m['referral.payouts']()}</span>
-				</a>
+				{#each referralItems as item (item.href)}
+					{@const Icon = item.icon}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in getAccountNavItems() -->
+					<a
+						href={item.href}
+						class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+						onclick={handleItemClick}
+					>
+						<Icon class="h-5 w-5" aria-hidden="true" />
+						<span>{item.label}</span>
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/each}
 			</div>
 		{/if}
 
@@ -368,7 +325,7 @@
 				</div>
 
 				<!-- Referral Section (Desktop) -->
-				{#if isReferrer}
+				{#if referralItems.length > 0}
 					<div class="border-t">
 						<div class="p-1">
 							<div
@@ -376,24 +333,20 @@
 							>
 								{m['referral.referralProgram']()}
 							</div>
-							<a
-								href={resolve('/(auth)/account/referral', {})}
-								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-								onclick={handleItemClick}
-								role="menuitem"
-							>
-								<Gift class="h-4 w-4" aria-hidden="true" />
-								<span>{m['referral.settings']()}</span>
-							</a>
-							<a
-								href={resolve('/(auth)/account/referral/payouts', {})}
-								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-								onclick={handleItemClick}
-								role="menuitem"
-							>
-								<FileText class="h-4 w-4" aria-hidden="true" />
-								<span>{m['referral.payouts']()}</span>
-							</a>
+							{#each referralItems as item (item.href)}
+								{@const Icon = item.icon}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in getAccountNavItems() -->
+								<a
+									href={item.href}
+									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+									onclick={handleItemClick}
+									role="menuitem"
+								>
+									<Icon class="h-4 w-4" aria-hidden="true" />
+									<span>{item.label}</span>
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{/each}
 						</div>
 					</div>
 				{/if}

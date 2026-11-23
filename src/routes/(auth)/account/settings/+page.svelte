@@ -34,9 +34,13 @@
 	// On a cold load the in-memory access token is empty (SSR, then hydration)
 	// until the root layout's bootstrap refresh lands. The server already knows
 	// the session exists, so that gap is "loading", not "logged out" (#1288).
+	// Once the bootstrap has settled without a token (dead refresh cookie, blocked
+	// request) it is no longer loading, whatever the server flags say.
 	const sessionPending = $derived(
 		!authStore.accessToken &&
-			Boolean($page.data.auth?.hasAccessToken || $page.data.auth?.hasRefreshToken)
+			(authStore.bootstrapState === 'pending' ||
+				(authStore.bootstrapState === 'idle' &&
+					Boolean($page.data.auth?.hasAccessToken || $page.data.auth?.hasRefreshToken)))
 	);
 
 	// General preferences state

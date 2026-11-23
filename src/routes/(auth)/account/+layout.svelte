@@ -1,23 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
-	import {
-		User,
-		Shield,
-		Lock,
-		Settings,
-		Receipt,
-		CreditCard,
-		Plug,
-		CodeXml,
-		Gift,
-		FileText
-	} from '@lucide/svelte';
-	import type { Component } from 'svelte';
+	import { getAccountNavItems } from '$lib/components/common/account-nav';
+	import { locales, baseLocale } from '$lib/paraglide/runtime.js';
 
 	interface Props {
 		children: import('svelte').Snippet;
@@ -25,72 +13,24 @@
 
 	const { children }: Props = $props();
 
-	interface NavItem {
-		href: string;
-		label: string;
-		icon: Component;
-	}
-
-	// Same entries, order, labels and visibility rules as UserMenu.svelte.
+	// Same entries, order, labels and visibility rules as the user menu.
 	const features = $derived(page.data.features);
 	const isTenant = $derived(!!page.data.tenant);
-	const isReferrer = $derived(!isTenant && !!authStore.user?.referral_code);
 
-	const items = $derived<NavItem[]>([
-		{ href: resolve('/(auth)/account/profile', {}), label: m['userMenu.profile'](), icon: User },
-		{
-			href: resolve('/(auth)/account/security', {}),
-			label: m['userMenu.security'](),
-			icon: Shield
-		},
-		{ href: resolve('/(auth)/account/privacy', {}), label: m['userMenu.privacy'](), icon: Lock },
-		{
-			href: resolve('/(auth)/account/settings', {}),
-			label: m['userMenu.settings'](),
-			icon: Settings
-		},
-		{
-			href: resolve('/(auth)/account/invoices', {}),
-			label: m['userMenu.invoices'](),
-			icon: Receipt
-		},
-		{
-			href: resolve('/(auth)/account/memberships', {}),
-			label: m['userMenu.memberships'](),
-			icon: CreditCard
-		},
-		...(features?.oauth_provider
-			? [
-					{
-						href: resolve('/(auth)/account/connected-apps', {}),
-						label: m['userMenu.connectedApps'](),
-						icon: Plug
-					},
-					{
-						href: resolve('/(auth)/account/developer-apps', {}),
-						label: m['userMenu.developerApps'](),
-						icon: CodeXml
-					}
-				]
-			: []),
-		...(isReferrer
-			? [
-					{
-						href: resolve('/(auth)/account/referral', {}),
-						label: m['referral.settings'](),
-						icon: Gift
-					},
-					{
-						href: resolve('/(auth)/account/referral/payouts', {}),
-						label: m['referral.payouts'](),
-						icon: FileText
-					}
-				]
-			: [])
-	]);
+	const items = $derived(
+		getAccountNavItems({
+			oauthEnabled: !!features?.oauth_provider,
+			isTenant,
+			referralCode: authStore.user?.referral_code
+		})
+	);
+
+	const localePrefix = new RegExp(
+		`^/(?:${locales.filter((l) => l !== baseLocale).join('|')})(?=/)`
+	);
 
 	// The URL may carry a locale prefix (`/de/account/...`); compare without it.
-	const pathname = $derived(page.url.pathname.replace(/^\/(?:de|it|fr|es|pt)(?=\/)/, ''));
+	const pathname = $derived(page.url.pathname.replace(localePrefix, ''));
 
 	// Longest matching href wins, so `/account/referral/payouts` does not also
 	// light up `/account/referral`, while `/account/developer-apps/new` still
@@ -130,7 +70,7 @@
 				{#each items as item (item.href)}
 					{@const current = item.href === activeHref}
 					<li class="shrink-0">
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- item.href is built with resolve() in `items` above -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- item.href is built with resolve() in getAccountNavItems() -->
 						<a
 							href={item.href}
 							aria-current={current ? 'page' : undefined}
