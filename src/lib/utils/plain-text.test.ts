@@ -122,9 +122,15 @@ describe('markdownToPlainText autolinks, escapes and list markers', () => {
 	});
 	it('handles empty, info-string and unclosed fenced blocks', () => {
 		expect(markdownToPlainText('```\n```\ntext\n```py\ncode\n```')).toBe('text code');
-		expect(markdownToPlainText('```\na\n```js\nb\n```')).toBe('a js b');
+		expect(markdownToPlainText('```\na\n```js\nb\n```')).toBe('a ```js b');
 		expect(markdownToPlainText('~~~\na\nb')).toBe('a b');
-		expect(markdownToPlainText('````\na\n```\nb\n````\nafter')).toBe('a b after');
+		expect(markdownToPlainText('````\na\n```\nb\n````\nafter')).toBe('a ``` b after');
+	});
+
+	it('keeps code content literal and still strips emphasis outside code', () => {
+		expect(markdownToPlainText('Run `__init__` now')).toBe('Run __init__ now');
+		expect(markdownToPlainText('```\n**x** _y_ - z\n```')).toBe('**x** _y_ - z');
+		expect(markdownToPlainText('**bold** `*a*` _it_')).toBe('bold *a* it');
 	});
 
 	it('keeps pipes that are not part of a table', () => {

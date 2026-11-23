@@ -55,7 +55,7 @@ export function formatEventTimeLabel(
 	} catch (e) {
 		if (!(e instanceof RangeError)) throw e;
 		// Zone unknown to this browser's ICU: fall back to the viewer zone, no label.
-		return formatTimeOfDay(dateString);
+		return formatTimeOfDay(dateString, viewerZone);
 	}
 }
 
@@ -84,7 +84,7 @@ export function formatEventRangeLabel(
 		if (!(e instanceof RangeError)) throw e;
 		// Zone unknown to this browser's ICU: fall back to the viewer zone, no label.
 		return isOpenEnded || !end
-			? formatEventDate(start, undefined, false)
-			: formatEventDateRange(start, end, undefined, false);
+			? formatEventDate(start, viewerZone, false)
+			: formatEventDateRange(start, end, viewerZone, false);
 	}
 }

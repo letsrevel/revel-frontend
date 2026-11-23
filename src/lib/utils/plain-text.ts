@@ -35,6 +35,7 @@ const NAMED_ENTITIES: Record<string, string> = {
 
 const ESCAPE_CHARS = '\\`*_{}[]()#+-.!|<>~&';
 const NUL = String.fromCharCode(0);
+const CODE_PLACEHOLDER = new RegExp(`${NUL}c(\\d+)${NUL}`, 'g');
 const PLACEHOLDER = new RegExp(`${NUL}(\\d+)${NUL}`, 'g');
 const ESCAPABLE = /\\([\\`*_{}[\]()#+\-.!|<>~&])/g;
 
@@ -63,16 +64,23 @@ export function decodeHtmlEntities(text: string): string {
  * follow); the closing fence uses the same character, is at least as long, and
  * has only whitespace after it. An unclosed block runs to the end of input.
  */
-function stripFences(text: string): string {
+function stripFences(text: string, stash: string[]): string {
 	const out: string[] = [];
 	let open: { ch: string; len: number } | null = null;
+	let body: string[] = [];
+	const flush = (): void => {
+		if (body.length === 0) return;
+		out.push(`${NUL}c${stash.push(body.join('\n')) - 1}${NUL}`);
+		body = [];
+	};
 	for (const line of text.split('\n')) {
 		const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
 		if (open) {
 			if (m && m[1][0] === open.ch && m[1].length >= open.len && /^[ \t]*$/.test(m[2])) {
 				open = null;
+				flush();
 			} else {
-				out.push(line);
+				body.push(line);
 			}
 		} else if (m && !(m[1][0] === '`' && m[2].includes('`'))) {
 			open = { ch: m[1][0], len: m[1].length };
@@ -80,6 +88,7 @@ function stripFences(text: string): string {
 			out.push(line);
 		}
 	}
+	flush();
 	return out.join('\n');
 }
 
@@ -119,8 +128,14 @@ export function markdownToPlainText(
 	if (!markdown) return '';
 	let text = markdown.replace(/\r\n?/g, '\n');
 
-	// Fenced code blocks: keep the content, drop the fences.
-	text = stripFences(text);
+	// Code is literal: fenced block content and inline spans are swapped for placeholders (token `c`) so no
+	// formatting pass touches them; the content is restored verbatim at the end.
+	const code: string[] = [];
+	text = stripFences(text, code);
+	text = text.replace(
+		/(?<!\\)(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g,
+		(_m, _fence: string, inner: string) => `${NUL}c${code.push(inner) - 1}${NUL}`
+	);
 	// Backslash escapes: swap for NUL-delimited placeholders (NUL cannot occur in stored text) so the emphasis and
 	// list passes cannot see the escaped character. Restored at the end.
 	text = text.replace(ESCAPABLE, (_m, ch: string) => `${NUL}${ESCAPE_CHARS.indexOf(ch)}${NUL}`);
@@ -152,6 +167,7 @@ export function markdownToPlainText(
 	text = text.replace(/`+([^`]*)`+/g, '$1');
 
 	text = decodeHtmlEntities(text);
+	text = text.replace(CODE_PLACEHOLDER, (m, i: string) => code[Number(i)] ?? m);
 	// Restore escaped punctuation.
 	text = text.replace(PLACEHOLDER, (m, i: string) => ESCAPE_CHARS[Number(i)] ?? m);
 	text = text.replace(/\s+/g, ' ').trim();
