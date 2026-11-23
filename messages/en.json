@@ -11967,5 +11967,11 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Show fewer tags"
+	"tagsFilter.showFewer": "Show fewer tags",
+	"membershipPlanCta.currentTier": "Your current tier",
+	"membershipPlanCta.ownTierHelper": "You are already a member at this tier.",
+	"membershipPlanCta.manageLink": "Manage in My Memberships",
+	"membershipPlanCta.manageLinkAria": "Manage in My Memberships, {plan} plan",
+	"membershipPlanCta.freeOtherTierHelper": "You are already a member, so you cannot join a free plan of another tier.",
+	"membershipPlanCta.staffNote": "You manage this organization, so you cannot join its plans."
 }

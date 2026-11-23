@@ -25,6 +25,7 @@
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
+	import { NO_PLAN_VIEWER, type PlanViewer } from '$lib/utils/plan-cta-state';
 
 	interface Props {
 		tier: PublicMembershipTierSchema;
@@ -54,6 +55,8 @@
 		 * round trips answering a question they never asked.
 		 */
 		showJoinCta?: boolean;
+		/** The viewer's standing in the org, forwarded to every PlanCard. */
+		viewer?: PlanViewer;
 	}
 
 	const {
@@ -66,7 +69,8 @@
 		subscription = null,
 		subscriptionLoading = false,
 		onSubscribe,
-		showJoinCta = true
+		showJoinCta = true,
+		viewer = NO_PLAN_VIEWER
 	}: Props = $props();
 
 	// Unique per instance: several of these cards sit side by side, and each needs
@@ -375,6 +379,7 @@
 					{isAuthenticated}
 					{subscription}
 					{subscriptionLoading}
+					{viewer}
 					{organizationSlug}
 					{organizationName}
 					{contactMethod}

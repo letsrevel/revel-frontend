@@ -19,6 +19,7 @@
 	import { Users } from '@lucide/svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import TierCard from './TierCard.svelte';
+	import type { PlanViewer } from '$lib/utils/plan-cta-state';
 	import SubscribeDialog from './SubscribeDialog.svelte';
 	import CheckoutReturnCard from './CheckoutReturnCard.svelte';
 
@@ -88,6 +89,15 @@
 		const owner = isOwner;
 		const staff = isStaff;
 		return !owner && !staff;
+	});
+
+	/** Forwarded to every plan card so a member never sees "Join" on their own tier. */
+	const viewer = $derived<PlanViewer>({
+		isMember,
+		membershipStatus,
+		membershipTierId: membershipTier?.id ?? null,
+		isOwner,
+		isStaff
 	});
 
 	/** The viewer's standing, shown once rather than repeated on every card. */
@@ -214,7 +224,8 @@
 	{:else}
 		<div aria-labelledby="tiers-heading">
 			<h2 id="tiers-heading" class="sr-only">{m['membershipTiers.tiersHeading']()}</h2>
-			<div class="grid gap-4 sm:grid-cols-2">
+			<!-- One tier: a single full-width column, not the left half of a 2-col grid. -->
+			<div class={tiers.length > 1 ? 'grid gap-4 sm:grid-cols-2' : 'grid gap-4'}>
 				{#each tiers as tier (tier.id ?? tier.name)}
 					<TierCard
 						{tier}
@@ -227,6 +238,7 @@
 						{subscriptionLoading}
 						onSubscribe={handleSubscribe}
 						showJoinCta={showJoinCtas}
+						{viewer}
 					/>
 				{/each}
 			</div>

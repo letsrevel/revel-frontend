@@ -11967,5 +11967,11 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Afficher moins de tags"
+	"tagsFilter.showFewer": "Afficher moins de tags",
+	"membershipPlanCta.currentTier": "Ton niveau actuel",
+	"membershipPlanCta.ownTierHelper": "Tu fais déjà partie de ce niveau.",
+	"membershipPlanCta.manageLink": "Gérer dans Mes adhésions",
+	"membershipPlanCta.manageLinkAria": "Gérer dans Mes adhésions, formule {plan}",
+	"membershipPlanCta.freeOtherTierHelper": "Tu es déjà membre, donc tu ne peux pas rejoindre une formule gratuite d'un autre niveau.",
+	"membershipPlanCta.staffNote": "Tu gères cette organisation, donc tu ne peux pas rejoindre ses formules."
 }

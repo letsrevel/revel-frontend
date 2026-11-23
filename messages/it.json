@@ -11967,5 +11967,11 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Mostra meno tag"
+	"tagsFilter.showFewer": "Mostra meno tag",
+	"membershipPlanCta.currentTier": "Il tuo livello attuale",
+	"membershipPlanCta.ownTierHelper": "Sei già iscritto a questo livello.",
+	"membershipPlanCta.manageLink": "Gestisci in Le mie iscrizioni",
+	"membershipPlanCta.manageLinkAria": "Gestisci in Le mie iscrizioni, piano {plan}",
+	"membershipPlanCta.freeOtherTierHelper": "Sei già iscritto, quindi non puoi aderire a un piano gratuito di un altro livello.",
+	"membershipPlanCta.staffNote": "Gestisci questa organizzazione, quindi non puoi aderire ai suoi piani."
 }

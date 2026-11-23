@@ -11967,5 +11967,11 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Mostrar menos etiquetas"
+	"tagsFilter.showFewer": "Mostrar menos etiquetas",
+	"membershipPlanCta.currentTier": "Tu nivel actual",
+	"membershipPlanCta.ownTierHelper": "Ya formas parte de este nivel.",
+	"membershipPlanCta.manageLink": "Gestionar en Mis membresías",
+	"membershipPlanCta.manageLinkAria": "Gestionar en Mis membresías, plan {plan}",
+	"membershipPlanCta.freeOtherTierHelper": "Ya eres miembro, así que no puedes unirte a un plan gratuito de otro nivel.",
+	"membershipPlanCta.staffNote": "Gestionas esta organización, así que no puedes unirte a sus planes."
 }

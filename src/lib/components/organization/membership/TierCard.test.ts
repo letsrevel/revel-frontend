@@ -94,6 +94,24 @@ describe('TierCard', () => {
 		});
 	}
 
+	it('forwards the viewer standing so a member sees no Join on their own tier plans', () => {
+		renderCard({
+			tier: makeTier({ plans: [makePlan()], is_free: false }),
+			viewer: {
+				isMember: true,
+				membershipStatus: 'active',
+				membershipTierId: 't-gold',
+				isOwner: false,
+				isStaff: false
+			}
+		});
+
+		expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: m['membershipPlans.subscribeCta']() })
+		).not.toBeInTheDocument();
+	});
+
 	// The cards are peers in a grid, so each has to announce which tier it is
 	// before anything inside it makes sense (WCAG 1.3.1).
 	it('names itself after its tier', () => {

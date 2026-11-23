@@ -37,6 +37,7 @@ vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
  * `null` is the "never subscribed, or only terminal history" answer — the
  * endpoint 404s, and the query maps that to `null`.
  */
+
 function mockSub(sub: MySubscriptionSchema | null) {
 	vi.mocked(mesubscriptionsGetMySubscription).mockResolvedValue({
 		data: sub ?? undefined,
@@ -185,6 +186,31 @@ describe('MembershipSection', () => {
 
 		expect(screen.getByRole('heading', { level: 3, name: 'Supporter' })).toBeInTheDocument();
 		expect(await screen.findByRole('button', { name: 'Join Supporter' })).toBeInTheDocument();
+	});
+
+	it('lays a single tier out full width, several in two columns', () => {
+		const { container, unmount } = renderSection({ tiers: [makeTier()] });
+		expect(container.querySelector('.sm\\:grid-cols-2')).toBeNull();
+		unmount();
+
+		const second = renderSection({
+			tiers: [makeTier({ id: 't-a', name: 'A' }), makeTier({ id: 't-b', name: 'B' })]
+		});
+		expect(second.container.querySelector('.sm\\:grid-cols-2')).not.toBeNull();
+	});
+
+	it('shows an active member without a subscription their current tier, not Join', () => {
+		renderSection({
+			tiers: [makeTier({ id: 't-gold', name: 'Gold', plans: [makePlan({ tier_id: 't-gold' })] })],
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTier: { id: 't-gold', name: 'Gold' }
+		});
+
+		expect(screen.getAllByText(m['membershipPlanCta.currentTier']()).length).toBeGreaterThan(0);
+		expect(
+			screen.queryByRole('button', { name: m['membershipPlans.subscribeCta']() })
+		).not.toBeInTheDocument();
 	});
 
 	// `display_order` is the organizer's decision and the backend already applied
