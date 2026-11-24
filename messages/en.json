@@ -5717,6 +5717,7 @@
 		"error_processFailed": "Failed to process the scanned ticket. Please try again.",
 		"startCamera": "Scan with camera",
 		"stopCamera": "Stop camera",
+		"stopFailed": "The camera could not be turned off. Try again.",
 		"cardError_permissionDenied": "Camera access was denied. Enable camera permissions in your browser settings, or enter the card code manually below.",
 		"cardError_notFound": "No camera was found on this device. Enter the card code manually below.",
 		"cardError_notReadable": "The camera is already in use by another app. Close it and try again, or enter the card code manually below.",

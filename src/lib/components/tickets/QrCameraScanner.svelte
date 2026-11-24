@@ -99,6 +99,11 @@
 	/** Whether the camera should be running. */
 	const wanted = $derived(manualStart ? cameraRequested && active : active);
 	const transitioning = $derived(phase === 'starting' || phase === 'stopping');
+	// What the UI shows follows the controller's real phase, not only the click intent:
+	// after a failed stop the camera is still running (phase 'on') while the user's
+	// request is already withdrawn, and the viewfinder and a Stop control must remain.
+	const cameraShown = $derived(cameraRequested || phase === 'on');
+	const viewfinderShown = $derived(cameraRequested || phase !== 'off');
 	const isCard = $derived(codeNoun === 'card');
 
 	/** Camera access requires a secure context (HTTPS or localhost). */
@@ -181,7 +186,11 @@
 				// Hand control back so the button doubles as "try again".
 				if (manualStart) cameraRequested = false;
 			},
-			onStopError: (err) => console.error('Failed to stop scanner:', err)
+			onStopError(err) {
+				console.error('Failed to stop scanner:', err);
+				// The camera may still be running: say so, and leave Stop available to retry.
+				if (!destroyed) error = m['qrScannerModal.stopFailed']();
+			}
 		}
 	);
 
@@ -211,6 +220,9 @@
 		processError = null;
 		scanSuccess = false;
 		cameraRequested = false;
+		// Reconcile directly: after a failed stop the intent is unchanged, so the
+		// effect would not re-run and this click would otherwise do nothing.
+		controller.setWanted(false);
 	}
 
 	function processFailedMessage(): string {
@@ -321,11 +333,11 @@
 		     Start/Stop and after a camera error (WCAG 2.4.3). Stop is never disabled. -->
 		<Button
 			type="button"
-			variant={cameraRequested ? 'outline' : 'default'}
-			onclick={cameraRequested ? stopCamera : startCamera}
-			disabled={!cameraRequested && transitioning}
+			variant={cameraShown ? 'outline' : 'default'}
+			onclick={cameraShown ? stopCamera : startCamera}
+			disabled={!cameraShown && transitioning}
 		>
-			{#if cameraRequested}
+			{#if cameraShown}
 				<CameraOff class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['qrScannerModal.stopCamera']()}
 			{:else}
@@ -336,7 +348,7 @@
 	</div>
 {/if}
 
-<div class="relative mb-4" class:hidden={manualStart && !cameraRequested}>
+<div class="relative mb-4" class:hidden={manualStart && !viewfinderShown}>
 	<div
 		id={readerId}
 		class="overflow-hidden rounded-lg border-2 border-primary"

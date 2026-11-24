@@ -5687,6 +5687,7 @@
 		"error_processFailed": "Échec du traitement du billet scanné. Réessaie.",
 		"startCamera": "Scanner avec la caméra",
 		"stopCamera": "Arrêter la caméra",
+		"stopFailed": "La caméra n'a pas pu être éteinte. Réessaie.",
 		"cardError_permissionDenied": "L'accès à la caméra a été refusé. Active l'autorisation dans les réglages du navigateur, ou saisis le code de la carte manuellement ci-dessous.",
 		"cardError_notFound": "Aucune caméra n'a été trouvée sur cet appareil. Saisis le code de la carte manuellement ci-dessous.",
 		"cardError_notReadable": "La caméra est déjà utilisée par une autre application. Ferme-la et réessaie, ou saisis le code de la carte manuellement ci-dessous.",

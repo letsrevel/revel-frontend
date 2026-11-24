@@ -343,6 +343,46 @@ describe('QrCameraScanner', () => {
 			await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
 		});
 
+		describe('failed stop', () => {
+			async function startThenFailStop() {
+				const user = userEvent.setup();
+				stop.mockRejectedValue(new Error('still running'));
+				getState.mockReturnValue(2);
+				const view = render(QrCameraScanner, {
+					props: { active: true, manualStart: true, onScan }
+				});
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await user.click(await screen.findByRole('button', { name: /stop camera/i }));
+				await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+				return { user, view };
+			}
+
+			it('keeps the viewfinder, a Stop button and a message while the scanner still runs', async () => {
+				const { view } = await startThenFailStop();
+				const hint = await screen.findByRole('status');
+				await waitFor(() => expect(hint.textContent).toContain('could not be turned off'));
+				expect(screen.getByRole('button', { name: /stop camera/i })).not.toBeDisabled();
+				expect(view.container.querySelector('.relative.mb-4')?.classList.contains('hidden')).toBe(
+					false
+				);
+				expect(screen.queryByRole('alert')).toBeNull();
+			});
+
+			it('retries stop on every click and recovers when it succeeds', async () => {
+				const { user, view } = await startThenFailStop();
+				await screen.findByText(/could not be turned off/i);
+				stop.mockResolvedValue(undefined);
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+				await waitFor(() => expect(stop).toHaveBeenCalledTimes(2));
+				await screen.findByRole('button', { name: /scan with camera/i });
+				expect(screen.queryByText(/could not be turned off/i)).toBeNull();
+				expect(view.container.querySelector('.relative.mb-4')?.classList.contains('hidden')).toBe(
+					true
+				);
+			});
+		});
+
 		it('keeps Stop enabled while the camera is requested but still starting', async () => {
 			start.mockImplementation(() => new Promise<void>(() => undefined));
 			const user = userEvent.setup();

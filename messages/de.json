@@ -5717,6 +5717,7 @@
 		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut.",
 		"startCamera": "Mit Kamera scannen",
 		"stopCamera": "Kamera stoppen",
+		"stopFailed": "Die Kamera konnte nicht ausgeschaltet werden. Versuche es erneut.",
 		"cardError_permissionDenied": "Der Kamerazugriff wurde verweigert. Aktiviere die Kameraberechtigung in den Browser-Einstellungen oder gib den Ausweiscode unten manuell ein.",
 		"cardError_notFound": "Auf diesem Gerät wurde keine Kamera gefunden. Gib den Ausweiscode unten manuell ein.",
 		"cardError_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut, oder gib den Ausweiscode unten manuell ein.",

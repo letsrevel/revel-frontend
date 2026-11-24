@@ -5717,6 +5717,7 @@
 		"error_processFailed": "Impossibile elaborare il biglietto scansionato. Riprova.",
 		"startCamera": "Scansiona con la fotocamera",
 		"stopCamera": "Ferma la fotocamera",
+		"stopFailed": "Non è stato possibile spegnere la fotocamera. Riprova.",
 		"cardError_permissionDenied": "L'accesso alla fotocamera è stato negato. Attiva il permesso nelle impostazioni del browser, oppure inserisci il codice della tessera qui sotto.",
 		"cardError_notFound": "Nessuna fotocamera trovata su questo dispositivo. Inserisci il codice della tessera qui sotto.",
 		"cardError_notReadable": "La fotocamera è già in uso da un'altra app. Chiudila e riprova, oppure inserisci il codice della tessera qui sotto.",

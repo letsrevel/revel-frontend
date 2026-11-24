@@ -5717,6 +5717,7 @@
 		"error_processFailed": "Não foi possível processar o bilhete lido. Tenta novamente.",
 		"startCamera": "Digitalizar com a câmara",
 		"stopCamera": "Parar a câmara",
+		"stopFailed": "Não foi possível desligar a câmara. Tenta novamente.",
 		"cardError_permissionDenied": "O acesso à câmara foi negado. Ativa a permissão nas definições do navegador ou introduz o código do cartão manualmente abaixo.",
 		"cardError_notFound": "Não foi encontrada nenhuma câmara neste dispositivo. Introduz o código do cartão manualmente abaixo.",
 		"cardError_notReadable": "A câmara já está a ser usada por outra aplicação. Fecha-a e tenta novamente, ou introduz o código do cartão manualmente abaixo.",
