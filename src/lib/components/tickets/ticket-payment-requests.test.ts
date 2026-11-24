@@ -11,7 +11,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import {
 	TicketPaymentRequestError,
-	isTicketStateConflict,
+	isRetryablePaymentError,
 	requestConfirmTicketPayment,
 	requestUnconfirmTicketPayment
 } from './ticket-payment-requests';
@@ -77,21 +77,29 @@ describe('failure handling', () => {
 		const error = await requestConfirmTicketPayment(base).catch((e: unknown) => e);
 		expect(error).toBeInstanceOf(TicketPaymentRequestError);
 		expect((error as TicketPaymentRequestError).status).toBe(409);
-		expect(isTicketStateConflict(error)).toBe(true);
 	});
 
-	it('does not treat a 400 as a state conflict', async () => {
+	it.each([400, 404, 409, 422])('does not treat a %i as retryable', async (status) => {
 		vi.mocked(eventadminticketsConfirmTicketPayment).mockResolvedValue({
-			error: { detail: 'Bad amount.' },
-			response: { status: 400 }
+			error: { detail: 'No.' },
+			response: { status }
 		} as never);
 		const error = await requestConfirmTicketPayment(base).catch((e: unknown) => e);
-		expect((error as TicketPaymentRequestError).status).toBe(400);
-		expect(isTicketStateConflict(error)).toBe(false);
+		expect((error as TicketPaymentRequestError).status).toBe(status);
+		expect(isRetryablePaymentError(error)).toBe(false);
 	});
 
-	it('does not treat a plain error as a state conflict', () => {
-		expect(isTicketStateConflict(new Error('x'))).toBe(false);
+	it.each([500, 502, 503])('treats a %i as retryable', async (status) => {
+		vi.mocked(eventadminticketsUnconfirmTicketPayment).mockResolvedValue({
+			error: { detail: 'Down.' },
+			response: { status }
+		} as never);
+		const error = await requestUnconfirmTicketPayment(base).catch((e: unknown) => e);
+		expect(isRetryablePaymentError(error)).toBe(true);
+	});
+
+	it('does not treat a plain error as retryable', () => {
+		expect(isRetryablePaymentError(new Error('x'))).toBe(false);
 	});
 
 	it.each([
@@ -102,6 +110,6 @@ describe('failure handling', () => {
 		const error = await fn(base).catch((e: unknown) => e);
 		expect(error).toBeInstanceOf(Error);
 		expect((error as Error).message).toBe('Fallback');
-		expect(isTicketStateConflict(error)).toBe(false);
+		expect(isRetryablePaymentError(error)).toBe(true);
 	});
 });

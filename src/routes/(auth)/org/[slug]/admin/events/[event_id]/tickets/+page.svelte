@@ -28,7 +28,7 @@
 	import { createTicketScanCheckIn } from '$lib/components/tickets/ticket-scan-checkin.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import {
-		isTicketStateConflict,
+		isRetryablePaymentError,
 		requestConfirmTicketPayment,
 		requestUnconfirmTicketPayment
 	} from '$lib/components/tickets/ticket-payment-requests';
@@ -144,10 +144,10 @@
 		},
 		onError: (error) => {
 			toast.error(error.message);
-			// Only a 409 means the ticket changed meanwhile: close the dialog and refetch
-			// so the stale row updates. Any other failure (a 400 for a bad amount, a
-			// network error) keeps the dialog open with the typed amount, to retry.
-			if (isTicketStateConflict(error)) {
+			// Keep the dialog (and the typed amount) only for a failure a retry can fix
+			// (no response, or a 5xx). Any 4xx is final (ticket changed, or a server
+			// validation the same input hits again): close, clear and refetch.
+			if (!isRetryablePaymentError(error)) {
 				showConfirmPaymentDialog = false;
 				ticketToConfirm = null;
 				pwycPricePaid = '';
@@ -175,9 +175,11 @@
 		},
 		onError: (error) => {
 			toast.error(error.message);
-			showUnconfirmPaymentDialog = false;
-			ticketToUnconfirm = null;
-			invalidateAll();
+			if (!isRetryablePaymentError(error)) {
+				showUnconfirmPaymentDialog = false;
+				ticketToUnconfirm = null;
+				invalidateAll();
+			}
 		}
 	}));
 

@@ -5,7 +5,11 @@ vi.mock('$lib/api', () => ({
 }));
 
 import { organizationadminblacklistCreateBlacklistEntry } from '$lib/api';
-import { requestCreateBlacklistEntry } from './blacklist-request';
+import {
+	blacklistBodyForHolder,
+	canBlacklistHolder,
+	requestCreateBlacklistEntry
+} from './blacklist-request';
 
 const args = {
 	slug: 'org',
@@ -43,5 +47,44 @@ describe('requestCreateBlacklistEntry', () => {
 			new TypeError('Failed to fetch')
 		);
 		await expect(requestCreateBlacklistEntry(args)).rejects.toThrow('Fallback');
+	});
+});
+
+describe('blacklistBodyForHolder', () => {
+	it('uses the user id for a live account', () => {
+		expect(blacklistBodyForHolder({ id: 'u1', email: 'a@b.c', display_name: 'A' })).toEqual({
+			user_id: 'u1',
+			reason: ''
+		});
+	});
+
+	it('uses the kept email and name for an erased holder', () => {
+		expect(
+			blacklistBodyForHolder({
+				id: 'u1',
+				erased: true,
+				email: 'eve@example.com',
+				display_name: 'Eve Erased'
+			})
+		).toEqual({ email: 'eve@example.com', preferred_name: 'Eve Erased', reason: '' });
+	});
+
+	it('omits the name when it is just the email', () => {
+		expect(
+			blacklistBodyForHolder({
+				id: 'u1',
+				erased: true,
+				email: 'eve@example.com',
+				display_name: 'eve@example.com'
+			})
+		).toEqual({ email: 'eve@example.com', reason: '' });
+	});
+
+	it('is null for an erased holder without a kept email, and for no id', () => {
+		expect(blacklistBodyForHolder({ id: 'u1', erased: true, email: null })).toBeNull();
+		expect(blacklistBodyForHolder({ id: '' })).toBeNull();
+		expect(blacklistBodyForHolder(null)).toBeNull();
+		expect(canBlacklistHolder({ id: 'u1', erased: true, email: ' ' })).toBe(false);
+		expect(canBlacklistHolder({ id: 'u1' })).toBe(true);
 	});
 });

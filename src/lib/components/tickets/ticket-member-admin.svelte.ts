@@ -4,14 +4,18 @@ import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { staffViewDisplayName } from '$lib/utils/user-display';
-import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
+import { blacklistBodyForHolder, requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
 import {
 	inviteMemberByAccount,
 	invalidateInvitations,
 	RegisterApiError
 } from '$lib/member-register/api';
 import { isAlreadyMember } from '$lib/member-register/error-codes';
-import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+import type {
+	AdminTicketSchema,
+	BlacklistCreateSchema,
+	MembershipTierSchema
+} from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
 
 interface MakeMemberUser {
@@ -136,11 +140,11 @@ export function createTicketMemberAdmin(opts: Options) {
 	});
 
 	const blacklistMutation = createMutation(() => ({
-		mutationFn: async (userId: string) => {
+		mutationFn: async (body: BlacklistCreateSchema) => {
 			return requestCreateBlacklistEntry({
 				slug: opts.getSlug(),
 				accessToken: opts.getAccessToken(),
-				body: { user_id: userId, reason: '' },
+				body,
 				fallbackMessage: m['eventTicketsAdmin.blacklistError']()
 			});
 		},
@@ -202,7 +206,7 @@ export function createTicketMemberAdmin(opts: Options) {
 	 * Open blacklist dialog
 	 */
 	function openBlacklistDialog(ticket: AdminTicketSchema) {
-		if (!ticket.user?.id) {
+		if (!blacklistBodyForHolder(ticket.user)) {
 			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
 			return;
 		}
@@ -214,9 +218,8 @@ export function createTicketMemberAdmin(opts: Options) {
 	 * Confirm blacklist
 	 */
 	function confirmBlacklist() {
-		if (ticketToBlacklist?.user?.id) {
-			blacklistMutation.mutate(ticketToBlacklist.user.id);
-		}
+		const body = blacklistBodyForHolder(ticketToBlacklist?.user);
+		if (body) blacklistMutation.mutate(body);
 	}
 
 	/**

@@ -48,11 +48,16 @@ describe('AttendeeCardList unknown holders', () => {
 		expect(screen.queryByTestId('unknown-holder-badge')).not.toBeInTheDocument();
 	});
 
-	it('hides make member and the actions menu for an erased holder', () => {
+	it('hides make member but keeps the blacklist menu for an erased holder with a kept email', () => {
 		renderCards([
 			rsvp({ id: 'u3', erased: true, display_name: 'Eve Erased', email: 'eve@example.com' })
 		]);
 		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /more actions/i })).toBeInTheDocument();
+	});
+
+	it('hides the actions menu for an erased holder with no kept email', () => {
+		renderCards([rsvp({ id: 'u4', erased: true, display_name: 'Deleted user', email: null })]);
 		expect(screen.queryByRole('button', { name: /more actions/i })).not.toBeInTheDocument();
 	});
 

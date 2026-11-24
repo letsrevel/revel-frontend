@@ -26,14 +26,21 @@ export class TicketPaymentRequestError extends Error {
 	}
 }
 
-/** True for a 409: the ticket changed meanwhile, so the open dialog and list are stale. */
-export function isTicketStateConflict(error: unknown): boolean {
-	return error instanceof TicketPaymentRequestError && error.status === 409;
+/**
+ * True only when retrying the same request from the open dialog can succeed: the
+ * request never got an HTTP response (network failure) or the server failed (>= 500).
+ * Every 4xx is final: a 404/409 means the ticket changed meanwhile (the backend looks
+ * it up by status), and a 400 is a server validation (series-pass ticket, price rules
+ * for the tier) that the same input will hit again.
+ */
+export function isRetryablePaymentError(error: unknown): boolean {
+	if (!(error instanceof TicketPaymentRequestError)) return false;
+	return error.status === undefined || error.status >= 500;
 }
 
 /**
  * Runs the SDK call and turns every failure into a `TicketPaymentRequestError`.
- * A 400/409 carries the backend `detail` (for example "ticket state changed
+ * A 4xx carries the backend `detail` (for example "ticket state changed
  * meanwhile"). A thrown fetch error (offline, DNS) would carry a raw English
  * browser message, so it becomes the translated fallback instead.
  */
@@ -57,8 +64,8 @@ async function run<T extends { data?: unknown; error?: unknown; response?: Respo
 }
 
 /**
- * Offline payment confirm. The caller toasts the error message. On a 409 the ticket
- * changed meanwhile, so it refetches the list; on a 400 the dialog stays open.
+ * Offline payment confirm. The caller toasts the error message and, unless
+ * `isRetryablePaymentError`, closes the dialog and refetches the list.
  */
 export function requestConfirmTicketPayment(args: PaymentRequestArgs & { pricePaid?: string }) {
 	return run(

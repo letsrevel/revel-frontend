@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { canBlacklistHolder } from '$lib/utils/blacklist-request';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		staffViewDisplayName,
@@ -131,7 +132,7 @@
 						{m['attendeesAdmin.actionDelete']()}
 					</button>
 					<!-- More actions dropdown for mobile -->
-					{#if rsvp.user?.id && !isErasedHolder(rsvp.user)}
+					{#if canBlacklistHolder(rsvp.user)}
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}

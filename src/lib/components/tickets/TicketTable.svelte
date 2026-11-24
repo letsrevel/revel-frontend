@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { canBlacklistHolder } from '$lib/utils/blacklist-request';
 	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
@@ -413,7 +414,7 @@
 											{m['eventTicketsAdmin.actionUnconfirmPayment']()}
 										</DropdownMenu.Item>
 									{/if}
-									{#if ticket.user?.id && !isErasedHolder(ticket.user)}
+									{#if canBlacklistHolder(ticket.user)}
 										<DropdownMenu.Item
 											onclick={() => onBlacklist(ticket)}
 											class="text-destructive focus:text-destructive"

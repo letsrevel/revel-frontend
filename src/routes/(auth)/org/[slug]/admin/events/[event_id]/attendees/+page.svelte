@@ -17,7 +17,10 @@
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { staffViewDisplayName } from '$lib/utils/user-display';
-	import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
+	import {
+		blacklistBodyForHolder,
+		requestCreateBlacklistEntry
+	} from '$lib/utils/blacklist-request';
 	import { rsvpCreateErrorMessage } from '$lib/components/attendees/rsvp-create-error';
 	import { Users, ChevronLeft, ChevronRight, UserPlus } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -32,7 +35,7 @@
 	import AttendeeCardList from '$lib/components/attendees/AttendeeCardList.svelte';
 	import EditRsvpDialog from '$lib/components/attendees/EditRsvpDialog.svelte';
 	import CreateRsvpDialog from '$lib/components/attendees/CreateRsvpDialog.svelte';
-	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
+	import type { BlacklistCreateSchema, RsvpDetailSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 
 	const { data }: { data: PageData } = $props();
@@ -161,11 +164,11 @@
 
 	// Blacklist user mutation
 	const blacklistMutation = createMutation(() => ({
-		mutationFn: async (userId: string) => {
+		mutationFn: async (body: BlacklistCreateSchema) => {
 			return requestCreateBlacklistEntry({
 				slug: organization.slug,
 				accessToken,
-				body: { user_id: userId, reason: '' },
+				body,
 				fallbackMessage: m['attendeesAdmin.blacklistError']()
 			});
 		},
@@ -267,7 +270,7 @@
 	 * Open blacklist confirmation dialog
 	 */
 	function openBlacklistDialog(rsvp: RsvpDetailSchema) {
-		if (!rsvp.user?.id) {
+		if (!blacklistBodyForHolder(rsvp.user)) {
 			toast.error(m['attendeesAdmin.userIdNotAvailable']());
 			return;
 		}
@@ -279,9 +282,8 @@
 	 * Confirm blacklist
 	 */
 	function confirmBlacklist() {
-		if (rsvpToBlacklist?.user?.id) {
-			blacklistMutation.mutate(rsvpToBlacklist.user.id);
-		}
+		const body = blacklistBodyForHolder(rsvpToBlacklist?.user);
+		if (body) blacklistMutation.mutate(body);
 	}
 
 	/**

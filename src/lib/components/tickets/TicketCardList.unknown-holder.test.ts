@@ -152,7 +152,12 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 		expect(screen.getAllByText('eve@example.com')).toHaveLength(1);
 	});
 
-	it('hides make member, staff note and blacklist for an erased holder', async () => {
+	const blacklistLabel = (name: string) =>
+		name === 'TicketCardList'
+			? m['ticketCardList.blacklistUser']()
+			: m['ticketTable.blacklistUser']();
+
+	it('hides make member and staff note, but offers blacklist, for an erased holder with a kept email', async () => {
 		renderView(
 			view,
 			[ticket({ id: 'u6', erased: true, display_name: 'Eve Erased', email: 'eve@example.com' })],
@@ -160,15 +165,25 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 			vi.fn()
 		);
 		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
-		// Another row action proves the menu is open.
-		await screen.findByText(/rename holder/i);
+		// Wait on the open menu container, then assert the items.
+		await screen.findByRole('menu', { hidden: true });
 		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
 		expect(screen.queryByText(m['userNote.editAction']())).not.toBeInTheDocument();
 		expect(screen.queryByTestId('note-unavailable')).not.toBeInTheDocument();
-		expect(
-			screen.queryByText(m['ticketCardList.blacklistUser']()) ??
-				screen.queryByText(m['ticketTable.blacklistUser']())
-		).not.toBeInTheDocument();
+		expect(screen.getByText(blacklistLabel(_name))).toBeInTheDocument();
+	});
+
+	it('hides blacklist for an erased holder with no kept email', async () => {
+		renderView(
+			view,
+			[ticket({ id: 'u7', erased: true, display_name: 'Deleted user', email: null })],
+			vi.fn(),
+			vi.fn()
+		);
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		await screen.findByRole('menu', { hidden: true });
+		expect(screen.queryByText(blacklistLabel(_name))).not.toBeInTheDocument();
+		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
 	});
 
 	it('still offers make member, staff note and blacklist for a known holder', async () => {
