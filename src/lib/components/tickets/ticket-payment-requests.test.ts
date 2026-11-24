@@ -46,7 +46,10 @@ describe('requestConfirmTicketPayment', () => {
 	});
 
 	it('falls back to the translated message when the error has no detail', async () => {
-		vi.mocked(eventadminticketsConfirmTicketPayment).mockResolvedValue({ error: {} } as never);
+		vi.mocked(eventadminticketsConfirmTicketPayment).mockResolvedValue({
+			error: {},
+			response: { status: 400 }
+		} as never);
 		await expect(requestConfirmTicketPayment(base)).rejects.toThrow('Fallback');
 	});
 });
@@ -98,14 +101,17 @@ describe('failure handling', () => {
 		expect(isRetryablePaymentError(error)).toBe(true);
 	});
 
-	it('does not treat an error response without a status as retryable', async () => {
+	it('treats an error with no response (fetch failed inside the client) as a network failure', async () => {
+		// The generated client catches a failed fetch and resolves { error, response: undefined }.
 		vi.mocked(eventadminticketsConfirmTicketPayment).mockResolvedValue({
-			error: { detail: 'Changed.' }
+			error: new TypeError('Failed to fetch'),
+			response: undefined
 		} as never);
 		const error = await requestConfirmTicketPayment(base).catch((e: unknown) => e);
 		expect(error).toBeInstanceOf(TicketPaymentRequestError);
-		expect((error as TicketPaymentRequestError).network).toBe(false);
-		expect(isRetryablePaymentError(error)).toBe(false);
+		expect((error as TicketPaymentRequestError).network).toBe(true);
+		expect((error as Error).message).toBe('Fallback');
+		expect(isRetryablePaymentError(error)).toBe(true);
 	});
 
 	it('does not treat a plain error as retryable', () => {

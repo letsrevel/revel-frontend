@@ -37,22 +37,23 @@ const TRANSIENT_CLIENT_STATUSES = new Set([408, 429]);
  * network failure, a server failure (>= 500), a timeout (408) or a rate limit (429).
  * Every other 4xx is final: a 404/409 means the ticket changed meanwhile (the backend
  * looks it up by status), and a 400 is a server validation (series-pass ticket, price
- * rules for the tier) that the same input will hit again. An error response with no
- * status is also final, because we cannot show that a retry can succeed.
+ * rules for the tier) that the same input will hit again.
  */
 export function isRetryablePaymentError(error: unknown): boolean {
 	if (!(error instanceof TicketPaymentRequestError)) return false;
 	if (error.network) return true;
 	const { status } = error;
-	if (status === undefined) return false;
-	return status >= 500 || TRANSIENT_CLIENT_STATUSES.has(status);
+	return status !== undefined && (status >= 500 || TRANSIENT_CLIENT_STATUSES.has(status));
 }
 
 /**
  * Runs the SDK call and turns every failure into a `TicketPaymentRequestError`.
  * A 4xx carries the backend `detail` (for example "ticket state changed
- * meanwhile"). A thrown fetch error (offline, DNS) would carry a raw English
- * browser message, so it becomes the translated fallback instead.
+ * meanwhile"). A failed fetch (offline, DNS) is a network failure. The generated
+ * client catches it and resolves with `error` and no `response`, so that case is
+ * detected here; the `catch` covers a call that throws anyway. The fetch error
+ * carries a raw English browser message, so a network failure gets the
+ * translated fallback instead.
  */
 async function run<T extends { data?: unknown; error?: unknown; response?: Response }>(
 	call: () => Promise<T>,
@@ -65,8 +66,11 @@ async function run<T extends { data?: unknown; error?: unknown; response?: Respo
 		throw new TicketPaymentRequestError(fallbackMessage, { network: true });
 	}
 	if (response.error) {
+		if (!response.response) {
+			throw new TicketPaymentRequestError(fallbackMessage, { network: true });
+		}
 		throw new TicketPaymentRequestError(extractErrorMessage(response.error, fallbackMessage), {
-			status: response.response?.status
+			status: response.response.status
 		});
 	}
 	return response.data;

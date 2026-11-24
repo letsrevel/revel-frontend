@@ -29,6 +29,11 @@ export async function requestCreateBlacklistEntry(args: CreateBlacklistEntryArgs
 		// A thrown fetch error (offline, DNS) carries a raw English browser message.
 		throw new Error(args.fallbackMessage);
 	}
+	// The generated client catches a failed fetch itself and resolves with the raw
+	// fetch error and no response: that is a network failure, so use the fallback.
+	if (response.error && !response.response) {
+		throw new Error(args.fallbackMessage);
+	}
 	if (response.error) {
 		throw new Error(backendMessage(response.error) || args.fallbackMessage);
 	}

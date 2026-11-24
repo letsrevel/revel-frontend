@@ -30,14 +30,24 @@ describe('requestCreateBlacklistEntry', () => {
 
 	it('throws the backend detail for an HTTP error', async () => {
 		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({
-			error: { detail: 'Staff member.' }
+			error: { detail: 'Staff member.' },
+			response: { status: 403 }
 		} as never);
 		await expect(requestCreateBlacklistEntry(args)).rejects.toThrow('Staff member.');
 	});
 
 	it('falls back when the error has no detail', async () => {
 		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({
-			error: {}
+			error: {},
+			response: { status: 400 }
+		} as never);
+		await expect(requestCreateBlacklistEntry(args)).rejects.toThrow('Fallback');
+	});
+
+	it('replaces a fetch error that the client resolved (no response) with the fallback', async () => {
+		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({
+			error: new TypeError('Failed to fetch'),
+			response: undefined
 		} as never);
 		await expect(requestCreateBlacklistEntry(args)).rejects.toThrow('Fallback');
 	});
