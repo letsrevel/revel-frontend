@@ -4,6 +4,7 @@
 	import { navLoginHref } from '$lib/utils/safe-redirect';
 	import { X } from '@lucide/svelte';
 	import UserMenu from './UserMenu.svelte';
+	import { BREAKPOINT_MD_PX, BREAKPOINT_XL_PX } from '$lib/utils/breakpoints';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -13,9 +14,18 @@
 		onClose: () => void;
 		/** Optional id so a toggle button can reference the drawer via aria-controls. */
 		id?: string;
+		/** The header shows its menu button up to xl (long nav), not only below md. */
+		wideNav?: boolean;
 	}
 
-	let { open = $bindable(false), navItems, isAuthenticated, onClose, id }: Props = $props();
+	let {
+		open = $bindable(false),
+		navItems,
+		isAuthenticated,
+		onClose,
+		id,
+		wideNav = false
+	}: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 
@@ -43,6 +53,26 @@
 		}
 	}
 
+	// The drawer is hidden by CSS above the breakpoint; close it there too so the
+	// backdrop and the body scroll lock cannot outlive it after a resize/rotate.
+	$effect(() => {
+		if (!open || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+			return undefined;
+		}
+		const query = window.matchMedia(
+			`(min-width: ${wideNav ? BREAKPOINT_XL_PX : BREAKPOINT_MD_PX}px)`
+		);
+		const onChange = (event: MediaQueryListEvent): void => {
+			if (event.matches) onClose();
+		};
+		if (query.matches) {
+			onClose();
+			return undefined;
+		}
+		query.addEventListener('change', onChange);
+		return () => query.removeEventListener('change', onChange);
+	});
+
 	// Focus trap management
 	$effect(() => {
 		if (open) {
@@ -63,7 +93,9 @@
 <!-- Backdrop -->
 {#if open}
 	<div
-		class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+		class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm {wideNav
+			? 'xl:hidden'
+			: 'md:hidden'}"
 		onclick={handleBackdropClick}
 		role="presentation"
 	></div>
@@ -71,10 +103,12 @@
 
 <!-- Mobile Menu Drawer -->
 <div
-	class="fixed right-0 top-0 z-50 h-full w-full max-w-sm transform border-l bg-background shadow-lg transition-transform duration-300 ease-in-out md:hidden {open
-		? 'translate-x-0'
-		: 'translate-x-full'}"
+	class="fixed right-0 top-0 z-50 h-full w-full max-w-sm transform border-l bg-background shadow-lg transition-transform duration-300 ease-in-out {wideNav
+		? 'xl:hidden'
+		: 'md:hidden'} {open ? 'translate-x-0' : 'translate-x-full'}"
 	{id}
+	inert={!open}
+	aria-hidden={open ? undefined : 'true'}
 	role="dialog"
 	aria-modal="true"
 	aria-label={m['nav.mobileNavigation']()}

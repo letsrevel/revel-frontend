@@ -303,10 +303,11 @@
 		"cascadeTitle": "Aplicar a todas mis preferencias",
 		"cascadeDescription": "Marca esta opción para aplicar estos ajustes a todas tus preferencias de organización, serie y evento. Esto sobrescribirá cualquier preferencia personalizada que hayas definido.",
 		"cascadeCheckboxLabel": "Aplicar estos ajustes en todas partes",
-		"saving": "Guardando...",
 		"saveChanges": "Guardar cambios",
 		"errorNotLoggedIn": "Debes haber iniciado sesión para ver los ajustes.",
 		"attendeeListProfileHeading": "Visibilidad del perfil",
+		"attendeeListProfileHint": "Elige en los ajustes quién puede verte en las listas de asistentes a eventos.",
+		"attendeeListProfileLink": "Abrir los ajustes",
 		"billing": {
 			"title": "Datos de facturación",
 			"description": "Tus datos de facturación para las facturas de compra de entradas y los pagos de referidos."
@@ -3469,14 +3470,10 @@
 		"skipToContent": "Saltar al contenido principal",
 		"browseEvents": "Explorar eventos",
 		"organizations": "Organizaciones",
-		"myTickets": "Mis entradas",
-		"rsvps": "Asistencias",
-		"invitations": "Invitaciones",
 		"toggleMenu": "Mostrar u ocultar el menú de navegación",
 		"menu": "Menú",
 		"closeMenu": "Cerrar menú",
-		"mobileNavigation": "Navegación móvil",
-		"myPasses": "Mis pases"
+		"mobileNavigation": "Navegación móvil"
 	},
 	"newEventPage": {
 		"title": "Crear evento - Revel",
@@ -7018,6 +7015,7 @@
 		"oneClickFailed": "No se ha podido completar. Inténtalo de nuevo.",
 		"processing": "Procesando…"
 	},
+	"accountNav.label": "Secciones de la cuenta",
 	"userMenu": {
 		"userMenu": "Menú de la cuenta",
 		"dashboard": "Panel",

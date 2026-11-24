@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { formatMoney } from '$lib/utils/format';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page as appPage } from '$app/state';
@@ -17,7 +16,6 @@
 		Search,
 		Eye,
 		Loader2,
-		ArrowLeft,
 		ChevronLeft,
 		ChevronRight
 	} from '@lucide/svelte';
@@ -192,20 +190,9 @@
 	<title>{m['myInvoices.pageTitle']()} - {brandName(appPage.data.tenant)}</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-4xl px-4 py-8">
-	<!-- Header -->
-	<div class="mb-6 flex items-center gap-4">
-		<a
-			href={resolve('/(auth)/account', {})}
-			class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-		>
-			<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-			{m['myInvoices.account']()}
-		</a>
-	</div>
-
-	<!-- No kicker: the "Account" back-link two lines above already says it. -->
+<div>
 	<PageHeader
+		kicker={m['myInvoices.account']()}
 		title={m['myInvoices.pageTitle']()}
 		subtitle={m['myInvoices.pageDescription']()}
 		class="mb-6"

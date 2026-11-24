@@ -106,10 +106,10 @@
 	let previousServerHasToken = $state<boolean | null>(null);
 	let previousFingerprint = $state<string | null | undefined>(undefined);
 	let initializationPromise = $state<Promise<void> | null>(null);
-	// Incremented every time a bootstrap starts. A session swap that lands while
-	// a bootstrap is in flight bumps it (indirectly, via a fresh bootstrap), so
-	// the stale in-flight promise can detect it was superseded and bail out
-	// instead of loading the previous identity's data.
+	// Incremented every time a bootstrap starts, and directly whenever the latch
+	// is dropped without a new bootstrap (session swap, server session gone).
+	// A stale in-flight promise sees it was superseded and bails out instead of
+	// loading the previous identity's data or writing its lifecycle state.
 	let bootstrapGeneration = 0;
 
 	/**
@@ -121,6 +121,7 @@
 	function bootstrapAuth(impersonated: boolean): void {
 		if (initializationPromise) return;
 		const generation = ++bootstrapGeneration;
+		authStore.setBootstrapState('pending');
 		const acquire = impersonated ? authStore.loadSessionToken() : authStore.refreshAccessToken();
 		initializationPromise = acquire
 			.then(async () => {
@@ -153,7 +154,10 @@
 			.finally(() => {
 				// Only the current bootstrap clears the latch; a superseded one must
 				// not release the latch now held by its replacement.
-				if (generation === bootstrapGeneration) initializationPromise = null;
+				if (generation === bootstrapGeneration) {
+					initializationPromise = null;
+					authStore.setBootstrapState('settled');
+				}
 			});
 	}
 
@@ -193,6 +197,7 @@
 			// Release the latch so the new identity can bootstrap below (Case 1).
 			// A bootstrap for the previous identity may still be in flight; its
 			// generation guard makes it bail out when it resolves.
+			bootstrapGeneration++;
 			initializationPromise = null;
 		}
 
@@ -208,6 +213,9 @@
 		else if (!hasServerAccessToken && currentAccessToken) {
 			authStore.logout();
 			queryClient.clear();
+			// Drop the latch and invalidate any in-flight bootstrap so its
+			// `.finally` cannot write 'settled' over the logged-out state.
+			bootstrapGeneration++;
 			initializationPromise = null;
 		}
 		// Case 3: Access token cookie expired but refresh token is still valid

@@ -31,6 +31,18 @@
 	// Check for redirect URL (used when coming from events)
 	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
 
+	// On a cold load the in-memory access token is empty (SSR, then hydration)
+	// until the root layout's bootstrap refresh lands. The server already knows
+	// the session exists, so that gap is "loading", not "logged out" (#1288).
+	// Once the bootstrap has settled without a token (dead refresh cookie, blocked
+	// request) it is no longer loading, whatever the server flags say.
+	const sessionPending = $derived(
+		!authStore.accessToken &&
+			(authStore.bootstrapState === 'pending' ||
+				(authStore.bootstrapState === 'idle' &&
+					Boolean($page.data.auth?.hasAccessToken || $page.data.auth?.hasRefreshToken)))
+	);
+
 	// General preferences state
 	let selectedCity = $state<CitySchema | null>(data.generalPreferences?.city || null);
 	let attendeeListVisibility = $state<VisibilityValue>(
@@ -86,7 +98,7 @@
 	/>
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl px-4 py-8">
+<div>
 	<PageHeader
 		kicker={m['myInvoices.account']()}
 		title={m['accountSettingsPage.title']()}
@@ -180,6 +192,15 @@
 			authToken={authStore.accessToken}
 			initialPreferences={data.notificationPreferences ?? null}
 		/>
+	{:else if sessionPending}
+		<div
+			role="status"
+			class="flex items-center gap-2 text-sm text-muted-foreground"
+			data-testid="settings-session-pending"
+		>
+			<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+			<span>{m['common.loading']()}</span>
+		</div>
 	{:else}
 		<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 			<p class="text-sm font-medium text-destructive">

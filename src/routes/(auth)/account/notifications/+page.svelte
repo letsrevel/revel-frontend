@@ -14,7 +14,7 @@
 	<meta name="description" content={m['notificationsPage.pageDescription']()} />
 </svelte:head>
 
-<div class="container mx-auto max-w-4xl px-4 py-8">
+<div>
 	<PageHeader
 		kicker={m['myInvoices.account']()}
 		title={m['notificationsPage.title']()}

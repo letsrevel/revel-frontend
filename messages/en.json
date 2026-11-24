@@ -303,10 +303,11 @@
 		"cascadeTitle": "Apply to all my preferences",
 		"cascadeDescription": "Check this to apply these settings to all your organization, series, and event-specific preferences. This will override any custom preferences you've set.",
 		"cascadeCheckboxLabel": "Apply these settings everywhere",
-		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "You must be logged in to view settings.",
 		"attendeeListProfileHeading": "Profile visibility",
+		"attendeeListProfileHint": "Choose who can see you on event attendee lists in your settings.",
+		"attendeeListProfileLink": "Open settings",
 		"billing": {
 			"title": "Billing Information",
 			"description": "Your billing details for ticket purchase invoices and referral payouts."
@@ -3469,14 +3470,10 @@
 		"skipToContent": "Skip to main content",
 		"browseEvents": "Browse Events",
 		"organizations": "Organizations",
-		"myTickets": "My Tickets",
-		"rsvps": "RSVPs",
-		"invitations": "Invitations",
 		"toggleMenu": "Toggle navigation menu",
 		"menu": "Menu",
 		"closeMenu": "Close menu",
-		"mobileNavigation": "Mobile navigation",
-		"myPasses": "My passes"
+		"mobileNavigation": "Mobile navigation"
 	},
 	"newEventPage": {
 		"title": "Create Event - Revel",
@@ -7018,6 +7015,7 @@
 		"oneClickFailed": "We couldn't process that. Please try again.",
 		"processing": "Working on it…"
 	},
+	"accountNav.label": "Account sections",
 	"userMenu": {
 		"userMenu": "User menu",
 		"dashboard": "Dashboard",
@@ -10033,10 +10031,10 @@
 		"checkoutFailed": "Could not complete the pass checkout",
 		"paymentStartFailed": "Your pass is reserved, but the payment could not be started. Please try again.",
 		"passClaimed": "Season pass claimed!",
-		"passClaimedDesc": "Your pass is ready — find it under My passes.",
+		"passClaimedDesc": "Your pass is ready — find it under My Passes.",
 		"passReserved": "Season pass reserved!",
 		"passReservedDesc": "Complete the payment at the venue to activate your pass.",
-		"myPassesTitle": "My passes",
+		"myPassesTitle": "My Passes",
 		"myPassesDescription": "View and manage your season passes",
 		"loading": "Loading…",
 		"noPassesTitle": "No season passes yet",

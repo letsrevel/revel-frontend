@@ -6,3 +6,4 @@ export { default as DashboardBandLayout } from './DashboardBandLayout.svelte';
 export { default as DashboardActivityCards } from './DashboardActivityCards.svelte';
 export { default as DashboardUpcomingEvents } from './DashboardUpcomingEvents.svelte';
 export { default as DashboardOrganizationsSection } from './DashboardOrganizationsSection.svelte';
+export { default as DashboardFilterBar } from './DashboardFilterBar.svelte';

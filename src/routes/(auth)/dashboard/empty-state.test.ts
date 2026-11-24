@@ -74,6 +74,7 @@ describe.each([
 		expect(screen.queryByText(filteredCopy)).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: browse })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: clear })).not.toBeInTheDocument();
+		expect(screen.queryAllByRole('button', { name: /clear filters/i })).toHaveLength(0);
 	});
 
 	it('shows the filtered copy and a clear action once a search is applied', async () => {
@@ -87,5 +88,7 @@ describe.each([
 		});
 		expect(screen.queryByText(emptyHint)).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: clear })).toBeInTheDocument();
+		// The filter bar's button is the only one; the empty state adds none.
+		expect(screen.getAllByRole('button', { name: /clear filters/i })).toHaveLength(1);
 	});
 });

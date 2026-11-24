@@ -261,6 +261,20 @@ describe('AuthStore', () => {
 		});
 	});
 
+	describe('bootstrapState', () => {
+		it('is settled after an in-place logout, so pages show the signed-out state', () => {
+			authStore.setBootstrapState('pending');
+			authStore.logout();
+			expect(authStore.bootstrapState).toBe('settled');
+		});
+
+		it('returns to idle on resetForSwap', () => {
+			authStore.setBootstrapState('settled');
+			authStore.resetForSwap();
+			expect(authStore.bootstrapState).toBe('idle');
+		});
+	});
+
 	describe('Bootstrap gate', () => {
 		/** True once waitForAuthReady() has resolved (after a microtask flush). */
 		async function isReady(): Promise<boolean> {

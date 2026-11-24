@@ -303,10 +303,11 @@
 		"cascadeTitle": "Applica a tutte le mie preferenze",
 		"cascadeDescription": "Seleziona questa opzione per applicare queste impostazioni a tutte le tue preferenze specifiche per organizzazioni, serie ed eventi. Questo sovrascriverà qualsiasi preferenza personalizzata che hai impostato.",
 		"cascadeCheckboxLabel": "Applica queste impostazioni ovunque",
-		"saving": "Salvataggio...",
 		"saveChanges": "Salva le modifiche",
 		"errorNotLoggedIn": "Devi essere loggato per visualizzare le impostazioni.",
 		"attendeeListProfileHeading": "Visibilità del profilo",
+		"attendeeListProfileHint": "Scegli nelle impostazioni chi può vederti nelle liste delle persone partecipanti agli eventi.",
+		"attendeeListProfileLink": "Apri le impostazioni",
 		"billing": {
 			"title": "Dati di Fatturazione",
 			"description": "I tuoi dati di fatturazione per le fatture dei biglietti e i pagamenti referral."
@@ -1137,7 +1138,7 @@
 			"noOrganizationsHint": "Le organizzazioni ti aiutano a gestire eventi e costruire la tua community."
 		},
 		"invitations": {
-			"title": "I Miei Inviti",
+			"title": "I miei inviti",
 			"description": "Visualizza e gestisci i tuoi inviti agli eventi",
 			"tabs": "Schede inviti",
 			"received": "Ricevuti",
@@ -1164,7 +1165,7 @@
 			"showAccepted": "Mostra già accettati"
 		},
 		"rsvps": {
-			"title": "Le Mie Conferme",
+			"title": "Le mie conferme",
 			"description": "Visualizza e gestisci tutte le tue conferme agli eventi",
 			"searchPlaceholder": "Cerca per nome evento...",
 			"showing": "Mostrando {count} di {total}",
@@ -1182,7 +1183,7 @@
 			"nextPage": "Pagina successiva"
 		},
 		"tickets": {
-			"title": "I Miei Biglietti",
+			"title": "I miei biglietti",
 			"description": "Visualizza e gestisci tutti i tuoi biglietti per eventi",
 			"searchPlaceholder": "Cerca per nome evento o categoria biglietto...",
 			"showing": "Mostrando {count} di {total}",
@@ -3469,14 +3470,10 @@
 		"skipToContent": "Passa al contenuto principale",
 		"browseEvents": "Sfoglia Eventi",
 		"organizations": "Organizzazioni",
-		"myTickets": "I Miei Biglietti",
-		"rsvps": "RSVP",
-		"invitations": "Inviti",
 		"toggleMenu": "Attiva/disattiva menu di navigazione",
 		"menu": "Menu",
 		"closeMenu": "Chiudi menu",
-		"mobileNavigation": "Navigazione mobile",
-		"myPasses": "I miei pass"
+		"mobileNavigation": "Navigazione mobile"
 	},
 	"newEventPage": {
 		"title": "Crea Evento - Revel",
@@ -7018,6 +7015,7 @@
 		"oneClickFailed": "Non è stato possibile completare l’operazione. Riprova.",
 		"processing": "Operazione in corso…"
 	},
+	"accountNav.label": "Sezioni dell'account",
 	"userMenu": {
 		"userMenu": "Menu del profilo",
 		"dashboard": "Dashboard",

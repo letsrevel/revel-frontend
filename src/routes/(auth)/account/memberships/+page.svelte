@@ -177,7 +177,7 @@
 	<title>{m['account.memberships.title']()}</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl space-y-6 px-4 py-6">
+<div class="space-y-6">
 	<PageHeader kicker={m['myInvoices.account']()} title={m['account.memberships.title']()} />
 
 	<section aria-labelledby="memberships-heading" class="space-y-3">

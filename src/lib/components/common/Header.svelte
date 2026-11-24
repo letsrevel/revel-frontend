@@ -31,14 +31,25 @@
 	const authNavItems = $derived([
 		{ href: resolve('/(public)/events', {}), label: m['nav.browseEvents']() },
 		{ href: resolve('/(public)/organizations', {}), label: m['nav.organizations']() },
-		{ href: resolve('/(auth)/dashboard/tickets', {}), label: m['nav.myTickets']() },
-		{ href: resolve('/(auth)/dashboard/passes', {}), label: m['nav.myPasses']() },
-		{ href: resolve('/(auth)/dashboard/rsvps', {}), label: m['nav.rsvps']() },
-		{ href: resolve('/(auth)/dashboard/invitations', {}), label: m['nav.invitations']() }
+		{ href: resolve('/(auth)/dashboard/tickets', {}), label: m['dashboard.tickets.title']() },
+		{ href: resolve('/(auth)/dashboard/passes', {}), label: m['seriesPass.myPassesTitle']() },
+		{ href: resolve('/(auth)/dashboard/rsvps', {}), label: m['dashboard.rsvps.title']() },
+		{
+			href: resolve('/(auth)/dashboard/invitations', {}),
+			label: m['dashboard.invitations.title']()
+		}
 	]);
 
 	// Determine which nav items to show
 	const navItems = $derived(isAuthenticated ? authNavItems : publicNavItems);
+
+	// Signed-in users get six nav links, which only fit on one line from xl
+	// (1280px) up; below that they use the menu button. Short navs keep md.
+	const wideNav = $derived(navItems.length > 3);
+	const desktopNavClass = $derived(
+		wideNav ? 'hidden xl:flex xl:items-center xl:gap-6' : 'hidden md:flex md:items-center md:gap-6'
+	);
+	const menuButtonClass = $derived(wideNav ? 'xl:hidden' : 'md:hidden');
 
 	// Check if link is active
 	function isActive(href: string): boolean {
@@ -46,8 +57,14 @@
 	}
 
 	// Close mobile menu
-	function closeMobileMenu() {
+	let menuButton = $state<HTMLButtonElement>();
+
+	function closeMobileMenu(): void {
+		// The closed drawer is inert, so focus inside it would fall to <body>.
+		// Return it to the menu button instead (WCAG 2.4.3).
+		const focusWasInDrawer = !!document.activeElement?.closest('[role="dialog"]');
 		mobileMenuOpen = false;
+		if (focusWasInDrawer) menuButton?.focus();
 	}
 </script>
 
@@ -68,15 +85,14 @@
 			</a>
 
 			<!-- Desktop Navigation -->
-			<nav
-				class="hidden md:flex md:items-center md:gap-6"
-				aria-label={m['header.mainNavigation']()}
-			>
+			<nav class={desktopNavClass} aria-label={m['header.mainNavigation']()}>
 				{#each navItems as item (item.href)}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 					<a
 						href={item.href}
-						class="text-sm transition-colors hover:text-primary {isActive(item.href)
+						class="whitespace-nowrap text-sm transition-colors hover:text-primary {isActive(
+							item.href
+						)
 							? 'font-bold text-primary'
 							: 'font-semibold text-muted-foreground'}"
 						aria-current={isActive(item.href) ? 'page' : undefined}
@@ -132,8 +148,9 @@
 
 			<!-- Mobile Menu Button -->
 			<button
+				bind:this={menuButton}
 				type="button"
-				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring md:hidden"
+				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring {menuButtonClass}"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-expanded={mobileMenuOpen}
 				aria-label={m['nav.toggleMenu']()}
@@ -148,4 +165,10 @@
 </header>
 
 <!-- Mobile Navigation -->
-<MobileNav bind:open={mobileMenuOpen} {navItems} {isAuthenticated} onClose={closeMobileMenu} />
+<MobileNav
+	bind:open={mobileMenuOpen}
+	{navItems}
+	{isAuthenticated}
+	{wideNav}
+	onClose={closeMobileMenu}
+/>

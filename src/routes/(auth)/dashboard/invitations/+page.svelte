@@ -11,9 +11,12 @@
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
 	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import DashboardFilterBar, {
+		type FilterChipGroup
+	} from '$lib/components/dashboard/DashboardFilterBar.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { createConfirm } from '$lib/components/common/confirm.svelte';
-	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
+	import { Mail, Send, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
@@ -148,6 +151,40 @@
 		activeTab = tab;
 		navigateToPage(1); // Reset to first page when switching tabs
 	}
+
+	function clearFilters() {
+		if (activeTab === 'invitations') {
+			invitationsSearch = '';
+		} else {
+			requestsSearch = '';
+			requestsStatus = 'pending';
+		}
+		navigateToPage(1);
+	}
+
+	type RequestStatus = 'pending' | 'approved' | 'rejected' | null;
+
+	function setRequestsStatus(status: RequestStatus) {
+		requestsStatus = status;
+		navigateToPage(1);
+	}
+
+	const requestsChipGroups = $derived<FilterChipGroup[]>([
+		{
+			id: 'status',
+			label: m['dashboard.tickets.status'](),
+			chips: [
+				{ label: m['dashboard.invitations.status_pending'](), value: 'pending' as const },
+				{ label: m['dashboard.invitations.status_approved'](), value: 'approved' as const },
+				{ label: m['dashboard.invitations.status_rejected'](), value: 'rejected' as const },
+				{ label: m['dashboard.tickets.status_all'](), value: null }
+			].map((chip) => ({
+				label: chip.label,
+				active: requestsStatus === chip.value,
+				onSelect: () => setRequestsStatus(chip.value)
+			}))
+		}
+	]);
 </script>
 
 <svelte:head>
@@ -160,102 +197,99 @@
      bottom edge, so it gets a card surface of its own — a bare underline rule
      landing on the cut reads as debris. Tab semantics (aria-current, the
      switchTab handler, the URL params) are untouched. -->
+{#snippet tabsHeader()}
+	<nav class="-mb-px flex gap-6" aria-label={m['dashboard.invitations.tabs']()}>
+		<button
+			type="button"
+			onclick={() => switchTab('invitations')}
+			class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+			'invitations'
+				? 'border-primary font-bold text-primary'
+				: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+			aria-current={activeTab === 'invitations' ? 'page' : undefined}
+		>
+			<Mail class="h-4 w-4" aria-hidden="true" />
+			{m['dashboard.invitations.received']()}
+			{#if invitationsCount > 0}
+				<span
+					class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
+				>
+					{invitationsCount}
+				</span>
+			{/if}
+		</button>
+
+		<button
+			type="button"
+			onclick={() => switchTab('requests')}
+			class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+			'requests'
+				? 'border-primary font-bold text-primary'
+				: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+			aria-current={activeTab === 'requests' ? 'page' : undefined}
+		>
+			<Send class="h-4 w-4" aria-hidden="true" />
+			{m['dashboard.invitations.sent']()}
+			{#if requestsCount > 0}
+				<span
+					class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
+				>
+					{requestsCount}
+				</span>
+			{/if}
+		</button>
+	</nav>
+{/snippet}
+
+{#snippet invitationOptions()}
+	<label class="flex min-h-11 cursor-pointer items-center gap-2 sm:min-h-0">
+		<input
+			type="checkbox"
+			bind:checked={includePastInvitations}
+			onchange={() => navigateToPage(1)}
+			class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+		/>
+		<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
+	</label>
+	<label class="flex min-h-11 cursor-pointer items-center gap-2 sm:min-h-0">
+		<input
+			type="checkbox"
+			bind:checked={showAcceptedInvitations}
+			onchange={() => navigateToPage(1)}
+			class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+		/>
+		<span class="text-sm">{m['dashboard.invitations.showAccepted']()}</span>
+	</label>
+{/snippet}
+
 <DashboardBandLayout
 	title={m['dashboard.invitations.title']()}
 	subtitle={m['dashboard.invitations.description']()}
 	kicker={m['userMenu.dashboard']()}
 >
-	<!-- Tabs -->
-	<div class="mb-6 rounded-lg border-2 border-border bg-card px-4 shadow-poster sm:px-6">
-		<div class="border-b border-border">
-			<nav class="-mb-px flex gap-6" aria-label={m['dashboard.invitations.tabs']()}>
-				<button
-					type="button"
-					onclick={() => switchTab('invitations')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
-					'invitations'
-						? 'border-primary font-bold text-primary'
-						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
-					aria-current={activeTab === 'invitations' ? 'page' : undefined}
-				>
-					<Mail class="h-4 w-4" aria-hidden="true" />
-					{m['dashboard.invitations.received']()}
-					{#if invitationsCount > 0}
-						<span
-							class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
-						>
-							{invitationsCount}
-						</span>
-					{/if}
-				</button>
-
-				<button
-					type="button"
-					onclick={() => switchTab('requests')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
-					'requests'
-						? 'border-primary font-bold text-primary'
-						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
-					aria-current={activeTab === 'requests' ? 'page' : undefined}
-				>
-					<Send class="h-4 w-4" aria-hidden="true" />
-					{m['dashboard.invitations.sent']()}
-					{#if requestsCount > 0}
-						<span
-							class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
-						>
-							{requestsCount}
-						</span>
-					{/if}
-				</button>
-			</nav>
-		</div>
-	</div>
+	<DashboardFilterBar
+		header={tabsHeader}
+		searchValue={activeTab === 'invitations' ? invitationsSearch : requestsSearch}
+		onSearch={(value) => {
+			if (activeTab === 'invitations') invitationsSearch = value;
+			else requestsSearch = value;
+		}}
+		searchLabel={m['dashboard.invitations.searchPlaceholder']()}
+		searchPlaceholder={m['dashboard.invitations.searchPlaceholder']()}
+		chipGroups={activeTab === 'requests' ? requestsChipGroups : []}
+		options={activeTab === 'invitations' ? invitationOptions : undefined}
+		optionsLabel={m['dashboardTicketsPage.options']()}
+		hasActiveFilters={activeTab === 'invitations'
+			? !!invitationsDebounced
+			: !!requestsDebounced || requestsStatus !== 'pending'}
+		onClear={clearFilters}
+		clearLabel={m['dashboard.invitations.clearFilters']()}
+	/>
 
 	<!-- Tab Content -->
 	{#if activeTab === 'invitations'}
 		<!-- Invitations Tab -->
 		<div class="space-y-6">
-			<!-- Search Bar -->
-			<div>
-				<label for="invitations-search" class="sr-only"
-					>{m['dashboard.invitations.searchPlaceholder']()}</label
-				>
-				<input
-					id="invitations-search"
-					type="search"
-					bind:value={invitationsSearch}
-					placeholder={m['dashboard.invitations.searchPlaceholder']()}
-					class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-				/>
-			</div>
-
-			<!-- Filters -->
-			<div
-				role="group"
-				aria-label={m['dashboardTicketsPage.options']()}
-				class="flex flex-wrap items-center gap-x-4 gap-y-2"
-			>
-				<label class="flex cursor-pointer items-center gap-2">
-					<input
-						type="checkbox"
-						bind:checked={includePastInvitations}
-						onchange={() => navigateToPage(1)}
-						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
-				</label>
-				<label class="flex cursor-pointer items-center gap-2">
-					<input
-						type="checkbox"
-						bind:checked={showAcceptedInvitations}
-						onchange={() => navigateToPage(1)}
-						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['dashboard.invitations.showAccepted']()}</span>
-				</label>
-			</div>
-
 			<!-- Invitations List -->
 			{#if invitationsQuery.isPending}
 				<div class="flex items-center justify-center py-12">
@@ -263,25 +297,12 @@
 					<span class="sr-only">{m['dashboard.invitations.loadingInvitations']()}</span>
 				</div>
 			{:else if invitations.length === 0}
-				{#snippet clearInvitationsSearchAction()}
-					<button
-						type="button"
-						onclick={() => {
-							invitationsSearch = '';
-							navigateToPage(1);
-						}}
-						class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						{m['dashboard.invitations.clearSearch']()}
-					</button>
-				{/snippet}
 				<EmptyState
 					icon={Mail}
 					title={m['dashboard.invitations.noInvitations']()}
 					body={invitationsDebounced
 						? m['dashboard.invitations.tryAdjustingSearch']()
 						: m['dashboard.invitations.noReceivedInvitations']()}
-					action={invitationsDebounced ? clearInvitationsSearchAction : undefined}
 					level={2}
 				/>
 			{:else}
@@ -295,82 +316,6 @@
 	{:else}
 		<!-- Requests Tab -->
 		<div class="space-y-6">
-			<!-- Search Bar -->
-			<div>
-				<label for="requests-search" class="sr-only"
-					>{m['dashboard.invitations.searchPlaceholder']()}</label
-				>
-				<input
-					id="requests-search"
-					type="search"
-					bind:value={requestsSearch}
-					placeholder={m['dashboard.invitations.searchPlaceholder']()}
-					class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-				/>
-			</div>
-
-			<!-- Status Filter -->
-			<div>
-				<div class="mb-2 flex items-center gap-2">
-					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-					<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
-				</div>
-				<div class="flex flex-wrap gap-2">
-					<button
-						type="button"
-						onclick={() => {
-							requestsStatus = 'pending';
-							navigateToPage(1);
-						}}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {requestsStatus ===
-						'pending'
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{m['dashboard.invitations.status_pending']()}
-					</button>
-					<button
-						type="button"
-						onclick={() => {
-							requestsStatus = 'approved';
-							navigateToPage(1);
-						}}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {requestsStatus ===
-						'approved'
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{m['dashboard.invitations.status_approved']()}
-					</button>
-					<button
-						type="button"
-						onclick={() => {
-							requestsStatus = 'rejected';
-							navigateToPage(1);
-						}}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {requestsStatus ===
-						'rejected'
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{m['dashboard.invitations.status_rejected']()}
-					</button>
-					<button
-						type="button"
-						onclick={() => {
-							requestsStatus = null;
-							navigateToPage(1);
-						}}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {requestsStatus ===
-						null
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{m['dashboard.tickets.status_all']()}
-					</button>
-				</div>
-			</div>
-
 			<!-- Requests List -->
 			{#if requestsQuery.isPending}
 				<div class="flex items-center justify-center py-12">
@@ -378,26 +323,12 @@
 					<span class="sr-only">{m['dashboard.invitations.loadingRequests']()}</span>
 				</div>
 			{:else if requests.length === 0}
-				{#snippet clearRequestsFiltersAction()}
-					<button
-						type="button"
-						onclick={() => {
-							requestsSearch = '';
-							requestsStatus = 'pending';
-							navigateToPage(1);
-						}}
-						class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						{m['dashboard.invitations.clearFilters']()}
-					</button>
-				{/snippet}
 				<EmptyState
 					icon={Send}
 					title={m['dashboard.invitations.noRequests']()}
-					body={requestsDebounced || requestsStatus
+					body={requestsDebounced || requestsStatus !== null
 						? m['dashboard.invitations.tryAdjustingFilters']()
 						: m['dashboard.invitations.noSentInvitations']()}
-					action={requestsDebounced || requestsStatus ? clearRequestsFiltersAction : undefined}
 					level={2}
 				/>
 			{:else}
