@@ -450,6 +450,8 @@
 		"typeStaffSeriesPassCancelledDescription": "Un abbonamento per una delle tue serie di eventi è stato annullato.",
 		"typeStaffMemberRecordAutoLinked": "Avviso allo staff: scheda socio collegata automaticamente",
 		"typeStaffMemberRecordAutoLinkedDescription": "Una voce del registro dei soci è stata collegata automaticamente a un account dopo la verifica dell'e-mail.",
+		"typeMemberRecordLinked": "Scheda socio collegata al tuo account",
+		"typeMemberRecordLinkedDescription": "Un'organizzazione ha collegato la sua voce del registro dei soci al tuo account dopo la verifica della tua e-mail.",
 		"mandatoryNoticeTitle": "Alcune email arrivano sempre",
 		"mandatoryNotice": "I tuoi biglietti, le ricevute, gli avvisi di pagamento e rimborso, gli avvisi sugli abbonamenti e le comunicazioni legali e di piattaforma importanti ti raggiungono comunque, qualunque cosa tu scelga qui.",
 		"silenceAllMandatoryHint": "I tuoi biglietti, le ricevute e gli avvisi sull'account arrivano comunque.",

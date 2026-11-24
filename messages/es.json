@@ -450,6 +450,8 @@
 		"typeStaffSeriesPassCancelledDescription": "Se ha cancelado un abono para una de tus series de eventos.",
 		"typeStaffMemberRecordAutoLinked": "Aviso al equipo: registro de miembro vinculado automáticamente",
 		"typeStaffMemberRecordAutoLinkedDescription": "Una entrada del registro de miembros se vinculó automáticamente a una cuenta tras verificar su correo electrónico.",
+		"typeMemberRecordLinked": "Registro de miembro vinculado a tu cuenta",
+		"typeMemberRecordLinkedDescription": "Una organización vinculó su entrada del registro de miembros a tu cuenta después de que verificaras tu correo electrónico.",
 		"mandatoryNoticeTitle": "Algunos correos llegan siempre",
 		"mandatoryNotice": "Tus propias entradas, recibos, avisos de pago y reembolso, avisos de suscripción y los avisos legales y de la plataforma importantes te seguirán llegando, elijas lo que elijas aquí.",
 		"silenceAllMandatoryHint": "Tus propias entradas, recibos y avisos de cuenta siguen llegando.",

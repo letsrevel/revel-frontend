@@ -450,6 +450,8 @@
 		"typeStaffSeriesPassCancelledDescription": "Um passe para uma das tuas séries de eventos foi cancelado.",
 		"typeStaffMemberRecordAutoLinked": "Alerta da equipa: registo de membro associado automaticamente",
 		"typeStaffMemberRecordAutoLinkedDescription": "Uma entrada do registo de membros foi associada automaticamente a uma conta depois de o e-mail ser verificado.",
+		"typeMemberRecordLinked": "Registo de membro associado à tua conta",
+		"typeMemberRecordLinkedDescription": "Uma organização associou a sua entrada do registo de membros à tua conta depois de verificares o teu e-mail.",
 		"mandatoryNoticeTitle": "Alguns e-mails chegam sempre",
 		"mandatoryNotice": "Os teus próprios bilhetes, recibos, avisos de pagamento e reembolso, avisos de subscrição e avisos legais e da plataforma importantes continuam a chegar, seja qual for a tua escolha aqui.",
 		"silenceAllMandatoryHint": "Os teus próprios bilhetes, recibos e avisos da conta continuam a chegar.",

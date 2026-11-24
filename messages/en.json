@@ -450,6 +450,8 @@
 		"typeStaffSeriesPassCancelledDescription": "A pass for one of your event series was cancelled.",
 		"typeStaffMemberRecordAutoLinked": "Staff alert: member record linked automatically",
 		"typeStaffMemberRecordAutoLinkedDescription": "A member register entry was linked to an account automatically after its email was verified.",
+		"typeMemberRecordLinked": "Member register entry linked to your account",
+		"typeMemberRecordLinkedDescription": "An organization linked its member register entry to your account after you verified your email.",
 		"mandatoryNoticeTitle": "Some emails always arrive",
 		"mandatoryNotice": "Your own tickets, receipts, payment and refund notices, subscription notices, and important legal and platform notices still reach you, whatever you choose here.",
 		"silenceAllMandatoryHint": "Your own tickets, receipts and account notices still arrive.",

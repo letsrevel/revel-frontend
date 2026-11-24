@@ -3480,6 +3480,8 @@
 		"typeStaffSeriesPassCancelledDescription": "Un pass pour l'une de tes séries d'événements a été annulé.",
 		"typeStaffMemberRecordAutoLinked": "Alerte équipe : fiche de membre liée automatiquement",
 		"typeStaffMemberRecordAutoLinkedDescription": "Une entrée du registre des membres a été liée automatiquement à un compte après la vérification de son adresse e-mail.",
+		"typeMemberRecordLinked": "Fiche de membre liée à ton compte",
+		"typeMemberRecordLinkedDescription": "Une organisation a lié son entrée du registre des membres à ton compte après la vérification de ton adresse e-mail.",
 		"mandatoryNoticeTitle": "Certains e-mails arrivent toujours",
 		"mandatoryNotice": "Tes propres billets, reçus, avis de paiement et de remboursement, avis d'abonnement ainsi que les avis juridiques et de plateforme importants te parviennent quand même, quel que soit ton choix ici.",
 		"silenceAllMandatoryHint": "Tes propres billets, reçus et avis de compte arrivent quand même.",

@@ -450,6 +450,8 @@
 		"typeStaffSeriesPassCancelledDescription": "Ein Pass für eine deiner Eventreihen wurde storniert.",
 		"typeStaffMemberRecordAutoLinked": "Team-Hinweis: Mitgliedseintrag automatisch verknüpft",
 		"typeStaffMemberRecordAutoLinkedDescription": "Ein Eintrag im Mitgliederregister wurde nach der Bestätigung der E-Mail-Adresse automatisch mit einem Konto verknüpft.",
+		"typeMemberRecordLinked": "Eintrag im Mitgliederregister mit deinem Konto verknüpft",
+		"typeMemberRecordLinkedDescription": "Eine Organisation hat ihren Eintrag im Mitgliederregister mit deinem Konto verknüpft, nachdem du deine E-Mail-Adresse bestätigt hast.",
 		"mandatoryNoticeTitle": "Manche E-Mails kommen immer an",
 		"mandatoryNotice": "Deine eigenen Tickets, Belege, Zahlungs- und Erstattungsbenachrichtigungen, Abo-Hinweise sowie wichtige rechtliche und Plattform-Hinweise erreichen dich weiterhin, egal was du hier auswählst.",
 		"silenceAllMandatoryHint": "Deine eigenen Tickets, Belege und Konto-Hinweise kommen weiterhin an.",

@@ -152,6 +152,11 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 		description: (locale) =>
 			m['notificationPreferences.typeMembershipOfflineJoinedDescription']({}, { locale })
 	},
+	member_record_linked: {
+		label: (locale) => m['notificationPreferences.typeMemberRecordLinked']({}, { locale }),
+		description: (locale) =>
+			m['notificationPreferences.typeMemberRecordLinkedDescription']({}, { locale })
+	},
 	staff_member_record_auto_linked: {
 		label: (locale) => m['notificationPreferences.typeStaffMemberRecordAutoLinked']({}, { locale }),
 		description: (locale) =>

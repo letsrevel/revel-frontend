@@ -328,6 +328,27 @@ describe('NotificationItem', () => {
 		});
 	});
 
+	describe('member_record_linked', () => {
+		it('follows frontend_url to the organization page', async () => {
+			const notification = createMockNotification({
+				notification_type: 'member_record_linked',
+				// BE MemberRecordLinkedContext: organization page as frontend_url (#1500).
+				context: {
+					organization_id: 'org-1',
+					organization_name: 'Acme',
+					frontend_url: 'https://revel.test/org/acme'
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			expect(goto).toHaveBeenCalledWith('/org/acme');
+		});
+	});
+
 	describe('membership_invitation_received', () => {
 		it('follows accept_url to the join page instead of the notifications list', async () => {
 			const notification = createMockNotification({
