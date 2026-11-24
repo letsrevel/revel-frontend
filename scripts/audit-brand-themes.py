@@ -283,6 +283,8 @@ COMPOSITED_PAIRS = [
     # --foreground, description --muted-foreground (event editor, #1106).
     ("foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile title"),
     ("muted-foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile description"),
+    # MoreTagsPopover chips (`bg-primary/10 text-primary` inside a popover surface, 12px bold).
+    ("primary", 1, "primary", 0.10, "popover", 4.5, BOTH, "MoreTagsPopover tag chip on popover"),
     # EditorSectionNav current chip (`bg-primary/10` over the page, --foreground text).
     ("foreground", 1, "primary", 0.10, "background", 4.5, BOTH, "EditorSectionNav current chip label"),
     ("foreground", 1, "success", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),

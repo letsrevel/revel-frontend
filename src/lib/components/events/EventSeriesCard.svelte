@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MoreTagsPopover from '$lib/components/common/MoreTagsPopover.svelte';
 	import { onImageError } from '$lib/utils/image-error';
 	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
@@ -248,9 +249,7 @@
 								</span>
 							{/each}
 							{#if series.tags.length > 3}
-								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-									{m['eventSeriesCard.moreTags']({ count: series.tags.length - 3 })}
-								</span>
+								<MoreTagsPopover tags={series.tags.slice(3)} static={lean} />
 							{/if}
 						</div>
 					</div>

@@ -255,6 +255,12 @@
 		return null;
 	}
 
+	// The checkout link of a revival notice lives in the body, so the compact
+	// clamp must not hide it.
+	const clampBody = $derived(
+		compact && notification.notification_type !== 'subscription_revival_checkout'
+	);
+
 	// ===== Waitlist spot available =====
 	const isWaitlistSpot = $derived(notification.notification_type === 'waitlist_spot_available');
 
@@ -394,7 +400,13 @@
 			<!-- Header with title and badge -->
 			<div class="mb-2 flex flex-wrap items-start justify-between gap-2">
 				<div class="min-w-0 flex-1">
-					<h3 class={cn('text-base font-semibold leading-tight', !isRead && 'font-bold')}>
+					<h3
+						class={cn(
+							'text-base font-semibold leading-tight',
+							!isRead && 'font-bold',
+							compact && 'line-clamp-2'
+						)}
+					>
 						{isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title}
 					</h3>
 				</div>
@@ -409,7 +421,7 @@
 			<!-- Body content -->
 			{#if isWaitlistSpot && waitlistSpotData}
 				<div class="space-y-3">
-					<p class={cn('text-sm', compact && 'line-clamp-4')}>
+					<p class={cn('text-sm', compact && 'line-clamp-2')}>
 						{m['notifications.waitlistSpot.body']({
 							event: waitlistSpotData.eventName,
 							time: waitlistSpotData.timeText
@@ -445,7 +457,7 @@
 				<div class="notification-body">
 					<MarkdownContent
 						content={notification.body}
-						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-4')}
+						class={cn('text-sm text-muted-foreground', clampBody && 'line-clamp-2')}
 					/>
 				</div>
 				{#if isRefundUnmatched && refundResolveUrl}
@@ -504,11 +516,11 @@
 		line-height: inherit;
 	}
 
-	/* Line clamp for compact (dropdown) mode — 4 lines so messages aren't cut mid-sentence */
-	.line-clamp-4 {
+	/* Line clamp for compact (dropdown) mode — title 2 lines, body 2 lines so the dropdown shows several items */
+	.line-clamp-2 {
 		display: -webkit-box;
-		-webkit-line-clamp: 4;
-		line-clamp: 4;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

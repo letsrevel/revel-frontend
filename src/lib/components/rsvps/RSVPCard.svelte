@@ -124,7 +124,7 @@
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 							<!-- datetime carries the machine-readable start instant; the text
 							     is the localized, event-timezone rendering. -->
-							<time datetime={rsvp.event.start} class="truncate">{eventDate}</time>
+							<time datetime={rsvp.event.start} class="min-w-0 break-words">{eventDate}</time>
 						</li>
 					{/if}
 					{#if eventLocation}

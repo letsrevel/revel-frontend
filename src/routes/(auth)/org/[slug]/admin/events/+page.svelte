@@ -164,25 +164,36 @@
 	// Derived state: group events by status and time
 	// Note: Status type in OpenAPI is incorrect, using string comparison
 	// Past events are separated regardless of status
+	// Upcoming sections read soonest first; the past section reads newest first (#1285).
+	const chronological = $derived(
+		[...data.events].sort(
+			(a: EventInListSchema, b: EventInListSchema) =>
+				new Date(a.start).getTime() - new Date(b.start).getTime()
+		)
+	);
 	const draftEvents = $derived(
-		data.events.filter(
+		chronological.filter(
 			(e: EventInListSchema) => (e.status as string) === 'draft' && !isPastEvent(e)
 		)
 	);
 	const openEvents = $derived(
-		data.events.filter((e: EventInListSchema) => (e.status as string) === 'open' && !isPastEvent(e))
+		chronological.filter(
+			(e: EventInListSchema) => (e.status as string) === 'open' && !isPastEvent(e)
+		)
 	);
 	const closedEvents = $derived(
-		data.events.filter(
+		chronological.filter(
 			(e: EventInListSchema) => (e.status as string) === 'closed' && !isPastEvent(e)
 		)
 	);
 	const cancelledEvents = $derived(
-		data.events.filter(
+		chronological.filter(
 			(e: EventInListSchema) => (e.status as string) === 'cancelled' && !isPastEvent(e)
 		)
 	);
-	const pastEvents = $derived(data.events.filter((e: EventInListSchema) => isPastEvent(e)));
+	const pastEvents = $derived(
+		[...chronological].reverse().filter((e: EventInListSchema) => isPastEvent(e))
+	);
 
 	// Duplicate modal state
 	let showDuplicateModal = $state(false);

@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from '$lib/utils/plain-text';
+
 /**
  * Text processing utilities for SEO — stripping markup for plain-text descriptions.
  */
@@ -12,9 +14,8 @@ export function truncate(s: string, max: number): string {
 /** Strip HTML tags and collapse whitespace for plain-text descriptions. */
 export function stripHtml(html: string | null | undefined): string {
 	if (!html) return '';
-	return html
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/g, ' ')
+	// Tags first, entities after: a decoded `&lt;b&gt;` must stay literal text.
+	return decodeHtmlEntities(html.replace(/<[^>]*>/g, ''))
 		.replace(/\s+/g, ' ')
 		.trim();
 }

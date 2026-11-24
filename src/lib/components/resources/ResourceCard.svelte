@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { openInNewTab } from '$lib/utils/open-external';
+	import { fileNameFromUrl } from '$lib/utils/file-name';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -117,16 +118,7 @@
 	const contentPreview = $derived.by(() => {
 		if (resource.resource_type === 'file') {
 			if (!resource.file_url) return m['resourceCard.noFileAttached']();
-			// Extract filename from path (handle both URLs and paths)
-			try {
-				// Try as URL first (for absolute URLs)
-				return (
-					new URL(resource.file_url).pathname.split('/').pop() || m['resourceCard.unknownFile']()
-				);
-			} catch {
-				// If not a valid URL, treat as path
-				return resource.file_url.split('/').pop() || m['resourceCard.unknownFile']();
-			}
+			return fileNameFromUrl(resource.file_url) || m['resourceCard.unknownFile']();
 		} else if (resource.resource_type === 'link') {
 			return resource.link || m['resourceCard.noLinkProvided']();
 		} else if (resource.resource_type === 'text') {

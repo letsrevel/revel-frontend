@@ -81,7 +81,11 @@
 	<div class="border-t" role="separator"></div>
 
 	<!-- City Filter (Top Priority) -->
-	<CityFilter selectedCityId={filters.cityId} onChangeCity={handleChangeCity} />
+	<CityFilter
+		entity="organizations"
+		selectedCityId={filters.cityId}
+		onChangeCity={handleChangeCity}
+	/>
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>

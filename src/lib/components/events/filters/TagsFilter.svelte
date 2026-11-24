@@ -2,7 +2,7 @@
 	import { Tag, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { tagListTags } from '$lib/api';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -11,11 +11,33 @@
 		class?: string;
 	}
 
+	/** Tags shown before the "Show more" toggle (the API returns them by usage). */
+	const COLLAPSED_TAG_COUNT = 12;
+	const uid = $props.id();
+	const listId = `tags-filter-list-${uid}`;
+
 	const { selectedTags = [], onToggleTag, class: className }: Props = $props();
 
 	let availableTags = $state<string[]>([]);
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
+	let expanded = $state(false);
+	let toggleButton = $state<HTMLButtonElement | null>(null);
+	let listEl = $state<HTMLDivElement | null>(null);
+
+	// Selected tags stay visible even when they fall beyond the collapsed limit.
+	// A tag that was selected stays pinned until the next show more/fewer toggle,
+	// so deselecting it does not unmount the focused button (WCAG 2.4.3).
+	let pinned = $state<string[]>([]);
+	const visibleTags = $derived(
+		expanded
+			? availableTags
+			: availableTags.filter(
+					(tag, i) => i < COLLAPSED_TAG_COUNT || selectedTags.includes(tag) || pinned.includes(tag)
+				)
+	);
+	const hiddenCount = $derived(availableTags.length - visibleTags.length);
+	const canToggle = $derived(availableTags.length > COLLAPSED_TAG_COUNT);
 
 	// Load tags from API on mount
 	onMount(async () => {
@@ -56,7 +78,22 @@
 		}
 	});
 
+	async function toggleExpanded(): Promise<void> {
+		pinned = [];
+		expanded = !expanded;
+		await tick();
+		// Collapsing can remove the toggle itself (every tag is still visible
+		// because the selected ones stay shown). Move focus to the last tag button
+		// so keyboard focus is not lost (WCAG 2.4.3).
+		if (!toggleButton) {
+			const buttons = listEl?.querySelectorAll<HTMLButtonElement>('button');
+			buttons?.[buttons.length - 1]?.focus();
+		}
+	}
+
 	function handleTagClick(tag: string): void {
+		// Pin before toggling so a later deselect keeps the focused button mounted.
+		if (!pinned.includes(tag)) pinned = [...pinned, tag];
 		onToggleTag(tag);
 	}
 </script>
@@ -79,8 +116,8 @@
 	{:else if error}
 		<p class="text-xs text-destructive">{m['filters.tags.failed']()}</p>
 	{:else if availableTags.length > 0}
-		<div class="flex flex-wrap gap-2">
-			{#each availableTags as tag (tag)}
+		<div id={listId} bind:this={listEl} class="flex flex-wrap gap-2">
+			{#each visibleTags as tag (tag)}
 				{@const isSelected = selectedTags?.includes(tag) ?? false}
 				<button
 					type="button"
@@ -103,6 +140,19 @@
 				</button>
 			{/each}
 		</div>
+
+		{#if canToggle && (expanded || hiddenCount > 0)}
+			<button
+				type="button"
+				bind:this={toggleButton}
+				onclick={toggleExpanded}
+				aria-expanded={expanded}
+				aria-controls={listId}
+				class="text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{expanded ? m['tagsFilter.showFewer']() : m['tagsFilter.showMore']({ count: hiddenCount })}
+			</button>
+		{/if}
 
 		{#if selectedTags.length > 0}
 			<p class="text-xs text-muted-foreground">

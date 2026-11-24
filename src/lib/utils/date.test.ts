@@ -517,3 +517,47 @@ describe('every supported UI language uses a textual month in the short forms', 
 		expect(out).not.toContain('06/02');
 	});
 });
+
+describe('event dates show the year only outside the current year (#1285)', () => {
+	it('omits the year for an event in the current year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		expect(formatEventDate('2026-11-20T19:00:00Z', 'Europe/Vienna')).not.toContain('2026');
+	});
+
+	it('shows the year for an event in a later year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		expect(formatEventDate('2027-01-20T19:00:00Z', 'Europe/Vienna')).toContain('2027');
+	});
+
+	it('shows the year for an event in a past year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		expect(formatEventDate('2025-12-20T19:00:00Z', 'Europe/Vienna')).toContain('2025');
+	});
+
+	it('uses the event timezone to decide the year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		// 23:30 UTC on 31 Dec 2026 is already 1 Jan 2027 in Vienna.
+		const iso = '2026-12-31T23:30:00Z';
+		expect(formatEventDate(iso, 'Europe/Vienna')).toContain('2027');
+		expect(formatEventDate(iso, 'America/New_York')).not.toMatch(/\b20\d\d\b/);
+	});
+
+	it('omits the year for a range inside the current year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		const out = formatEventDateRange('2026-11-20T19:00:00Z', '2026-11-21T02:00:00Z', 'UTC');
+		expect(out).not.toContain('2026');
+	});
+
+	it('shows the year on both ends of a range in another year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		const out = formatEventDateRange('2027-03-01T19:00:00Z', '2027-03-02T02:00:00Z', 'UTC');
+		expect(out.match(/2027/g)?.length).toBe(2);
+	});
+
+	it('shows the year when only one end of a range is outside the current year', () => {
+		freezeTime('2026-06-15T10:00:00.000Z');
+		const out = formatEventDateRange('2026-12-31T20:00:00Z', '2027-01-01T04:00:00Z', 'UTC');
+		expect(out).toContain('2027');
+		expect(out).toContain('2026');
+	});
+});

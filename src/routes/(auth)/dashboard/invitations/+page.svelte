@@ -231,11 +231,11 @@
 			</div>
 
 			<!-- Filters -->
-			<div class="flex items-center gap-4">
-				<div class="flex items-center gap-2">
-					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-					<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
-				</div>
+			<div
+				role="group"
+				aria-label={m['dashboardTicketsPage.options']()}
+				class="flex flex-wrap items-center gap-x-4 gap-y-2"
+			>
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
 						type="checkbox"

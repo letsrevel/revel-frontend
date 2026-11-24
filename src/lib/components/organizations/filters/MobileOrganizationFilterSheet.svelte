@@ -140,7 +140,11 @@
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
 				<!-- City Filter (Top Priority) -->
-				<CityFilter selectedCityId={filters.cityId} onChangeCity={handleChangeCity} />
+				<CityFilter
+					entity="organizations"
+					selectedCityId={filters.cityId}
+					onChangeCity={handleChangeCity}
+				/>
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>

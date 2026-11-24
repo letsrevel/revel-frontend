@@ -46,9 +46,9 @@
 	const organization = $state(data.organization);
 
 	// Filter state for events
-	let includePastEvents = $state(true);
+	let includePastEvents = $state(false); // upcoming only by default (#1285)
 	let ticketType = $state<'ticketed' | 'free' | undefined>(undefined);
-	let eventsOrderBy = $state<'start' | '-start'>('-start'); // Newest first by default
+	let eventsOrderBy = $state<'start' | '-start'>('start'); // Soonest first by default (#1285)
 
 	// Pagination state
 	let eventsPage = $state(1);

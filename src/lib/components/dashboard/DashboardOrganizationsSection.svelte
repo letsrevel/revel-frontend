@@ -7,7 +7,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripMarkdown } from '$lib/seo';
+	import { stripMarkup } from '$lib/seo/text';
 	import { Building2, Sparkles, Shield, Check, Award, Crown } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
@@ -82,7 +82,7 @@
 			<!-- Organization Cards -->
 			<div id="dashboard-organizations-list" class="space-y-3">
 				{#each visibleOrganizations as org (org.id)}
-					{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
+					{@const descriptionText = org.description ? stripMarkup(org.description) : ''}
 					<div
 						class="flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-shadow hover:shadow-poster-lg sm:flex-row sm:items-center"
 					>

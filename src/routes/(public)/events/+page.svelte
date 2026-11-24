@@ -61,6 +61,9 @@
 	const viewMode = $derived<'list' | 'calendar'>(
 		($page.url.searchParams.get('viewMode') as 'list' | 'calendar') || 'list'
 	);
+	const calendarAwareCount = $derived(
+		countActiveFilters(currentFilters, { ignoreIncludePast: viewMode === 'calendar' })
+	);
 
 	// Calendar state
 	const calendarParams = $derived(parseCalendarParams($page.url.searchParams));
@@ -301,6 +304,7 @@
 							onUpdateFilters={handleUpdateFilters}
 							onClearFilters={handleClearFilters}
 							hideOrganization={isTenant}
+							hideListControls={viewMode === 'calendar'}
 						/>
 					</div>
 				</div>
@@ -486,12 +490,12 @@
 	>
 		<Filter class="h-4 w-4" aria-hidden="true" />
 		{m['common.filters_filters']()}
-		{#if countActiveFilters(currentFilters) > 0}
+		{#if calendarAwareCount > 0}
 			<span
 				class="rounded-full bg-primary-foreground px-2 py-0.5 text-xs font-medium text-primary"
-				aria-label="{countActiveFilters(currentFilters)} {m['common.filters_activeFilters']()}"
+				aria-label="{calendarAwareCount} {m['common.filters_activeFilters']()}"
 			>
-				{countActiveFilters(currentFilters)}
+				{calendarAwareCount}
 			</span>
 		{/if}
 	</button>
@@ -505,6 +509,7 @@
 		onClearFilters={handleClearFilters}
 		onClose={handleCloseMobileFilters}
 		hideOrganization={isTenant}
+		hideListControls={viewMode === 'calendar'}
 	/>
 
 	<!-- Event Modal (for calendar clicks) -->

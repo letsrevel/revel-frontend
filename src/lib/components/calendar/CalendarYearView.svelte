@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
-	import { formatMonthYear } from '$lib/utils/calendar';
+	import { formatMonthYear, getDayKeyInZone } from '$lib/utils/calendar';
 	import { Calendar, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -17,8 +17,9 @@
 	// Count events per month
 	function getEventsInMonth(month: number): number {
 		return events.filter((event) => {
-			const eventDate = new Date(event.start);
-			return eventDate.getFullYear() === year && eventDate.getMonth() === month - 1;
+			return getDayKeyInZone(event.start, event.timezone).startsWith(
+				`${year}-${String(month).padStart(2, '0')}-`
+			);
 		}).length;
 	}
 

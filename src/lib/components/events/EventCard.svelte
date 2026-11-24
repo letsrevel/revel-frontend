@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MoreTagsPopover from '$lib/components/common/MoreTagsPopover.svelte';
 	import { page } from '$app/state';
 	import { orgHref } from '$lib/utils/org-links';
 	import { resolve } from '$app/paths';
@@ -251,7 +252,7 @@
 			     stays the localized, event-timezone rendering. -->
 			<div class="flex items-center gap-2 text-sm">
 				<Calendar class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-				<time datetime={event.start} class="truncate">{formattedDate}</time>
+				<time datetime={event.start} class="min-w-0 break-words">{formattedDate}</time>
 			</div>
 
 			<!-- Location -->
@@ -294,10 +295,7 @@
 								</span>
 							{/each}
 							{#if event.tags.length > 3}
-								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-									+{event.tags.length - 3}
-									{m['common.text_more']()}
-								</span>
+								<MoreTagsPopover tags={event.tags.slice(3)} static={lean} />
 							{/if}
 						</div>
 					</div>

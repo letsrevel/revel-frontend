@@ -48,6 +48,9 @@
 	// Debounce search input
 	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
+	// `debouncedSearch` is an object; its `.value` is the text.
+	const hasActiveFilters = $derived(!!(selectedStatuses.length || debouncedSearch.value));
+
 	// On a tenant host every "my" call is scoped to the tenant org (#1056).
 	const orgFilter = $derived(tenantOrgFilter(page.data));
 
@@ -224,7 +227,7 @@
 	{:else if rsvps.length === 0}
 		<!-- Empty State -->
 		{#snippet rsvpsEmptyAction()}
-			{#if selectedStatuses.length || debouncedSearch}
+			{#if hasActiveFilters}
 				<button
 					type="button"
 					onclick={() => {
@@ -247,7 +250,7 @@
 		<EmptyState
 			icon={CheckCircle2}
 			title={m['dashboardRsvpsPage.noResults']()}
-			body={selectedStatuses.length || debouncedSearch
+			body={hasActiveFilters
 				? m['dashboardRsvpsPage.noResultsFiltered']()
 				: m['dashboardRsvpsPage.emptyHint']()}
 			action={rsvpsEmptyAction}

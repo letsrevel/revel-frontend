@@ -3,6 +3,7 @@
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { FileText, Link as LinkIcon, AlignLeft } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import { fileNameFromUrl } from '$lib/utils/file-name';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import ResourceAssignment from './ResourceAssignment.svelte';
 
@@ -252,9 +253,11 @@
 			</label>
 
 			{#if resource?.file_url}
+				{@const currentFileName =
+					fileNameFromUrl(resource.file_url) || m['resourceCard.unknownFile']()}
 				<div class="rounded-md bg-muted p-3 text-sm">
 					<p class="font-medium">{m['resourceForm.currentFile']()}</p>
-					<p class="truncate text-muted-foreground">{resource.file_url}</p>
+					<p class="truncate text-muted-foreground" title={currentFileName}>{currentFileName}</p>
 					<p class="mt-2 text-xs text-muted-foreground">
 						{m['resourceForm.replaceFileHint']()}
 					</p>

@@ -6,7 +6,7 @@
 		isToday,
 		formatWeekdayShort
 	} from '$lib/utils/calendar';
-	import { formatTimeOfDay } from '$lib/utils/date';
+	import { formatEventTimeLabel } from '$lib/utils/event-time';
 	import { Clock, MapPin, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -28,8 +28,8 @@
 		});
 	}
 
-	function formatEventTime(dateString: string): string {
-		return formatTimeOfDay(dateString);
+	function formatEventTime(event: EventInListSchema): string {
+		return formatEventTimeLabel(event.start, event.timezone);
 	}
 </script>
 
@@ -66,11 +66,11 @@
 									type="button"
 									class="week-event-card"
 									onclick={() => onEventClick?.(event)}
-									aria-label="{event.name} at {formatEventTime(event.start)}"
+									aria-label="{event.name} at {formatEventTime(event)}"
 								>
 									<div class="week-event-time">
 										<Clock class="h-3 w-3" aria-hidden="true" />
-										<span>{formatEventTime(event.start)}</span>
+										<span>{formatEventTime(event)}</span>
 									</div>
 									<h3 class="week-event-title">{event.name}</h3>
 									{#if event.city?.name}

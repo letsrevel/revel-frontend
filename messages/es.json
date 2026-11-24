@@ -1056,7 +1056,6 @@
 		"text_claimed": "reclamados",
 		"text_stillNeeded": "aún necesarios",
 		"text_attending": "asisten",
-		"text_more": "más",
 		"text_tbd": "Por confirmar",
 		"errors_refreshPage": "Intenta actualizar la página o vuelve más tarde.",
 		"errors_tryAgain": "Inténtalo de nuevo.",
@@ -2406,6 +2405,7 @@
 			"placeholder": "Buscar una ciudad...",
 			"label": "Buscar una ciudad",
 			"description": "Filtrar eventos por ciudad",
+			"descriptionOrganizations": "Filtrar organizaciones por ciudad",
 			"unknown": "Ciudad desconocida",
 			"loading": "Cargando la ciudad…",
 			"loadError": "No se pudo cargar la ciudad"
@@ -4468,7 +4468,6 @@
 				"title": "Todavía no hay series de eventos",
 				"description": "Empieza creando tu primera serie de eventos"
 			},
-			"tagsMore": "+{count} más",
 			"actions": {
 				"view": "Ver",
 				"edit": "Editar"
@@ -8676,7 +8675,6 @@
 	"eventActionSidebar.eventActionsAriaLabel": "Acciones del evento",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Descargar evento de calendario",
 	"tierForm.whatsIncludedPlaceholder": "¿Qué incluye este tipo de entrada?",
-	"eventHeader.downloadCalendarEventFor": "Descargar evento de calendario para {name}",
 	"eventHeader.coverImageAlt": "Imagen de portada de {name}",
 	"eventHeader.shareEvent": "Compartir evento",
 	"eventHeader.organizationLogoAlt": "Logo de {name}",
@@ -8692,7 +8690,6 @@
 	"eventRSVP.noteNotSaved": "Se registró tu respuesta, pero la nota no se guardó — este evento ya no acepta notas en las respuestas.",
 	"eventSeriesCard.byOrganization": "por {name}",
 	"eventSeriesCard.eventSeries": "Serie de eventos",
-	"eventSeriesCard.moreTags": "+{count} más",
 	"eventFilters.eventFilters": "Filtros de eventos",
 	"eventFilters.unknownOrganization": "Organización desconocida",
 	"guestRsvpDialog.logIn": "Iniciar sesión",
@@ -8709,7 +8706,6 @@
 	"potluckItemEditModal.closeModal": "Cerrar ventana",
 	"potluckItemEditModal.quantityHelp": "p. ej., \"para 8 personas\" o \"2 botellas\"",
 	"potluckItemForm.closeForm": "Cerrar formulario",
-	"eventHeader.downloadCalendarEventTitle": "Descargar evento de calendario",
 	"requestInvitationButton.alreadyRequestedAriaLabel": "Ya has solicitado una invitación",
 	"cityAutocomplete.clearSelection": "Borrar la ciudad seleccionada",
 	"cityAutocomplete.searchPlaceholder": "Buscar una ciudad...",
@@ -11951,5 +11947,27 @@
 	],
 	"totpLock.pausedNoTime": "La verificación en dos pasos está en pausa por tu seguridad. Inténtalo de nuevo más tarde.",
 	"totpLock.wrongCodeRestart": "No ha funcionado. Vuelve a iniciar sesión.",
-	"totpLock.rateLimited": "Demasiados intentos. Espera un momento y vuelve a intentarlo."
+	"totpLock.rateLimited": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+	"moreTags.label": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "+{count} etiqueta más",
+				"countPlural=*": "+{count} etiquetas más"
+			}
+		}
+	],
+	"moreTags.listLabel": "Etiquetas restantes",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostrar 1 etiqueta más",
+				"countPlural=*": "Mostrar {count} etiquetas más"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Mostrar menos etiquetas"
 }

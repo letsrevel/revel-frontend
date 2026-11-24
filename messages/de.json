@@ -1056,7 +1056,6 @@
 		"text_claimed": "beansprucht",
 		"text_stillNeeded": "noch benötigt",
 		"text_attending": "nehmen teil",
-		"text_more": "mehr",
 		"text_tbd": "Noch offen",
 		"errors_refreshPage": "Bitte aktualisiere die Seite oder schau später wieder vorbei.",
 		"errors_tryAgain": "Bitte versuche es erneut.",
@@ -2406,6 +2405,7 @@
 			"placeholder": "Nach einer Stadt suchen...",
 			"label": "Nach einer Stadt suchen",
 			"description": "Veranstaltungen nach Stadtort filtern",
+			"descriptionOrganizations": "Organisationen nach Stadtort filtern",
 			"unknown": "Unbekannte Stadt",
 			"loading": "Stadt wird geladen…",
 			"loadError": "Stadt konnte nicht geladen werden"
@@ -4468,7 +4468,6 @@
 				"title": "Noch keine Veranstaltungsreihen",
 				"description": "Beginne mit der Erstellung deiner ersten Veranstaltungsreihe"
 			},
-			"tagsMore": "+{count} weitere",
 			"actions": {
 				"view": "Ansehen",
 				"edit": "Bearbeiten"
@@ -8676,7 +8675,6 @@
 	"eventActionSidebar.eventActionsAriaLabel": "Veranstaltungsaktionen",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Kalendereintrag herunterladen",
 	"tierForm.whatsIncludedPlaceholder": "Was ist in dieser Kategorie enthalten?",
-	"eventHeader.downloadCalendarEventFor": "Kalendereintrag für {name} herunterladen",
 	"eventHeader.coverImageAlt": "Titelbild von {name}",
 	"eventHeader.shareEvent": "Veranstaltung teilen",
 	"eventHeader.organizationLogoAlt": "Logo von {name}",
@@ -8692,7 +8690,6 @@
 	"eventRSVP.noteNotSaved": "Deine Zusage wurde gespeichert, aber die Notiz nicht — diese Veranstaltung akzeptiert keine Notizen mehr.",
 	"eventSeriesCard.byOrganization": "von {name}",
 	"eventSeriesCard.eventSeries": "Veranstaltungsreihe",
-	"eventSeriesCard.moreTags": "+{count} weitere",
 	"eventFilters.eventFilters": "Veranstaltungsfilter",
 	"eventFilters.unknownOrganization": "Unbekannte Organisation",
 	"guestRsvpDialog.logIn": "Anmelden",
@@ -8709,7 +8706,6 @@
 	"potluckItemEditModal.closeModal": "Dialog schließen",
 	"potluckItemEditModal.quantityHelp": "z. B. \"für 8 Personen\" oder \"2 Flaschen\"",
 	"potluckItemForm.closeForm": "Formular schließen",
-	"eventHeader.downloadCalendarEventTitle": "Kalendereintrag herunterladen",
 	"requestInvitationButton.alreadyRequestedAriaLabel": "Du hast bereits eine Einladung angefragt",
 	"cityAutocomplete.clearSelection": "Stadtauswahl löschen",
 	"cityAutocomplete.searchPlaceholder": "Nach einer Stadt suchen...",
@@ -11951,5 +11947,27 @@
 	],
 	"totpLock.pausedNoTime": "Die Zwei-Faktor-Bestätigung ist zu deiner Sicherheit pausiert. Bitte versuche es später erneut.",
 	"totpLock.wrongCodeRestart": "Das hat nicht geklappt. Melde dich bitte erneut an.",
-	"totpLock.rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es dann erneut."
+	"totpLock.rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es dann erneut.",
+	"moreTags.label": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "+{count} weiterer Tag",
+				"countPlural=*": "+{count} weitere Tags"
+			}
+		}
+	],
+	"moreTags.listLabel": "Weitere Tags",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "1 weiteren Tag anzeigen",
+				"countPlural=*": "{count} weitere Tags anzeigen"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Weniger Tags anzeigen"
 }

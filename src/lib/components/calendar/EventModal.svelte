@@ -8,7 +8,8 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar, MapPin, Building2 } from '@lucide/svelte';
-	import { formatDate, formatTimeOfDay } from '$lib/utils/date';
+	import { formatEventRangeLabel } from '$lib/utils/event-time';
+	import { markdownToPlainText } from '$lib/utils/plain-text';
 	import { getImageUrl } from '$lib/utils/url';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -65,9 +66,10 @@
 		}
 	}
 
-	function formatTime(dateString: string): string {
-		return formatTimeOfDay(dateString);
-	}
+	const timeRange = $derived(
+		event ? formatEventRangeLabel(event.start, event.end, event.is_open_ended, event.timezone) : ''
+	);
+	const descriptionText = $derived(event ? markdownToPlainText(event.description) : '');
 </script>
 
 <Dialog {open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -91,11 +93,8 @@
 				<div class="flex items-start gap-3">
 					<Calendar class="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
 					<div>
-						<p class="font-medium">{formatDate(event.start)}</p>
-						<p class="text-sm text-muted-foreground">
-							{formatTime(event.start)}{#if !event.is_open_ended && event.end}
-								- {formatTime(event.end)}{/if}
-						</p>
+						<!-- The range already carries the date(s); no separate date line. -->
+						<p class="font-medium">{timeRange}</p>
 					</div>
 				</div>
 
@@ -131,10 +130,10 @@
 				{/if}
 
 				<!-- Description -->
-				{#if event.description}
+				{#if descriptionText}
 					<div>
 						<p class="line-clamp-3 text-sm text-muted-foreground">
-							{event.description}
+							{descriptionText}
 						</p>
 					</div>
 				{/if}

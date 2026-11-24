@@ -1056,7 +1056,6 @@
 		"text_claimed": "prenotati",
 		"text_stillNeeded": "ancora necessari",
 		"text_attending": "partecipano",
-		"text_more": "altro",
 		"text_tbd": "Da definire",
 		"errors_refreshPage": "Prova a ricaricare la pagina o riprova più tardi.",
 		"errors_tryAgain": "Riprova.",
@@ -2406,6 +2405,7 @@
 			"placeholder": "Cerca una città...",
 			"label": "Cerca una città",
 			"description": "Filtra eventi per città",
+			"descriptionOrganizations": "Filtra organizzazioni per città",
 			"unknown": "Città sconosciuta",
 			"loading": "Caricamento della città…",
 			"loadError": "Impossibile caricare la città"
@@ -4468,7 +4468,6 @@
 				"title": "Nessuna serie di eventi ancora",
 				"description": "Inizia creando la tua prima serie di eventi"
 			},
-			"tagsMore": "+{count} altri",
 			"actions": {
 				"view": "Visualizza",
 				"edit": "Modifica"
@@ -8676,7 +8675,6 @@
 	"eventActionSidebar.eventActionsAriaLabel": "Azioni dell'evento",
 	"eventActionSidebar.downloadCalendarAriaLabel": "Scarica l'evento del calendario",
 	"tierForm.whatsIncludedPlaceholder": "Cosa è incluso in questo livello?",
-	"eventHeader.downloadCalendarEventFor": "Scarica l'evento del calendario per {name}",
 	"eventHeader.coverImageAlt": "Immagine di copertina di {name}",
 	"eventHeader.shareEvent": "Condividi l'evento",
 	"eventHeader.organizationLogoAlt": "Logo di {name}",
@@ -8692,7 +8690,6 @@
 	"eventRSVP.noteNotSaved": "Il tuo RSVP è stato registrato, ma la nota non è stata salvata — questo evento non accetta più note RSVP.",
 	"eventSeriesCard.byOrganization": "di {name}",
 	"eventSeriesCard.eventSeries": "Serie di eventi",
-	"eventSeriesCard.moreTags": "+{count} altri",
 	"eventFilters.eventFilters": "Filtri eventi",
 	"eventFilters.unknownOrganization": "Organizzazione sconosciuta",
 	"guestRsvpDialog.logIn": "Accedi",
@@ -8709,7 +8706,6 @@
 	"potluckItemEditModal.closeModal": "Chiudi la finestra",
 	"potluckItemEditModal.quantityHelp": "es. \"per 8 persone\" o \"2 bottiglie\"",
 	"potluckItemForm.closeForm": "Chiudi il modulo",
-	"eventHeader.downloadCalendarEventTitle": "Scarica l'evento del calendario",
 	"requestInvitationButton.alreadyRequestedAriaLabel": "Hai già richiesto un invito",
 	"cityAutocomplete.clearSelection": "Cancella la città selezionata",
 	"cityAutocomplete.searchPlaceholder": "Cerca una città...",
@@ -11951,5 +11947,27 @@
 	],
 	"totpLock.pausedNoTime": "La verifica in due passaggi è in pausa per la tua sicurezza. Riprova più tardi.",
 	"totpLock.wrongCodeRestart": "Non ha funzionato. Accedi di nuovo.",
-	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova."
+	"totpLock.rateLimited": "Troppi tentativi. Attendi un momento e riprova.",
+	"moreTags.label": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "+{count} altro tag",
+				"countPlural=*": "+{count} altri tag"
+			}
+		}
+	],
+	"moreTags.listLabel": "Altri tag",
+	"tagsFilter.showMore": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostra 1 altro tag",
+				"countPlural=*": "Mostra altri {count} tag"
+			}
+		}
+	],
+	"tagsFilter.showFewer": "Mostra meno tag"
 }
