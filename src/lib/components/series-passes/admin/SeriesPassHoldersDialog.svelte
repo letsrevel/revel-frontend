@@ -24,6 +24,8 @@
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
 	import { extractErrorMessage } from '$lib/utils/errors';
+	import { heldPassHolderDisplay, isErasedHolder } from '$lib/utils/user-display';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -136,8 +138,8 @@
 		}
 	}));
 
-	function holderName(holder: HeldSeriesPassAdminSchema): string {
-		return holder.user.display_name;
+	function holderDisplay(holder: HeldSeriesPassAdminSchema) {
+		return heldPassHolderDisplay(holder, m['erasedHolder.badge']());
 	}
 
 	const isOffline = $derived(pass.payment_method === 'offline');
@@ -185,11 +187,15 @@
 					</thead>
 					<tbody>
 						{#each holders as holder (holder.id)}
+							{@const display = holderDisplay(holder)}
 							<tr class="border-b last:border-0">
 								<td class="px-2 py-3">
-									<div class="font-medium">{holderName(holder)}</div>
-									{#if holder.user.email}
-										<div class="text-xs text-muted-foreground">{holder.user.email}</div>
+									<div class="font-medium">{display.name}</div>
+									{#if display.email}
+										<div class="text-xs text-muted-foreground">{display.email}</div>
+									{/if}
+									{#if isErasedHolder(holder)}
+										<ErasedHolderBadge class="mt-1" />
 									{/if}
 								</td>
 								<td class="px-2 py-3">
@@ -264,7 +270,7 @@
 	isOpen={!!holderToConfirm}
 	title={m['seriesPassAdmin.confirmPaymentTitle']()}
 	message={m['seriesPassAdmin.confirmPaymentMessage']({
-		name: holderToConfirm ? holderName(holderToConfirm) : '',
+		name: holderToConfirm ? holderDisplay(holderToConfirm).name : '',
 		price: formatPrice(holderToConfirm?.price_paid, pass.currency, m['seriesPass.free']())
 	})}
 	confirmText={m['seriesPassAdmin.confirmPaymentButton']()}
@@ -281,7 +287,7 @@
 			<DialogHeader>
 				<DialogTitle>{m['seriesPassAdmin.cancelHolderTitle']()}</DialogTitle>
 				<DialogDescription>
-					{m['seriesPassAdmin.cancelHolderMessage']({ name: holderName(holderToCancel) })}
+					{m['seriesPassAdmin.cancelHolderMessage']({ name: holderDisplay(holderToCancel).name })}
 				</DialogDescription>
 			</DialogHeader>
 			<div>

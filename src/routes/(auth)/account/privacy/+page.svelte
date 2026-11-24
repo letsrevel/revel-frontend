@@ -474,6 +474,9 @@
 				<p class="pt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.modal_orgRecordsNote']()}
 				</p>
+				<p class="text-sm text-muted-foreground" data-testid="kept-tickets-note">
+					{m['accountPrivacyPage.modal_keptTicketsNote']()}
+				</p>
 			</div>
 
 			<form

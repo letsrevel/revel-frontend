@@ -41,6 +41,12 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 	refund_unmatched: {
 		label: (locale) => m['notificationPreferences.typeRefundUnmatched']({}, { locale })
 	},
+	refund_failed: {
+		label: (locale) => m['notificationPreferences.typeRefundFailed']({}, { locale })
+	},
+	ticket_refund_failed: {
+		label: (locale) => m['notificationPreferences.typeTicketRefundFailed']({}, { locale })
+	},
 	staff_ticket_created: {
 		label: (locale) => m['notificationPreferences.typeStaffTicketCreated']({}, { locale }),
 		description: (locale) =>

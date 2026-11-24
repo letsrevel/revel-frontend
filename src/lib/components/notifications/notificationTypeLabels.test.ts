@@ -16,6 +16,8 @@ const EXHAUSTIVE: Record<NotificationType, true> = {
 	ticket_checked_in: true,
 	payment_confirmation: true,
 	refund_unmatched: true,
+	refund_failed: true,
+	ticket_refund_failed: true,
 	staff_ticket_created: true,
 	staff_ticket_cancelled: true,
 	staff_ticket_refunded: true,
@@ -116,6 +118,14 @@ describe('notificationTypeLabels (#996)', () => {
 		expect(getNotificationTypeDescription(type, 'en')).toBeTruthy();
 	});
 
+	it.each([
+		['refund_failed', 'Refund failed'],
+		['ticket_refund_failed', 'Your refund failed']
+	] as const)('translates %s (BE #1523)', (type, label) => {
+		expect(hasNotificationTypeLabel(type)).toBe(true);
+		expect(getNotificationTypeLabel(type, 'en')).toBe(label);
+	});
+
 	it('falls back to the raw name for unknown types the API may send', () => {
 		expect(hasNotificationTypeLabel('future_unknown_type')).toBe(false);
 		expect(getNotificationTypeLabel('future_unknown_type')).toBe('future unknown type');
@@ -129,7 +139,7 @@ describe('notificationTypeLabels (#996)', () => {
 	});
 
 	it('covers every NotificationType with a label', () => {
-		expect(ALL_TYPES.length).toBe(69);
+		expect(ALL_TYPES.length).toBe(71);
 		for (const type of ALL_TYPES) {
 			expect(hasNotificationTypeLabel(type), type).toBe(true);
 			expect(getNotificationTypeLabel(type, 'en').length, type).toBeGreaterThan(0);

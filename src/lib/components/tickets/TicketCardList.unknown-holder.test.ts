@@ -86,6 +86,32 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 		expect(container.querySelector('img')).toBeNull();
 	});
 
+	it('shows the kept name and email with a "Deleted account" badge for an erased holder (BE #1509)', () => {
+		const { container } = renderView(view, [
+			ticket({
+				id: 'u3',
+				known: false,
+				erased: true,
+				display_name: 'Eve Erased',
+				email: 'eve@example.com',
+				profile_picture_url: null
+			})
+		]);
+		expect(screen.getByText('Eve Erased')).toBeInTheDocument();
+		expect(screen.getByText('eve@example.com')).toBeInTheDocument();
+		expect(screen.getByTestId('erased-holder-badge')).toHaveTextContent('Deleted account');
+		expect(screen.queryByTestId('unknown-holder-badge')).not.toBeInTheDocument();
+		expect(container.querySelector('img')).toBeNull();
+	});
+
+	it('shows N/A, not "null", for an erased holder without a kept email', () => {
+		const { container } = renderView(view, [
+			ticket({ id: 'u4', erased: true, display_name: 'Deleted user', email: null })
+		]);
+		expect(screen.getByText('Deleted user')).toBeInTheDocument();
+		expect(container.textContent).not.toMatch(/null|undefined/);
+	});
+
 	it('shows no badge for a known holder, and still shows pronouns', () => {
 		renderView(view, [ticket(knownUser)]);
 		expect(screen.getByText('Alice Anderson')).toBeInTheDocument();

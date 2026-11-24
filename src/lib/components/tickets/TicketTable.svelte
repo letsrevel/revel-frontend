@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
-	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder, isErasedHolder } from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
@@ -216,7 +217,9 @@
 								<div class="text-sm text-muted-foreground">
 									{ticket.user.email || 'N/A'}
 								</div>
-								{#if isUnknownHolder(ticket.user)}
+								{#if isErasedHolder(ticket.user)}
+									<ErasedHolderBadge class="mt-1" />
+								{:else if isUnknownHolder(ticket.user)}
 									<UnknownHolderBadge class="mt-1" />
 								{/if}
 								{#if seatInfo}

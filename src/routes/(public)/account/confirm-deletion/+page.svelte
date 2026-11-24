@@ -213,6 +213,9 @@
 					<p class="pt-2 text-sm text-muted-foreground" data-testid="org-records-note">
 						{m['accountDeletion.orgRecordsNote']()}
 					</p>
+					<p class="text-sm text-muted-foreground" data-testid="kept-tickets-note">
+						{m['accountDeletion.keptTicketsNote']()}
+					</p>
 				</div>
 			</div>
 

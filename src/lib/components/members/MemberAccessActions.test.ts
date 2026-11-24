@@ -291,6 +291,64 @@ describe('MemberAccessActions membership-loss invalidation', () => {
 	});
 });
 
+describe('MemberAccessActions staff / blacklist refusals (BE #1529)', () => {
+	it('shows the backend detail when a non-owner blacklists a staff member (403)', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Only the owner can blacklist a staff member.' },
+			response: { status: 403 }
+		} as never);
+
+		renderTab();
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Add to Blacklist' }));
+		await user.click(await screen.findByRole('button', { name: 'Confirm Blacklist' }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Only the owner can blacklist a staff member.');
+		});
+		expect(toast.success).not.toHaveBeenCalled();
+	});
+
+	it('falls back to the generic copy when the blacklist error has no detail', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminblacklistCreateBlacklistEntry).mockResolvedValue({
+			data: undefined,
+			error: {},
+			response: { status: 500 }
+		} as never);
+
+		renderTab();
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Add to Blacklist' }));
+		await user.click(await screen.findByRole('button', { name: 'Confirm Blacklist' }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Failed to blacklist member');
+		});
+	});
+
+	it('shows the backend detail when a blacklisted person is made staff (400)', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembersAddStaff).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'A blacklisted person cannot be made staff.' },
+			response: { status: 400 }
+		} as never);
+
+		renderTab();
+		await openManageModal(user);
+		await user.click(await screen.findByRole('button', { name: 'Make Staff Member' }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith(
+				'Failed to promote to staff: A blacklisted person cannot be made staff.'
+			);
+		});
+	});
+});
+
 describe('MemberAccessActions membership-loss billing disclosure', () => {
 	// Backend `d4570cf3`: remove / ban / blacklist terminalize the member's
 	// non-terminal subscription and stop Stripe billing, with no automatic

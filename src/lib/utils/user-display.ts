@@ -51,6 +51,7 @@ export function getUserRealName(user: UserDisplayInfo): string {
 export interface StaffViewUserInfo extends UserDisplayInfo {
 	display_name?: string | null;
 	known?: boolean | null;
+	erased?: boolean | null;
 }
 
 /**
@@ -84,4 +85,41 @@ export function secondaryEmail(user: StaffViewUserInfo): string | null {
  */
 export function isUnknownHolder(user: StaffViewUserInfo | null | undefined): boolean {
 	return user?.known === false;
+}
+
+/**
+ * True when the account was erased in place (backend #1509): the row stays valid under
+ * the kept holder name and email, and there is no profile or picture. Only an explicit
+ * `erased: true` counts.
+ */
+export function isErasedHolder(user: { erased?: boolean | null } | null | undefined): boolean {
+	return user?.erased === true;
+}
+
+/** A held series pass as the admin lists return it. */
+export interface HeldPassHolderInfo {
+	erased?: boolean | null;
+	holder_name?: string | null;
+	holder_email?: string | null;
+	user: { display_name?: string | null; email?: string | null };
+}
+
+/**
+ * Name and email to show for a held series pass. For an erased holder the user row is a
+ * placeholder, so the kept `holder_name` / `holder_email` win; with neither kept, the name
+ * is the caller's translated "Deleted account" label and the email is empty.
+ */
+export function heldPassHolderDisplay(
+	holder: HeldPassHolderInfo,
+	erasedFallbackName: string
+): { name: string; email: string | null } {
+	if (!isErasedHolder(holder)) {
+		return {
+			name: holder.user.display_name?.trim() || '',
+			email: holder.user.email?.trim() || null
+		};
+	}
+	const name = holder.holder_name?.trim();
+	const email = holder.holder_email?.trim() || null;
+	return { name: name || email || erasedFallbackName, email: name ? email : null };
 }

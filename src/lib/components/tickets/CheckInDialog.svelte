@@ -6,8 +6,9 @@
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import { X, TriangleAlert } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
-	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder, isErasedHolder } from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { formatMoney, formatPrice } from '$lib/utils/format';
 	import {
 		getGuestNameIfDifferent,
@@ -24,6 +25,8 @@
 		display_name?: string;
 		/** False when the account's profile is withheld from staff (ADR-0020). */
 		known?: boolean;
+		/** True when the account was erased in place (BE #1509). */
+		erased?: boolean;
 	}
 
 	interface TicketTier {
@@ -321,7 +324,9 @@
 				<div class="rounded-lg border bg-muted/50">
 					<div class="border-b px-4 py-3">
 						<h3 class="font-semibold">{m['checkInDialog.attendeeInfo']()}</h3>
-						{#if isUnknownHolder(ticket.user)}
+						{#if isErasedHolder(ticket.user)}
+							<ErasedHolderBadge class="mt-1" />
+						{:else if isUnknownHolder(ticket.user)}
 							<UnknownHolderBadge showExplanation class="mt-1" />
 						{/if}
 					</div>

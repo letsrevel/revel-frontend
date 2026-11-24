@@ -13,11 +13,11 @@
 		eventadminrsvpsUpdateRsvp,
 		eventadminrsvpsDeleteRsvp,
 		eventadminrsvpsCreateRsvp,
-		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { staffViewDisplayName } from '$lib/utils/user-display';
+	import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
 	import { rsvpCreateErrorMessage } from '$lib/components/attendees/rsvp-create-error';
 	import { Users, ChevronLeft, ChevronRight, UserPlus } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -162,17 +162,12 @@
 	// Blacklist user mutation
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async (userId: string) => {
-			const response = await organizationadminblacklistCreateBlacklistEntry({
-				path: { slug: organization.slug },
+			return requestCreateBlacklistEntry({
+				slug: organization.slug,
+				accessToken,
 				body: { user_id: userId, reason: '' },
-				headers: { Authorization: `Bearer ${accessToken}` }
+				fallbackMessage: m['attendeesAdmin.blacklistError']()
 			});
-
-			if (response.error) {
-				throw new Error(m['attendeesAdmin.blacklistError']());
-			}
-
-			return response.data;
 		},
 		onSuccess: () => {
 			const userName = rsvpToBlacklist ? staffViewDisplayName(rsvpToBlacklist.user) : '';
@@ -188,8 +183,8 @@
 				queryKey: ['organization', organization.slug, 'subscriptions']
 			});
 		},
-		onError: () => {
-			toast.error(m['attendeesAdmin.blacklistError']());
+		onError: (error: Error) => {
+			toast.error(error.message);
 		}
 	}));
 

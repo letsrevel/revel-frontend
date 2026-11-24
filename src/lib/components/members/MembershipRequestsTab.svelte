@@ -14,7 +14,8 @@
 		link_paid_application: () => m['membershipRequestsTab.refusalLinkPaidApplication'](),
 		link_future_dated: () => m['membershipRequestsTab.refusalLinkFutureDated'](),
 		link_unavailable: () => m['membershipRequestsTab.refusalLinkUnavailable'](),
-		applicant_has_entry: () => m['membershipRequestsTab.refusalApplicantHasEntry']()
+		applicant_has_entry: () => m['membershipRequestsTab.refusalApplicantHasEntry'](),
+		applicant_already_member: () => m['membershipRequestsTab.refusalApplicantAlreadyMember']()
 	};
 
 	/**

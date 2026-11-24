@@ -4,7 +4,7 @@ import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { staffViewDisplayName } from '$lib/utils/user-display';
-import { organizationadminblacklistCreateBlacklistEntry } from '$lib/api';
+import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
 import {
 	inviteMemberByAccount,
 	invalidateInvitations,
@@ -137,17 +137,12 @@ export function createTicketMemberAdmin(opts: Options) {
 
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async (userId: string) => {
-			const response = await organizationadminblacklistCreateBlacklistEntry({
-				path: { slug: opts.getSlug() },
+			return requestCreateBlacklistEntry({
+				slug: opts.getSlug(),
+				accessToken: opts.getAccessToken(),
 				body: { user_id: userId, reason: '' },
-				headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
+				fallbackMessage: m['eventTicketsAdmin.blacklistError']()
 			});
-
-			if (response.error) {
-				throw new Error(m['eventTicketsAdmin.blacklistError']());
-			}
-
-			return response.data;
 		},
 		onSuccess: () => {
 			const userName = ticketToBlacklist ? staffViewDisplayName(ticketToBlacklist.user) : '';
@@ -163,8 +158,8 @@ export function createTicketMemberAdmin(opts: Options) {
 				queryKey: ['organization', opts.getSlug(), 'subscriptions']
 			});
 		},
-		onError: () => {
-			toast.error(m['eventTicketsAdmin.blacklistError']());
+		onError: (error: Error) => {
+			toast.error(error.message);
 		}
 	}));
 

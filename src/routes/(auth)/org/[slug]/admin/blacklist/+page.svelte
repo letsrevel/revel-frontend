@@ -4,7 +4,6 @@
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminblacklistListBlacklist,
-		organizationadminblacklistCreateBlacklistEntry,
 		organizationadminblacklistUpdateBlacklistEntry,
 		organizationadminblacklistDeleteBlacklistEntry,
 		organizationadminwhitelistListWhitelistRequests,
@@ -45,6 +44,7 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
+	import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -150,17 +150,12 @@
 	// Create blacklist entry mutation
 	const createBlacklistMutation = createMutation(() => ({
 		mutationFn: async (data: BlacklistCreateSchema) => {
-			const response = await organizationadminblacklistCreateBlacklistEntry({
-				path: { slug: organization.slug },
+			return requestCreateBlacklistEntry({
+				slug: organization.slug,
+				accessToken,
 				body: data,
-				headers: { Authorization: `Bearer ${accessToken}` }
+				fallbackMessage: m['blacklistAdminPage.toastAddError']()
 			});
-
-			if (response.error) {
-				throw new Error('Failed to create blacklist entry');
-			}
-
-			return response.data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
@@ -175,8 +170,8 @@
 			createModalOpen = false;
 			toast.success(m['blacklistAdminPage.toastAdded']());
 		},
-		onError: () => {
-			toast.error(m['blacklistAdminPage.toastAddError']());
+		onError: (error: Error) => {
+			toast.error(error.message);
 		}
 	}));
 

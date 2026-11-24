@@ -1,7 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { staffViewDisplayName, isUnknownHolder, secondaryEmail } from '$lib/utils/user-display';
+	import {
+		staffViewDisplayName,
+		isUnknownHolder,
+		isErasedHolder,
+		secondaryEmail
+	} from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
@@ -65,7 +71,9 @@
 							{#if secondaryEmail(rsvp.user)}
 								<p class="text-sm text-muted-foreground">{secondaryEmail(rsvp.user)}</p>
 							{/if}
-							{#if isUnknownHolder(rsvp.user)}
+							{#if isErasedHolder(rsvp.user)}
+								<ErasedHolderBadge class="mt-1" />
+							{:else if isUnknownHolder(rsvp.user)}
 								<UnknownHolderBadge class="mt-1" />
 							{/if}
 						</div>

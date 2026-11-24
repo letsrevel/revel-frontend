@@ -9,11 +9,7 @@
 	import { needsPaymentConfirmation, isPwycTicket } from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
 	import { Ticket, QrCode } from '@lucide/svelte';
-	import {
-		eventadminticketsConfirmTicketPayment,
-		eventadminticketsUnconfirmTicketPayment,
-		eventadminticketsExportAttendees
-	} from '$lib/api';
+	import { eventadminticketsExportAttendees } from '$lib/api';
 	import type { PageData } from './$types';
 	import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
@@ -31,6 +27,10 @@
 	import { createTicketCancelRefundAdmin } from '$lib/components/tickets/ticket-cancel-refund-admin.svelte';
 	import { createTicketScanCheckIn } from '$lib/components/tickets/ticket-scan-checkin.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import {
+		requestConfirmTicketPayment,
+		requestUnconfirmTicketPayment
+	} from '$lib/components/tickets/ticket-payment-requests';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
@@ -127,20 +127,24 @@
 	 * Confirm payment mutation
 	 */
 	const confirmPaymentMutation = createMutation(() => ({
-		mutationFn: async ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) => {
-			const response = await eventadminticketsConfirmTicketPayment({
-				path: { event_id: data.event.id, ticket_id: ticketId },
-				body: pricePaid ? { price_paid: pricePaid } : undefined,
-				headers: { Authorization: `Bearer ${authStore.accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error('Failed to confirm payment');
-			}
-
-			return response.data;
-		},
+		mutationFn: ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) =>
+			requestConfirmTicketPayment({
+				eventId: data.event.id,
+				ticketId,
+				pricePaid,
+				accessToken: authStore.accessToken,
+				fallbackMessage: m['eventTicketsAdmin.confirmPaymentError']()
+			}),
 		onSuccess: () => {
+			showConfirmPaymentDialog = false;
+			ticketToConfirm = null;
+			pwycPricePaid = '';
+			invalidateAll();
+		},
+		onError: (error) => {
+			// The backend `detail` (e.g. the ticket changed meanwhile) is shown, and the
+			// list is refetched so the stale row state updates.
+			toast.error(error.message);
 			showConfirmPaymentDialog = false;
 			ticketToConfirm = null;
 			pwycPricePaid = '';
@@ -152,26 +156,24 @@
 	 * Unconfirm payment mutation
 	 */
 	const unconfirmPaymentMutation = createMutation(() => ({
-		mutationFn: async (ticketId: string) => {
-			const response = await eventadminticketsUnconfirmTicketPayment({
-				path: { event_id: data.event.id, ticket_id: ticketId },
-				headers: { Authorization: `Bearer ${authStore.accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error('Failed to unconfirm payment');
-			}
-
-			return response.data;
-		},
+		mutationFn: (ticketId: string) =>
+			requestUnconfirmTicketPayment({
+				eventId: data.event.id,
+				ticketId,
+				accessToken: authStore.accessToken,
+				fallbackMessage: m['eventTicketsAdmin.unconfirmPaymentError']()
+			}),
 		onSuccess: () => {
 			showUnconfirmPaymentDialog = false;
 			ticketToUnconfirm = null;
 			toast.success(m['eventTicketsAdmin.unconfirmPaymentSuccess']());
 			invalidateAll();
 		},
-		onError: () => {
-			toast.error(m['eventTicketsAdmin.unconfirmPaymentError']());
+		onError: (error) => {
+			toast.error(error.message);
+			showUnconfirmPaymentDialog = false;
+			ticketToUnconfirm = null;
+			invalidateAll();
 		}
 	}));
 
