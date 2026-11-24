@@ -363,6 +363,8 @@
 
 <div class="space-y-6">
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdmin.waitlist.pageTitle']()}
 		subtitle={m['orgAdmin.waitlist.pageDescription']()}
 	/>

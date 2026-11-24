@@ -25,6 +25,7 @@
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
+	import { NO_PLAN_VIEWER, planCtaState, type PlanViewer } from '$lib/utils/plan-cta-state';
 
 	interface Props {
 		tier: PublicMembershipTierSchema;
@@ -49,11 +50,13 @@
 		/**
 		 * Whether to ask the backend what THIS viewer may do with THIS tier.
 		 *
-		 * False for owners and staff: they already have standing in the org (shown
+		 * False for the owner: they already have standing in the org (shown
 		 * once at the top of the page), so a verdict per tier would be N pointless
 		 * round trips answering a question they never asked.
 		 */
 		showJoinCta?: boolean;
+		/** The viewer's standing in the org, forwarded to every PlanCard. */
+		viewer?: PlanViewer;
 	}
 
 	const {
@@ -66,7 +69,8 @@
 		subscription = null,
 		subscriptionLoading = false,
 		onSubscribe,
-		showJoinCta = true
+		showJoinCta = true,
+		viewer = NO_PLAN_VIEWER
 	}: Props = $props();
 
 	// Unique per instance: several of these cards sit side by side, and each needs
@@ -265,8 +269,42 @@
 	// already have an active subscription" beside "awaiting payment". Plan-less
 	// tiers have no plan cards, so they keep their own CTA verdict.
 	const hasLiveSubscription = $derived(!!subscription);
+	/**
+	 * A plan-less tier is free, and its own CTA must follow the viewer's standing
+	 * like a free plan card does (revel-backend#1518). Tiers with plans leave this
+	 * to their plan cards.
+	 */
+	const tierState = $derived(
+		hasPlans
+			? 'default'
+			: planCtaState({
+					viewer,
+					planTierId: tierId ?? '',
+					planIsFree: true,
+					hasSubscription: hasLiveSubscription,
+					subscriptionLoading
+				})
+	);
+	const membershipsHref = resolve('/(auth)/account/memberships', {});
+	const tierNote = $derived.by(() => {
+		switch (tierState) {
+			case 'own_tier':
+				return m['membershipPlanCta.ownTierHelper']();
+			case 'free_other_tier':
+				return m['membershipPlanCta.freeOtherTierHelper']();
+			case 'paused':
+				return m['membershipPlanCta.pausedNote']();
+			case 'banned':
+				return m['membershipPlanCta.bannedNote']();
+			default:
+				return null;
+		}
+	});
+	// The owner's note is stated once by the page summary, never per card.
 	const showCta = $derived(
-		showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans)
+		tierState !== 'owner' &&
+			(!!tierNote ||
+				(showJoinCta && !!tierId && !ctaSentenceElsewhere && !(hasLiveSubscription && hasPlans)))
 	);
 
 	/**
@@ -375,6 +413,7 @@
 					{isAuthenticated}
 					{subscription}
 					{subscriptionLoading}
+					{viewer}
 					{organizationSlug}
 					{organizationName}
 					{contactMethod}
@@ -391,15 +430,28 @@
 {/snippet}
 
 {#snippet actions()}
-	<MembershipCta
-		{organizationSlug}
-		{organizationName}
-		{isAuthenticated}
-		{tierId}
-		tierName={tier.name}
-		planId={ctaPlanId}
-		plansInline={hasPlans}
-	/>
+	{#if tierNote}
+		<p class="text-sm text-muted-foreground">{tierNote}</p>
+		{#if tierState === 'own_tier'}
+			<a
+				href={membershipsHref}
+				aria-label={m['membershipPlanCta.manageTierLinkAria']({ tier: tier.name })}
+				class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{m['membershipPlanCta.manageLink']()}<span aria-hidden="true"> →</span>
+			</a>
+		{/if}
+	{:else}
+		<MembershipCta
+			{organizationSlug}
+			{organizationName}
+			{isAuthenticated}
+			{tierId}
+			tierName={tier.name}
+			planId={ctaPlanId}
+			plansInline={hasPlans}
+		/>
+	{/if}
 {/snippet}
 
 <!-- `actions` is left out entirely (not rendered empty) when there is no CTA to

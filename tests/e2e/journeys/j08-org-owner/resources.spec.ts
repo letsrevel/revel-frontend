@@ -54,8 +54,8 @@ test.describe('J8 org resources @p2', () => {
 		const modal = page.getByRole('dialog', { name: /Add Resource/ });
 
 		// Public link resource, shown on the org page. (Header button +
-		// empty-state CTA both say "Add Resource" on a fresh org — .first().)
-		await page.getByRole('button', { name: 'Add Resource' }).first().click();
+		// empty-state CTA both say "New resource" on a fresh org — .first().)
+		await page.getByRole('button', { name: 'New resource' }).first().click();
 		await expect(modal).toBeVisible();
 		await modal.getByRole('button', { name: 'Link', exact: true }).click();
 		await modal.getByLabel(/^Name/).fill(publicName);
@@ -66,7 +66,7 @@ test.describe('J8 org resources @p2', () => {
 		await expect(page.getByText(publicName)).toBeVisible();
 
 		// Members-only text resource, also shown on the org page.
-		await page.getByRole('button', { name: 'Add Resource' }).click();
+		await page.getByRole('button', { name: 'New resource' }).click();
 		await expect(modal).toBeVisible();
 		await modal.getByRole('button', { name: 'Text', exact: true }).click();
 		await modal.getByLabel(/^Name/).fill(membersName);

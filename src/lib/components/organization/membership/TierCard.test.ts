@@ -12,6 +12,7 @@ import type {
 	PublicPlanSchema
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
+import { NO_PLAN_VIEWER, type PlanViewer } from '$lib/utils/plan-cta-state';
 
 vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' }
@@ -93,6 +94,80 @@ describe('TierCard', () => {
 			}
 		});
 	}
+
+	it('forwards the viewer standing so a member sees no Join on their own tier plans', () => {
+		renderCard({
+			tier: makeTier({
+				plans: [makePlan({ payment_method: 'free', price: '0.00' })],
+				is_free: true
+			}),
+			viewer: {
+				isMember: true,
+				membershipStatus: 'active',
+				membershipTierId: 't-gold',
+				isOwner: false
+			}
+		});
+
+		expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: m['membershipPlans.subscribeCta']() })
+		).not.toBeInTheDocument();
+	});
+
+	// A plan-less free tier has its own tier-level CTA; it must follow the
+	// viewer's standing like a free plan card does (revel-backend#1518).
+	describe('a plan-less tier', () => {
+		const active: PlanViewer = {
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTierId: 't-other',
+			isOwner: false
+		};
+
+		it('hides Join from an active member of ANOTHER tier and says why', () => {
+			renderCard({ viewer: active });
+
+			expect(screen.getByText(m['membershipPlanCta.freeOtherTierHelper']())).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+		});
+
+		it('renders nothing in the CTA slot for the owner (the page says it once)', () => {
+			renderCard({ viewer: { ...NO_PLAN_VIEWER, isOwner: true }, showJoinCta: false });
+
+			expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+		});
+
+		it('tells an active member of THIS plan-less tier it is theirs, not Join', () => {
+			renderCard({
+				tier: makeTier({ id: 't-gold', name: 'Gold', plans: [] }),
+				viewer: { ...active, membershipTierId: 't-gold' }
+			});
+
+			expect(screen.getByText(m['membershipPlanCta.ownTierHelper']())).toBeInTheDocument();
+			// Names the tier, not a "plan" (this tier has none).
+			expect(
+				screen.getByRole('link', {
+					name: m['membershipPlanCta.manageTierLinkAria']({ tier: 'Gold' })
+				})
+			).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+		});
+
+		it('shows the paused note to a paused member', () => {
+			renderCard({ viewer: { ...active, membershipStatus: 'paused' } });
+
+			expect(screen.getByText(m['membershipPlanCta.pausedNote']())).toBeInTheDocument();
+		});
+
+		it('keeps the ordinary CTA for a non-member', () => {
+			renderCard({ viewer: NO_PLAN_VIEWER });
+
+			expect(screen.queryByText(m['membershipPlanCta.freeOtherTierHelper']())).toBeNull();
+			expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+		});
+	});
 
 	// The cards are peers in a grid, so each has to announce which tier it is
 	// before anything inside it makes sense (WCAG 1.3.1).

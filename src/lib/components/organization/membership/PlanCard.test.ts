@@ -5,6 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import PlanCard from './PlanCard.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+import { NO_PLAN_VIEWER, type PlanViewer } from '$lib/utils/plan-cta-state';
 import * as m from '$lib/paraglide/messages.js';
 
 const pageUrl = vi.hoisted(() => ({ search: '' }));
@@ -116,6 +117,116 @@ describe('PlanCard', () => {
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
 		vi.clearAllMocks();
+	});
+
+	// A member with no subscription row (owner-added, imported, open-ended) still
+	// cannot join: the backend refuses `already_member`.
+	describe('a viewer with standing but no subscription', () => {
+		const activeGold: PlanViewer = {
+			...NO_PLAN_VIEWER,
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTierId: 'tier-1'
+		};
+
+		it('shows a current-tier state and a manage link on a FREE plan of their own tier', () => {
+			renderCard({
+				viewer: activeGold,
+				plan: makePlan({ payment_method: 'free', price: '0.00' })
+			});
+
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', {
+					name: m['membershipPlanCta.manageLinkAria']({ plan: 'Monthly' })
+				})
+			).toHaveAttribute('href', '/account/memberships');
+		});
+
+		it('keeps the sold-out state next to the current-tier badge on a sold-out PAID plan', () => {
+			renderCard({ viewer: activeGold, plan: makePlan({ sold_out: true }) });
+
+			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.soldOut']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlans.soldOutHelper']())).toBeInTheDocument();
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+		});
+
+		it('shows the current-tier badge AND keeps Subscribe on a PAID plan of their own tier', () => {
+			renderCard({ viewer: activeGold });
+
+			expect(screen.getByText(m['membershipPlanCta.currentTier']())).toBeInTheDocument();
+			expect(
+				screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+			).toBeInTheDocument();
+		});
+
+		it('does not flash the own-tier state while the subscription is loading', () => {
+			renderCard({ viewer: activeGold, subscriptionLoading: true });
+
+			expect(screen.queryByText(m['membershipPlanCta.currentTier']())).not.toBeInTheDocument();
+		});
+
+		it('shows a note and no CTA to a paused or banned member', () => {
+			for (const [status, key] of [
+				['paused', 'membershipPlanCta.pausedNote'],
+				['banned', 'membershipPlanCta.bannedNote']
+			] as const) {
+				const { unmount } = renderCard({ viewer: { ...activeGold, membershipStatus: status } });
+				expect(screen.queryByRole('button')).not.toBeInTheDocument();
+				expect(screen.getByText(m[key]())).toBeInTheDocument();
+				unmount();
+			}
+		});
+
+		it('shows no join control on a FREE plan of another tier', () => {
+			renderCard({
+				viewer: activeGold,
+				plan: makePlan({ tier_id: 'tier-2', payment_method: 'free', price: '0.00' })
+			});
+
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+			expect(screen.getByText(m['membershipPlanCta.freeOtherTierHelper']())).toBeInTheDocument();
+		});
+
+		it('keeps the CTA on a PAID plan of another tier (tier change)', () => {
+			renderCard({ viewer: activeGold, plan: makePlan({ tier_id: 'tier-2' }) });
+
+			expect(
+				screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+			).toBeInTheDocument();
+		});
+
+		it('never offers Join to the owner', () => {
+			renderCard({ viewer: { ...NO_PLAN_VIEWER, isOwner: true } });
+			expect(screen.queryByRole('button')).not.toBeInTheDocument();
+			// The page summary says it once; the card stays silent.
+			expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+		});
+
+		it('lets an existing subscription keep driving the card', () => {
+			renderCard({ viewer: activeGold, subscription: makeSub() });
+
+			expect(screen.getByText(m['membershipPlans.yourPlan']())).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlanCta.currentTier']())).not.toBeInTheDocument();
+		});
+
+		it('offers Join to a non-member', () => {
+			renderCard();
+
+			expect(
+				screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+			).toBeInTheDocument();
+		});
+
+		it('sends a guest to log in', () => {
+			renderCard({ isAuthenticated: false });
+
+			expect(
+				screen.getByRole('link', { name: m['membershipPlans.loginToSubscribe']() })
+			).toBeInTheDocument();
+		});
 	});
 
 	it('shows the plan name, price and description', () => {

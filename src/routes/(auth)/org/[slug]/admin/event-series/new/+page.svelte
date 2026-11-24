@@ -111,6 +111,8 @@
 		</button>
 		<div class="flex-1">
 			<PageHeader
+				volume="studio"
+				kicker={organization.name}
 				title={m['eventSeriesNewPage.title']()}
 				subtitle={m['eventSeriesNewPage.subtitle']({ organizationName: organization.name })}
 			/>

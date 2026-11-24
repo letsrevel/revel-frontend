@@ -413,11 +413,50 @@ describe('MembershipCta', () => {
 		expect(screen.queryByRole('button', { name: /join acme/i })).toBeNull();
 	});
 
+	it('lets a non-member staff viewer join a tier like anyone else', async () => {
+		mockEligibility(makeEligibility({ allowed: true }));
+		renderTierCta({ isStaff: true });
+
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+		expect(screen.queryByText(/staff/i)).toBeNull();
+	});
+
+	it('shows member standing to a member staff viewer in tier mode, with no Join', () => {
+		renderTierCta({ isStaff: true, isMember: true, membershipStatus: 'active' });
+
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+		expect(screen.getByRole('status')).toHaveTextContent(/member/i);
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
+	it('shows no Join to the owner in tier mode', () => {
+		renderTierCta({ isOwner: true, isStaff: true });
+
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
 	it('shows the staff badge without asking for eligibility', () => {
 		renderCta({ isStaff: true });
 
 		expect(screen.getByRole('status')).toHaveTextContent(/staff/i);
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
+	it('shows member standing, not Staff, when the viewer is both staff and member', () => {
+		renderCta({ isStaff: true, isMember: true, membershipStatus: 'active' });
+
+		const badge = screen.getByRole('status');
+		expect(badge).not.toHaveTextContent(/staff/i);
+		expect(badge).toHaveTextContent(/member/i);
+	});
+
+	it('shows the owner badge when the viewer is owner, staff and member', () => {
+		renderCta({ isOwner: true, isStaff: true, isMember: true });
+
+		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
 	});
 
 	it('shows the member badge with status and tier from the server props', () => {

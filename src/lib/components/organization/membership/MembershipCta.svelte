@@ -131,6 +131,20 @@
 		awaiting_payment: 'warning'
 	};
 
+	/**
+	 * Member standing wins over staff when both are true (the tier cards apply
+	 * member rules to staff who are members); the owner wins over everything and
+	 * is handled by the first branch. Callers pass `isStaff` unmasked.
+	 */
+	const showStaffBadge = $derived.by(() => {
+		const staff = isStaff;
+		const member = isMember;
+		const tierMode = isTierMode;
+		// Tier mode is a join surface: staff who are not members join like anyone
+		// else. The badge stays only as a standing display in summary mode.
+		return staff && !member && !tierMode;
+	});
+
 	const accessToken = $derived(authStore.accessToken);
 
 	// Every operand is read unconditionally: `&&`/`||` inside a `$derived` would
@@ -139,7 +153,8 @@
 		const owner = isOwner;
 		const staff = isStaff;
 		const member = isMember;
-		return owner || staff || member;
+		const tierMode = isTierMode;
+		return owner || (staff && !tierMode) || member;
 	});
 
 	// The badge branches answer the question on their own — asking the backend
@@ -295,7 +310,7 @@
 		<Crown class="h-4 w-4" aria-hidden="true" />
 		{m['membershipEligibility.ownerBadge']()}
 	</div>
-{:else if isStaff}
+{:else if showStaffBadge}
 	<div
 		class={cn(
 			'inline-flex items-center gap-2 rounded-md border border-info/40 bg-info/10 px-4 py-2 text-sm font-bold text-foreground',

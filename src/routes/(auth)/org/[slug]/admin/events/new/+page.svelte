@@ -29,7 +29,8 @@
 <div class="space-y-6">
 	<!-- Header Section -->
 	<PageHeader
-		kicker={m['orgAdmin.nav.events']()}
+		volume="studio"
+		kicker={organization.name}
 		title={m['eventNewPage.title']()}
 		subtitle={m['eventNewPage.subtitle']({ organizationName: organization.name })}
 	/>

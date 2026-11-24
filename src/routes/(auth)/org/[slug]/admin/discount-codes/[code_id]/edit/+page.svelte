@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmindiscountcodesGetDiscountCode,
@@ -137,14 +138,22 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-		<div>
-			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
-				{m['discountCodeEditPage.title']()}
-			</h1>
+		<div class="min-w-0 flex-1">
+			<PageHeader
+				volume="studio"
+				kicker={organization.name}
+				title={m['discountCodeEditPage.title']()}
+			/>
 			{#if existingCode}
-				<p class="mt-2 text-muted-foreground">
-					{m['discountCodeEditPage.editing']()}
-					<span class="font-mono font-bold">{existingCode.code}</span>
+				<!-- The whole sentence is read once, parameterized; the visible part is the
+				     code alone, in mono, because the title above already says "edit". -->
+				<p class="mt-2">
+					<span class="sr-only"
+						>{m['discountCodeEditPage.editing']({ code: existingCode.code })}</span
+					>
+					<span aria-hidden="true" class="font-mono font-bold text-muted-foreground"
+						>{existingCode.code}</span
+					>
 				</p>
 			{/if}
 		</div>

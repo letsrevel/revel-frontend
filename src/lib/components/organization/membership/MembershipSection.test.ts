@@ -37,6 +37,7 @@ vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
  * `null` is the "never subscribed, or only terminal history" answer — the
  * endpoint 404s, and the query maps that to `null`.
  */
+
 function mockSub(sub: MySubscriptionSchema | null) {
 	vi.mocked(mesubscriptionsGetMySubscription).mockResolvedValue({
 		data: sub ?? undefined,
@@ -187,6 +188,55 @@ describe('MembershipSection', () => {
 		expect(await screen.findByRole('button', { name: 'Join Supporter' })).toBeInTheDocument();
 	});
 
+	it('lays a single tier out full width, several in two columns', () => {
+		const { container, unmount } = renderSection({ tiers: [makeTier()] });
+		expect(container.querySelector('.sm\\:grid-cols-2')).toBeNull();
+		unmount();
+
+		const second = renderSection({
+			tiers: [makeTier({ id: 't-a', name: 'A' }), makeTier({ id: 't-b', name: 'B' })]
+		});
+		expect(second.container.querySelector('.sm\\:grid-cols-2')).not.toBeNull();
+	});
+
+	it('shows an active member of a FREE own tier their current tier, not Join', async () => {
+		renderSection({
+			tiers: [
+				makeTier({
+					id: 't-gold',
+					name: 'Gold',
+					plans: [makePlan({ tier_id: 't-gold', payment_method: 'free', price: '0.00' })]
+				})
+			],
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTier: { id: 't-gold', name: 'Gold' }
+		});
+
+		expect(
+			(await screen.findAllByText(m['membershipPlanCta.currentTier']())).length
+		).toBeGreaterThan(0);
+		expect(
+			screen.queryByRole('button', { name: m['membershipPlans.joinFreeCta']() })
+		).not.toBeInTheDocument();
+	});
+
+	it('shows the current tier AND keeps Subscribe on a PAID own-tier plan', async () => {
+		renderSection({
+			tiers: [makeTier({ id: 't-gold', name: 'Gold', plans: [makePlan({ tier_id: 't-gold' })] })],
+			isMember: true,
+			membershipStatus: 'active',
+			membershipTier: { id: 't-gold', name: 'Gold' }
+		});
+
+		expect(
+			(await screen.findAllByText(m['membershipPlanCta.currentTier']())).length
+		).toBeGreaterThan(0);
+		expect(
+			screen.getByRole('button', { name: m['membershipPlans.subscribeCta']() })
+		).toBeInTheDocument();
+	});
+
 	// `display_order` is the organizer's decision and the backend already applied
 	// it; re-sorting here (the old alphabetical grouping) would override them.
 	it('keeps the backend display order', () => {
@@ -299,10 +349,37 @@ describe('MembershipSection', () => {
 		});
 
 		expect(screen.getByRole('status')).toHaveTextContent(/owner/i);
+		// The owner note is said once, not on every card.
+		expect(screen.getAllByText(m['membershipPlanCta.ownerNote']())).toHaveLength(1);
 		await waitFor(() => {
 			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 		});
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+	});
+
+	it('does not render the owner note when there are no tiers', () => {
+		renderSection({ isOwner: true, tiers: [] });
+
+		expect(screen.queryByText(m['membershipPlanCta.ownerNote']())).toBeNull();
+	});
+
+	it('shows member standing, not Staff, for a staff viewer who is also a member', () => {
+		renderSection({
+			isStaff: true,
+			isMember: true,
+			membershipStatus: 'active',
+			tiers: [makeTier({ id: 't-gold', name: 'Gold' })]
+		});
+
+		const badge = screen.getAllByRole('status')[0];
+		expect(badge).not.toHaveTextContent(/staff/i);
+		expect(badge).toHaveTextContent(/member/i);
+	});
+
+	it('still shows Staff for a staff viewer who is not a member', () => {
+		renderSection({ isStaff: true, tiers: [makeTier({ id: 't-gold', name: 'Gold' })] });
+
+		expect(screen.getAllByRole('status')[0]).toHaveTextContent(/staff/i);
 	});
 
 	// The grid is one query away from the truth `OrgMembershipInline` already

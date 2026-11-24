@@ -329,8 +329,10 @@
 	<title>{m['orgAdmin.billing.pageTitle']()} - {data.organization.name}</title>
 </svelte:head>
 
-<div class="space-y-8 px-4">
+<div class="space-y-8">
 	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
 		title={m['orgAdmin.billing.pageTitle']()}
 		subtitle={m['orgAdmin.billing.pageDescription']()}
 	/>

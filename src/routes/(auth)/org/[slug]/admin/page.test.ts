@@ -53,7 +53,7 @@ function setup(setupCounts: unknown, setupHidden = false) {
 	});
 }
 
-const createButtons = () => screen.queryAllByRole('button', { name: /Create Event/i });
+const createButtons = () => screen.queryAllByRole('button', { name: /New event/i });
 const nextUp = () => document.querySelector('section[aria-label="Next event"]');
 
 describe('org admin dashboard: setup card vs empty next-event panel', () => {

@@ -18,7 +18,12 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<PageHeader title={m['orgAdminEmbedPage.title']()} subtitle={m['orgAdminEmbedPage.subtitle']()} />
+	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
+		title={m['orgAdminEmbedPage.title']()}
+		subtitle={m['orgAdminEmbedPage.subtitle']()}
+	/>
 
 	{#if data.pickersFailed}
 		<Alert variant="destructive">

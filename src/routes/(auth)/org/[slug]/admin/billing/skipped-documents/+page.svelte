@@ -175,6 +175,8 @@
 			<ArrowLeft class="h-5 w-5" />
 		</a>
 		<PageHeader
+			volume="studio"
+			kicker={data.organization.name}
 			titleAttrs={{ id: `${uid}-heading`, tabindex: -1 }}
 			title={m['compliance.skipped.title']()}
 			subtitle={m['compliance.skipped.intro']()}

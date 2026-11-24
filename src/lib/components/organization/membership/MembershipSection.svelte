@@ -19,6 +19,7 @@
 	import { Users } from '@lucide/svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import TierCard from './TierCard.svelte';
+	import type { PlanViewer } from '$lib/utils/plan-cta-state';
 	import SubscribeDialog from './SubscribeDialog.svelte';
 	import CheckoutReturnCard from './CheckoutReturnCard.svelte';
 
@@ -77,20 +78,22 @@
 	let sectionEl = $state<HTMLElement | null>(null);
 
 	/**
-	 * Owners and staff already have standing here; the page is configuration to
-	 * them, not an offer. Suppressing the per-tier CTA also spares them one
+	 * Only the owner is shut out of joining (revel-backend#1518); staff are treated
+	 * like any other viewer. Suppressing the per-tier CTA also spares the owner one
 	 * eligibility round trip per tier for a question they never asked — their
 	 * badge is rendered once, above the grid.
 	 */
-	const showJoinCtas = $derived.by(() => {
-		// Both operands read unconditionally: `||` inside a `$derived` would leave
-		// the skipped one untracked.
-		const owner = isOwner;
-		const staff = isStaff;
-		return !owner && !staff;
+	const showJoinCtas = $derived(!isOwner);
+
+	/** Forwarded to every plan card so a member gets the member rules (revel-backend#1518). */
+	const viewer = $derived<PlanViewer>({
+		isMember,
+		membershipStatus,
+		membershipTierId: membershipTier?.id ?? null,
+		isOwner
 	});
 
-	/** The viewer's standing, shown once rather than repeated on every card. */
+	/** Whether the viewer has any standing (owner, staff or member) worth a badge. */
 	const hasStanding = $derived.by(() => {
 		const owner = isOwner;
 		const staff = isStaff;
@@ -200,6 +203,11 @@
 			{isOwner}
 			{isStaff}
 		/>
+		{#if isOwner && tiers.length > 0}
+			<!-- Said once here; the plan and tier cards render nothing for the owner.
+			     Skipped with no tiers: there is no grid for the note to explain. -->
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.ownerNote']()}</p>
+		{/if}
 	{/if}
 
 	{#if tiers.length === 0}
@@ -214,7 +222,8 @@
 	{:else}
 		<div aria-labelledby="tiers-heading">
 			<h2 id="tiers-heading" class="sr-only">{m['membershipTiers.tiersHeading']()}</h2>
-			<div class="grid gap-4 sm:grid-cols-2">
+			<!-- One tier: a single full-width column, not the left half of a 2-col grid. -->
+			<div class={tiers.length > 1 ? 'grid gap-4 sm:grid-cols-2' : 'grid gap-4'}>
 				{#each tiers as tier (tier.id ?? tier.name)}
 					<TierCard
 						{tier}
@@ -227,6 +236,7 @@
 						{subscriptionLoading}
 						onSubscribe={handleSubscribe}
 						showJoinCta={showJoinCtas}
+						{viewer}
 					/>
 				{/each}
 			</div>

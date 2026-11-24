@@ -599,7 +599,8 @@
 	{:else if sector}
 		<!-- Header -->
 		<PageHeader
-			kicker={m['orgAdmin.nav.venues']()}
+			volume="studio"
+			kicker={organization.name}
 			title={m['orgAdmin.seats.pageTitle']({ sectorName: sector.name })}
 			subtitle={m['orgAdmin.seats.pageDescription']()}
 		/>

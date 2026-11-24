@@ -198,6 +198,17 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end" class="w-48">
+						{#if showManagement}
+							<DropdownMenu.Item onclick={manageInvitations}>
+								<Mail class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.invitations']()}
+							</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={manageWaitlist}>
+								<ListPlus class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.waitlist']()}
+							</DropdownMenu.Item>
+							<DropdownMenu.Separator />
+						{/if}
 						<DropdownMenu.Item onclick={() => onDuplicate?.(event)}>
 							<Copy class="mr-2 h-4 w-4" />
 							{m['orgAdmin.events.actions.duplicate']()}
@@ -334,22 +345,6 @@
 						{m['orgAdmin.events.actions.attendees']()}
 					</button>
 				{/if}
-				<button
-					type="button"
-					onclick={manageInvitations}
-					class="inline-flex items-center gap-1 rounded-md bg-poster-purple px-3 py-1 text-sm font-medium text-poster-white ring-1 ring-inset ring-border transition-colors hover:bg-poster-purple/90"
-				>
-					<Mail class="h-4 w-4" aria-hidden="true" />
-					{m['orgAdmin.events.actions.invitations']()}
-				</button>
-				<button
-					type="button"
-					onclick={manageWaitlist}
-					class="inline-flex items-center gap-1 rounded-md bg-poster-amber px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-amber/90"
-				>
-					<ListPlus class="h-4 w-4" aria-hidden="true" />
-					{m['orgAdmin.events.actions.waitlist']()}
-				</button>
 			{/if}
 			{#if (variant === 'closed' || variant === 'cancelled') && onReopen}
 				<button

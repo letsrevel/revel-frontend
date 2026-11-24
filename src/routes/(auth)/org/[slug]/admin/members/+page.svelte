@@ -195,6 +195,8 @@
 		{/if}
 	{/snippet}
 	<PageHeader
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdmin.members.pageTitle']()}
 		subtitle={m['orgAdmin.members.pageDescription']()}
 		actions={headerActions}

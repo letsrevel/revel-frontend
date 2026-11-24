@@ -259,7 +259,8 @@
 		{/if}
 	{/snippet}
 	<PageHeader
-		kicker={m['orgAdmin.nav.events']()}
+		volume="studio"
+		kicker={organization.name}
 		title={m['orgAdmin.events.pageTitle']()}
 		subtitle={m['orgAdmin.events.pageDescription']()}
 		actions={headerActions}

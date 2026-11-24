@@ -3782,7 +3782,7 @@
 					"organization": "Organisation"
 				}
 			},
-			"createEventButton": "Veranstaltung erstellen",
+			"createEventButton": "Neue Veranstaltung",
 			"organizationDetailsHeading": "Organisationsdetails",
 			"aboutHeading": "Über {orgName}",
 			"quickActions": {
@@ -3839,7 +3839,7 @@
 			}
 		},
 		"settings": {
-			"pageTitle": "Organisationseinstellungen",
+			"pageTitle": "Einstellungen",
 			"pageDescription": "Verwalte das Profil und die Einstellungen deiner Organisation",
 			"metaDescription": "Verwalte deine Organisationseinstellungen",
 			"viewPublicProfile": "Öffentliches Profil anzeigen",
@@ -3962,7 +3962,7 @@
 			"pageTitle": "Veranstaltungen",
 			"pageDescription": "Verwalte die Veranstaltungen deiner Organisation",
 			"metaDescription": "Veranstaltungen verwalten für {orgName}",
-			"createEventButton": "Veranstaltung erstellen",
+			"createEventButton": "Neue Veranstaltung",
 			"empty": {
 				"title": "Noch keine Veranstaltungen",
 				"description": "Beginne mit der Erstellung deiner ersten Veranstaltung"
@@ -4465,7 +4465,7 @@
 		"questionnaires": {
 			"pageTitle": "Fragebögen",
 			"pageDescription": "Erstelle und verwalte Fragebögen für Veranstaltungszulassungen und Organisationsmitgliedschaften.",
-			"createQuestionnaireButton": "Fragebogen erstellen",
+			"createQuestionnaireButton": "Neuer Fragebogen",
 			"searchPlaceholder": "Fragebögen durchsuchen...",
 			"noResults": {
 				"title": "Keine Fragebögen gefunden",
@@ -4580,7 +4580,7 @@
 		"polls": {
 			"pageTitle": "Umfragen",
 			"pageDescription": "Erstelle Umfragen für deine Organisation oder ein Event.",
-			"createPollButton": "Umfrage erstellen",
+			"createPollButton": "Neue Umfrage",
 			"searchPlaceholder": "Umfragen nach Name suchen…",
 			"empty": {
 				"title": "Noch keine Umfragen",
@@ -4609,12 +4609,12 @@
 	"orgAdmin.events.confirmations.deleteCancelled": "Diese Veranstaltung wurde bereits abgesagt und die Teilnehmer*innen wurden benachrichtigt. Beim dauerhaften Löschen verschwindet sie auch aus deinen Unterlagen. Fortfahren?",
 	"orgAdmin.events.confirmations.publish": "Möchtest du dieses Event wirklich veröffentlichen?",
 	"orgAdmin.events.confirmations.reopen": "Möchtest du dieses Event wirklich wieder öffnen?",
-	"orgAdmin.events.createEventButton": "Event erstellen",
+	"orgAdmin.events.createEventButton": "Neue Veranstaltung",
 	"orgAdmin.events.empty.description": "Erstelle dein erstes Event, um loszulegen",
 	"orgAdmin.events.empty.title": "Noch keine Events",
 	"orgAdmin.events.metaDescription": "Events verwalten für {orgName}",
 	"orgAdmin.events.pageDescription": "Erstelle und verwalte Events für deine Organisation",
-	"orgAdmin.events.pageTitle": "Events verwalten",
+	"orgAdmin.events.pageTitle": "Veranstaltungen",
 	"orgAdmin.events.sections.cancelled": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
@@ -4864,7 +4864,7 @@
 		"pageTitle": "Fragebögen",
 		"metaDescription": "Verwalte Aufnahmeformulare und Umfragen für {orgName}",
 		"pageDescription": "Verwalte Aufnahmeformulare, Bewerbungen und Umfragen für deine Veranstaltungen",
-		"createQuestionnaireButton": "Fragebogen erstellen",
+		"createQuestionnaireButton": "Neuer Fragebogen",
 		"searchPlaceholder": "Fragebögen durchsuchen...",
 		"noResults": {
 			"title": "Keine Fragebögen gefunden",
@@ -4880,7 +4880,7 @@
 	"orgAdmin.resources": {
 		"pageTitle": "Ressourcen",
 		"pageDescription": "Verwalte Dateien, Links und Inhalte für deine Organisation",
-		"addResourceButton": "Ressource hinzufügen",
+		"addResourceButton": "Neue Ressource",
 		"searchPlaceholder": "Ressourcen durchsuchen...",
 		"filters": {
 			"type": {
@@ -5130,7 +5130,7 @@
 			}
 		}
 	],
-	"orgAdmin.venues.createButton": "Veranstaltungsort erstellen",
+	"orgAdmin.venues.createButton": "Neuer Veranstaltungsort",
 	"orgAdmin.venues.delete.confirm": "Bist du sicher, dass du diesen Veranstaltungsort löschen möchtest? Alle Sektoren und Plätze werden ebenfalls gelöscht.",
 	"orgAdmin.venues.delete.error": "Fehler beim Löschen des Veranstaltungsortes",
 	"orgAdmin.venues.delete.success": "Veranstaltungsort erfolgreich gelöscht",
@@ -5714,7 +5714,16 @@
 		"error_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut oder gib den Ticket-Code unten manuell ein.",
 		"error_insecureContext": "Der Kamerazugriff erfordert eine sichere (HTTPS-)Verbindung. Gib den Ticket-Code unten manuell ein.",
 		"error_generic": "Kein Zugriff auf die Kamera möglich. Gib den Ticket-Code unten manuell ein.",
-		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut."
+		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+		"startCamera": "Mit Kamera scannen",
+		"stopCamera": "Kamera stoppen",
+		"stopFailed": "Die Kamera konnte nicht ausgeschaltet werden. Versuche es erneut.",
+		"cardError_permissionDenied": "Der Kamerazugriff wurde verweigert. Aktiviere die Kameraberechtigung in den Browser-Einstellungen oder gib den Ausweiscode unten manuell ein.",
+		"cardError_notFound": "Auf diesem Gerät wurde keine Kamera gefunden. Gib den Ausweiscode unten manuell ein.",
+		"cardError_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut, oder gib den Ausweiscode unten manuell ein.",
+		"cardError_insecureContext": "Der Kamerazugriff erfordert eine sichere Verbindung (HTTPS). Gib den Ausweiscode unten manuell ein.",
+		"cardError_generic": "Kein Zugriff auf die Kamera möglich. Gib den Ausweiscode unten manuell ein.",
+		"cardError_processFailed": "Der gescannte Ausweis konnte nicht verarbeitet werden. Bitte versuche es erneut."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Keine Option ausgewählt",
@@ -9632,13 +9641,13 @@
 	"announcementsAdminPage.searchPlaceholder": "Suchen...",
 	"discountCodeEditPage.backToDiscountCodes": "Zurück zu den Rabattcodes",
 	"discountCodeEditPage.title": "Rabattcode bearbeiten",
-	"discountCodeEditPage.editing": "Bearbeitung von",
+	"discountCodeEditPage.editing": "Bearbeitung von {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Rabattcode wird geladen",
 	"discountCodeEditPage.loadError": "Rabattcode konnte nicht geladen werden. Möglicherweise wurde er gelöscht.",
 	"discountCodeEditPage.updateError": "Rabattcode konnte nicht aktualisiert werden",
 	"blacklistAdminPage.metaTitle": "Blacklist-Verwaltung - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Verwalte auf der Blacklist stehende Nutzer*innen für {name}",
-	"blacklistAdminPage.title": "Blacklist-Verwaltung",
+	"blacklistAdminPage.title": "Blacklist",
 	"blacklistAdminPage.pageDescription": "Verwalte auf der Blacklist stehende Nutzer*innen und Verifizierungsanfragen für deine Organisation.",
 	"blacklistAdminPage.addToBlacklist": "Zur Blacklist hinzufügen",
 	"blacklistAdminPage.tabBlacklist": "Sperrliste",
@@ -10471,7 +10480,7 @@
 	"integrations.import.remoteStatus.cancelled": "Abgesagt",
 	"orgAdmin.events.actions.embed": "Auf deiner Website einbetten",
 	"orgAdminEmbedPage.pageTitle": "Einbetten - {organizationName}",
-	"orgAdminEmbedPage.title": "Auf deiner Website einbetten",
+	"orgAdminEmbedPage.title": "Einbetten",
 	"orgAdminEmbedPage.subtitle": "Zeige deine Events auf deiner eigenen Website. Einstellen, ansehen, Code kopieren.",
 	"orgAdminEmbedPage.pickersFailed": "Deine Events und Reihen konnten gerade nicht geladen werden, deshalb sind diese Optionen nicht verfügbar. Die vollständige Eventliste deiner Organisation kannst du trotzdem einbetten.",
 	"orgAdminEmbedPage.eventNotEmbeddable": "Dieses Event lässt sich nicht einbetten: Einbettungen werden anonym geladen, deshalb erscheinen nur veröffentlichte öffentliche oder ungelistete Events.",
@@ -11959,5 +11968,14 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Weniger Tags anzeigen"
+	"tagsFilter.showFewer": "Weniger Tags anzeigen",
+	"membershipPlanCta.currentTier": "Deine aktuelle Stufe",
+	"membershipPlanCta.ownTierHelper": "Du bist bereits Mitglied in dieser Stufe.",
+	"membershipPlanCta.manageLink": "In Meine Mitgliedschaften verwalten",
+	"membershipPlanCta.manageLinkAria": "In Meine Mitgliedschaften verwalten, Tarif {plan}",
+	"membershipPlanCta.manageTierLinkAria": "In Meine Mitgliedschaften verwalten, Stufe {tier}",
+	"membershipPlanCta.freeOtherTierHelper": "Du bist bereits Mitglied und kannst daher keinem kostenlosen Tarif einer anderen Stufe beitreten.",
+	"membershipPlanCta.ownerNote": "Diese Organisation gehört dir, daher kannst du keinem ihrer Tarife beitreten.",
+	"membershipPlanCta.pausedNote": "Deine Mitgliedschaft ist pausiert. Wende dich an die Organisation.",
+	"membershipPlanCta.bannedNote": "Deine Mitgliedschaft ist gesperrt. Wende dich an die Organisation."
 }

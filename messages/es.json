@@ -3782,7 +3782,7 @@
 					"organization": "Organización"
 				}
 			},
-			"createEventButton": "Crear evento",
+			"createEventButton": "Nuevo evento",
 			"organizationDetailsHeading": "Detalles de la organización",
 			"aboutHeading": "Sobre {orgName}",
 			"quickActions": {
@@ -3839,7 +3839,7 @@
 			}
 		},
 		"settings": {
-			"pageTitle": "Ajustes de la organización",
+			"pageTitle": "Ajustes",
 			"pageDescription": "Gestiona el perfil y las preferencias de tu organización",
 			"metaDescription": "Gestiona los ajustes de tu organización",
 			"viewPublicProfile": "Ver perfil público",
@@ -3962,7 +3962,7 @@
 			"pageTitle": "Eventos",
 			"pageDescription": "Gestiona los eventos de tu organización",
 			"metaDescription": "Gestiona los eventos de {orgName}",
-			"createEventButton": "Crear evento",
+			"createEventButton": "Nuevo evento",
 			"empty": {
 				"title": "Todavía no hay eventos",
 				"description": "Empieza creando tu primer evento"
@@ -4465,7 +4465,7 @@
 		"questionnaires": {
 			"pageTitle": "Cuestionarios",
 			"pageDescription": "Crea y gestiona cuestionarios para admisiones a eventos y membresías de organización.",
-			"createQuestionnaireButton": "Crear cuestionario",
+			"createQuestionnaireButton": "Nuevo cuestionario",
 			"searchPlaceholder": "Buscar cuestionarios...",
 			"noResults": {
 				"title": "No se han encontrado cuestionarios",
@@ -4580,7 +4580,7 @@
 		"polls": {
 			"pageTitle": "Encuestas",
 			"pageDescription": "Crea encuestas para tu organización o para un evento.",
-			"createPollButton": "Crear encuesta",
+			"createPollButton": "Nueva encuesta",
 			"searchPlaceholder": "Buscar encuestas por nombre…",
 			"empty": {
 				"title": "Todavía no hay encuestas",
@@ -4609,12 +4609,12 @@
 	"orgAdmin.events.confirmations.deleteCancelled": "Este evento ya se ha cancelado y se ha notificado a las personas asistentes. Si lo eliminas de forma permanente, también desaparecerá de tus registros. ¿Continuar?",
 	"orgAdmin.events.confirmations.publish": "¿Seguro que quieres publicar este evento?",
 	"orgAdmin.events.confirmations.reopen": "¿Seguro que quieres reabrir este evento?",
-	"orgAdmin.events.createEventButton": "Crear evento",
+	"orgAdmin.events.createEventButton": "Nuevo evento",
 	"orgAdmin.events.empty.description": "Crea tu primer evento para empezar",
 	"orgAdmin.events.empty.title": "Todavía no hay eventos",
 	"orgAdmin.events.metaDescription": "Gestiona los eventos de {orgName}",
 	"orgAdmin.events.pageDescription": "Crea y gestiona eventos para tu organización",
-	"orgAdmin.events.pageTitle": "Gestionar eventos",
+	"orgAdmin.events.pageTitle": "Eventos",
 	"orgAdmin.events.sections.cancelled": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
@@ -4864,7 +4864,7 @@
 		"pageTitle": "Cuestionarios",
 		"metaDescription": "Gestiona formularios de admisión y encuestas para {orgName}",
 		"pageDescription": "Gestiona formularios de admisión, solicitudes y encuestas para tus eventos",
-		"createQuestionnaireButton": "Crear cuestionario",
+		"createQuestionnaireButton": "Nuevo cuestionario",
 		"searchPlaceholder": "Buscar cuestionarios...",
 		"noResults": {
 			"title": "No se encontraron cuestionarios",
@@ -4880,7 +4880,7 @@
 	"orgAdmin.resources": {
 		"pageTitle": "Recursos",
 		"pageDescription": "Gestiona archivos, enlaces y contenido de tu organización",
-		"addResourceButton": "Añadir recurso",
+		"addResourceButton": "Nuevo recurso",
 		"searchPlaceholder": "Buscar recursos...",
 		"filters": {
 			"type": {
@@ -5130,7 +5130,7 @@
 			}
 		}
 	],
-	"orgAdmin.venues.createButton": "Crear lugar",
+	"orgAdmin.venues.createButton": "Nuevo lugar",
 	"orgAdmin.venues.delete.confirm": "¿Seguro que quieres eliminar este lugar? También se eliminarán todos los sectores y asientos.",
 	"orgAdmin.venues.delete.error": "No se ha podido eliminar el lugar",
 	"orgAdmin.venues.delete.success": "Lugar eliminado correctamente",
@@ -5714,7 +5714,16 @@
 		"error_notReadable": "La cámara ya está en uso por otra aplicación. Ciérrala e inténtalo de nuevo, o introduce el código de la entrada manualmente más abajo.",
 		"error_insecureContext": "El acceso a la cámara requiere una conexión segura (HTTPS). Introduce el código de la entrada manualmente más abajo.",
 		"error_generic": "No se ha podido acceder a la cámara. Introduce el código de la entrada manualmente más abajo.",
-		"error_processFailed": "No se ha podido procesar la entrada escaneada. Inténtalo de nuevo."
+		"error_processFailed": "No se ha podido procesar la entrada escaneada. Inténtalo de nuevo.",
+		"startCamera": "Escanear con la cámara",
+		"stopCamera": "Detener la cámara",
+		"stopFailed": "No se pudo apagar la cámara. Inténtalo de nuevo.",
+		"cardError_permissionDenied": "Se ha denegado el acceso a la cámara. Activa el permiso en los ajustes del navegador o introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_notFound": "No se ha encontrado ninguna cámara en este dispositivo. Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_notReadable": "Otra aplicación ya está usando la cámara. Ciérrala e inténtalo de nuevo, o introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_insecureContext": "El acceso a la cámara requiere una conexión segura (HTTPS). Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_generic": "No se ha podido acceder a la cámara. Introduce el código de la tarjeta manualmente más abajo.",
+		"cardError_processFailed": "No se ha podido procesar la tarjeta escaneada. Inténtalo de nuevo."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Ninguna opción seleccionada",
@@ -9632,13 +9641,13 @@
 	"announcementsAdminPage.searchPlaceholder": "Buscar...",
 	"discountCodeEditPage.backToDiscountCodes": "Volver a los códigos de descuento",
 	"discountCodeEditPage.title": "Editar código de descuento",
-	"discountCodeEditPage.editing": "Editando",
+	"discountCodeEditPage.editing": "Editando {code}",
 	"discountCodeEditPage.loadingAriaLabel": "Cargando código de descuento",
 	"discountCodeEditPage.loadError": "No se ha podido cargar el código de descuento. Puede que se haya eliminado.",
 	"discountCodeEditPage.updateError": "No se ha podido actualizar el código de descuento",
 	"blacklistAdminPage.metaTitle": "Gestión de la lista negra - {name} | Revel",
 	"blacklistAdminPage.metaDescription": "Gestiona las personas en la lista negra de {name}",
-	"blacklistAdminPage.title": "Gestión de la lista negra",
+	"blacklistAdminPage.title": "Lista negra",
 	"blacklistAdminPage.pageDescription": "Gestiona las personas en la lista negra y las solicitudes de verificación de tu organización.",
 	"blacklistAdminPage.addToBlacklist": "Añadir a la lista negra",
 	"blacklistAdminPage.tabBlacklist": "Lista negra",
@@ -10471,7 +10480,7 @@
 	"integrations.import.remoteStatus.cancelled": "Cancelado",
 	"orgAdmin.events.actions.embed": "Insertar en tu web",
 	"orgAdminEmbedPage.pageTitle": "Insertar - {organizationName}",
-	"orgAdminEmbedPage.title": "Insertar en tu web",
+	"orgAdminEmbedPage.title": "Insertar",
 	"orgAdminEmbedPage.subtitle": "Muestra tus eventos en tu propia web. Configura, previsualiza y copia el código.",
 	"orgAdminEmbedPage.pickersFailed": "No hemos podido cargar tus eventos ni tus series, así que esas opciones no están disponibles. Aun así puedes insertar la lista completa de eventos de tu organización.",
 	"orgAdminEmbedPage.eventNotEmbeddable": "Este evento no se puede insertar: las inserciones las cargan visitantes anónimos, así que solo aparecen los eventos publicados, públicos o no listados.",
@@ -11959,5 +11968,14 @@
 			}
 		}
 	],
-	"tagsFilter.showFewer": "Mostrar menos etiquetas"
+	"tagsFilter.showFewer": "Mostrar menos etiquetas",
+	"membershipPlanCta.currentTier": "Tu nivel actual",
+	"membershipPlanCta.ownTierHelper": "Ya formas parte de este nivel.",
+	"membershipPlanCta.manageLink": "Gestionar en Mis membresías",
+	"membershipPlanCta.manageLinkAria": "Gestionar en Mis membresías, plan {plan}",
+	"membershipPlanCta.manageTierLinkAria": "Gestionar en Mis membresías, nivel {tier}",
+	"membershipPlanCta.freeOtherTierHelper": "Ya eres miembro, así que no puedes unirte a un plan gratuito de otro nivel.",
+	"membershipPlanCta.ownerNote": "Esta organización es tuya, así que no puedes unirte a sus planes.",
+	"membershipPlanCta.pausedNote": "Tu membresía está en pausa. Contacta con la organización.",
+	"membershipPlanCta.bannedNote": "Tu membresía está suspendida. Contacta con la organización."
 }

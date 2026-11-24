@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { billingNeedsAttention } from '$lib/utils/org-setup-progress';
-	import { buildAdminNav, activeNavHref } from '$lib/components/org-admin/admin-nav';
+	import { buildAdminNav, activeNavHref, allNavItems } from '$lib/components/org-admin/admin-nav';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
@@ -69,7 +69,18 @@
 		mobileMenuOpen = !mobileMenuOpen;
 	}
 
-	// Breadcrumb structure
+	// Breadcrumb structure. Ends at the current admin section (derived from the
+	// nav model) so the trail always names the page; on the admin home "Admin"
+	// stays last.
+	const currentSection = $derived(
+		allNavItems(nav).find((item) => item.href === mobileItemsActiveHref && item !== nav.dashboard)
+	);
+	// `aria-current="page"` only where the crumb IS the page: on a nested page
+	// (e.g. one event) the last crumb is its section, which is not the current page.
+	function isCurrentCrumb(href: string): boolean {
+		const strip = (path: string) => (path.length > 1 ? path.replace(/\/+$/, '') : path);
+		return strip(href) === strip(currentPath);
+	}
 	const breadcrumbs = $derived([
 		{ href: resolve('/(public)', {}), label: m['orgAdmin.breadcrumbs.home']() },
 		{
@@ -83,7 +94,8 @@
 		{
 			href: resolve('/(auth)/org/[slug]/admin', { slug: data.organization.slug }),
 			label: m['orgAdmin.breadcrumbs.admin']()
-		}
+		},
+		...(currentSection ? [{ href: currentSection.href, label: currentSection.label }] : [])
 	]);
 </script>
 
@@ -169,7 +181,7 @@
 									href={crumb.href}
 									onclick={closeMobileMenu}
 									class="text-muted-foreground/80 transition-colors hover:text-foreground"
-									aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
+									aria-current={isCurrentCrumb(crumb.href) ? 'page' : undefined}
 								>
 									{crumb.label}
 								</a>
@@ -253,7 +265,7 @@
 							<a
 								href={crumb.href}
 								class="text-muted-foreground/80 transition-colors hover:text-foreground"
-								aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
+								aria-current={isCurrentCrumb(crumb.href) ? 'page' : undefined}
 							>
 								{crumb.label}
 							</a>

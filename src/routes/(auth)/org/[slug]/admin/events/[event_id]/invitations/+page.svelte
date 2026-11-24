@@ -92,7 +92,12 @@
 			<ChevronLeft class="h-4 w-4" aria-hidden="true" />
 			{m['eventInvitationsAdmin.backToEvents']()}
 		</a>
-		<PageHeader title={m['eventInvitationsAdmin.pageTitle']()} subtitle={data.event.name} />
+		<PageHeader
+			volume="studio"
+			kicker={data.organization.name}
+			title={m['eventInvitationsAdmin.pageTitle']()}
+			subtitle={data.event.name}
+		/>
 	</div>
 
 	<!-- Success/Error Messages. Both tints composite against whatever sits

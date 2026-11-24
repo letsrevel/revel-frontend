@@ -350,7 +350,7 @@
 {/snippet}
 
 <div class="space-y-6">
-	<PageHeader kicker={m['orgAdmin.nav.events']()} title={event.name}>
+	<PageHeader volume="studio" kicker={organization.name} title={event.name}>
 		{#snippet titleAddon()}
 			<StatusBadge tone={statusTone} label={statusLabel} />
 		{/snippet}

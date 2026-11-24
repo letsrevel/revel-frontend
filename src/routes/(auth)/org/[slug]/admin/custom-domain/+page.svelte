@@ -28,9 +28,10 @@
 
 <div class="space-y-6 px-4 md:px-0">
 	<PageHeader
+		volume="studio"
+		kicker={data.organization.name}
 		title={m['customDomain.title']()}
 		subtitle={m['customDomain.subtitle']()}
-		volume="studio"
 	/>
 
 	{#if data.customDomainEnabled}

@@ -22,6 +22,7 @@
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
 	import { calendarAlignmentLabel, firstPeriodQuoteText } from '$lib/utils/plan-calendar';
 	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
+	import { NO_PLAN_VIEWER, planCtaState, type PlanViewer } from '$lib/utils/plan-cta-state';
 
 	interface Props {
 		plan: PublicPlanSchema;
@@ -80,6 +81,13 @@
 		 * full requirements rather than relying on them merely being nearby.
 		 */
 		gateRequirementsId?: string | null;
+		/**
+		 * The viewer's standing in the org (member, tier, owner). A member without
+		 * a subscription row (owner-added, imported, open-ended) has
+		 * `subscription: null` but still gets member rules. These mirror
+		 * revel-backend#1518. See `planCtaState`.
+		 */
+		viewer?: PlanViewer;
 	}
 
 	const {
@@ -95,7 +103,8 @@
 		gateAction = null,
 		onApply,
 		gatePending = false,
-		gateRequirementsId = null
+		gateRequirementsId = null,
+		viewer = NO_PLAN_VIEWER
 	}: Props = $props();
 
 	/**
@@ -139,6 +148,16 @@
 	 */
 	const awaitingOffline = $derived(isAwaitingOfflinePayment(subscription));
 
+	const viewerState = $derived(
+		planCtaState({
+			viewer,
+			planTierId: plan.tier_id,
+			planIsFree: isFreePlan(plan),
+			hasSubscription: !!subscription,
+			subscriptionLoading
+		})
+	);
+
 	const action = $derived.by(() => {
 		if (subscription) {
 			const isThisPlan = !!plan.id && plan.id === subscription.plan_id;
@@ -147,6 +166,14 @@
 			if (awaitingOffline) return isThisPlan ? 'awaiting_payment' : 'awaiting_other';
 			return isThisPlan ? 'current' : 'member';
 		}
+		// The viewer's standing outranks the plan's sales state, like a subscription.
+		// `own_tier_paid` is not here on purpose: it keeps the Subscribe CTA, and
+		// only the badge (see `state`) says it is their tier.
+		if (viewerState === 'own_tier') return 'own_tier';
+		if (viewerState === 'owner') return 'owner';
+		if (viewerState === 'paused') return 'paused';
+		if (viewerState === 'banned') return 'banned';
+		if (viewerState === 'free_other_tier') return 'free_other_tier';
 		if (plan.sold_out) return 'none';
 		if (plan.sales_status === 'paused') return 'none';
 		if (!plan.id) return 'none';
@@ -179,10 +206,18 @@
 	 */
 	const state = $derived.by(() => {
 		if (action === 'current') return 'current';
+		if (action === 'own_tier') return 'own_tier';
 		if (plan.sold_out) return 'sold_out';
 		if (plan.sales_status === 'paused') return 'paused';
 		return null;
 	});
+
+	/**
+	 * Own tier on a paid plan keeps its Subscribe CTA, so its "current tier" badge
+	 * sits next to the sales state instead of replacing it. When the plan is sold
+	 * out or paused, the card shows both and the reason for the missing CTA.
+	 */
+	const showOwnTierBadge = $derived(viewerState === 'own_tier_paid' || state === 'own_tier');
 
 	/**
 	 * A PENDING row means a hosted Checkout was started and never finished (or
@@ -254,6 +289,9 @@
 	<!-- Tones separated by what the state MEANS, not merely "this is a state":
 	     sold out is a hard stop, paused is temporary, "your plan" is good news.
 	     Every one carries its own words, so nothing is conveyed by fill alone. -->
+	{#if showOwnTierBadge}
+		<StatusBadge tone="success" size="sm" label={m['membershipPlanCta.currentTier']()} />
+	{/if}
 	{#if state === 'current'}
 		<StatusBadge tone="success" size="sm" label={m['membershipPlans.yourPlan']()} />
 	{:else if state === 'sold_out'}
@@ -281,6 +319,23 @@
 					? m['membershipPlans.pendingCheckoutHelper']()
 					: m['membershipPlans.yourPlanHelper']()}
 			</p>
+		{:else if action === 'own_tier'}
+			<!-- A member without a subscription row: nothing to press, only a way
+			     to manage what they have. -->
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.ownTierHelper']()}</p>
+			<a
+				href={membershipsHref}
+				aria-label={m['membershipPlanCta.manageLinkAria']({ plan: plan.name })}
+				class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{m['membershipPlanCta.manageLink']()}<span aria-hidden="true"> →</span>
+			</a>
+		{:else if action === 'free_other_tier'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.freeOtherTierHelper']()}</p>
+		{:else if action === 'paused'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.pausedNote']()}</p>
+		{:else if action === 'banned'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlanCta.bannedNote']()}</p>
 		{:else if action === 'member'}
 			<p class="text-sm text-muted-foreground">{m['membershipPlans.alreadySubscribed']()}</p>
 			{#if canSwitch}
@@ -427,7 +482,7 @@
 	priceNote={neverExpires ? m['subscriptions.neverExpires']() : undefined}
 	{badges}
 	{meta}
-	{actions}
+	actions={action === 'owner' ? undefined : actions}
 >
 	{#if alignmentLabel}
 		<p class="text-sm font-medium text-foreground">{alignmentLabel}</p>

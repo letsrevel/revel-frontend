@@ -46,10 +46,10 @@ test.describe('J8 blacklist admin @p2', () => {
 		const page = await context.newPage();
 		await gotoHydrated(page, `/org/${org.slug}/admin/blacklist`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Blacklist Management' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Blacklist', level: 1 })).toBeVisible();
 
 		const modal = page.getByRole('dialog', { name: 'Add to Blacklist' });
-		await page.getByRole('button', { name: 'Add to Blacklist' }).click();
+		await page.getByRole('button', { name: 'Add to blacklist' }).click();
 		await expect(modal).toBeVisible();
 		await modal.getByLabel('Email Address').fill(blocked.email);
 		await modal.getByLabel('Reason for Blacklisting').fill('E2E blacklist journey');
@@ -65,7 +65,7 @@ test.describe('J8 blacklist admin @p2', () => {
 
 		// Name-only entry (no linked account) can be added…
 		const alias = uniqueName('Alias');
-		await page.getByRole('button', { name: 'Add to Blacklist' }).click();
+		await page.getByRole('button', { name: 'Add to blacklist' }).click();
 		await expect(modal).toBeVisible();
 		await modal.getByLabel('First Name').fill(alias);
 		await modal.getByLabel('Last Name').fill('Doe');

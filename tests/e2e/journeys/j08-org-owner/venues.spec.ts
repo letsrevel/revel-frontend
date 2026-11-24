@@ -34,8 +34,8 @@ test.describe('J8 venues @p2', () => {
 		await gotoHydrated(page, `/org/${org.slug}/admin/venues`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Venues', level: 1 })).toBeVisible();
-		// Header button + empty-state CTA both say "Create Venue" on a fresh org.
-		await page.getByRole('button', { name: 'Create Venue' }).first().click();
+		// Header button + empty-state CTA both say "New venue" on a fresh org.
+		await page.getByRole('button', { name: 'New venue' }).first().click();
 		const venueModal = page.getByRole('dialog', { name: 'Create Venue' });
 		await expect(venueModal).toBeVisible();
 		await venueModal.getByLabel('Venue Name').fill(venueName);
