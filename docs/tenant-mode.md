@@ -282,7 +282,8 @@ from `src/routes/+layout.svelte`, outside the embed branch, with:
 - **No theme, no override.** If the organization has no primary color the backend sends `null` and
   nothing is injected.
 - **What it overrides.** `--primary`, `--primary-foreground` and `--ring` for each mode, plus
-  `--accent` and `--accent-foreground` when the organization set an accent. The rules are scoped to
+  `--heart` and `--heart-foreground` when the organization set an accent. The organization accent is
+  the brand "heart" colour. `--accent` is the neutral hover tint and is not overridden. The rules are scoped to
   `:root:not(.dark)` and `:root.dark`, on `<html>`, so portaled dialogs, sheets and toasts get them
   too.
 - **`--poster-band`.** The solid ribbon under org, event and series covers is mode-inert, so it

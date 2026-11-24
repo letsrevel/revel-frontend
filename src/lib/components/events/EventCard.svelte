@@ -129,7 +129,7 @@
 	// Container classes based on variant
 	const containerClasses = $derived(
 		cn(
-			'group relative overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-transform',
+			'group relative h-full overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-transform',
 			// Same silhouette and lift on all three discovery cards (event / series /
 			// organization): the thick edge + poster float that `ui/card` took
 			// globally in the uplift, applied by hand because these are bare
@@ -244,6 +244,7 @@
 		<div
 			class={cn(
 				'flex flex-col gap-2 border-t pt-3',
+				variant === 'standard' && 'flex-1',
 				variant === 'compact' && 'gap-1.5 border-t-0 pt-0 md:border-t md:pt-3'
 			)}
 		>
@@ -280,7 +281,7 @@
 
 				<!-- Tags (if available) -->
 				{#if event.tags && event.tags.length > 0}
-					<div class="flex items-start gap-2 text-sm">
+					<div class="mt-auto flex items-start gap-2 pt-1 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
 							<!-- Tag chips: primary on a 10% primary tint. The tint composites

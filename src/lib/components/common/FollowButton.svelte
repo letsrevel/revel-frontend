@@ -202,10 +202,11 @@
 					{#if isLoading}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					{:else}
-						<!-- The outline button hovers to bg-accent, so the heart flips to
-						     accent-foreground there instead of vanishing (accent on accent). -->
+						<!-- --heart is only guaranteed 3:1 vs background/card (white-label orgs),
+						     not vs the --accent hover fill, so the heart flips to
+						     accent-foreground on hover like the label does. -->
 						<Heart
-							class="h-4 w-4 fill-current text-accent group-hover:text-accent-foreground"
+							class="h-4 w-4 fill-current text-heart group-hover:text-accent-foreground"
 							aria-hidden="true"
 						/>
 					{/if}

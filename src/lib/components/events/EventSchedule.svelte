@@ -63,7 +63,9 @@
 		<p class="mb-2 text-sm text-muted-foreground">{m['eventSchedule.description']()}</p>
 
 		<!-- Times below are in the event timezone, not the viewer's — shown once here. -->
-		<EventTimezoneNote start={eventStart} timeZone={timezone} {place} class="mb-6" />
+		<!-- On desktop the sidebar summary carries this note beside the schedule;
+		     on mobile the summary is far above, so repeat it here. -->
+		<EventTimezoneNote start={eventStart} timeZone={timezone} {place} class="mb-6 lg:hidden" />
 
 		<ol class="space-y-3">
 			{#each sessions as session, index (index)}

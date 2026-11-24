@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import EventQuickInfo from './EventQuickInfo.svelte';
+import * as m from '$lib/paraglide/messages.js';
 import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 
 // Mock event data
@@ -49,8 +50,10 @@ describe('EventQuickInfo', () => {
 	it('renders with required props', () => {
 		render(EventQuickInfo, { props: { event: mockEvent } });
 
-		// Check that event date is rendered
-		expect(screen.getByText(/Oct 25/i)).toBeInTheDocument();
+		// The start time element renders the start date.
+		const start = document.querySelector(`time[datetime="${mockEvent.start}"]`);
+		expect(start).not.toBeNull();
+		expect(start).toHaveTextContent(/Oct 2[4-6]/i); // date varies with the runner zone
 
 		// Check that location is rendered
 		expect(screen.getByText('San Francisco, USA')).toBeInTheDocument();
@@ -59,6 +62,32 @@ describe('EventQuickInfo', () => {
 	it('displays event type correctly', () => {
 		render(EventQuickInfo, { props: { event: mockEvent } });
 		expect(screen.getByText('Public Event')).toBeInTheDocument();
+	});
+
+	it('states "Free RSVP" for an event without tickets', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: false } } });
+		expect(screen.getByText('Free RSVP')).toBeInTheDocument();
+		expect(screen.queryByText('Ticketed event')).not.toBeInTheDocument();
+	});
+
+	it('states "Ticketed event" for an event that requires a ticket', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: true } } });
+		expect(screen.getByText('Ticketed event')).toBeInTheDocument();
+		expect(screen.queryByText('Free RSVP')).not.toBeInTheDocument();
+	});
+
+	it('shows the timezone note once when the event has a timezone', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, timezone: 'Europe/Berlin' } }
+		});
+		expect(screen.getAllByText(/Times shown in/)).toHaveLength(1);
+	});
+
+	it('omits the timezone note when showTimezoneNote is false', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, timezone: 'Europe/Berlin' }, showTimezoneNote: false }
+		});
+		expect(screen.queryByText(/Times shown in/)).not.toBeInTheDocument();
 	});
 
 	it('displays private event type', () => {
@@ -151,7 +180,7 @@ describe('EventQuickInfo', () => {
 	it('does not display RSVP deadline when rsvp_before is not set', () => {
 		const eventWithoutDeadline = { ...mockEvent, rsvp_before: null };
 		render(EventQuickInfo, { props: { event: eventWithoutDeadline } });
-		expect(screen.queryByText(/RSVP/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/RSVP deadline|RSVP closed/i)).not.toBeInTheDocument();
 	});
 
 	it('shows the address when there is no city', () => {
@@ -315,5 +344,56 @@ describe('EventQuickInfo — virtual events', () => {
 		const event = { ...mockEvent, is_virtual: false, address: 'https://example.com/not-a-place' };
 		render(EventQuickInfo, { props: { event } });
 		expect(screen.queryByRole('link', { name: /Open event link/i })).not.toBeInTheDocument();
+	});
+});
+
+describe('EventQuickInfo — end time and held seats', () => {
+	it('shows the end time for a timed event', () => {
+		render(EventQuickInfo, {
+			props: { event: { ...mockEvent, end: '2025-12-01T22:00:00Z', is_open_ended: false } }
+		});
+		expect(screen.getByText(/Ends/i)).toBeInTheDocument();
+	});
+
+	it('shows the open-ended hint instead of an end time', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, is_open_ended: true } } });
+		expect(screen.queryByText(/Ends/i)).not.toBeInTheDocument();
+		expect(screen.getByText(/Open-ended/i)).toBeInTheDocument();
+	});
+
+	it('shows held seats on the capacity row', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 3 } } });
+		expect(
+			screen.getByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 3 }))
+		).toBeInTheDocument();
+	});
+
+	it('shows held seats even when the attendee count is withheld', () => {
+		render(EventQuickInfo, {
+			props: {
+				event: {
+					...mockEvent,
+					attendee_count: null,
+					max_attendees: 0,
+					is_full: false,
+					seats_held: 3
+				}
+			}
+		});
+		expect(
+			screen.getByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 3 }))
+		).toBeInTheDocument();
+	});
+
+	it('shows no held-seats hint when no seats are held', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, seats_held: 0 } } });
+		expect(
+			screen.queryByText(m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: 0 }))
+		).not.toBeInTheDocument();
+	});
+	it('treats an unknown ticket requirement as ticketed', () => {
+		render(EventQuickInfo, { props: { event: { ...mockEvent, requires_ticket: null } } });
+		expect(screen.getByText(m['eventDetails.eventType_ticketed']())).toBeInTheDocument();
+		expect(screen.queryByText(m['eventDetails.eventType_freeRsvp']())).toBeNull();
 	});
 });

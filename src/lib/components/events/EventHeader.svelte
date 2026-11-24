@@ -51,8 +51,8 @@
 	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
 
 	// Date range, rendered in the event's own timezone (#474). The abbreviation is
-	// suppressed here because EventDetails on the same page carries the canonical
-	// "Times shown in {place} ({offset})" label — avoids showing the tz twice.
+	// suppressed here because EventQuickInfo (the sidebar) on the same page carries
+	// the canonical "Times shown in {place} ({offset})" label — avoids showing the tz twice.
 	const dateRange = $derived(
 		event.is_open_ended
 			? formatEventDate(event.start, event.timezone, false)
@@ -207,8 +207,12 @@
 			></div>
 
 			<!-- Header Content Overlay -->
-			<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
-				{@render titleBlock(false)}
+			<!-- The title shares the page container, so it lines up with the header,
+			     the content and the footer (#1294). -->
+			<div class="absolute inset-0 flex flex-col justify-end pb-12">
+				<div class="container mx-auto px-6 md:px-8">
+					{@render titleBlock(false)}
+				</div>
 				{@render shareButton(false)}
 			</div>
 		</div>
@@ -234,7 +238,7 @@
 		Note: always the ORGANIZATION logo/initial, never the event's.
 	-->
 	<div class="bg-poster-band">
-		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
+		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
 				class="group -mt-4 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band md:-mt-8"

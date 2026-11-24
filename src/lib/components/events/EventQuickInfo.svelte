@@ -21,6 +21,7 @@
 		Info,
 		Video
 	} from '@lucide/svelte';
+	import EventTimezoneNote from './EventTimezoneNote.svelte';
 	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
 	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 	import { asHttpUrl } from '$lib/utils/url';
@@ -29,9 +30,11 @@
 		event: EventDetailSchema;
 		variant?: 'compact' | 'detailed';
 		class?: string;
+		/** Show the "Times shown in {place}" note under the date (event page sidebar). */
+		showTimezoneNote?: boolean;
 	}
 
-	const { event, variant = 'compact', class: className }: Props = $props();
+	const { event, variant = 'compact', class: className, showTimezoneNote = true }: Props = $props();
 
 	// Computed values
 	const formattedStartDate = $derived(formatEventDate(event.start, event.timezone));
@@ -131,6 +134,14 @@
 		return null;
 	});
 
+	// Seats held for waitlist offers: previously only shown in EventDetails'
+	// (now removed) attendance tile, so it lives on the capacity row here.
+	const seatsHeldText = $derived.by(() => {
+		const held = event.seats_held ?? 0;
+		if (held <= 0) return null;
+		return m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: held });
+	});
+
 	const isNearCapacity = $derived.by(() => {
 		const max = event.max_attendees;
 		const count = event.attendee_count;
@@ -204,6 +215,24 @@
 			<time datetime={event.start} class="block font-bold">
 				{formattedStartDate}
 			</time>
+			{#if event.is_open_ended}
+				<span class="block text-xs text-muted-foreground">{m['eventDetails.openEnded']()}</span>
+			{:else if event.end}
+				<time datetime={event.end} class="block text-xs text-muted-foreground">
+					{m['eventDetails.dateTime_ends']()}
+					{formatEventDate(event.end, event.timezone, false)}
+				</time>
+			{/if}
+			{#if showTimezoneNote}
+				<!-- The one place the event page states the timezone: EventHeader's date
+				     range drops the abbreviation and relies on this note. -->
+				<EventTimezoneNote
+					start={event.start}
+					timeZone={event.timezone}
+					place={event.city?.name}
+					class="mt-1"
+				/>
+			{/if}
 		</div>
 	</div>
 
@@ -312,6 +341,12 @@
 			<IconComponent class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
 				<span class="block">{eventTypeDisplay}</span>
+				<span class="block text-xs text-muted-foreground">
+					<!-- Fail closed like EventActionSidebar: only an explicit false is free. -->
+					{event.requires_ticket === false
+						? m['eventDetails.eventType_freeRsvp']()
+						: m['eventDetails.eventType_ticketed']()}
+				</span>
 				{#if visibilityMismatch}
 					<span class="block text-xs text-muted-foreground">
 						{m['eventQuickInfo.visibilityNote']({ visibility: visibilityMismatch })}
@@ -322,7 +357,7 @@
 	{/if}
 
 	<!-- Capacity Status (if max_capacity exists) -->
-	{#if capacityDisplay}
+	{#if capacityDisplay || seatsHeldText}
 		<!-- `text-warning` compiled to nothing (no `--warning` token; the tone
 		     vocabulary maps warning -> highlight), so this row rendered plain.
 		     These are compact sidebar rows with no container to tint, so the
@@ -338,9 +373,14 @@
 		>
 			<Users class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
-				<span class="block font-bold">{capacityDisplay}</span>
+				{#if capacityDisplay}
+					<span class="block font-bold">{capacityDisplay}</span>
+				{/if}
 				{#if isNearCapacity}
 					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.limitedSpots']()}</span>
+				{/if}
+				{#if seatsHeldText}
+					<span class="block text-xs text-muted-foreground">{seatsHeldText}</span>
 				{/if}
 			</div>
 		</div>

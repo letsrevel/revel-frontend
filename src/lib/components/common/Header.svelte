@@ -54,7 +54,7 @@
 <header
 	class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
-	<div class="container mx-auto flex h-16 items-center justify-between px-4">
+	<div class="container mx-auto flex h-16 items-center justify-between px-6 md:px-8">
 		<!-- Logo -->
 		<div class="flex items-center gap-6">
 			<a

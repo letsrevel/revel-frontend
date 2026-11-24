@@ -3,19 +3,14 @@
 	import { page } from '$app/state';
 	import type { PageData } from './$types';
 	import {
-		MapPin,
 		Settings,
 		Calendar,
 		CalendarDays,
 		ArrowRight,
 		Repeat,
 		ArrowDownUp,
-		Send,
-		AtSign,
 		Ticket
 	} from '@lucide/svelte';
-	import Instagram from '$lib/components/icons/brand/Instagram.svelte';
-	import Facebook from '$lib/components/icons/brand/Facebook.svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 	import OrgAnnouncements from '$lib/components/announcements/OrgAnnouncements.svelte';
 	import { EventCard, EventSeriesCard } from '$lib/components/events';
@@ -32,7 +27,7 @@
 	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 	import AnnouncementMuteButton from '$lib/components/organization/AnnouncementMuteButton.svelte';
-	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import OrgIdentityBand from '$lib/components/organizations/OrgIdentityBand.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
@@ -68,14 +63,6 @@
 			: organization.city.name;
 		return organization.address ? `${organization.address}, ${cityCountry}` : cityCountry;
 	});
-
-	// Check if organization has any social links
-	const hasSocialLinks = $derived(
-		organization.instagram_url ||
-			organization.facebook_url ||
-			organization.bluesky_url ||
-			organization.telegram_url
-	);
 
 	// Fallback cover, on the shared poster ramp (see utils/fallback-gradient.ts):
 	// an org, its series and its events all fall back to the same visual family.
@@ -196,49 +183,8 @@
 		</div>
 	</section>
 
-	<!--
-		Poster ribbon (uplift, spec §9) — the event page's move, applied to the
-		other public identity page. A solid `--poster-band` block (Hearty Purple,
-		or a branded org's primary) under the cover, with the org's logo promoted OUT of the header row
-		and onto it as a tilted white sticker straddling the cut. The logo used
-		to be a 64px thumbnail beside the title; here it is the page's identity
-		mark, which is what an org profile is for.
-
-		Ribbon and sticker are mode-INERT by the imagery rule (a poster panel is
-		not a surface). No copy sits on the band itself — the only text here is
-		the initial tile's letter, measured against the fixed values rather than
-		per-mode. The pair is registered in scripts/audit-brand-themes.py;
-		number pasted from its output:
-		  white on crimson-DEEP →  4.59:1
-		The initial tile's gradient ends on `crimson-deep`, not raw
-		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
-		for the tile's bold letter — the trap app.css documents at the
-		`--poster-crimson-deep` declaration. That tile is the DEFAULT for any org
-		without a logo, not an edge case, which is also why the sticker is kept
-		here rather than delegated to `brand/LogoChip`: LogoChip renders NOTHING
-		without a logo (it is pure ornament), and this mark is not ornament.
-	-->
-	<div class="bg-poster-band">
-		<div class="container mx-auto px-6 pb-6 md:px-8">
-			<div
-				class="-mt-8 inline-block -rotate-1 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"
-			>
-				{#if logoUrl}
-					<img
-						src={logoUrl}
-						alt="{organization.name} logo"
-						class="h-16 w-16 rounded-lg object-cover md:h-20 md:w-20"
-					/>
-				{:else}
-					<div
-						class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-poster-purple to-poster-crimson-deep text-xl font-black text-poster-white md:h-20 md:w-20 md:text-2xl"
-					>
-						{organization.name.charAt(0).toUpperCase()}
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
+	<!-- Poster ribbon with the org identity (logo sticker, name, location, social). -->
+	<OrgIdentityBand {organization} {logoUrl} {locationDisplay} />
 
 	<!--
 		Tinted content panel — the event detail page's wash, so an org profile and
@@ -250,154 +196,70 @@
 		          foreground 12.36:1 · muted-foreground 6.43:1 · primary 4.97:1
 		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
 		          foreground 15.68:1 · muted-foreground 7.44:1 · primary 6.30:1
-		Everything that lands directly on it here is covered: the h1 and section
-		headings (`foreground`), the metadata/social row and section blurbs
+		Everything that lands directly on it here is covered: the section
+		headings (`foreground`), the section blurbs
 		(`muted-foreground`), and the SectionHeader kickers plus the inline
 		"browse all"/"calendar" links (`primary`).
 	-->
 	<div class="flex-1 bg-secondary/55 dark:bg-secondary/[0.28]">
 		<!-- Main Content -->
 		<div class="container mx-auto px-6 py-8 md:px-8 lg:py-12">
-			<!-- Header with Name and Actions -->
-			<div class="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-				<div class="flex flex-1 gap-4">
-					<!-- Organization Info -->
-					<div class="min-w-0 flex-1">
-						<PageHeader
-							volume="poster"
-							kicker={m['organizationProfile.kicker']()}
-							title={organization.name}
-							class="mb-2"
-						/>
+			<!-- Action Buttons: first row on the wash, right under the band -->
+			<div class="mb-8 flex flex-wrap gap-2">
+				<!-- Edit Button (if user has permission) -->
+				{#if data.canEdit}
+					<a
+						href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Settings class="h-4 w-4" aria-hidden="true" />
+						{m['organizationProfile.editProfile']()}
+					</a>
+				{/if}
 
-						<!-- Metadata Row -->
-						<div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-							<!-- Location -->
-							{#if locationDisplay}
-								<div class="flex items-center gap-1.5">
-									<MapPin class="h-4 w-4" aria-hidden="true" />
-									<span>{locationDisplay}</span>
-								</div>
-							{/if}
+				<!-- Claim Membership Button (if token present and grants membership) -->
+				{#if data.organizationTokenDetails && data.organizationTokenDetails.grants_membership && !data.isMember && !data.isOwner && !data.isStaff}
+					<ClaimMembershipButton
+						tokenId={data.organizationTokenDetails.id || ''}
+						tokenDetails={data.organizationTokenDetails}
+						class="inline-flex items-center gap-2"
+					/>
+					<!-- Membership CTA (if org accepts members and user is not a member) -->
+				{:else if organization.accept_membership_requests}
+					<MembershipCta
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						isAuthenticated={data.isAuthenticated}
+						isMember={data.isMember}
+						membershipTier={data.membershipTier}
+						membershipStatus={data.membershipStatus}
+						isOwner={data.isOwner}
+						isStaff={data.isStaff}
+					/>
+				{/if}
 
-							<!-- Social Links -->
-							{#if hasSocialLinks}
-								<div class="flex items-center gap-3">
-									{#if organization.instagram_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.instagram_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_instagram']()}
-										>
-											<Instagram class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.facebook_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.facebook_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_facebook']()}
-										>
-											<Facebook class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.bluesky_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.bluesky_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_bluesky']()}
-										>
-											<AtSign class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-									{#if organization.telegram_url}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-										<a
-											href={organization.telegram_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="text-muted-foreground transition-colors hover:text-primary"
-											aria-label={m['organizationProfile.social_telegram']()}
-										>
-											<Send class="h-5 w-5" aria-hidden="true" />
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-				</div>
+				<!-- Follow Button -->
+				<FollowButton
+					entityType="organization"
+					entityId={organization.slug}
+					entityName={organization.name}
+					isAuthenticated={data.isAuthenticated}
+					variant="outline"
+				/>
 
-				<!-- Action Buttons -->
-				<div class="flex flex-shrink-0 flex-wrap gap-2">
-					<!-- Edit Button (if user has permission) -->
-					{#if data.canEdit}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
-							class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							<Settings class="h-4 w-4" aria-hidden="true" />
-							{m['organizationProfile.editProfile']()}
-						</a>
-					{/if}
+				<AnnouncementMuteButton {organization} />
 
-					<!-- Claim Membership Button (if token present and grants membership) -->
-					{#if data.organizationTokenDetails && data.organizationTokenDetails.grants_membership && !data.isMember && !data.isOwner && !data.isStaff}
-						<ClaimMembershipButton
-							tokenId={data.organizationTokenDetails.id || ''}
-							tokenDetails={data.organizationTokenDetails}
-							class="inline-flex items-center gap-2"
-						/>
-						<!-- Membership CTA (if org accepts members and user is not a member) -->
-					{:else if organization.accept_membership_requests}
-						<MembershipCta
-							organizationSlug={organization.slug}
-							organizationName={organization.name}
-							isAuthenticated={data.isAuthenticated}
-							isMember={data.isMember}
-							membershipTier={data.membershipTier}
-							membershipStatus={data.membershipStatus}
-							isOwner={data.isOwner}
-							isStaff={data.isStaff}
-						/>
-					{/if}
-
-					<!-- Follow Button -->
-					<FollowButton
-						entityType="organization"
-						entityId={organization.slug}
-						entityName={organization.name}
+				<!-- Contact Organizer Button -->
+				{#if organization.contact_method && organization.contact_method !== 'none'}
+					<OrgContactButton
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						contactMethod={organization.contact_method}
+						contactEmail={organization.contact_email}
 						isAuthenticated={data.isAuthenticated}
 						variant="outline"
 					/>
-
-					<AnnouncementMuteButton {organization} />
-
-					<!-- Contact Organizer Button -->
-					{#if organization.contact_method && organization.contact_method !== 'none'}
-						<OrgContactButton
-							organizationSlug={organization.slug}
-							organizationName={organization.name}
-							contactMethod={organization.contact_method}
-							contactEmail={organization.contact_email}
-							isAuthenticated={data.isAuthenticated}
-							variant="outline"
-						/>
-					{/if}
-				</div>
+				{/if}
 			</div>
 
 			{#if data.isAuthenticated && organization.id}
