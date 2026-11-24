@@ -58,24 +58,13 @@ describe('blacklistBodyForHolder', () => {
 		});
 	});
 
-	it('uses the kept email and name for an erased holder', () => {
+	it('uses only the kept email for an erased holder, never the kept name', () => {
 		expect(
 			blacklistBodyForHolder({
 				id: 'u1',
 				erased: true,
-				email: 'eve@example.com',
+				email: ' eve@example.com ',
 				display_name: 'Eve Erased'
-			})
-		).toEqual({ email: 'eve@example.com', preferred_name: 'Eve Erased', reason: '' });
-	});
-
-	it('omits the name when it is just the email', () => {
-		expect(
-			blacklistBodyForHolder({
-				id: 'u1',
-				erased: true,
-				email: 'eve@example.com',
-				display_name: 'eve@example.com'
 			})
 		).toEqual({ email: 'eve@example.com', reason: '' });
 	});

@@ -1,11 +1,7 @@
 import { organizationadminblacklistCreateBlacklistEntry } from '$lib/api';
 import type { BlacklistCreateSchema } from '$lib/api/generated/types.gen';
 import { backendMessage } from '$lib/utils/api-error-detail';
-import {
-	isErasedHolder,
-	staffViewDisplayName,
-	type StaffViewUserInfo
-} from '$lib/utils/user-display';
+import { isErasedHolder, type StaffViewUserInfo } from '$lib/utils/user-display';
 
 interface CreateBlacklistEntryArgs {
 	slug: string;
@@ -45,18 +41,16 @@ type BlacklistTarget = (StaffViewUserInfo & { id?: string | null }) | null | und
 /**
  * The create body for blacklisting a row's holder, or null when it cannot be done.
  * A live account is blacklisted by user id. An erased account has no profile left, so
- * the entry goes by the kept email (and the kept name, as `preferred_name`, when it
- * differs from the email); with no kept email there is nothing to match and it is null.
+ * the entry goes by the kept email only; with no kept email there is nothing to match
+ * and it is null. The kept name is not sent: it can be a guest name that staff typed
+ * at the box office, and the backend uses every name for fuzzy matching across the
+ * organization.
  */
 export function blacklistBodyForHolder(user: BlacklistTarget): BlacklistCreateSchema | null {
 	if (!user) return null;
 	if (isErasedHolder(user)) {
 		const email = user.email?.trim();
-		if (!email) return null;
-		const name = staffViewDisplayName(user, '').trim();
-		const body: BlacklistCreateSchema = { email, reason: '' };
-		if (name && name.toLowerCase() !== email.toLowerCase()) body.preferred_name = name;
-		return body;
+		return email ? { email, reason: '' } : null;
 	}
 	return user.id ? { user_id: user.id, reason: '' } : null;
 }

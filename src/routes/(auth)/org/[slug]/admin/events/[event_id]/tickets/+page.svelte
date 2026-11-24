@@ -144,14 +144,15 @@
 		},
 		onError: (error) => {
 			toast.error(error.message);
+			// Always refetch: a lost response can hide a change the server made.
+			invalidateAll();
 			// Keep the dialog (and the typed amount) only for a failure a retry can fix
-			// (no response, or a 5xx). Any 4xx is final (ticket changed, or a server
-			// validation the same input hits again): close, clear and refetch.
+			// (network, 5xx, 408, 429). Other 4xx are final (ticket changed, or a server
+			// validation the same input hits again): close and clear.
 			if (!isRetryablePaymentError(error)) {
 				showConfirmPaymentDialog = false;
 				ticketToConfirm = null;
 				pwycPricePaid = '';
-				invalidateAll();
 			}
 		}
 	}));
@@ -175,10 +176,10 @@
 		},
 		onError: (error) => {
 			toast.error(error.message);
+			invalidateAll();
 			if (!isRetryablePaymentError(error)) {
 				showUnconfirmPaymentDialog = false;
 				ticketToUnconfirm = null;
-				invalidateAll();
 			}
 		}
 	}));

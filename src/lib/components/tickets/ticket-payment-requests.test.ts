@@ -89,13 +89,23 @@ describe('failure handling', () => {
 		expect(isRetryablePaymentError(error)).toBe(false);
 	});
 
-	it.each([500, 502, 503])('treats a %i as retryable', async (status) => {
+	it.each([500, 502, 503, 408, 429])('treats a %i as retryable', async (status) => {
 		vi.mocked(eventadminticketsUnconfirmTicketPayment).mockResolvedValue({
 			error: { detail: 'Down.' },
 			response: { status }
 		} as never);
 		const error = await requestUnconfirmTicketPayment(base).catch((e: unknown) => e);
 		expect(isRetryablePaymentError(error)).toBe(true);
+	});
+
+	it('does not treat an error response without a status as retryable', async () => {
+		vi.mocked(eventadminticketsConfirmTicketPayment).mockResolvedValue({
+			error: { detail: 'Changed.' }
+		} as never);
+		const error = await requestConfirmTicketPayment(base).catch((e: unknown) => e);
+		expect(error).toBeInstanceOf(TicketPaymentRequestError);
+		expect((error as TicketPaymentRequestError).network).toBe(false);
+		expect(isRetryablePaymentError(error)).toBe(false);
 	});
 
 	it('does not treat a plain error as retryable', () => {
@@ -110,6 +120,7 @@ describe('failure handling', () => {
 		const error = await fn(base).catch((e: unknown) => e);
 		expect(error).toBeInstanceOf(Error);
 		expect((error as Error).message).toBe('Fallback');
+		expect((error as TicketPaymentRequestError).network).toBe(true);
 		expect(isRetryablePaymentError(error)).toBe(true);
 	});
 });
