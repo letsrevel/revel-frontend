@@ -53,7 +53,8 @@ const VIEWS = [
 function renderView(
 	view: (typeof VIEWS)[number][1],
 	tickets: AdminTicketSchema[],
-	onEditNote?: (t: AdminTicketSchema) => void
+	onEditNote?: (t: AdminTicketSchema) => void,
+	onRenameHolder?: (t: AdminTicketSchema) => void
 ) {
 	const noop = vi.fn();
 	return render(view as typeof TicketCardList, {
@@ -71,7 +72,8 @@ function renderView(
 			onCancelTicket: noop,
 			onBlacklist: noop,
 			onUnconfirmPayment: noop,
-			onEditNote
+			onEditNote,
+			onRenameHolder
 		}
 	});
 }
@@ -109,6 +111,8 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 			ticket({ id: 'u4', erased: true, display_name: 'Deleted user', email: null })
 		]);
 		expect(screen.getByText('Deleted user')).toBeInTheDocument();
+		expect(screen.getByTestId('erased-holder-badge')).toBeInTheDocument();
+		expect(container.textContent).toContain('N/A');
 		expect(container.textContent).not.toMatch(/null|undefined/);
 	});
 
@@ -134,5 +138,43 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
 		await userEvent.click(await screen.findByText(m['userNote.editAction']()));
 		expect(onEditNote).toHaveBeenCalledTimes(1);
+	});
+
+	it('prints the email once for an erased holder without a kept name', () => {
+		renderView(view, [
+			ticket({
+				id: 'u5',
+				erased: true,
+				display_name: 'eve@example.com',
+				email: 'eve@example.com'
+			})
+		]);
+		expect(screen.getAllByText('eve@example.com')).toHaveLength(1);
+	});
+
+	it('hides make member, staff note and blacklist for an erased holder', async () => {
+		renderView(
+			view,
+			[ticket({ id: 'u6', erased: true, display_name: 'Eve Erased', email: 'eve@example.com' })],
+			vi.fn(),
+			vi.fn()
+		);
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		// Another row action proves the menu is open.
+		await screen.findByText(/rename holder/i);
+		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
+		expect(screen.queryByText(m['userNote.editAction']())).not.toBeInTheDocument();
+		expect(screen.queryByTestId('note-unavailable')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(m['ticketCardList.blacklistUser']()) ??
+				screen.queryByText(m['ticketTable.blacklistUser']())
+		).not.toBeInTheDocument();
+	});
+
+	it('still offers make member, staff note and blacklist for a known holder', async () => {
+		renderView(view, [ticket(knownUser)], vi.fn());
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		expect(await screen.findByText(m['makeMemberAction.button']())).toBeInTheDocument();
+		expect(screen.getByText(m['userNote.editAction']())).toBeInTheDocument();
 	});
 });

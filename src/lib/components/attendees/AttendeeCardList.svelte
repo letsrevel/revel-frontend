@@ -97,7 +97,7 @@
 				{/if}
 
 				<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-					{#if !rsvp.membership && rsvp.user?.id}
+					{#if !rsvp.membership && rsvp.user?.id && !isErasedHolder(rsvp.user)}
 						<button
 							type="button"
 							onclick={() => onMakeMember(rsvp)}
@@ -131,7 +131,7 @@
 						{m['attendeesAdmin.actionDelete']()}
 					</button>
 					<!-- More actions dropdown for mobile -->
-					{#if rsvp.user?.id}
+					{#if rsvp.user?.id && !isErasedHolder(rsvp.user)}
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}

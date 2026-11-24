@@ -5,15 +5,17 @@ import type { NotificationType, NotificationTypeSettings } from '$lib/api/genera
  * the recipient's OWN transaction. They ignore silence-all, the channel
  * checkboxes and per-type settings, and always deliver in-app + email.
  */
-const MANDATORY_TYPES: ReadonlySet<string> = new Set<NotificationType>([
+export const MANDATORY_TYPES: ReadonlySet<string> = new Set<NotificationType>([
 	'payment_confirmation',
 	'ticket_created',
 	'ticket_cancelled',
 	'ticket_refunded',
+	'ticket_refund_failed',
 	'subscription_renewal_succeeded',
 	'subscription_payment_failed',
 	'subscription_expired',
 	'subscription_cancellation_confirmed',
+	'membership_payment_requested',
 	'subscription_revival_checkout',
 	'account_banned',
 	'system_announcement'
@@ -28,6 +30,7 @@ const STAFF_TRANSACTIONAL_TYPES: readonly NotificationType[] = [
 	'staff_ticket_created',
 	'staff_ticket_cancelled',
 	'staff_ticket_refunded',
+	'refund_failed',
 	'rsvp_confirmation',
 	'rsvp_updated',
 	'rsvp_cancelled',

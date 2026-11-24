@@ -125,7 +125,7 @@
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-right text-sm">
 						<div class="flex items-center justify-end gap-2">
-							{#if !rsvp.membership && rsvp.user?.id}
+							{#if !rsvp.membership && rsvp.user?.id && !isErasedHolder(rsvp.user)}
 								<button
 									type="button"
 									onclick={() => onMakeMember(rsvp)}
@@ -162,7 +162,7 @@
 								{m['attendeesAdmin.actionDelete']()}
 							</button>
 							<!-- More actions dropdown -->
-							{#if rsvp.user?.id}
+							{#if rsvp.user?.id && !isErasedHolder(rsvp.user)}
 								<DropdownMenu.Root>
 									<DropdownMenu.Trigger>
 										{#snippet child({ props })}

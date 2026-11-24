@@ -1,5 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import { disablesStaffAlerts, isMandatoryType } from './mandatoryNotifications';
+import { MANDATORY_TYPES, disablesStaffAlerts, isMandatoryType } from './mandatoryNotifications';
+
+describe('MANDATORY_TYPES', () => {
+	// Must match MANDATORY_TYPES in revel-backend `notifications/enums.py` exactly.
+	// Update both together.
+	const BACKEND_MANDATORY_TYPES = [
+		'payment_confirmation',
+		'ticket_created',
+		'ticket_cancelled',
+		'ticket_refunded',
+		'ticket_refund_failed',
+		'subscription_renewal_succeeded',
+		'subscription_payment_failed',
+		'subscription_expired',
+		'subscription_cancellation_confirmed',
+		'membership_payment_requested',
+		'subscription_revival_checkout',
+		'account_banned',
+		'system_announcement'
+	];
+
+	it('equals the backend mandatory set', () => {
+		expect([...MANDATORY_TYPES].sort()).toEqual([...BACKEND_MANDATORY_TYPES].sort());
+	});
+});
 
 describe('isMandatoryType', () => {
 	it('treats holder ticket receipts as mandatory', () => {
@@ -24,7 +48,7 @@ describe('disablesStaffAlerts', () => {
 		expect(disablesStaffAlerts({})).toBe(false);
 	});
 
-	it.each(['staff_ticket_created', 'staff_series_pass_purchased'])(
+	it.each(['staff_ticket_created', 'staff_series_pass_purchased', 'refund_failed'])(
 		'is true when %s is disabled',
 		(type) => {
 			expect(disablesStaffAlerts({ [type]: { enabled: false, channels: ['in_app'] } })).toBe(true);

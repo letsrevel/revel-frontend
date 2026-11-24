@@ -14,14 +14,20 @@ interface CreateBlacklistEntryArgs {
  * Creates a blacklist entry. Throws an Error carrying the backend's own
  * (translated) `detail` when there is one, for example the 403 a non-owner gets
  * when the entry matches a current staff member (BE #1529); otherwise the
- * caller's localized fallback.
+ * caller's localized fallback. A network failure also gives the fallback.
  */
 export async function requestCreateBlacklistEntry(args: CreateBlacklistEntryArgs) {
-	const response = await organizationadminblacklistCreateBlacklistEntry({
-		path: { slug: args.slug },
-		body: args.body,
-		headers: { Authorization: `Bearer ${args.accessToken}` }
-	});
+	let response;
+	try {
+		response = await organizationadminblacklistCreateBlacklistEntry({
+			path: { slug: args.slug },
+			body: args.body,
+			headers: { Authorization: `Bearer ${args.accessToken}` }
+		});
+	} catch {
+		// A thrown fetch error (offline, DNS) carries a raw English browser message.
+		throw new Error(args.fallbackMessage);
+	}
 	if (response.error) {
 		throw new Error(backendMessage(response.error) || args.fallbackMessage);
 	}

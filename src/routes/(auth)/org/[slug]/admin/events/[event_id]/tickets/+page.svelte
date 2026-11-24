@@ -28,6 +28,7 @@
 	import { createTicketScanCheckIn } from '$lib/components/tickets/ticket-scan-checkin.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import {
+		isTicketStateConflict,
 		requestConfirmTicketPayment,
 		requestUnconfirmTicketPayment
 	} from '$lib/components/tickets/ticket-payment-requests';
@@ -142,13 +143,16 @@
 			invalidateAll();
 		},
 		onError: (error) => {
-			// The backend `detail` (e.g. the ticket changed meanwhile) is shown, and the
-			// list is refetched so the stale row state updates.
 			toast.error(error.message);
-			showConfirmPaymentDialog = false;
-			ticketToConfirm = null;
-			pwycPricePaid = '';
-			invalidateAll();
+			// Only a 409 means the ticket changed meanwhile: close the dialog and refetch
+			// so the stale row updates. Any other failure (a 400 for a bad amount, a
+			// network error) keeps the dialog open with the typed amount, to retry.
+			if (isTicketStateConflict(error)) {
+				showConfirmPaymentDialog = false;
+				ticketToConfirm = null;
+				pwycPricePaid = '';
+				invalidateAll();
+			}
 		}
 	}));
 
