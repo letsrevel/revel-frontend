@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.41.0] - 2026-11-25
+
 ### Added
 - The account pages have a shared section navigation: a side column on desktop and a scrollable row on mobile. (#1288)
 - Tickets, RSVPs and Invitations use one filter bar with the same layout. (#1290)
 - Staff lists show a "Deleted account" badge for a holder who deleted their account but still holds tickets or passes. Series pass holder lists show the kept holder name and email. (#1307)
 - The notification list has labels for "Refund failed" and "Your refund failed". (#1307)
+- A new notification tells you when an organization links its member register entry to your account after you verify your email. It opens the organization page. (#1307)
+- Staff can blacklist a holder who deleted their account, by the email kept on the ticket. (#1307)
 - When you approve a membership request from someone who is already an active member, the message explains why you cannot approve it. (#1307)
 
 ### Changed
@@ -38,11 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The organization page shows upcoming events, soonest first, by default. (#1285)
 - Admin Manage Events lists upcoming events soonest first and past events newest first. (#1285)
 - The tag filter shows the most used tags first, with "Show more" for the rest. Selected tags always stay visible. (#1287)
-- The account deletion pages say that tickets and passes for upcoming events stay valid and keep your name and email as the holder. (#1307)
+- The account deletion pages say that tickets and passes for upcoming events stay valid and keep your name and email as the holder. Tickets for events that ended recently stay for up to 120 days. (#1307)
+- When an offline ticket payment confirm or revert fails because of the network or the server, the dialog stays open with the typed amount, so you can try again. (#1307)
 
 ### Fixed
 - When you confirm or revert an offline ticket payment and the ticket changed in the meantime, the message from the server shows and the list refreshes. (#1307)
 - When you blacklist a staff member as a non-owner, or make a blacklisted person staff, the message from the server shows instead of a generic error. (#1307)
+- On a short phone screen, the account deletion and file deletion dialogs scroll, so their buttons stay reachable. (#1307)
 - The Settings page no longer says "You must be logged in" while it restores your session after a page load. (#1288)
 - The calendar popup shows the event description as plain text. Before, it showed Markdown symbols and codes such as `&amp;`. (#1283)
 - The calendar popup shows the end date of events that last more than one day. (#1283)
