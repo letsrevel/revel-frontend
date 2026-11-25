@@ -408,6 +408,27 @@ describe('MembershipRequestsTab force approve', () => {
 		expect(approveCallBodies()).toHaveLength(1);
 	});
 
+	it('shows localized copy for applicant_already_member and never offers force', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, undefined, {
+				detail: 'backend sentence that must not be shown',
+				code: 'applicant_already_member',
+				forceable: false
+			})
+		);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith(
+				'The applicant is already an active member, so this plan cannot be approved for them.'
+			)
+		);
+		expect(screen.queryByRole('dialog')).toBeNull();
+	});
+
 	it('shows the detail and never offers force for an uncoded 400', async () => {
 		const user = userEvent.setup();
 		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(

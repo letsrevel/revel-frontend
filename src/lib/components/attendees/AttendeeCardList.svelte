@@ -1,7 +1,14 @@
 <script lang="ts">
+	import { canBlacklistHolder } from '$lib/utils/blacklist-request';
 	import * as m from '$lib/paraglide/messages.js';
-	import { staffViewDisplayName, isUnknownHolder, secondaryEmail } from '$lib/utils/user-display';
+	import {
+		staffViewDisplayName,
+		isUnknownHolder,
+		isErasedHolder,
+		secondaryEmail
+	} from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
@@ -65,7 +72,9 @@
 							{#if secondaryEmail(rsvp.user)}
 								<p class="text-sm text-muted-foreground">{secondaryEmail(rsvp.user)}</p>
 							{/if}
-							{#if isUnknownHolder(rsvp.user)}
+							{#if isErasedHolder(rsvp.user)}
+								<ErasedHolderBadge class="mt-1" />
+							{:else if isUnknownHolder(rsvp.user)}
 								<UnknownHolderBadge class="mt-1" />
 							{/if}
 						</div>
@@ -89,7 +98,7 @@
 				{/if}
 
 				<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-					{#if !rsvp.membership && rsvp.user?.id}
+					{#if !rsvp.membership && rsvp.user?.id && !isErasedHolder(rsvp.user)}
 						<button
 							type="button"
 							onclick={() => onMakeMember(rsvp)}
@@ -123,7 +132,7 @@
 						{m['attendeesAdmin.actionDelete']()}
 					</button>
 					<!-- More actions dropdown for mobile -->
-					{#if rsvp.user?.id}
+					{#if canBlacklistHolder(rsvp.user)}
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}

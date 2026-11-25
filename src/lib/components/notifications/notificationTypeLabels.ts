@@ -41,6 +41,12 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 	refund_unmatched: {
 		label: (locale) => m['notificationPreferences.typeRefundUnmatched']({}, { locale })
 	},
+	refund_failed: {
+		label: (locale) => m['notificationPreferences.typeRefundFailed']({}, { locale })
+	},
+	ticket_refund_failed: {
+		label: (locale) => m['notificationPreferences.typeTicketRefundFailed']({}, { locale })
+	},
 	staff_ticket_created: {
 		label: (locale) => m['notificationPreferences.typeStaffTicketCreated']({}, { locale }),
 		description: (locale) =>
@@ -145,6 +151,11 @@ const NOTIFICATION_TYPE_COPY: Record<NotificationType, NotificationTypeCopy> = {
 		label: (locale) => m['notificationPreferences.typeMembershipOfflineJoined']({}, { locale }),
 		description: (locale) =>
 			m['notificationPreferences.typeMembershipOfflineJoinedDescription']({}, { locale })
+	},
+	member_record_linked: {
+		label: (locale) => m['notificationPreferences.typeMemberRecordLinked']({}, { locale }),
+		description: (locale) =>
+			m['notificationPreferences.typeMemberRecordLinkedDescription']({}, { locale })
 	},
 	staff_member_record_auto_linked: {
 		label: (locale) => m['notificationPreferences.typeStaffMemberRecordAutoLinked']({}, { locale }),

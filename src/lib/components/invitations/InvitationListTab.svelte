@@ -6,8 +6,9 @@
 		TicketTierDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { Search, Mail, UserPlus, Plus, Edit } from '@lucide/svelte';
-	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import { staffViewDisplayName, isUnknownHolder, isErasedHolder } from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -181,7 +182,9 @@
 				<span class="text-sm font-medium">
 					{staffViewDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
 				</span>
-				{#if isUnknownHolder(invitation.user)}
+				{#if isErasedHolder(invitation.user)}
+					<ErasedHolderBadge class="ml-1" />
+				{:else if isUnknownHolder(invitation.user)}
 					<UnknownHolderBadge class="ml-1" />
 				{/if}
 			</div>

@@ -6,8 +6,7 @@
 	import {
 		organizationadminmembersRemoveMember,
 		organizationadminmembersUpdateMember,
-		organizationadminmembersAddStaff,
-		organizationadminblacklistCreateBlacklistEntry
+		organizationadminmembersAddStaff
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		MembershipStatus,
@@ -15,6 +14,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { requestCreateBlacklistEntry } from '$lib/utils/blacklist-request';
 	import { planChangeRefusalCode } from '$lib/utils/plan-change';
 	import { invalidateAfterMemberWrite } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
@@ -180,13 +180,12 @@
 
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async ({ userId, reason }: { userId: string; reason: string }) => {
-			const response = await organizationadminblacklistCreateBlacklistEntry({
-				path: { slug },
+			return requestCreateBlacklistEntry({
+				slug,
+				accessToken,
 				body: { user_id: userId, reason: reason || '' },
-				headers: { Authorization: `Bearer ${accessToken}` }
+				fallbackMessage: m['membersTab.blacklistFailed']()
 			});
-			if (response.error) throw new Error('Failed to blacklist member');
-			return response.data;
 		},
 		onSuccess: () => {
 			refreshAll();
@@ -194,8 +193,8 @@
 			toast.success(m['membersTab.memberBlacklisted']());
 			finish();
 		},
-		onError: () => {
-			toast.error(m['membersTab.blacklistFailed']());
+		onError: (error: Error) => {
+			toast.error(error.message);
 		}
 	}));
 

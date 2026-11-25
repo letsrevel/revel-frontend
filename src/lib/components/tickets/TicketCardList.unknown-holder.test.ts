@@ -53,7 +53,8 @@ const VIEWS = [
 function renderView(
 	view: (typeof VIEWS)[number][1],
 	tickets: AdminTicketSchema[],
-	onEditNote?: (t: AdminTicketSchema) => void
+	onEditNote?: (t: AdminTicketSchema) => void,
+	onRenameHolder?: (t: AdminTicketSchema) => void
 ) {
 	const noop = vi.fn();
 	return render(view as typeof TicketCardList, {
@@ -71,7 +72,8 @@ function renderView(
 			onCancelTicket: noop,
 			onBlacklist: noop,
 			onUnconfirmPayment: noop,
-			onEditNote
+			onEditNote,
+			onRenameHolder
 		}
 	});
 }
@@ -84,6 +86,34 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 		expect(screen.getByTestId('unknown-holder-badge')).toBeInTheDocument();
 		expect(container.textContent).not.toMatch(/null|undefined/);
 		expect(container.querySelector('img')).toBeNull();
+	});
+
+	it('shows the kept name and email with a "Deleted account" badge for an erased holder (BE #1509)', () => {
+		const { container } = renderView(view, [
+			ticket({
+				id: 'u3',
+				known: false,
+				erased: true,
+				display_name: 'Eve Erased',
+				email: 'eve@example.com',
+				profile_picture_url: null
+			})
+		]);
+		expect(screen.getByText('Eve Erased')).toBeInTheDocument();
+		expect(screen.getByText('eve@example.com')).toBeInTheDocument();
+		expect(screen.getByTestId('erased-holder-badge')).toHaveTextContent('Deleted account');
+		expect(screen.queryByTestId('unknown-holder-badge')).not.toBeInTheDocument();
+		expect(container.querySelector('img')).toBeNull();
+	});
+
+	it('shows N/A, not "null", for an erased holder without a kept email', () => {
+		const { container } = renderView(view, [
+			ticket({ id: 'u4', erased: true, display_name: 'Deleted user', email: null })
+		]);
+		expect(screen.getByText('Deleted user')).toBeInTheDocument();
+		expect(screen.getByTestId('erased-holder-badge')).toBeInTheDocument();
+		expect(container.textContent).toContain('N/A');
+		expect(container.textContent).not.toMatch(/null|undefined/);
 	});
 
 	it('shows no badge for a known holder, and still shows pronouns', () => {
@@ -108,5 +138,58 @@ describe.each(VIEWS)('%s unknown holders', (_name, view) => {
 		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
 		await userEvent.click(await screen.findByText(m['userNote.editAction']()));
 		expect(onEditNote).toHaveBeenCalledTimes(1);
+	});
+
+	it('prints the email once for an erased holder without a kept name', () => {
+		renderView(view, [
+			ticket({
+				id: 'u5',
+				erased: true,
+				display_name: 'eve@example.com',
+				email: 'eve@example.com'
+			})
+		]);
+		expect(screen.getAllByText('eve@example.com')).toHaveLength(1);
+	});
+
+	const blacklistLabel = (name: string) =>
+		name === 'TicketCardList'
+			? m['ticketCardList.blacklistUser']()
+			: m['ticketTable.blacklistUser']();
+
+	it('hides make member and staff note, but offers blacklist, for an erased holder with a kept email', async () => {
+		renderView(
+			view,
+			[ticket({ id: 'u6', erased: true, display_name: 'Eve Erased', email: 'eve@example.com' })],
+			vi.fn(),
+			vi.fn()
+		);
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		// Wait on the open menu container, then assert the items.
+		await screen.findByRole('menu', { hidden: true });
+		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
+		expect(screen.queryByText(m['userNote.editAction']())).not.toBeInTheDocument();
+		expect(screen.queryByTestId('note-unavailable')).not.toBeInTheDocument();
+		expect(screen.getByText(blacklistLabel(_name))).toBeInTheDocument();
+	});
+
+	it('hides blacklist for an erased holder with no kept email', async () => {
+		renderView(
+			view,
+			[ticket({ id: 'u7', erased: true, display_name: 'Deleted user', email: null })],
+			vi.fn(),
+			vi.fn()
+		);
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		await screen.findByRole('menu', { hidden: true });
+		expect(screen.queryByText(blacklistLabel(_name))).not.toBeInTheDocument();
+		expect(screen.queryByText(m['makeMemberAction.button']())).not.toBeInTheDocument();
+	});
+
+	it('still offers make member, staff note and blacklist for a known holder', async () => {
+		renderView(view, [ticket(knownUser)], vi.fn());
+		await userEvent.click(screen.getByRole('button', { name: /actions|more|menu/i }));
+		expect(await screen.findByText(m['makeMemberAction.button']())).toBeInTheDocument();
+		expect(screen.getByText(m['userNote.editAction']())).toBeInTheDocument();
 	});
 });

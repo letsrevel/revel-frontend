@@ -1,8 +1,15 @@
 <script lang="ts">
+	import { canBlacklistHolder } from '$lib/utils/blacklist-request';
 	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
-	import { staffViewDisplayName, isUnknownHolder } from '$lib/utils/user-display';
+	import {
+		staffViewDisplayName,
+		secondaryEmail,
+		isUnknownHolder,
+		isErasedHolder
+	} from '$lib/utils/user-display';
 	import UnknownHolderBadge from '$lib/components/common/UnknownHolderBadge.svelte';
+	import ErasedHolderBadge from '$lib/components/common/ErasedHolderBadge.svelte';
 	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
@@ -155,8 +162,14 @@
 								{/if}
 							</div>
 						{/if}
-						<div class="text-sm text-muted-foreground">{ticket.user.email || 'N/A'}</div>
-						{#if isUnknownHolder(ticket.user)}
+						{#if secondaryEmail(ticket.user)}
+							<div class="text-sm text-muted-foreground">{secondaryEmail(ticket.user)}</div>
+						{:else if !ticket.user.email?.trim()}
+							<div class="text-sm text-muted-foreground">N/A</div>
+						{/if}
+						{#if isErasedHolder(ticket.user)}
+							<ErasedHolderBadge class="mt-1" />
+						{:else if isUnknownHolder(ticket.user)}
 							<UnknownHolderBadge class="mt-1" />
 						{/if}
 						{#if seatInfo}
@@ -337,7 +350,7 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end">
-						{#if !ticket.membership && ticket.user?.id}
+						{#if !ticket.membership && ticket.user?.id && !isErasedHolder(ticket.user)}
 							<DropdownMenu.Item
 								onclick={() => onMakeMember(ticket)}
 								disabled={addMemberPending || tiersLoading}
@@ -357,7 +370,7 @@
 								{m['ticketCardList.manageOnStripe']()}
 							</DropdownMenu.Item>
 						{/if}
-						{#if onEditNote && ticket.user?.id}
+						{#if onEditNote && ticket.user?.id && !isErasedHolder(ticket.user)}
 							{#if isUnknownHolder(ticket.user)}
 								<DropdownMenu.Item disabled data-testid="note-unavailable">
 									<StickyNote class="mr-2 h-4 w-4" aria-hidden="true" />
@@ -391,7 +404,7 @@
 								{m['eventTicketsAdmin.actionUnconfirmPayment']()}
 							</DropdownMenu.Item>
 						{/if}
-						{#if ticket.user?.id}
+						{#if canBlacklistHolder(ticket.user)}
 							<DropdownMenu.Item
 								onclick={() => onBlacklist(ticket)}
 								class="text-destructive focus:text-destructive"

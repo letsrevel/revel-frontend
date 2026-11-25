@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
 	getUserDisplayName,
 	getUserRealName,
+	heldPassHolderDisplay,
+	isErasedHolder,
 	isUnknownHolder,
 	secondaryEmail,
 	staffViewDisplayName
@@ -98,5 +100,53 @@ describe('secondaryEmail', () => {
 
 	it('returns null when there is no email', () => {
 		expect(secondaryEmail({ display_name: 'Gina', email: null })).toBeNull();
+	});
+});
+
+describe('isErasedHolder', () => {
+	it('counts only an explicit erased: true', () => {
+		expect(isErasedHolder({ erased: true })).toBe(true);
+		expect(isErasedHolder({ erased: false })).toBe(false);
+		expect(isErasedHolder({})).toBe(false);
+		expect(isErasedHolder(null)).toBe(false);
+		expect(isErasedHolder(undefined)).toBe(false);
+	});
+});
+
+describe('heldPassHolderDisplay', () => {
+	const user = { display_name: 'Deleted user', email: 'erased+abc@example.invalid' };
+
+	it('shows the user for a live holder', () => {
+		expect(
+			heldPassHolderDisplay(
+				{ erased: false, user: { display_name: 'Ann', email: 'ann@example.com' } },
+				'Deleted account'
+			)
+		).toEqual({ name: 'Ann', email: 'ann@example.com' });
+	});
+
+	it('shows the kept holder name and email for an erased holder, never the placeholder', () => {
+		expect(
+			heldPassHolderDisplay(
+				{ erased: true, holder_name: 'Ann A', holder_email: 'ann@example.com', user },
+				'Deleted account'
+			)
+		).toEqual({ name: 'Ann A', email: 'ann@example.com' });
+	});
+
+	it('uses the kept email as the name when no name was kept, without printing it twice', () => {
+		expect(
+			heldPassHolderDisplay(
+				{ erased: true, holder_name: null, holder_email: 'ann@example.com', user },
+				'Deleted account'
+			)
+		).toEqual({ name: 'ann@example.com', email: null });
+	});
+
+	it('falls back to the translated label when nothing was kept', () => {
+		expect(heldPassHolderDisplay({ erased: true, user }, 'Deleted account')).toEqual({
+			name: 'Deleted account',
+			email: null
+		});
 	});
 });

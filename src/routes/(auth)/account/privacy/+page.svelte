@@ -434,7 +434,9 @@
 			if (e.key === 'Escape') closeDeletionModal();
 		}}
 	>
-		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
+		<div
+			class="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg bg-background p-6 shadow-lg"
+		>
 			<div class="mb-4 flex items-start gap-3">
 				<div
 					class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10"
@@ -473,6 +475,9 @@
 				</ul>
 				<p class="pt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.modal_orgRecordsNote']()}
+				</p>
+				<p class="text-sm text-muted-foreground" data-testid="kept-tickets-note">
+					{m['accountPrivacyPage.modal_keptTicketsNote']()}
 				</p>
 			</div>
 
@@ -549,7 +554,9 @@
 			if (e.key === 'Escape') closeFileDeleteModal();
 		}}
 	>
-		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
+		<div
+			class="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg bg-background p-6 shadow-lg"
+		>
 			<div class="mb-4 flex items-start gap-3">
 				<div
 					class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10"
