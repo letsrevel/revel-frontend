@@ -289,11 +289,11 @@ describe('QrCameraScanner', () => {
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
 			});
 
-			it('keeps a failed code deduped for a full window after the camera resumes', async () => {
+			it('keeps a failed code deduped while the camera restarts and for a window after', async () => {
 				// #1305: the resume delay and the dedupe window are both 2000 ms, so a bad
-				// code held in frame was processed again on the first frame after resume.
-				// The camera here takes 1000 ms to start, so the window must count from
-				// the moment it is live, not from the resume timer.
+				// code held in frame was processed again right after resume. The camera
+				// here takes 1000 ms to start again, so the window must cover the start
+				// and then count from the moment the camera is live.
 				let cb: (text: string) => Promise<void> = async () => undefined;
 				start.mockImplementation(
 					(_c: unknown, _o: unknown, onSuccess: (text: string) => Promise<void>) => {
@@ -308,17 +308,76 @@ describe('QrCameraScanner', () => {
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
 				await cb('CODE');
 				expect(failing).toHaveBeenCalledTimes(1);
-				// Resume timer fires at 2000 ms; the camera is live at about 3000 ms.
-				await vi.advanceTimersByTimeAsync(2100);
+				// The resume timer fires at 2000 ms; the camera is still starting.
+				await vi.advanceTimersByTimeAsync(2500);
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
-				await vi.advanceTimersByTimeAsync(1000);
-				// 1900 ms of live camera: still deduped.
-				await vi.advanceTimersByTimeAsync(1800);
+				// A frame decoded before the camera reports 'on' is still deduped.
 				await cb('CODE');
 				expect(failing).toHaveBeenCalledTimes(1);
-				await vi.advanceTimersByTimeAsync(300);
+				// Live at about 3000 ms; 1000 ms of live camera later, still deduped.
+				await vi.advanceTimersByTimeAsync(1500);
+				await cb('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				// 2500 ms of live camera: the window is over.
+				await vi.advanceTimersByTimeAsync(1500);
 				await cb('CODE');
 				expect(failing).toHaveBeenCalledTimes(2);
+			});
+
+			it('ends the failed-code pause even when the pause-stop failed', async () => {
+				// The camera never left 'on', so no new 'on' phase comes: the resume
+				// timer must start the window, or the code stays deduped for ever.
+				stop.mockRejectedValue(new Error('still running'));
+				getState.mockReturnValue(2);
+				const getCb = captureCb();
+				const failing = vi.fn(() => Promise.reject(new Error('boom')));
+				render(QrCameraScanner, { props: { active: true, onScan: failing } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2100);
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2500);
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(2);
+			});
+
+			it('Stop then Start clears the dedupe for a failed code', async () => {
+				const getCb = captureCb();
+				const failing = vi.fn(() => Promise.reject(new Error('boom')));
+				const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+				render(QrCameraScanner, {
+					props: { active: true, manualStart: true, onScan: failing }
+				});
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2100);
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(3));
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(2);
+			});
+
+			it('Stop then Start keeps a successful code deduped', async () => {
+				const getCb = captureCb();
+				const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+				render(QrCameraScanner, {
+					props: { active: true, manualStart: true, continuous: true, onScan }
+				});
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				expect(onScan).toHaveBeenCalledTimes(1);
+				await user.click(screen.getByRole('button', { name: /stop camera/i }));
+				await user.click(screen.getByRole('button', { name: /scan with camera/i }));
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+				await getCb()('CODE');
+				expect(onScan).toHaveBeenCalledTimes(1);
 			});
 
 			it('does not extend the dedupe after a failed manual entry', async () => {
