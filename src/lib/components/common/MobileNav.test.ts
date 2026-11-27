@@ -203,10 +203,11 @@ describe('MobileNav focus management', () => {
 		expect(button).toHaveFocus();
 	});
 
-	it('falls back to the aria-controls toggle when nothing was focused on open (Safari)', async () => {
+	it('returns focus to the aria-controls toggle even when it never took focus (Safari)', async () => {
 		mockMatchMedia();
 		const toggle = addButton('Toggle', { 'aria-controls': 'drawer' });
-		expect(document.activeElement).toBe(document.body);
+		// Safari leaves focus on whatever had it before the tap on the toggle.
+		opener();
 		const { rerender } = render(MobileNav, {
 			props: { ...items, id: 'drawer', open: false, onClose: vi.fn() }
 		});
@@ -228,5 +229,30 @@ describe('MobileNav focus management', () => {
 		elsewhere.focus();
 		await rerender({ ...items, open: false, onClose: vi.fn() });
 		expect(elsewhere).toHaveFocus();
+	});
+
+	it('still traps Tab when a widget outside the drawer already handled it', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const outside = opener();
+		outside.addEventListener('keydown', (e) => e.preventDefault());
+		outside.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+		);
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('does not close on an Escape that a nested widget already handled', async () => {
+		mockMatchMedia();
+		const onClose = vi.fn();
+		render(MobileNav, { props: { ...items, open: true, onClose } });
+		await tick();
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		close.addEventListener('keydown', (e) => e.preventDefault());
+		close.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+		);
+		expect(onClose).not.toHaveBeenCalled();
 	});
 });

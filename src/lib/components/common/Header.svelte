@@ -15,6 +15,7 @@
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
+	const MOBILE_MENU_ID = 'mobile-menu';
 
 	// Get auth state
 	const isAuthenticated = $derived(authStore.isAuthenticated);
@@ -56,15 +57,9 @@
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 
-	// Close mobile menu
-	let menuButton = $state<HTMLButtonElement>();
-
+	// Close mobile menu. MobileNav returns focus to the aria-controls toggle.
 	function closeMobileMenu(): void {
-		// The closed drawer is inert, so focus inside it would fall to <body>.
-		// Return it to the menu button instead (WCAG 2.4.3).
-		const focusWasInDrawer = !!document.activeElement?.closest('[role="dialog"]');
 		mobileMenuOpen = false;
-		if (focusWasInDrawer) menuButton?.focus();
 	}
 </script>
 
@@ -148,11 +143,11 @@
 
 			<!-- Mobile Menu Button -->
 			<button
-				bind:this={menuButton}
 				type="button"
 				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring {menuButtonClass}"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-expanded={mobileMenuOpen}
+				aria-controls={MOBILE_MENU_ID}
 				aria-label={m['nav.toggleMenu']()}
 			>
 				<Menu class="h-6 w-6" aria-hidden="true" />
@@ -166,6 +161,7 @@
 
 <!-- Mobile Navigation -->
 <MobileNav
+	id={MOBILE_MENU_ID}
 	bind:open={mobileMenuOpen}
 	{navItems}
 	{isAuthenticated}

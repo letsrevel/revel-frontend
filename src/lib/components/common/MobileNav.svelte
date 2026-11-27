@@ -76,10 +76,10 @@
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		// A nested widget that already handled the key owns it.
-		if (event.defaultPrevented) return;
 		if (event.key === 'Escape') {
-			onClose();
+			// A nested widget that already handled Escape owns it. Tab is never
+			// skipped: the trap must pull focus back in from anywhere.
+			if (!event.defaultPrevented) onClose();
 		} else if (event.key === 'Tab') {
 			trapTab(event);
 		}
@@ -112,14 +112,17 @@
 		return () => query.removeEventListener('change', onChange);
 	});
 
-	// The element to give focus back to on close. Safari does not focus a button
-	// on click or tap, so fall back to the toggle that names this drawer.
+	// The element to give focus back to on close: the toggle that names this
+	// drawer via aria-controls, else whatever had focus. Safari does not focus a
+	// button on click or tap, so activeElement alone is not the opener there.
 	function findOpener(): HTMLElement | null {
+		if (id) {
+			const toggles = document.querySelectorAll<HTMLElement>('[aria-controls]');
+			const toggle = Array.from(toggles).find((el) => el.getAttribute('aria-controls') === id);
+			if (toggle) return toggle;
+		}
 		const active = document.activeElement;
-		if (active instanceof HTMLElement && active !== document.body) return active;
-		if (!id) return null;
-		const toggles = document.querySelectorAll<HTMLElement>('[aria-controls]');
-		return Array.from(toggles).find((el) => el.getAttribute('aria-controls') === id) ?? null;
+		return active instanceof HTMLElement && active !== document.body ? active : null;
 	}
 
 	// Focus management: move focus in on open, trap Tab while open, and give
