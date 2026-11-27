@@ -6,7 +6,7 @@
 
 	/**
 	 * One admin setting warning (#1314). Warn = amber + AlertTriangle; Info =
-	 * neutral + Info icon. `role={null}`: the parent `AdminWarningList` owns the
+	 * info tint + Info icon. `role={null}`: the parent `AdminWarningList` owns the
 	 * only live region, so callouts never nest one.
 	 */
 	interface Props {
@@ -57,6 +57,9 @@
 							type="button"
 							class={CONTROL_CLASS}
 							data-admin-warning-control
+							aria-label={action.srContext
+								? `${action.label()} (${action.srContext()})`
+								: undefined}
 							onclick={() => action.run()}>{action.label()}</button
 						>
 					{/if}

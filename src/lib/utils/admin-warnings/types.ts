@@ -9,13 +9,15 @@
  * only the caller knows which field is mounted in this mode.
  *
  * - `warn`: amber, never dismissible.
- * - `info`: neutral, dismissible per browser (see `dismissed.svelte.ts`) when
+ * - `info`: an info-tinted hint, dismissible per browser (see `dismissed.svelte.ts`) when
  *   the entity is saved.
  */
 export type AdminWarningLevel = 'warn' | 'info';
 
 export interface AdminWarningAction {
 	label: () => string;
+	/** Extra screen-reader context after the label, e.g. the tier name ("Edit tier (VIP)"). */
+	srContext?: () => string;
 	run: () => void | Promise<void>;
 }
 

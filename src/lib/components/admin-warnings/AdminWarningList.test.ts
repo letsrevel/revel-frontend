@@ -125,8 +125,15 @@ describe('AdminWarningList', () => {
 		});
 		await waitFor(() => expect(screen.queryByText('Title I1')).toBeNull());
 		expect(screen.getByText('Title W1')).toBeInTheDocument();
-		// Another entity is unaffected.
-		expect(localStorage.getItem(DISMISSED_STORAGE_KEY)).not.toContain('ev-2');
+	});
+
+	it('keeps a dismissal to its own entity', async () => {
+		localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify({ 'ev-1:I1': true }));
+		render(AdminWarningList, {
+			props: { warnings: [warning('I1', 'info')], entityId: 'ev-2' }
+		});
+		await tick();
+		expect(screen.getByText('Title I1')).toBeInTheDocument();
 	});
 
 	it('focuses the fix target when it exists and runs the in-place action', async () => {
@@ -197,5 +204,68 @@ describe('AdminWarningList', () => {
 		await fireEvent.click(button);
 		await tick();
 		expect(button).toHaveFocus();
+	});
+	it('does not announce warnings that arrive with the data once the baseline is ready', async () => {
+		const { rerender } = render(AdminWarningList, {
+			props: { warnings: [], baselineReady: false, announceDelay: 10 }
+		});
+		await tick();
+		await rerender({ warnings: [warning('C4', 'warn')], baselineReady: true, announceDelay: 10 });
+		await sleep(50);
+		expect(announcer()).toHaveTextContent('');
+		// A warning that appears after that IS announced.
+		await rerender({
+			warnings: [warning('C4', 'warn'), warning('C3a', 'info')],
+			baselineReady: true,
+			announceDelay: 10
+		});
+		await waitFor(() => expect(announcer()).toHaveTextContent('Title C3a.'));
+	});
+
+	it('skips a callout without controls and focuses the nearest control', async () => {
+		render(AdminWarningList, {
+			props: {
+				warnings: [
+					warning('I1', 'info'),
+					warning('W1', 'warn'),
+					warning('W2', 'warn', { fixTarget: 'x', fixLabel: () => 'Fix W2' })
+				],
+				entityId: 'ev-1'
+			}
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Dismiss: Title I1' }));
+		await waitFor(() => expect(screen.getByRole('link', { name: 'Fix W2' })).toHaveFocus());
+	});
+
+	it('focuses the fallback field when no callout control is left', async () => {
+		const field = document.createElement('input');
+		field.id = 'fallback-field';
+		document.body.appendChild(field);
+		render(AdminWarningList, {
+			props: {
+				warnings: [warning('I1', 'info'), warning('W1', 'warn')],
+				entityId: 'ev-1',
+				fallbackFocusId: 'fallback-field'
+			}
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Dismiss: Title I1' }));
+		await waitFor(() => expect(field).toHaveFocus());
+		field.remove();
+	});
+
+	it('renders an explicit list role, a custom label and sr-only action context', () => {
+		render(AdminWarningList, {
+			props: {
+				label: 'Setting warnings: VIP',
+				warnings: [
+					warning('D1', 'warn', {
+						action: { label: () => 'Edit tier', srContext: () => 'VIP', run: vi.fn() }
+					})
+				]
+			}
+		});
+		const list = screen.getByRole('list', { name: 'Setting warnings: VIP' });
+		expect(list).toHaveAttribute('role', 'list');
+		expect(screen.getByRole('button', { name: 'Edit tier (VIP)' })).toBeInTheDocument();
 	});
 });

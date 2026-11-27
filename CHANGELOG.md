@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- The event editor and the ticketing tab show warnings for settings that are allowed but probably unwanted. Examples: a public private event that does not accept invitation requests, an open waitlist without a capacity limit, deadlines after the event end, an open ticketed event with no tier on sale, an online tier without a connected Stripe account, and an offline tier without payment instructions. Each warning says what attendees experience and links to the field that fixes it. Warnings never block a save. Amber warnings always show; neutral hints can be dismissed in this browser. (#1314)
+- The event editor and the ticketing tab show warnings for settings that are allowed but probably unwanted. Examples: a public private event that does not accept invitation requests, an open waitlist without a capacity limit, deadlines after the event end, an open ticketed event with no tier on sale, an online tier without a connected Stripe account, and an offline tier without payment instructions. Each warning says what attendees experience, and most link to the field that fixes it. Warnings never block a save. Amber warnings always show; blue info hints can be dismissed in this browser. (#1314)
 
 ### Changed
 - The "max attendees exceeds venue capacity" hint in the event editor is now one of these warnings. (#1314)

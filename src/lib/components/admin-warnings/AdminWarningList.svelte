@@ -20,8 +20,8 @@
 	 * or when a warning goes away.
 	 *
 	 * Dismissal: only Info warnings of a saved entity (`entityId` set). After a
-	 * dismiss, focus moves to the next callout's first control, else the previous
-	 * one's, else to the list container (tabindex=-1, which stays mounted when the list is empty).
+	 * dismiss or an in-place fix, focus moves to the nearest callout control
+	 * (forward, then backward), else to `fallbackFocusId`, else to the list container (tabindex=-1, which stays mounted when the list is empty).
 	 */
 	interface Props {
 		warnings: AdminWarning[];
@@ -30,6 +30,16 @@
 		class?: string;
 		/** Debounce for announcements, in ms. */
 		announceDelay?: number;
+		/**
+		 * False while the caller's data is still loading. The first-paint baseline is
+		 * taken on the first run where this is true, so warnings that arrive with the
+		 * data are not announced as "new".
+		 */
+		baselineReady?: boolean;
+		/** Element id to focus when a dismiss or an in-place fix leaves no callout control. */
+		fallbackFocusId?: string;
+		/** Accessible name of the list. Defaults to "Setting warnings". */
+		label?: string;
 		testId?: string;
 	}
 
@@ -38,6 +48,9 @@
 		entityId,
 		class: className,
 		announceDelay = 500,
+		baselineReady = true,
+		fallbackFocusId,
+		label,
 		testId = 'admin-warning-list'
 	}: Props = $props();
 
@@ -65,7 +78,7 @@
 
 	$effect(() => {
 		const ids = visible.map((w) => w.id);
-		if (!ready) return;
+		if (!ready || !baselineReady) return;
 		if (seen === null) {
 			// First run after mount (dismissal filter applied): the baseline, no announcement.
 			seen = new Set(ids);
@@ -111,6 +124,7 @@
 			...warning,
 			action: {
 				label: action.label,
+				srContext: action.srContext,
 				run: async () => {
 					await action.run();
 					await tick();
@@ -122,22 +136,36 @@
 
 	async function moveFocusAfterRemoval(index: number): Promise<void> {
 		await tick();
-		const items = container?.querySelectorAll<HTMLLIElement>('li[data-admin-warning-item]');
-		// The next callout (now at `index`), else the previous one, else the container.
-		const item = items?.[index] ?? items?.[index - 1];
-		const next = item?.querySelector<HTMLElement>('[data-admin-warning-control]');
-		(next ?? container)?.focus();
+		const items = Array.from(
+			container?.querySelectorAll<HTMLLIElement>('li[data-admin-warning-item]') ?? []
+		);
+		const controlOf = (li: HTMLLIElement | undefined): HTMLElement | null =>
+			li?.querySelector<HTMLElement>('[data-admin-warning-control]') ?? null;
+		// The nearest control from `index` forward (the next callout now sits at
+		// `index`), then backward; then the caller's field; the container last.
+		let target: HTMLElement | null = null;
+		for (let i = index; i < items.length && !target; i++) target = controlOf(items[i]);
+		for (let i = index - 1; i >= 0 && !target; i--) target = controlOf(items[i]);
+		target ??= fallbackFocusId ? document.getElementById(fallbackFocusId) : null;
+		(target ?? container)?.focus();
 	}
 </script>
 
 <div
 	bind:this={container}
 	tabindex="-1"
-	class={cn(visible.length > 0 ? 'focus:outline-none' : 'sr-only', className)}
+	class={cn(
+		visible.length > 0
+			? 'rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+			: 'sr-only',
+		className
+	)}
 	data-testid={testId}
 >
 	{#if visible.length > 0}
-		<ul class="space-y-2" aria-label={m['adminWarnings.listLabel']()}>
+		<!-- role="list": Tailwind preflight removes list styling, and WebKit/VoiceOver
+		     then drops the list semantics (same convention as ScopeList). -->
+		<ul role="list" class="space-y-2" aria-label={label ?? m['adminWarnings.listLabel']()}>
 			{#each visible as warning, index (warning.id)}
 				<li data-admin-warning-item>
 					<AdminWarningCallout
