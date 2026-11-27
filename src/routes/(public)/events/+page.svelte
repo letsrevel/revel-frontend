@@ -16,7 +16,8 @@
 		filtersToParams,
 		clearFilters,
 		countActiveFilters,
-		hasActiveFilters
+		hasActiveFilters,
+		CALENDAR_PRESERVED_PARAMS
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
@@ -62,12 +63,23 @@
 		($page.url.searchParams.get('viewMode') as 'list' | 'calendar') || 'list'
 	);
 	const calendarAwareCount = $derived(
-		countActiveFilters(currentFilters, { ignoreIncludePast: viewMode === 'calendar' })
+		countActiveFilters(currentFilters, { ignoreListOnly: viewMode === 'calendar' })
 	);
 
 	// Calendar state
 	const calendarParams = $derived(parseCalendarParams($page.url.searchParams));
 	let selectedEvent = $state<EventInListSchema | null>(null);
+
+	// The filters the calendar endpoint applies. Search, sort and include-past stay
+	// out of the query key, so a search left in the URL causes no refetch (#1297).
+	const calendarFilters = $derived({
+		cityId: currentFilters.cityId,
+		organizationId: currentFilters.organizationId,
+		eventType: currentFilters.eventType,
+		visibility: currentFilters.visibility,
+		tags: currentFilters.tags,
+		ticketType: currentFilters.ticketType
+	});
 
 	// Calendar data query
 	const calendarQuery = createQuery(() => ({
@@ -77,7 +89,7 @@
 			calendarParams.year,
 			calendarParams.month,
 			calendarParams.week,
-			currentFilters
+			calendarFilters
 		],
 		queryFn: async () => {
 			const result = await eventpublicdiscoveryCalendarEvents({
@@ -86,15 +98,15 @@
 					month: calendarParams.view === 'month' ? calendarParams.month : undefined,
 					year: calendarParams.year,
 					// Apply filters
-					city_id: currentFilters.cityId,
-					organization: tenantId ?? currentFilters.organizationId,
-					event_type: currentFilters.eventType,
-					visibility: currentFilters.visibility,
-					tags: currentFilters.tags,
+					city_id: calendarFilters.cityId,
+					organization: tenantId ?? calendarFilters.organizationId,
+					event_type: calendarFilters.eventType,
+					visibility: calendarFilters.visibility,
+					tags: calendarFilters.tags,
 					requires_ticket:
-						currentFilters.ticketType === 'ticketed'
+						calendarFilters.ticketType === 'ticketed'
 							? true
-							: currentFilters.ticketType === 'free'
+							: calendarFilters.ticketType === 'free'
 								? false
 								: undefined
 				}
@@ -454,15 +466,7 @@
 								month={calendarParams.month}
 								week={calendarParams.week}
 								baseUrl="/events"
-								preserveParams={[
-									'viewMode',
-									'city_id',
-									'organization',
-									'event_type',
-									'visibility',
-									'tags',
-									'ticket_type'
-								]}
+								preserveParams={CALENDAR_PRESERVED_PARAMS}
 							/>
 
 							<CalendarView

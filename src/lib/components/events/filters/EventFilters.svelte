@@ -19,7 +19,7 @@
 		onClearFilters: () => void;
 		/** Tenant host: the list is already scoped to one organization (#1056). */
 		hideOrganization?: boolean;
-		/** Calendar view: sort order and "include past" don't apply (the calendar shows the whole period, ordered by start). */
+		/** Calendar view: sort order, "include past" and search don't apply (the calendar shows the whole period, ordered by start, and its endpoint takes no search). */
 		hideListControls?: boolean;
 		class?: string;
 	}
@@ -35,9 +35,9 @@
 
 	// Computed values
 	const activeFilterCount = $derived(
-		countActiveFilters(filters, { ignoreIncludePast: hideListControls })
+		countActiveFilters(filters, { ignoreListOnly: hideListControls })
 	);
-	const hasFilters = $derived(hasActiveFilters(filters, { ignoreIncludePast: hideListControls }));
+	const hasFilters = $derived(hasActiveFilters(filters, { ignoreListOnly: hideListControls }));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
@@ -145,23 +145,21 @@
 
 		<!-- Divider -->
 		<div class="border-t" role="separator"></div>
-	{/if}
 
-	<!-- Search Input -->
-	<div class="space-y-2">
-		<label for="event-search" class="text-sm font-bold">{m['common.search_label']()}</label>
-		<SearchInput
-			id="event-search"
-			value={filters.search ?? ''}
-			onSearch={handleSearch}
-			placeholder={m['filters.search.eventsPlaceholder']()}
-		/>
-	</div>
+		<!-- Search Input (list only: the calendar endpoint takes no search, #1297) -->
+		<div class="space-y-2">
+			<label for="event-search" class="text-sm font-bold">{m['common.search_label']()}</label>
+			<SearchInput
+				id="event-search"
+				value={filters.search ?? ''}
+				onSearch={handleSearch}
+				placeholder={m['filters.search.eventsPlaceholder']()}
+			/>
+		</div>
 
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
+		<!-- Divider -->
+		<div class="border-t" role="separator"></div>
 
-	{#if !hideListControls}
 		<!-- Date Filter -->
 		<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 

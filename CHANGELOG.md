@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- In Browse Events, calendar view no longer shows the search field, and the filter badge does not count a search. The calendar cannot filter by text yet, so a search had no effect there. A search you typed in list view comes back when you switch to list view again. (#1297)
+
 ## [2.41.0] - 2026-11-25
 
 ### Added
