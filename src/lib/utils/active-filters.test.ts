@@ -25,16 +25,29 @@ describe('active filter count ignores the sort order', () => {
 	});
 });
 
-describe('ignoreIncludePast option', () => {
-	it('excludes includePast from count and hasActive when asked', async () => {
-		const { countActiveFilters, hasActiveFilters } = await import('./filters');
+// Calendar view hides the list-only controls (sort, include-past, search), because
+// the calendar endpoint ignores them. A hidden control must not count (#1297).
+describe('ignoreListOnly option', () => {
+	it('excludes includePast from count and hasActive when asked', () => {
 		const f = { includePast: true };
 		expect(countActiveFilters(f)).toBe(1);
 		expect(hasActiveFilters(f)).toBe(true);
-		expect(countActiveFilters(f, { ignoreIncludePast: true })).toBe(0);
-		expect(hasActiveFilters(f, { ignoreIncludePast: true })).toBe(false);
-		expect(
-			countActiveFilters({ includePast: true, search: 'x' }, { ignoreIncludePast: true })
-		).toBe(1);
+		expect(countActiveFilters(f, { ignoreListOnly: true })).toBe(0);
+		expect(hasActiveFilters(f, { ignoreListOnly: true })).toBe(false);
+	});
+
+	it('excludes search from count and hasActive when asked', () => {
+		const f = { search: 'jazz' };
+		expect(countActiveFilters(f)).toBe(1);
+		expect(hasActiveFilters(f)).toBe(true);
+		expect(countActiveFilters(f, { ignoreListOnly: true })).toBe(0);
+		expect(hasActiveFilters(f, { ignoreListOnly: true })).toBe(false);
+	});
+
+	it('still counts the filters the calendar applies', () => {
+		const f = { includePast: true, search: 'x', cityId: 7, ticketType: 'free' as const };
+		expect(countActiveFilters(f)).toBe(4);
+		expect(countActiveFilters(f, { ignoreListOnly: true })).toBe(2);
+		expect(hasActiveFilters(f, { ignoreListOnly: true })).toBe(true);
 	});
 });
