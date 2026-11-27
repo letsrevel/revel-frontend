@@ -29,7 +29,10 @@
 
 <!-- Manual Payment Instructions (for offline/at_the_door payments) -->
 {#if showField}
-	<div>
+	<!-- The wrapper id is the dismiss focus fallback: in rich-text mode MarkdownEditor's
+	     own id sits on the hidden source textarea, so the list focuses the first
+	     focusable element inside this wrapper instead. -->
+	<div id="payment-instructions-field">
 		<MarkdownEditor
 			id="payment-instructions"
 			label={m['tierForm.paymentInstructions']()}
@@ -49,6 +52,6 @@
 	warnings={showField ? warnings : []}
 	entityId={tierId}
 	class="mt-2"
-	fallbackFocusId="payment-instructions"
+	fallbackFocusId="payment-instructions-field"
 	testId="tier-instructions-warnings"
 />

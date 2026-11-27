@@ -134,6 +134,16 @@
 		};
 	}
 
+	const FOCUSABLE =
+		'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [contenteditable="true"], a[href], [tabindex]:not([tabindex="-1"])';
+
+	/** The element itself when it can take focus, else its first focusable descendant. */
+	function focusableIn(el: HTMLElement | null): HTMLElement | null {
+		if (!el) return null;
+		if (el.matches(FOCUSABLE) || el.tabIndex >= 0 || el.hasAttribute('tabindex')) return el;
+		return el.querySelector<HTMLElement>(FOCUSABLE) ?? null;
+	}
+
 	async function moveFocusAfterRemoval(index: number): Promise<void> {
 		await tick();
 		const items = Array.from(
@@ -146,7 +156,7 @@
 		let target: HTMLElement | null = null;
 		for (let i = index; i < items.length && !target; i++) target = controlOf(items[i]);
 		for (let i = index - 1; i >= 0 && !target; i--) target = controlOf(items[i]);
-		target ??= fallbackFocusId ? document.getElementById(fallbackFocusId) : null;
+		target ??= fallbackFocusId ? focusableIn(document.getElementById(fallbackFocusId)) : null;
 		(target ?? container)?.focus();
 	}
 </script>

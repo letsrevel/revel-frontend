@@ -12035,6 +12035,7 @@
 		"fixApplyDeadline": "Cambia scadenza delle candidature",
 		"clearDeadline": "Cancella scadenza",
 		"fixEditTier": "Modifica livello",
-		"listLabelNamed": "Avvisi sulle impostazioni: {name}"
+		"listLabelNamed": "Avvisi sulle impostazioni: {name}",
+		"eventC3aMessagePartial": "I livelli offrono almeno {tickets} biglietti, ma l'evento ospita {capacity} persone. Alcuni livelli non possono esaurirsi. Riduci le quantità dei livelli o aumenta la capienza."
 	}
 }

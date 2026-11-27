@@ -136,6 +136,8 @@ export function tiersExceedCapacityWarning(input: {
 	tiers: ReadonlyArray<TierQuantityInput>;
 	max_attendees?: number | null;
 	venueCapacity?: number | null;
+	/** True when `tiers` is only the first page: the sum is then a lower bound ("at least"). */
+	partial?: boolean;
 }): AdminWarning | null {
 	const capacity = effectiveEventCapacity(input.max_attendees, input.venueCapacity);
 	if (capacity === null) return null;
@@ -151,7 +153,10 @@ export function tiersExceedCapacityWarning(input: {
 		id: 'C3a',
 		level: 'info',
 		title: () => m['adminWarnings.eventC3aTitle'](),
-		message: () => m['adminWarnings.eventC3aMessage']({ tickets, capacity })
+		message: () =>
+			input.partial
+				? m['adminWarnings.eventC3aMessagePartial']({ tickets, capacity })
+				: m['adminWarnings.eventC3aMessage']({ tickets, capacity })
 	};
 }
 

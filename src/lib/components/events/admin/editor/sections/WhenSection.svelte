@@ -151,6 +151,7 @@
 			warnings={formData.requires_ticket ? checkInWarnings : []}
 			entityId={eventId ?? undefined}
 			fallbackFocusId="check-in-starts"
+			class="-mt-3"
 		/>
 
 		{#if eventId}

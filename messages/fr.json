@@ -12035,6 +12035,7 @@
 		"fixApplyDeadline": "Modifier la date limite de candidature",
 		"clearDeadline": "Supprimer la date limite",
 		"fixEditTier": "Modifier la catégorie",
-		"listLabelNamed": "Avertissements sur les paramètres : {name}"
+		"listLabelNamed": "Avertissements sur les paramètres : {name}",
+		"eventC3aMessagePartial": "Les catégories proposent au moins {tickets} billets, mais l'événement accueille {capacity} personnes. Certaines catégories ne peuvent pas être complètes. Baisse les quantités des catégories ou augmente la capacité."
 	}
 }

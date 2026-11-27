@@ -439,3 +439,20 @@ describe('parseWarningDate', () => {
 		expect(parseWarningDate('2030-06-01T20:00:00Z')).toBe(Date.parse('2030-06-01T20:00:00Z'));
 	});
 });
+
+describe('C3a on a partial tier list', () => {
+	it('says "at least" when only the first page of tiers is known', () => {
+		const w = tiersExceedCapacityWarning({
+			tiers: [{ total_quantity: 80 }, { total_quantity: 40 }],
+			max_attendees: 100,
+			partial: true
+		});
+		expect(w?.id).toBe('C3a');
+		expect(w?.message()).toContain('at least 120 tickets');
+		const full = tiersExceedCapacityWarning({
+			tiers: [{ total_quantity: 80 }, { total_quantity: 40 }],
+			max_attendees: 100
+		});
+		expect(full?.message()).not.toContain('at least');
+	});
+});

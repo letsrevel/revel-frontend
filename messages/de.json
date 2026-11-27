@@ -12035,6 +12035,7 @@
 		"fixApplyDeadline": "Bewerbungsfrist ändern",
 		"clearDeadline": "Frist löschen",
 		"fixEditTier": "Ticketstufe bearbeiten",
-		"listLabelNamed": "Warnungen zu Einstellungen: {name}"
+		"listLabelNamed": "Warnungen zu Einstellungen: {name}",
+		"eventC3aMessagePartial": "Die Ticketstufen bieten mindestens {tickets} Tickets, aber das Event fasst {capacity} Personen. Einige Stufen können nicht ausverkauft werden. Senke die Mengen der Stufen oder erhöhe die Kapazität."
 	}
 }

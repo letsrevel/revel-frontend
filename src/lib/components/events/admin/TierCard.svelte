@@ -379,13 +379,7 @@
 				{/if}
 			</Button>
 		{/if}
-		<Button
-			id="tier-edit-{tier.id}"
-			variant="ghost"
-			size="icon"
-			onclick={onEdit}
-			aria-label="Edit {tier.name}"
-		>
+		<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
 			<Edit class="h-4 w-4" />
 		</Button>
 	</div>
@@ -420,7 +414,6 @@
 		warnings={settingWarnings}
 		entityId={tier.id ?? undefined}
 		label={m['adminWarnings.listLabelNamed']({ name: tier.name })}
-		fallbackFocusId="tier-edit-{tier.id}"
 		testId="tier-card-warnings"
 	/>
 	{#if tier.description}

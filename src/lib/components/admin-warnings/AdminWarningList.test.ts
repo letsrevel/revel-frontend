@@ -268,4 +268,23 @@ describe('AdminWarningList', () => {
 		expect(list).toHaveAttribute('role', 'list');
 		expect(screen.getByRole('button', { name: 'Edit tier (VIP)' })).toBeInTheDocument();
 	});
+	it('focuses the first focusable element inside a non-focusable fallback wrapper', async () => {
+		const wrapper = document.createElement('div');
+		wrapper.id = 'fallback-wrapper';
+		const editor = document.createElement('div');
+		editor.setAttribute('contenteditable', 'true');
+		editor.tabIndex = 0;
+		wrapper.appendChild(editor);
+		document.body.appendChild(wrapper);
+		render(AdminWarningList, {
+			props: {
+				warnings: [warning('I1', 'info')],
+				entityId: 'ev-1',
+				fallbackFocusId: 'fallback-wrapper'
+			}
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Dismiss: Title I1' }));
+		await waitFor(() => expect(editor).toHaveFocus());
+		wrapper.remove();
+	});
 });

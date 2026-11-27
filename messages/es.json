@@ -12035,6 +12035,7 @@
 		"fixApplyDeadline": "Cambiar plazo de solicitud",
 		"clearDeadline": "Borrar plazo",
 		"fixEditTier": "Editar tipo de entrada",
-		"listLabelNamed": "Avisos de configuración: {name}"
+		"listLabelNamed": "Avisos de configuración: {name}",
+		"eventC3aMessagePartial": "Los tipos de entrada ofrecen al menos {tickets} entradas, pero el evento admite {capacity} personas. Algunos tipos no pueden agotarse. Reduce las cantidades de los tipos o aumenta el aforo."
 	}
 }

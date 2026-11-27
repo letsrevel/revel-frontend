@@ -211,23 +211,27 @@
 	const ticketingWarnings = $derived.by(() => {
 		const saved = complianceQuery.data;
 		if (!tiersQuery.isSuccess || !complianceQuery.isSuccess || !saved) return [];
-		// The tiers list is paginated. With a next page, `tiers` is a partial list, so
-		// "no tier on sale" and the capacity sum could be wrong: stay silent.
-		if (tiersQuery.data?.data?.next) return [];
+		// The tiers list is paginated. With a next page, `tiers` is a partial list:
+		// "no tier on sale" could be wrong, so C4 stays silent; the capacity sum is a
+		// lower bound, so C3a still fires, with "at least" wording.
+		const partial = Boolean(tiersQuery.data?.data?.next);
 		return compactWarnings([
 			tiersExceedCapacityWarning({
 				tiers,
 				max_attendees: formData.max_attendees,
-				venueCapacity
+				venueCapacity,
+				partial
 			}),
-			noTicketsOnSaleWarning({
-				status: saved.status,
-				requires_ticket: saved.requires_ticket,
-				start: saved.start,
-				end: saved.end,
-				tiers,
-				now
-			})
+			partial
+				? null
+				: noTicketsOnSaleWarning({
+						status: saved.status,
+						requires_ticket: saved.requires_ticket,
+						start: saved.start,
+						end: saved.end,
+						tiers,
+						now
+					})
 		]);
 	});
 
@@ -469,7 +473,14 @@
 
 	<!-- Ticket Tiers Section -->
 	<div>
-		<h3 class="mb-4 font-semibold">{m['ticketingStep.ticketTiers']()}</h3>
+		<!-- tabindex=-1: focus target after the last ticketing warning is dismissed. -->
+		<h3
+			id="ticketing-tiers-heading"
+			tabindex="-1"
+			class="mb-4 rounded-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+		>
+			{m['ticketingStep.ticketTiers']()}
+		</h3>
 		<p class="mb-4 text-sm text-muted-foreground">
 			{m['ticketingStep.createDifferentTiers']()}
 		</p>
@@ -486,6 +497,7 @@
 		warnings={ticketingWarnings}
 		entityId={eventId}
 		baselineReady={tiersQuery.isSuccess && complianceQuery.isSuccess}
+		fallbackFocusId="ticketing-tiers-heading"
 	/>
 
 	{#if pauseError}

@@ -12035,6 +12035,7 @@
 		"fixApplyDeadline": "Alterar prazo de candidatura",
 		"clearDeadline": "Apagar prazo",
 		"fixEditTier": "Editar tipo de bilhete",
-		"listLabelNamed": "Avisos de definições: {name}"
+		"listLabelNamed": "Avisos de definições: {name}",
+		"eventC3aMessagePartial": "Os tipos de bilhete oferecem pelo menos {tickets} bilhetes, mas o evento comporta {capacity} pessoas. Alguns tipos não podem esgotar. Reduz as quantidades dos tipos ou aumenta a capacidade."
 	}
 }
