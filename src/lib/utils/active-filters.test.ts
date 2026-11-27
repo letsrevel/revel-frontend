@@ -55,10 +55,23 @@ describe('ignoreListOnly option', () => {
 // Calendar navigation rebuilds the URL from this list. The list-only params are
 // hidden in calendar view but must survive it, so list view still applies them.
 describe('CALENDAR_PRESERVED_PARAMS', () => {
-	it.each(['viewMode', 'search', 'include_past', 'order_by', 'city_id', 'organization'])(
-		'keeps %s',
-		(param) => {
-			expect(CALENDAR_PRESERVED_PARAMS).toContain(param);
-		}
-	);
+	it('keeps every filter param and the list-only params', () => {
+		expect([...CALENDAR_PRESERVED_PARAMS].sort()).toEqual(
+			[
+				'viewMode',
+				'search',
+				'city_id',
+				'organization',
+				'organization_name',
+				'organization_slug',
+				'event_type',
+				'visibility',
+				'tags',
+				'include_past',
+				'ticket_type',
+				'order_by',
+				'page_size'
+			].sort()
+		);
+	});
 });
