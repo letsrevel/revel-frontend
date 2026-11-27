@@ -65,17 +65,19 @@
 		const inside = !!drawer && active instanceof Node && drawer.contains(active);
 		if (!inside) {
 			event.preventDefault();
-			(event.shiftKey ? last : first).focus();
+			(event.shiftKey ? last : first).focus({ preventScroll: true });
 		} else if (event.shiftKey && active === first) {
 			event.preventDefault();
-			last.focus();
+			last.focus({ preventScroll: true });
 		} else if (!event.shiftKey && active === last) {
 			event.preventDefault();
-			first.focus();
+			first.focus({ preventScroll: true });
 		}
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
+		// A nested widget that already handled the key owns it.
+		if (event.defaultPrevented) return;
 		if (event.key === 'Escape') {
 			onClose();
 		} else if (event.key === 'Tab') {
@@ -110,17 +112,27 @@
 		return () => query.removeEventListener('change', onChange);
 	});
 
+	// The element to give focus back to on close. Safari does not focus a button
+	// on click or tap, so fall back to the toggle that names this drawer.
+	function findOpener(): HTMLElement | null {
+		const active = document.activeElement;
+		if (active instanceof HTMLElement && active !== document.body) return active;
+		if (!id) return null;
+		const toggles = document.querySelectorAll<HTMLElement>('[aria-controls]');
+		return Array.from(toggles).find((el) => el.getAttribute('aria-controls') === id) ?? null;
+	}
+
 	// Focus management: move focus in on open, trap Tab while open, and give
 	// focus back to the opener on close.
 	$effect(() => {
 		if (open) {
-			const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+			const opener = findOpener();
 			document.addEventListener('keydown', handleKeydown);
 			// Prevent body scroll
 			document.body.style.overflow = 'hidden';
 			// Wait for the DOM update that removes `inert`, else focus() is a no-op.
 			void tick().then(() => {
-				if (open) closeButton?.focus();
+				if (open) closeButton?.focus({ preventScroll: true });
 			});
 
 			return () => {
@@ -133,7 +145,7 @@
 					active === null ||
 					active === document.body ||
 					(!!drawer && active instanceof Node && drawer.contains(active));
-				if (stranded && opener?.isConnected) opener.focus();
+				if (stranded && opener?.isConnected) opener.focus({ preventScroll: true });
 			};
 		}
 		return undefined;
@@ -170,7 +182,7 @@
 			<span role="heading" aria-level="2" class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
-				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				bind:this={closeButton}
 				onclick={onClose}
 				aria-label={m['nav.closeMenu']()}

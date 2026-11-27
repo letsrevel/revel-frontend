@@ -150,7 +150,7 @@
 			<button
 				bind:this={menuButton}
 				type="button"
-				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring {menuButtonClass}"
+				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring {menuButtonClass}"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-expanded={mobileMenuOpen}
 				aria-label={m['nav.toggleMenu']()}

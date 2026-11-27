@@ -140,7 +140,7 @@
 
 			<button
 				type="button"
-				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring md:hidden"
+				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-expanded={mobileMenuOpen}
 				aria-controls={MOBILE_MENU_ID}
