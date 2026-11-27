@@ -173,7 +173,10 @@ export function createTicketScanCheckIn(opts: Options) {
 			showQRScanner = false;
 		} catch (err) {
 			console.error('Failed to fetch ticket:', err);
-			// Error will be shown in the scanner component
+			// Rethrow: QrCameraScanner treats a resolved onScan as a success (it shows
+			// "Scan successful" and leaves the camera stopped). A rejection makes it
+			// show its "could not process" error and resume the camera (#1305).
+			throw err;
 		}
 	}
 
