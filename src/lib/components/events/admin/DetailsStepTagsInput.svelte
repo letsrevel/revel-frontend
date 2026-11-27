@@ -3,6 +3,7 @@
 	import { Hash } from '@lucide/svelte';
 	import { onMount, tick } from 'svelte';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
+	import { cleanTagName, hasTag, tagKey } from '$lib/utils/tags';
 
 	interface Props {
 		tags: string[];
@@ -66,6 +67,9 @@
 	/** `reveal`: scroll the list into view (typed searches only, not refocus). */
 	async function fetchTagSuggestions(search: string, reveal = false): Promise<void> {
 		if (!search.trim()) {
+			// Ends any search in flight: its answer is dropped and its spinner goes.
+			searchSeq++;
+			isLoadingSuggestions = false;
 			tagSuggestions = [];
 			showSuggestions = false;
 			return;
@@ -87,7 +91,7 @@
 				// Extract tag names from TagSchema objects and filter out tags that are already added
 				tagSuggestions = response.data.results
 					.map((tag) => tag.name)
-					.filter((tagName) => !tags.includes(tagName));
+					.filter((tagName) => !hasTag(tags, tagName));
 				showSuggestions = tagSuggestions.length > 0;
 				selectedSuggestionIndex = -1;
 				if (showSuggestions && reveal) void revealSuggestions();
@@ -97,7 +101,8 @@
 			tagSuggestions = [];
 			showSuggestions = false;
 		} finally {
-			isLoadingSuggestions = false;
+			// A newer search (or Escape, or an add) owns the spinner now.
+			if (seq === searchSeq) isLoadingSuggestions = false;
 		}
 	}
 
@@ -120,22 +125,31 @@
 	}
 
 	/**
-	 * Add tag
+	 * Add tag. The name is cleaned like the backend does (no leading `#`).
+	 * Text that matches a suggestion regardless of letter case takes the
+	 * suggestion's casing. A duplicate (same key) is not added, but the input
+	 * resets as after an add: the matching chip is already visible.
 	 */
 	function addTag(tag?: string): void {
-		const tagToAdd = tag || tagInput.trim();
-		if (tagToAdd && !tags.includes(tagToAdd)) {
-			if (searchTimeout) clearTimeout(searchTimeout);
-			onUpdate({ tags: [...tags, tagToAdd] });
-			tagInput = '';
-			tagSuggestions = [];
-			showSuggestions = false;
-			selectedSuggestionIndex = -1;
-		}
+		const cleaned = cleanTagName(tag ?? tagInput);
+		if (!cleaned) return;
+		const match = tagSuggestions.find((s) => tagKey(s) === tagKey(cleaned));
+		const tagToAdd = match ?? cleaned;
+		const isDuplicate = hasTag(tags, tagToAdd);
+
+		if (searchTimeout) clearTimeout(searchTimeout);
+		searchSeq++;
+		isLoadingSuggestions = false;
+		tagInput = '';
+		tagSuggestions = [];
+		showSuggestions = false;
+		selectedSuggestionIndex = -1;
+		if (!isDuplicate) onUpdate({ tags: [...tags, tagToAdd] });
 	}
 
 	/**
-	 * Remove tag
+	 * Remove tag. Exact match on purpose: the chip is the stored string, and
+	 * the list holds one tag per key (add refuses duplicates).
 	 */
 	function removeTag(tag: string): void {
 		onUpdate({ tags: tags.filter((t) => t !== tag) });
@@ -164,6 +178,7 @@
 			}
 		} else if (e.key === 'Escape') {
 			searchSeq++;
+			isLoadingSuggestions = false;
 			if (searchTimeout) clearTimeout(searchTimeout);
 			showSuggestions = false;
 			selectedSuggestionIndex = -1;
@@ -247,7 +262,10 @@
 			{/if}
 
 			{#if isLoadingSuggestions}
-				<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+				<div
+					data-testid="tag-search-spinner"
+					class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+				>
 					<svg
 						class="h-4 w-4 animate-spin text-muted-foreground"
 						xmlns="http://www.w3.org/2000/svg"
@@ -283,12 +301,14 @@
 	{#if tags && tags.length > 0}
 		<div class="flex flex-wrap gap-2">
 			{#each tags as tag (tag)}
-				<span class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
-					{tag}
+				<span
+					class="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
+				>
+					<span class="min-w-0 [overflow-wrap:anywhere]">{tag}</span>
 					<button
 						type="button"
 						onclick={() => removeTag(tag)}
-						class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						class="ml-1 shrink-0 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						aria-label={m['detailsStep.removeTag']({ tag })}
 					>
 						<svg

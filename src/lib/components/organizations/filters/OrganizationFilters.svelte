@@ -11,6 +11,7 @@
 	import TagsFilter from '$lib/components/events/filters/TagsFilter.svelte';
 	import OrganizationOrderByFilter from './OrganizationOrderByFilter.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { toggleTag } from '$lib/utils/tags';
 
 	interface Props {
 		filters: FilterState;
@@ -31,9 +32,7 @@
 
 	function handleToggleTag(tag: string): void {
 		const currentTags = filters.tags || [];
-		const newTags = currentTags.includes(tag)
-			? currentTags.filter((t) => t !== tag)
-			: [...currentTags, tag];
+		const newTags = toggleTag(currentTags, tag);
 		onUpdateFilters({ tags: newTags.length > 0 ? newTags : undefined });
 	}
 

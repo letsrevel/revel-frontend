@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toggleTag } from '$lib/utils/tags';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
 	import {
 		countActiveOrganizationFilters,
@@ -42,9 +43,7 @@
 
 	function handleToggleTag(tag: string): void {
 		const currentTags = filters.tags || [];
-		const newTags = currentTags.includes(tag)
-			? currentTags.filter((t) => t !== tag)
-			: [...currentTags, tag];
+		const newTags = toggleTag(currentTags, tag);
 		onUpdateFilters({ tags: newTags.length > 0 ? newTags : undefined });
 	}
 

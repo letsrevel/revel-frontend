@@ -5,12 +5,12 @@ import DetailsStepTagsInput from './DetailsStepTagsInput.svelte';
 const { tagListTags } = vi.hoisted(() => ({ tagListTags: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ tagListTags }));
 
-function renderInput(onUpdate = vi.fn()) {
+function renderInput(onUpdate = vi.fn(), tags: string[] = [], tagSuggestions: string[] = []) {
 	render(DetailsStepTagsInput, {
 		props: {
-			tags: [],
+			tags,
 			tagInput: '',
-			tagSuggestions: [],
+			tagSuggestions,
 			showSuggestions: false,
 			selectedSuggestionIndex: -1,
 			onUpdate
@@ -132,5 +132,118 @@ describe('DetailsStepTagsInput suggestions', () => {
 		expect(scroll).toHaveBeenCalledTimes(1);
 		// jsdom has no scrollIntoView; remove the stub so other tests see the real shape.
 		delete (Element.prototype as Partial<Element>).scrollIntoView;
+	});
+
+	describe('spinner', () => {
+		const spinner = () => screen.queryByTestId('tag-search-spinner');
+		type Resolver = (v: unknown) => void;
+
+		it('stays while the newest search runs after an older one answered', async () => {
+			const resolvers: Resolver[] = [];
+			tagListTags.mockImplementation(() => new Promise((r) => resolvers.push(r)));
+			const { input } = renderInput();
+			input.focus();
+			await fireEvent.input(input, { target: { value: 'mu' } });
+			await settle();
+			await fireEvent.input(input, { target: { value: 'mus' } });
+			await settle();
+			expect(resolvers).toHaveLength(2);
+
+			resolvers[0]({ data: { results: [{ name: 'music' }] } });
+			await settle();
+			expect(spinner()).toBeInTheDocument();
+
+			resolvers[1]({ data: { results: [{ name: 'museum' }] } });
+			await settle();
+			expect(spinner()).not.toBeInTheDocument();
+		});
+
+		it('goes on Escape and stays gone when the old answer arrives', async () => {
+			let resolveSearch: Resolver | undefined;
+			tagListTags.mockImplementationOnce(() => new Promise((r) => (resolveSearch = r)));
+			const { input } = renderInput();
+			input.focus();
+			await fireEvent.input(input, { target: { value: 'mu' } });
+			await settle();
+			expect(spinner()).toBeInTheDocument();
+
+			await fireEvent.keyDown(input, { key: 'Escape' });
+			expect(spinner()).not.toBeInTheDocument();
+			resolveSearch?.({ data: { results: [{ name: 'music' }] } });
+			await settle();
+			expect(spinner()).not.toBeInTheDocument();
+		});
+
+		it('goes when the user clears the input during a search', async () => {
+			let resolveSearch: Resolver | undefined;
+			tagListTags.mockImplementationOnce(() => new Promise((r) => (resolveSearch = r)));
+			const { input } = renderInput();
+			input.focus();
+			await fireEvent.input(input, { target: { value: 'mu' } });
+			await settle();
+			expect(spinner()).toBeInTheDocument();
+
+			await fireEvent.input(input, { target: { value: '' } });
+			await settle();
+			expect(spinner()).not.toBeInTheDocument();
+			resolveSearch?.({ data: { results: [{ name: 'music' }] } });
+			await settle();
+			expect(spinner()).not.toBeInTheDocument();
+		});
+
+		it('goes when the user adds the tag during a search', async () => {
+			let resolveSearch: Resolver | undefined;
+			tagListTags.mockImplementationOnce(() => new Promise((r) => (resolveSearch = r)));
+			const { input } = renderInput();
+			input.focus();
+			await fireEvent.input(input, { target: { value: 'mu' } });
+			await settle();
+			expect(spinner()).toBeInTheDocument();
+
+			await fireEvent.keyDown(input, { key: 'Enter' });
+			expect(spinner()).not.toBeInTheDocument();
+			resolveSearch?.({ data: { results: [{ name: 'music' }] } });
+			await settle();
+			expect(spinner()).not.toBeInTheDocument();
+		});
+	});
+
+	describe('letter case and cleaning', () => {
+		it('does not add a duplicate that differs in case, and clears the input', async () => {
+			const { input, onUpdate } = renderInput(vi.fn(), ['Fun']);
+			await fireEvent.input(input, { target: { value: 'fun' } });
+			await fireEvent.keyDown(input, { key: 'Enter' });
+
+			expect(onUpdate).not.toHaveBeenCalled();
+			expect(input.value).toBe('');
+		});
+
+		it('takes the casing of a matching suggestion', async () => {
+			const { input, onUpdate } = renderInput(vi.fn(), ['a'], ['Fun']);
+			await fireEvent.input(input, { target: { value: 'fun' } });
+			await fireEvent.keyDown(input, { key: 'Enter' });
+
+			expect(onUpdate).toHaveBeenCalledWith({ tags: ['a', 'Fun'] });
+		});
+
+		it('hides a suggestion that matches an added tag regardless of case', async () => {
+			tagListTags.mockResolvedValue({ data: { results: [{ name: 'Fun' }, { name: 'Funk' }] } });
+			const { input } = renderInput(vi.fn(), ['fun']);
+			input.focus();
+			await fireEvent.input(input, { target: { value: 'fu' } });
+			await settle();
+
+			expect(screen.getByRole('option', { name: /Funk/ })).toBeInTheDocument();
+			expect(screen.queryByRole('option', { name: /^Fun$/ })).not.toBeInTheDocument();
+		});
+
+		it('does nothing for an input that is only a hash', async () => {
+			const { input, onUpdate } = renderInput();
+			await fireEvent.input(input, { target: { value: '#' } });
+			await fireEvent.keyDown(input, { key: 'Enter' });
+
+			expect(onUpdate).not.toHaveBeenCalled();
+			expect(input.value).toBe('#');
+		});
 	});
 });

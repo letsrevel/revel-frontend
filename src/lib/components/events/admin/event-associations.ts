@@ -4,6 +4,7 @@ import {
 	eventadmincoreAddTags,
 	eventadmincoreRemoveTags
 } from '$lib/api/generated/sdk.gen';
+import { diffTags } from '$lib/utils/tags';
 
 /**
  * Save resource associations for an event.
@@ -106,8 +107,7 @@ export async function saveTagAssociations(params: {
 	const { eventId, currentTags, initialTags } = params;
 
 	// Determine which tags were added and removed
-	const addedTags = currentTags.filter((tag) => !initialTags.includes(tag));
-	const removedTags = initialTags.filter((tag) => !currentTags.includes(tag));
+	const { added: addedTags, removed: removedTags } = diffTags(initialTags, currentTags);
 
 	// Add new tags
 	if (addedTags.length > 0) {

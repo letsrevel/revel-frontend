@@ -26,7 +26,7 @@
 			type="datetime-local"
 			value={formData.check_in_starts_at || ''}
 			oninput={(e) => onUpdate({ check_in_starts_at: e.currentTarget.value })}
-			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			class="flex h-10 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		/>
 		{#if checkInStartReadback}
 			<p class="text-xs text-muted-foreground">
@@ -49,7 +49,7 @@
 			type="datetime-local"
 			value={formData.check_in_ends_at || ''}
 			oninput={(e) => onUpdate({ check_in_ends_at: e.currentTarget.value })}
-			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			class="flex h-10 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		/>
 		{#if checkInEndReadback}
 			<p class="text-xs text-muted-foreground">

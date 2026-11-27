@@ -59,6 +59,15 @@ describe('TagsFilter show more / fewer', () => {
 		expect(screen.getByRole('button', { name: 'Show 7 more tags' })).toBeInTheDocument();
 	});
 
+	it('keeps a selected tag visible when its letter case differs from the API name', async () => {
+		mockTags([...TAGS.slice(0, 12), 'Fun']);
+		render(TagsFilter, { props: { selectedTags: ['fun'], onToggleTag: vi.fn() } });
+
+		const chip = await screen.findByRole('button', { name: /Remove Fun filter/ });
+		expect(chip).toHaveAttribute('aria-pressed', 'true');
+		expect(screen.queryByRole('button', { name: /more tags/ })).not.toBeInTheDocument();
+	});
+
 	it('shows no toggle when there are 12 tags or fewer', async () => {
 		mockTags(TAGS.slice(0, 12));
 		render(TagsFilter, { props: { selectedTags: [], onToggleTag: vi.fn() } });
