@@ -287,15 +287,23 @@ describe('MobileNav focus management', () => {
 		expect(toggle).toHaveFocus();
 	});
 
-	it('lets a wrapped focus move scroll the target into view', async () => {
+	it.each([
+		{ name: 'Shift+Tab wrap to the last item', from: 'close', shift: true, to: 'last' },
+		{ name: 'Tab wrap to the close button', from: 'last', shift: false, to: 'close' },
+		{ name: 'Tab pulled in from outside', from: 'outside', shift: false, to: 'close' }
+	] as const)('lets the $name scroll its target into view', async ({ from, shift, to }) => {
 		mockMatchMedia();
 		const user = userEvent.setup();
 		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
 		await tick();
-		screen.getByRole('button', { name: 'Close menu' }).focus();
-		const last = lastLink();
-		const focusSpy = vi.spyOn(last, 'focus');
-		await user.tab({ shift: true });
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		const pick = (k: 'close' | 'last' | 'outside'): HTMLElement =>
+			k === 'close' ? close : k === 'last' ? lastLink() : opener();
+		pick(from).focus();
+		const target = pick(to);
+		const focusSpy = vi.spyOn(target, 'focus');
+		await user.tab({ shift });
+		expect(target).toHaveFocus();
 		expect(focusSpy).toHaveBeenCalledTimes(1);
 		expect(focusSpy.mock.calls[0][0]?.preventScroll).not.toBe(true);
 	});
