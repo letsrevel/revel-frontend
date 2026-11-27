@@ -92,7 +92,13 @@
 	const DEDUPE_WINDOW_MS = 2000;
 	let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 	let bannerTimer: ReturnType<typeof setTimeout> | null = null;
-	let lastHandled: { text: string; at: number } | null = null;
+	let lastHandled: { text: string; at: number; failed: boolean } | null = null;
+	// After a failed camera scan, the same code stays deduped until the camera is
+	// live again, and then for a full DEDUPE_WINDOW_MS. Else a bad code held in
+	// frame is processed again right after resume, because the resume delay is as
+	// long as the window (#1305). Frames decoded while the camera is still starting
+	// fall inside this pending state.
+	let reanchorDedupeOnResume = false;
 	// With `manualStart` the camera waits for an explicit click. `manualStart` is a
 	// mount-time choice, so reading it once here is intended.
 	let cameraRequested = $state(untrack(() => !manualStart));
@@ -172,7 +178,10 @@
 			}
 		},
 		{
-			onPhase: (p) => (phase = p),
+			onPhase: (p) => {
+				phase = p;
+				if (p === 'on') reanchorDedupe();
+			},
 			onStartError(err) {
 				if (!(err instanceof InsecureContextError)) console.error('Failed to start scanner:', err);
 				// Nobody is waiting for this camera any more, so its failure is not news.
@@ -195,6 +204,7 @@
 	);
 
 	function startCamera() {
+		clearFailedDedupe();
 		error = null;
 		processError = null;
 		cameraRequested = true;
@@ -209,13 +219,37 @@
 		clearResumeTimer();
 		resumeTimer = setTimeout(() => {
 			resumeTimer = null;
-			if (destroyed || !wanted) return;
+			if (destroyed || !wanted) {
+				// No resume will come, so no 'on' phase will end the pending state.
+				reanchorDedupe();
+				return;
+			}
+			// After a failed pause-stop the camera is still on, and setWanted(true)
+			// emits no new 'on' phase: start the window now.
+			if (phase === 'on') reanchorDedupe();
 			controller.setWanted(true);
 		}, delayMs);
 	}
 
+	/** End the pending state after a failed scan: the dedupe window starts now. */
+	function reanchorDedupe() {
+		if (!reanchorDedupeOnResume) return;
+		reanchorDedupeOnResume = false;
+		if (lastHandled) lastHandled = { ...lastHandled, at: Date.now() };
+	}
+
+	/**
+	 * An explicit Start or Stop is a fresh try after a failure: forget the failed
+	 * code. A code that succeeded keeps its normal DEDUPE_WINDOW_MS window.
+	 */
+	function clearFailedDedupe() {
+		if (lastHandled?.failed) lastHandled = null;
+		reanchorDedupeOnResume = false;
+	}
+
 	function stopCamera() {
 		clearResumeTimer();
+		clearFailedDedupe();
 		error = null;
 		processError = null;
 		scanSuccess = false;
@@ -252,7 +286,8 @@
 			console.error('Scan processing error:', err);
 			processError = processFailedMessage();
 		} finally {
-			lastHandled = { text: code, at: Date.now() };
+			lastHandled = { text: code, at: Date.now(), failed: !ok };
+			reanchorDedupeOnResume = !ok && !manual;
 			handlingScan = false;
 			if (!destroyed && (ok ? continuous : true)) {
 				scheduleResume(ok ? RESUME_AFTER_SUCCESS_MS : RESUME_AFTER_FAILURE_MS);
@@ -285,7 +320,7 @@
 		if (
 			lastHandled &&
 			lastHandled.text === decodedText &&
-			Date.now() - lastHandled.at < DEDUPE_WINDOW_MS
+			(reanchorDedupeOnResume || Date.now() - lastHandled.at < DEDUPE_WINDOW_MS)
 		) {
 			return;
 		}

@@ -157,24 +157,23 @@ export function createTicketScanCheckIn(opts: Options) {
 			return;
 		}
 
-		try {
-			const response = await eventadminticketsGetTicket({
-				path: { event_id: opts.getEventId(), ticket_id: code },
-				headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
-			});
+		// No catch here: a failed lookup must reject. QrCameraScanner treats a
+		// resolved onScan as a success ("Scan successful", camera left stopped); a
+		// rejection makes it log the error, show its processing error and resume
+		// the camera (#1305).
+		const response = await eventadminticketsGetTicket({
+			path: { event_id: opts.getEventId(), ticket_id: code },
+			headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
+		});
 
-			if (response.error || !response.data) {
-				throw new Error('Ticket not found');
-			}
-
-			ticketToCheckIn = toCheckInTicket(response.data);
-			checkInDialogError = null;
-			showCheckInDialog = true;
-			showQRScanner = false;
-		} catch (err) {
-			console.error('Failed to fetch ticket:', err);
-			// Error will be shown in the scanner component
+		if (response.error || !response.data) {
+			throw new Error('Ticket not found', { cause: response.error });
 		}
+
+		ticketToCheckIn = toCheckInTicket(response.data);
+		checkInDialogError = null;
+		showCheckInDialog = true;
+		showQRScanner = false;
 	}
 
 	/** Open the confirm dialog for a ticket picked from the table. */

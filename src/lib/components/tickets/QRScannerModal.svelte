@@ -10,8 +10,10 @@
 	 * the manual-entry fallback — lives in that component, which the org door page
 	 * embeds without a dialog around it.
 	 *
-	 * Single-shot by design: the parent closes this modal in response to a scan,
-	 * so the camera stays stopped rather than resuming (`continuous` is off).
+	 * Single-shot by design: the parent closes this modal in response to a
+	 * successful scan, so the camera stays stopped after a success (`continuous`
+	 * is off). When `onScan` rejects, the modal stays open, the scanner shows its
+	 * processing error, and the camera resumes for the next try.
 	 */
 	interface Props {
 		isOpen: boolean;

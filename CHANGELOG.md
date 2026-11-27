@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - In Browse Events, calendar view no longer shows the search field, and the filter badge does not count a search. The calendar cannot filter by text yet, so a search had no effect there. A search you typed in list view comes back when you switch to list view again. (#1297)
+- When a scanned ticket is not found at check-in, the scanner shows its "Failed to process" error and starts the camera again. Before, it showed "Scan successful" over a stopped camera, and staff had to close and open the scanner again. A failed code that stays in front of the camera is not processed again for 2 seconds after the camera is live again. Stop or Start clears this pause. (#1305)
 
 ## [2.41.0] - 2026-11-25
 

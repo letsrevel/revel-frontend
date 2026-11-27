@@ -22,6 +22,7 @@ vi.mock('@tanstack/svelte-query', () => ({
 	})
 }));
 
+import { eventadminticketsGetTicket } from '$lib/api';
 import { createTicketScanCheckIn } from './ticket-scan-checkin.svelte';
 
 const SERIES_SCAN = 'series:11111111-1111-4111-8111-111111111111';
@@ -87,5 +88,53 @@ describe('createTicketScanCheckIn feedback', () => {
 
 		expect(flow.scanNote).toBeNull();
 		expect(toastSuccess).toHaveBeenCalledWith('Checked in', { description: 'Member: Gold' });
+	});
+});
+
+// #1305: a failed ticket lookup must reject, so QrCameraScanner shows its
+// "could not process" error and resumes the camera instead of "Scan successful".
+describe('createTicketScanCheckIn ticket lookup failure', () => {
+	const TICKET_SCAN = '22222222-2222-4222-8222-222222222222';
+
+	beforeEach(() => {
+		vi.mocked(eventadminticketsGetTicket).mockReset();
+	});
+
+	it('rejects and keeps the scanner open when the ticket is not found', async () => {
+		vi.mocked(eventadminticketsGetTicket).mockResolvedValue({
+			error: { detail: 'Not found.' },
+			data: undefined
+		} as never);
+		const flow = make();
+		flow.showQRScanner = true;
+
+		await expect(flow.handleQRScan(TICKET_SCAN)).rejects.toThrow();
+		expect(flow.showCheckInDialog).toBe(false);
+		expect(flow.ticketToCheckIn).toBeNull();
+		expect(flow.showQRScanner).toBe(true);
+	});
+
+	it('rejects and keeps the scanner open when the lookup request throws', async () => {
+		vi.mocked(eventadminticketsGetTicket).mockRejectedValue(new Error('network down'));
+		const flow = make();
+		flow.showQRScanner = true;
+
+		await expect(flow.handleQRScan(TICKET_SCAN)).rejects.toThrow('network down');
+		expect(flow.showCheckInDialog).toBe(false);
+		expect(flow.showQRScanner).toBe(true);
+	});
+
+	it('opens the confirm dialog and closes the scanner when the ticket is found', async () => {
+		vi.mocked(eventadminticketsGetTicket).mockResolvedValue({
+			data: { id: TICKET_SCAN, status: 'active', user: { first_name: 'Ada' } },
+			error: undefined
+		} as never);
+		const flow = make();
+		flow.showQRScanner = true;
+
+		await flow.handleQRScan(TICKET_SCAN);
+		expect(flow.showCheckInDialog).toBe(true);
+		expect(flow.ticketToCheckIn?.id).toBe(TICKET_SCAN);
+		expect(flow.showQRScanner).toBe(false);
 	});
 });
