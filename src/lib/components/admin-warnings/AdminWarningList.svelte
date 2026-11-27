@@ -99,6 +99,28 @@
 	async function handleDismiss(warning: AdminWarning, index: number): Promise<void> {
 		if (!entityId) return;
 		dismissWarning(entityId, warning.id);
+		await moveFocusAfterRemoval(index);
+	}
+
+	// An in-place fix (e.g. "Clear deadline") usually makes its own warning go away;
+	// then focus moves on as after a dismiss, so keyboard users do not lose it.
+	function withFocusHandoff(warning: AdminWarning, index: number): AdminWarning {
+		const action = warning.action;
+		if (!action) return warning;
+		return {
+			...warning,
+			action: {
+				label: action.label,
+				run: async () => {
+					await action.run();
+					await tick();
+					if (!visible.some((w) => w.id === warning.id)) await moveFocusAfterRemoval(index);
+				}
+			}
+		};
+	}
+
+	async function moveFocusAfterRemoval(index: number): Promise<void> {
 		await tick();
 		const items = container?.querySelectorAll<HTMLLIElement>('li[data-admin-warning-item]');
 		// The next callout (now at `index`), else the previous one, else the container.
@@ -119,7 +141,7 @@
 			{#each visible as warning, index (warning.id)}
 				<li data-admin-warning-item>
 					<AdminWarningCallout
-						{warning}
+						warning={withFocusHandoff(warning, index)}
 						messageId="{uid}-{warning.id}"
 						onDismiss={entityId && warning.level === 'info'
 							? () => handleDismiss(warning, index)

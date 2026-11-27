@@ -2307,8 +2307,7 @@
 		"buttonSaving": "Salvataggio...",
 		"buttonContinueTicketing": "Continua alla Biglietteria",
 		"effectiveCapacity.label": "Capacità Effettiva",
-		"effectiveCapacity.limitedByVenue": "{capacity} (limitata dal luogo)",
-		"effectiveCapacity.warning": "Il numero massimo di partecipanti ({maxAttendees}) supera la capacità del luogo ({venueCapacity}). Il limite effettivo sarà {effectiveCapacity}."
+		"effectiveCapacity.limitedByVenue": "{capacity} (limitata dal luogo)"
 	},
 	"eventEditor": {
 		"save": "Salva",

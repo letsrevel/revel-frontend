@@ -168,4 +168,34 @@ describe('AdminWarningList', () => {
 		link.dispatchEvent(event);
 		expect(event.defaultPrevented).toBe(false);
 	});
+
+	it('moves focus on when an in-place action removes its own warning', async () => {
+		const other = warning('W2', 'warn', { fixTarget: 'x', fixLabel: () => 'Fix W2' });
+		const holder: { rerender?: (p: { warnings: AdminWarning[] }) => Promise<void> } = {};
+		const clearing = warning('W1', 'warn', {
+			action: {
+				label: () => 'Clear deadline',
+				run: async () => holder.rerender?.({ warnings: [other] })
+			}
+		});
+		const { rerender } = render(AdminWarningList, { props: { warnings: [clearing, other] } });
+		holder.rerender = rerender;
+		const button = screen.getByRole('button', { name: 'Clear deadline' });
+		button.focus();
+		await fireEvent.click(button);
+		await waitFor(() => expect(screen.getByRole('link', { name: 'Fix W2' })).toHaveFocus());
+	});
+
+	it('keeps focus when an in-place action leaves its warning in place', async () => {
+		render(AdminWarningList, {
+			props: {
+				warnings: [warning('W1', 'warn', { action: { label: () => 'Retry', run: vi.fn() } })]
+			}
+		});
+		const button = screen.getByRole('button', { name: 'Retry' });
+		button.focus();
+		await fireEvent.click(button);
+		await tick();
+		expect(button).toHaveFocus();
+	});
 });

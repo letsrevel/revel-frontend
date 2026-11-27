@@ -45,6 +45,8 @@
 		onResourcesChange: (ids: string[]) => void;
 		scheduleRows: ScheduleRow[];
 		disabled: boolean;
+		/** Saved event status; unset while creating. */
+		status?: string;
 	}
 
 	let {
@@ -71,7 +73,8 @@
 		selectedResourceIds,
 		onResourcesChange,
 		scheduleRows = $bindable(),
-		disabled
+		disabled,
+		status
 	}: Props = $props();
 </script>
 
@@ -124,10 +127,11 @@
 		{organizationId}
 		{organizationSlug}
 		{accessToken}
+		{status}
 	/>
 
 	{#if mode === 'edit'}
-		<AttendanceSection {formData} {selectedVenue} {isEditMode} {onUpdate} />
+		<AttendanceSection {formData} {selectedVenue} {isEditMode} {onUpdate} {eventId} />
 		<EventPageSection {formData} {onUpdate} />
 		<ExtrasSection
 			{formData}

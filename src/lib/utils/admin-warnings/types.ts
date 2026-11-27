@@ -16,7 +16,7 @@ export type AdminWarningLevel = 'warn' | 'info';
 
 export interface AdminWarningAction {
 	label: () => string;
-	run: () => void;
+	run: () => void | Promise<void>;
 }
 
 export interface AdminWarning {

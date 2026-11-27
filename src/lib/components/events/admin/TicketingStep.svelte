@@ -32,6 +32,12 @@
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { noticesFor, unplacedNotices, type ComplianceStatus } from '$lib/utils/compliance';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings } from '$lib/utils/admin-warnings/types';
+	import {
+		noTicketsOnSaleWarning,
+		tiersExceedCapacityWarning
+	} from '$lib/utils/admin-warnings/event';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
 	// form object; only these fields are used here.
@@ -129,21 +135,23 @@
 
 	const queryClient = useQueryClient();
 
-	// The event's country rules (#1001). Read from the event detail, not the org:
+	// The SAVED event: country rules (#1001) plus the status and dates the C4 warning
+	// reads (#1314). Read from the event detail, not the org:
 	// it follows where the event is held (an AT org's event in Italy is blocked
 	// even though the org card says allowed). Refetched on mount so a venue
 	// change saved on the details tab is reflected here. Fails CLOSED: until it
 	// has loaded, the tier editor treats card payment as unavailable.
 	const complianceQuery = createQuery(() => ({
-		queryKey: ['event-admin', eventId, 'compliance'],
+		queryKey: ['event-admin', eventId, 'ticketing-event'],
 		queryFn: async () => {
 			const response = await eventpublicdetailsGetEvent({ path: { event_id: eventId } });
 			if (response.error || !response.data) throw new Error('Failed to load event compliance');
-			return response.data.compliance;
+			const { compliance, status, start, end, requires_ticket } = response.data;
+			return { compliance, status, start, end, requires_ticket };
 		},
 		refetchOnMount: 'always' as const
 	}));
-	const compliance = $derived(complianceQuery.data ?? null);
+	const compliance = $derived(complianceQuery.data?.compliance ?? null);
 	// An in-flight fetch counts as loading even with cached data: after a venue
 	// change, the cached "allowed" may be stale until the refetch lands.
 	const complianceStatus = $derived<ComplianceStatus>(
@@ -188,6 +196,28 @@
 		if (!tierId) return undefined;
 		return () => pauseMutation.mutate({ tierId, salesPaused: !tier.sales_paused });
 	}
+
+	// Admin setting warnings (#1314): only once the tiers AND the saved event have loaded,
+	// so nothing flashes (or is announced) while loading.
+	const ticketingWarnings = $derived.by(() => {
+		const saved = complianceQuery.data;
+		if (!tiersQuery.isSuccess || !complianceQuery.isSuccess || !saved) return [];
+		return compactWarnings([
+			tiersExceedCapacityWarning({
+				tiers,
+				max_attendees: formData.max_attendees,
+				venueCapacity
+			}),
+			noTicketsOnSaleWarning({
+				status: saved.status,
+				requires_ticket: saved.requires_ticket,
+				start: saved.start,
+				end: saved.end,
+				tiers,
+				now: new Date()
+			})
+		]);
+	});
 
 	let pauseError = $state<string | null>(null);
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
@@ -439,6 +469,8 @@
 			]}
 		/>
 	</div>
+
+	<AdminWarningList warnings={ticketingWarnings} entityId={eventId} />
 
 	{#if pauseError}
 		<div

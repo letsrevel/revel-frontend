@@ -4,6 +4,9 @@
 	import { Calendar } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import CheckInFields from '../../CheckInFields.svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import { checkInAfterEndWarning } from '$lib/utils/admin-warnings/event';
 	import ScheduleEditor from '../../ScheduleEditor.svelte';
 	import type { ScheduleRow } from '../../schedule-rows';
 	import EditorSection from './EditorSection.svelte';
@@ -36,6 +39,13 @@
 	// value is empty or unparseable, so the hint is gated on the rendered text.
 	const startReadback = $derived(formatDateTimeReadback(formData.start));
 	const endReadback = $derived(formatDateTimeReadback(formData.end));
+
+	const checkInWarnings = $derived.by(() => {
+		const warning = checkInAfterEndWarning(formData);
+		return compactWarnings([
+			warning && withFix(warning, 'check-in-starts', () => m['adminWarnings.fixCheckIn']())
+		]);
+	});
 
 	const inputClass =
 		'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -133,6 +143,7 @@
 		{#if formData.requires_ticket}
 			<EditorSubGroup title={m['eventEditor.subCheckIn']()}>
 				<CheckInFields {formData} {onUpdate} />
+				<AdminWarningList warnings={checkInWarnings} entityId={eventId ?? undefined} />
 			</EditorSubGroup>
 		{/if}
 

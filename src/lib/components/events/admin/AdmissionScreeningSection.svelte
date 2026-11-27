@@ -3,6 +3,9 @@
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { ShieldCheck, ChevronDown, ChevronRight } from '@lucide/svelte';
 	import EventQuestionnaires from './EventQuestionnaires.svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import { applyAfterEndWarning } from '$lib/utils/admin-warnings/event';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 
@@ -43,6 +46,13 @@
 	}: Props = $props();
 
 	const applyBeforeReadback = $derived(formatDateTimeReadback(formData.apply_before));
+
+	const applyWarnings = $derived.by(() => {
+		const warning = applyAfterEndWarning(formData);
+		return compactWarnings([
+			warning && withFix(warning, 'apply-before', () => m['adminWarnings.fixApplyDeadline']())
+		]);
+	});
 </script>
 
 {#snippet body()}
@@ -51,6 +61,7 @@
 		class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 	>
 		<input
+			id="requires-full-profile"
 			type="checkbox"
 			checked={formData.requires_full_profile || false}
 			onchange={(e) => onUpdate({ requires_full_profile: e.currentTarget.checked })}
@@ -71,6 +82,7 @@
 		class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 	>
 		<input
+			id="accept-invitation-requests"
 			type="checkbox"
 			checked={formData.accept_invitation_requests || false}
 			onchange={(e) => onUpdate({ accept_invitation_requests: e.currentTarget.checked })}
@@ -123,6 +135,7 @@
 				{m['dateTimePicker.selectedDate']({ value: applyBeforeReadback })}
 			</p>
 		{/if}
+		<AdminWarningList warnings={applyWarnings} entityId={eventId ?? undefined} />
 	</div>
 {/snippet}
 

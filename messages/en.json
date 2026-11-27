@@ -2307,8 +2307,7 @@
 		"buttonSaving": "Saving...",
 		"buttonContinueTicketing": "Continue to Ticketing",
 		"effectiveCapacity.label": "Effective Capacity",
-		"effectiveCapacity.limitedByVenue": "{capacity} (limited by venue)",
-		"effectiveCapacity.warning": "Your max attendees ({maxAttendees}) exceeds venue capacity ({venueCapacity}). The effective limit will be {effectiveCapacity}."
+		"effectiveCapacity.limitedByVenue": "{capacity} (limited by venue)"
 	},
 	"eventEditor": {
 		"save": "Save",
@@ -12023,6 +12022,16 @@
 		"tierD3Title": "Public tier that most people cannot buy",
 		"tierD3Message": "Everyone can see this tier, but only invited guests or members can buy it. Other attendees see a tier they cannot get. Hide the tier if you do not want this.",
 		"tierD4Title": "No payment instructions",
-		"tierD4Message": "Attendees who choose offline payment do not see how to pay. Add the payment instructions."
+		"tierD4Message": "Attendees who choose offline payment do not see how to pay. Add the payment instructions.",
+		"fixAllowInvitationRequests": "Allow invitation requests",
+		"fixEventType": "Change event type",
+		"fixVisibility": "Change visibility",
+		"fixRequireFullProfile": "Change full profile setting",
+		"fixGuestAttendance": "Change guest attendance",
+		"fixAttendeeLimit": "Set attendee limit",
+		"fixCheckIn": "Change check-in time",
+		"fixRsvpDeadline": "Change RSVP deadline",
+		"fixApplyDeadline": "Change application deadline",
+		"clearDeadline": "Clear deadline"
 	}
 }
