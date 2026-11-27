@@ -318,4 +318,33 @@ describe('AdminWarningList', () => {
 		await waitFor(() => expect(screen.getByTestId('admin-warning-list')).toHaveFocus());
 		select.remove();
 	});
+	it('clears the announcer first and restores the text in a later task, also for repeated text', async () => {
+		vi.useFakeTimers();
+		try {
+			const { rerender } = render(AdminWarningList, {
+				props: { warnings: [warning('W1', 'warn')], announceDelay: 100 }
+			});
+			await tick();
+			await rerender({
+				warnings: [warning('W1', 'warn'), warning('W2', 'warn')],
+				announceDelay: 100
+			});
+			await vi.advanceTimersByTimeAsync(100);
+			expect(announcer()).toHaveTextContent('');
+			await vi.advanceTimersByTimeAsync(50);
+			expect(announcer()).toHaveTextContent('Title W2. Message W2.');
+			// The same warning goes away and comes back: the same text is cleared and set again.
+			await rerender({ warnings: [warning('W1', 'warn')], announceDelay: 100 });
+			await rerender({
+				warnings: [warning('W1', 'warn'), warning('W2', 'warn')],
+				announceDelay: 100
+			});
+			await vi.advanceTimersByTimeAsync(100);
+			expect(announcer()).toHaveTextContent('');
+			await vi.advanceTimersByTimeAsync(50);
+			expect(announcer()).toHaveTextContent('Title W2. Message W2.');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });

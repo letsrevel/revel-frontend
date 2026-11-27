@@ -8,7 +8,14 @@ export function parseWarningDate(value: string | Date | null | undefined): numbe
 	return Number.isNaN(time) ? null : time;
 }
 
-/** C2 (info): deadlines that fall after the event end. Skipped for open-ended or end-less events. */
+/**
+ * C2 (info): deadlines that fall after the event end. The RSVP and application
+ * checks are skipped for open-ended or end-less events; the check-in check also
+ * runs against an explicit `check_in_ends_at`. Known limit: an open-ended event
+ * keeps a hidden backend `end` (its operational horizon, which the editor sends as
+ * null), so a check-in start after that horizon without an explicit check-in end
+ * is not flagged.
+ */
 export interface EventDeadlinesInput {
 	is_open_ended?: boolean | null;
 	end?: string | null;
@@ -118,7 +125,7 @@ export function noTicketsOnSaleWarning(input: NoTicketsOnSaleInput): AdminWarnin
 		// (e.g. a tier left selling after the event was moved earlier).
 		const end = Math.min(tierEnd ?? eventStart ?? Infinity, eventEnd ?? Infinity);
 		const from = start ?? -Infinity;
-		const onSale = from <= now && now < end;
+		const onSale = from <= now && now <= end; // BE TicketSalesGate: the end instant still sells
 		const scheduled = start !== null && start > now && start < end;
 		return onSale || scheduled;
 	});
