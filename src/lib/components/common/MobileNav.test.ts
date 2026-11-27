@@ -286,4 +286,17 @@ describe('MobileNav focus management', () => {
 		await rerender({ ...items, id: 'drawer', open: false, onClose: vi.fn() });
 		expect(toggle).toHaveFocus();
 	});
+
+	it('lets a wrapped focus move scroll the target into view', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		screen.getByRole('button', { name: 'Close menu' }).focus();
+		const last = lastLink();
+		const focusSpy = vi.spyOn(last, 'focus');
+		await user.tab({ shift: true });
+		expect(focusSpy).toHaveBeenCalledTimes(1);
+		expect(focusSpy.mock.calls[0][0]?.preventScroll).not.toBe(true);
+	});
 });

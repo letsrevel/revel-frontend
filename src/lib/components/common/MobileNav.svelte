@@ -53,6 +53,7 @@
 
 	// Keep Tab inside the open drawer: aria-modal tells screen readers the page
 	// behind it is inert, so keyboard focus must not reach it either (WCAG 2.4.3).
+	// These moves may scroll: the nav list can overflow, and the target must show.
 	function trapTab(event: KeyboardEvent): void {
 		// A modal opened above the drawer owns Tab while focus is inside it.
 		const active = document.activeElement;
@@ -68,13 +69,13 @@
 		const inside = !!drawer && active instanceof Node && drawer.contains(active);
 		if (!inside) {
 			event.preventDefault();
-			(event.shiftKey ? last : first).focus({ preventScroll: true });
+			(event.shiftKey ? last : first).focus();
 		} else if (event.shiftKey && active === first) {
 			event.preventDefault();
-			last.focus({ preventScroll: true });
+			last.focus();
 		} else if (!event.shiftKey && active === last) {
 			event.preventDefault();
-			first.focus({ preventScroll: true });
+			first.focus();
 		}
 	}
 
