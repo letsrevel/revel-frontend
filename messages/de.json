@@ -12002,7 +12002,7 @@
 		"eventB5bMessage": "Gäste ohne Konto können nur mit einem Einladungslink teilnehmen. Dieses Event ist privat, nur für Mitglieder oder hat einen Zugangsfragebogen.",
 		"eventC1Title": "Die Warteliste ist nicht nutzbar",
 		"eventC1Message": "Die Warteliste ist offen, aber das Event hat keine Kapazitätsgrenze. Teilnehmer*innen können der Warteliste nicht beitreten. Lege eine maximale Teilnehmerzahl fest oder schließe die Warteliste.",
-		"eventC2CheckinTitle": "Check-in öffnet nach dem Ende des Events",
+		"eventC2CheckinTitle": "Check-in öffnet erst nach seinem Ende",
 		"eventC2CheckinMessage": "Der Check-in-Beginn liegt nach dem Check-in-Ende oder dem Eventende. Niemand kann einchecken. Verschiebe den Check-in-Beginn nach vorn.",
 		"eventC2RsvpTitle": "Antwortfrist liegt nach dem Eventende",
 		"eventC2RsvpMessage": "Die Antwortfrist liegt nach dem Eventende und hat daher keine Wirkung. Verschiebe die Frist vor das Eventende.",

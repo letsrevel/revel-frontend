@@ -195,7 +195,7 @@ describe('C2 deadlines after the event end', () => {
 		const w = checkInAfterEndWarning(input);
 		expect(w?.id).toBe('C2-checkin');
 		expect(w?.level).toBe('info');
-		expect(w?.title()).toBe('Check-in opens after the event ends');
+		expect(w?.title()).toBe('Check-in opens after it closes');
 		expect(w?.message()).toContain('Nobody can check in');
 	});
 	it('check-in start after the event end when no check-in end is set', () => {
@@ -454,5 +454,48 @@ describe('C3a on a partial tier list', () => {
 			max_attendees: 100
 		});
 		expect(full?.message()).not.toContain('at least');
+	});
+});
+
+describe('CodeRabbit review cases (#1335)', () => {
+	it('C2-checkin: an inverted explicit check-in window warns on an open-ended event too', () => {
+		const w = checkInAfterEndWarning({
+			is_open_ended: true,
+			check_in_starts_at: '2030-06-01T19:00:00Z',
+			check_in_ends_at: '2030-06-01T18:00:00Z'
+		});
+		expect(w?.id).toBe('C2-checkin');
+		// Without an explicit check-in end, an open-ended event has no limit: no warning.
+		expect(
+			checkInAfterEndWarning({
+				is_open_ended: true,
+				end: '2030-06-01T20:00:00Z',
+				check_in_starts_at: '2030-06-02T19:00:00Z'
+			})
+		).toBeNull();
+	});
+
+	it('C4: a tier scheduled to sell only after the event ends does not count as scheduled', () => {
+		const now = new Date('2030-06-01T12:00:00Z');
+		const base = {
+			status: 'open',
+			requires_ticket: true,
+			start: '2030-06-09T18:00:00Z',
+			end: '2030-06-10T23:00:00Z',
+			now
+		};
+		expect(
+			noTicketsOnSaleWarning({
+				...base,
+				tiers: [{ sales_start_at: '2030-06-11T00:00:00Z', sales_end_at: '2030-06-12T00:00:00Z' }]
+			})?.id
+		).toBe('C4');
+		// A window that starts before the event ends is still scheduled.
+		expect(
+			noTicketsOnSaleWarning({
+				...base,
+				tiers: [{ sales_start_at: '2030-06-05T00:00:00Z', sales_end_at: '2030-06-12T00:00:00Z' }]
+			})
+		).toBeNull();
 	});
 });

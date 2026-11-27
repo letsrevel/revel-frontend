@@ -12002,7 +12002,7 @@
 		"eventB5bMessage": "Les personnes sans compte ne peuvent participer qu'avec un lien d'invitation. Cet événement est privé, réservé aux membres ou a un questionnaire d'admission.",
 		"eventC1Title": "Impossible de rejoindre la liste d'attente",
 		"eventC1Message": "La liste d'attente est ouverte, mais l'événement n'a pas de limite de capacité. Les personnes participantes ne peuvent pas rejoindre la liste d'attente. Définis un nombre maximum de personnes participantes ou ferme la liste d'attente.",
-		"eventC2CheckinTitle": "L'enregistrement ouvre après la fin de l'événement",
+		"eventC2CheckinTitle": "L'enregistrement ouvre après sa fermeture",
 		"eventC2CheckinMessage": "Le début de l'enregistrement est après la fin de l'enregistrement ou la fin de l'événement. Personne ne peut s'enregistrer. Avance le début de l'enregistrement.",
 		"eventC2RsvpTitle": "La date limite de participation est après la fin de l'événement",
 		"eventC2RsvpMessage": "La date limite de participation est après la fin de l'événement, donc elle n'a aucun effet. Place la date limite avant la fin de l'événement.",

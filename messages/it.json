@@ -12002,7 +12002,7 @@
 		"eventB5bMessage": "Gli ospiti senza account possono partecipare solo con un link di invito. Questo evento è privato, riservato ai membri o ha un questionario di ammissione.",
 		"eventC1Title": "Non è possibile unirsi alla lista d'attesa",
 		"eventC1Message": "La lista d'attesa è aperta, ma l'evento non ha un limite di capienza. I partecipanti non possono unirsi alla lista d'attesa. Imposta un numero massimo di partecipanti o chiudi la lista d'attesa.",
-		"eventC2CheckinTitle": "Il check-in si apre dopo la fine dell'evento",
+		"eventC2CheckinTitle": "Il check-in si apre dopo la chiusura",
 		"eventC2CheckinMessage": "L'inizio del check-in è successivo alla fine del check-in o alla fine dell'evento. Nessuno può fare il check-in. Anticipa l'inizio del check-in.",
 		"eventC2RsvpTitle": "La scadenza RSVP è dopo la fine dell'evento",
 		"eventC2RsvpMessage": "La scadenza RSVP è successiva alla fine dell'evento, quindi non ha effetto. Sposta la scadenza prima della fine dell'evento.",

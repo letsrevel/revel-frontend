@@ -12002,7 +12002,7 @@
 		"eventB5bMessage": "Las personas sin cuenta solo pueden unirse con un enlace de invitación. Este evento es privado, solo para miembros o tiene un cuestionario de admisión.",
 		"eventC1Title": "No se puede entrar en la lista de espera",
 		"eventC1Message": "La lista de espera está abierta, pero el evento no tiene límite de aforo. Los asistentes no pueden entrar en la lista de espera. Define un número máximo de asistentes o cierra la lista de espera.",
-		"eventC2CheckinTitle": "El check-in abre después de que termine el evento",
+		"eventC2CheckinTitle": "El check-in abre después de cerrar",
 		"eventC2CheckinMessage": "El inicio del check-in es posterior al fin del check-in o al fin del evento. Nadie puede hacer el check-in. Adelanta el inicio del check-in.",
 		"eventC2RsvpTitle": "El plazo de asistencia termina después del evento",
 		"eventC2RsvpMessage": "El plazo de asistencia es posterior al fin del evento, así que no tiene efecto. Mueve el plazo antes del fin del evento.",

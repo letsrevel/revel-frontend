@@ -75,6 +75,7 @@
 	let seen: Set<string> | null = null;
 	let pending: string[] = [];
 	let timer: ReturnType<typeof setTimeout> | undefined;
+	let restoreTimer: ReturnType<typeof setTimeout> | undefined;
 
 	$effect(() => {
 		const ids = visible.map((w) => w.id);
@@ -93,7 +94,7 @@
 		timer = setTimeout(flush, announceDelay);
 	});
 
-	async function flush(): Promise<void> {
+	function flush(): void {
 		// Only the warnings that are still visible after the debounce.
 		const text = visible
 			.filter((w) => pending.includes(w.id))
@@ -101,13 +102,20 @@
 			.join(' ');
 		pending = [];
 		if (!text) return;
-		// Clear first so the same text twice is announced again.
+		// Clear first, then restore in a LATER task: a clear and a restore in the same
+		// task can reach the accessibility tree as "no change", so the same text twice
+		// would not be announced again.
+		clearTimeout(restoreTimer);
 		announcement = '';
-		await tick();
-		announcement = text;
+		restoreTimer = setTimeout(() => {
+			announcement = text;
+		}, 50);
 	}
 
-	onDestroy(() => clearTimeout(timer));
+	onDestroy(() => {
+		clearTimeout(timer);
+		clearTimeout(restoreTimer);
+	});
 
 	async function handleDismiss(warning: AdminWarning, index: number): Promise<void> {
 		if (!entityId) return;

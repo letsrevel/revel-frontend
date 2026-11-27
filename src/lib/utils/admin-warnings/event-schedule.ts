@@ -31,9 +31,10 @@ function after(value: string | null | undefined, limit: number | null): boolean 
 
 /** Check-in starts after it ends (or after the event end when there is no check-in end). */
 export function checkInAfterEndWarning(input: EventDeadlinesInput): AdminWarning | null {
-	const end = endOf(input);
-	if (end === null) return null;
-	const limit = parseWarningDate(input.check_in_ends_at) ?? end;
+	// An explicit check-in end governs check-in, also for open-ended events; the
+	// event end is only the fallback (and is skipped for open-ended events).
+	const limit = parseWarningDate(input.check_in_ends_at) ?? endOf(input);
+	if (limit === null) return null;
 	if (!after(input.check_in_starts_at, limit)) return null;
 	return {
 		id: 'C2-checkin',
@@ -113,7 +114,9 @@ export function noTicketsOnSaleWarning(input: NoTicketsOnSaleInput): AdminWarnin
 		const start = parseWarningDate(tier.sales_start_at);
 		const tierEnd = parseWarningDate(tier.sales_end_at);
 		if (start === null && tierEnd === null) return true;
-		const end = tierEnd ?? eventStart ?? Infinity;
+		// The event end caps every window: after it, the status gate blocks all sales
+		// (e.g. a tier left selling after the event was moved earlier).
+		const end = Math.min(tierEnd ?? eventStart ?? Infinity, eventEnd ?? Infinity);
 		const from = start ?? -Infinity;
 		const onSale = from <= now && now < end;
 		const scheduled = start !== null && start > now && start < end;

@@ -12001,7 +12001,7 @@
 		"eventB5bMessage": "Guests without an account can only join with an invitation link. This event is private, members-only or has an admission questionnaire.",
 		"eventC1Title": "The waitlist cannot be joined",
 		"eventC1Message": "The waitlist is open, but the event has no capacity limit. Attendees cannot join the waitlist. Set a maximum number of attendees or close the waitlist.",
-		"eventC2CheckinTitle": "Check-in opens after the event ends",
+		"eventC2CheckinTitle": "Check-in opens after it closes",
 		"eventC2CheckinMessage": "The check-in start is later than the check-in end or the event end. Nobody can check in. Move the check-in start earlier.",
 		"eventC2RsvpTitle": "RSVP deadline is after the event ends",
 		"eventC2RsvpMessage": "The RSVP deadline is later than the event end, so it has no effect. Move the deadline before the event end.",
