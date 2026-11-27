@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { readable } from 'svelte/store';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import MobileNav from './MobileNav.svelte';
@@ -102,5 +103,94 @@ describe('MobileNav breakpoint behaviour', () => {
 			props: { ...base, open: true, onClose: vi.fn(), wideNav: true }
 		});
 		expect(container.querySelector('[role="presentation"]')).toHaveClass('xl:hidden');
+	});
+});
+
+describe('MobileNav focus management', () => {
+	const items = { navItems: [{ href: '/events', label: 'Events' }], isAuthenticated: false };
+
+	function opener(): HTMLButtonElement {
+		const button = document.createElement('button');
+		button.textContent = 'Open menu';
+		document.body.appendChild(button);
+		button.focus();
+		return button;
+	}
+
+	afterEach(() => {
+		document.body.style.overflow = '';
+		document.body.innerHTML = '';
+	});
+
+	/** Dispatches a Tab keydown; returns false when a listener prevented the default. */
+	function tabFrom(el: Element, shiftKey = false): boolean {
+		return el.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true })
+		);
+	}
+
+	it('moves focus to the close button when it opens', async () => {
+		mockMatchMedia();
+		opener();
+		const { rerender } = render(MobileNav, {
+			props: { ...items, open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, open: true, onClose: vi.fn() });
+		await tick();
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('wraps Tab from the last item to the close button', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const links = within(screen.getByRole('dialog')).getAllByRole('link');
+		const last = links[links.length - 1];
+		last.focus();
+		expect(tabFrom(last)).toBe(false);
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('wraps Shift+Tab from the close button to the last item', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		close.focus();
+		expect(tabFrom(close, true)).toBe(false);
+		const links = within(screen.getByRole('dialog')).getAllByRole('link');
+		expect(links[links.length - 1]).toHaveFocus();
+	});
+
+	it('pulls focus back into the drawer when Tab starts outside it', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const outside = opener();
+		expect(tabFrom(outside)).toBe(false);
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('leaves Tab alone while the drawer is closed', () => {
+		mockMatchMedia();
+		const outside = opener();
+		render(MobileNav, { props: { ...items, open: false, onClose: vi.fn() } });
+		expect(tabFrom(outside)).toBe(true);
+		expect(outside).toHaveFocus();
+	});
+
+	it('closes on Escape and returns focus to the opener', async () => {
+		mockMatchMedia();
+		const button = opener();
+		const onClose = vi.fn();
+		const { rerender } = render(MobileNav, { props: { ...items, open: false, onClose } });
+		await rerender({ ...items, open: true, onClose });
+		await tick();
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		expect(close).toHaveFocus();
+		close.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+		expect(onClose).toHaveBeenCalledTimes(1);
+		await rerender({ ...items, open: false, onClose });
+		expect(button).toHaveFocus();
 	});
 });
