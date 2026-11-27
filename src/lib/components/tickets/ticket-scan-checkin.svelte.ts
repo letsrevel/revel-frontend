@@ -167,7 +167,7 @@ export function createTicketScanCheckIn(opts: Options) {
 		});
 
 		if (response.error || !response.data) {
-			throw new Error('Ticket not found');
+			throw new Error('Ticket not found', { cause: response.error });
 		}
 
 		ticketToCheckIn = toCheckInTicket(response.data);

@@ -292,17 +292,46 @@ describe('QrCameraScanner', () => {
 			it('keeps a failed code deduped for a full window after the camera resumes', async () => {
 				// #1305: the resume delay and the dedupe window are both 2000 ms, so a bad
 				// code held in frame was processed again on the first frame after resume.
-				const getCb = captureCb();
+				// The camera here takes 1000 ms to start, so the window must count from
+				// the moment it is live, not from the resume timer.
+				let cb: (text: string) => Promise<void> = async () => undefined;
+				start.mockImplementation(
+					(_c: unknown, _o: unknown, onSuccess: (text: string) => Promise<void>) => {
+						cb = onSuccess;
+						return start.mock.calls.length === 1
+							? Promise.resolve()
+							: new Promise<void>((resolve) => setTimeout(resolve, 1000));
+					}
+				);
 				const failing = vi.fn(() => Promise.reject(new Error('boom')));
 				render(QrCameraScanner, { props: { active: true, onScan: failing } });
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
-				await getCb()('CODE');
+				await cb('CODE');
 				expect(failing).toHaveBeenCalledTimes(1);
+				// Resume timer fires at 2000 ms; the camera is live at about 3000 ms.
 				await vi.advanceTimersByTimeAsync(2100);
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
-				await getCb()('CODE');
+				await vi.advanceTimersByTimeAsync(1000);
+				// 1900 ms of live camera: still deduped.
+				await vi.advanceTimersByTimeAsync(1800);
+				await cb('CODE');
 				expect(failing).toHaveBeenCalledTimes(1);
-				await vi.advanceTimersByTimeAsync(2000);
+				await vi.advanceTimersByTimeAsync(300);
+				await cb('CODE');
+				expect(failing).toHaveBeenCalledTimes(2);
+			});
+
+			it('does not extend the dedupe after a failed manual entry', async () => {
+				const getCb = captureCb();
+				const failing = vi.fn(() => Promise.reject(new Error('boom')));
+				const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+				render(QrCameraScanner, { props: { active: true, onScan: failing } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await user.type(screen.getByRole('textbox'), 'CODE');
+				await user.keyboard('{Enter}');
+				await waitFor(() => expect(failing).toHaveBeenCalledTimes(1));
+				await vi.advanceTimersByTimeAsync(2100);
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
 				await getCb()('CODE');
 				expect(failing).toHaveBeenCalledTimes(2);
 			});

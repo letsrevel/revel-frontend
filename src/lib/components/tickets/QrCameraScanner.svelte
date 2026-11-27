@@ -93,6 +93,10 @@
 	let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 	let bannerTimer: ReturnType<typeof setTimeout> | null = null;
 	let lastHandled: { text: string; at: number } | null = null;
+	// After a failed camera scan, restart the dedupe window when the camera is live
+	// again. Else a bad code held in frame is processed again on the first frames
+	// after resume, because the resume delay is as long as the window (#1305).
+	let reanchorDedupeOnResume = false;
 	// With `manualStart` the camera waits for an explicit click. `manualStart` is a
 	// mount-time choice, so reading it once here is intended.
 	let cameraRequested = $state(untrack(() => !manualStart));
@@ -172,7 +176,13 @@
 			}
 		},
 		{
-			onPhase: (p) => (phase = p),
+			onPhase: (p) => {
+				phase = p;
+				if (p === 'on' && reanchorDedupeOnResume && lastHandled) {
+					lastHandled = { text: lastHandled.text, at: Date.now() };
+					reanchorDedupeOnResume = false;
+				}
+			},
 			onStartError(err) {
 				if (!(err instanceof InsecureContextError)) console.error('Failed to start scanner:', err);
 				// Nobody is waiting for this camera any more, so its failure is not news.
@@ -195,6 +205,7 @@
 	);
 
 	function startCamera() {
+		clearDedupe();
 		error = null;
 		processError = null;
 		cameraRequested = true;
@@ -214,8 +225,15 @@
 		}, delayMs);
 	}
 
+	/** An explicit Start or Stop is a fresh try: forget the last handled code. */
+	function clearDedupe() {
+		lastHandled = null;
+		reanchorDedupeOnResume = false;
+	}
+
 	function stopCamera() {
 		clearResumeTimer();
+		clearDedupe();
 		error = null;
 		processError = null;
 		scanSuccess = false;
@@ -252,10 +270,8 @@
 			console.error('Scan processing error:', err);
 			processError = processFailedMessage();
 		} finally {
-			// A failed code resumes the camera after RESUME_AFTER_FAILURE_MS. Start its
-			// dedupe window at that resume, or a code held in frame is processed again
-			// on the first frame after the camera returns (#1305).
-			lastHandled = { text: code, at: Date.now() + (ok ? 0 : RESUME_AFTER_FAILURE_MS) };
+			lastHandled = { text: code, at: Date.now() };
+			reanchorDedupeOnResume = !ok && !manual;
 			handlingScan = false;
 			if (!destroyed && (ok ? continuous : true)) {
 				scheduleResume(ok ? RESUME_AFTER_SUCCESS_MS : RESUME_AFTER_FAILURE_MS);
