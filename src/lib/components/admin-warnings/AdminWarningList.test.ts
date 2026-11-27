@@ -268,23 +268,54 @@ describe('AdminWarningList', () => {
 		expect(list).toHaveAttribute('role', 'list');
 		expect(screen.getByRole('button', { name: 'Edit tier (VIP)' })).toBeInTheDocument();
 	});
-	it('focuses the first focusable element inside a non-focusable fallback wrapper', async () => {
+	// Mirrors MarkdownEditor's DOM: label, toolbar (roving tabindex), rich surface in a
+	// div that gets `.hidden` in source mode, then the source textarea (source mode only).
+	function editorFixture(mode: 'rich' | 'source'): {
+		wrapper: HTMLElement;
+		surface: HTMLElement;
+		textarea: HTMLTextAreaElement | null;
+	} {
 		const wrapper = document.createElement('div');
 		wrapper.id = 'fallback-wrapper';
-		const editor = document.createElement('div');
-		editor.setAttribute('contenteditable', 'true');
-		editor.tabIndex = 0;
-		wrapper.appendChild(editor);
+		wrapper.innerHTML = `
+			<label>Payment instructions</label>
+			<div role="toolbar"><button type="button" tabindex="0">Bold</button><button type="button" tabindex="-1">Italic</button></div>
+			<div class="${mode === 'source' ? 'hidden' : ''}"><div contenteditable="true" tabindex="0" data-surface></div></div>
+			${mode === 'source' ? '<textarea id="payment-instructions"></textarea>' : ''}`;
 		document.body.appendChild(wrapper);
+		const surface = wrapper.querySelector<HTMLElement>('[data-surface]');
+		if (!surface) throw new Error('fixture: no editing surface');
+		return { wrapper, surface, textarea: wrapper.querySelector('textarea') };
+	}
+
+	async function dismissOnlyInfo(fallbackFocusId: string): Promise<void> {
 		render(AdminWarningList, {
-			props: {
-				warnings: [warning('I1', 'info')],
-				entityId: 'ev-1',
-				fallbackFocusId: 'fallback-wrapper'
-			}
+			props: { warnings: [warning('I1', 'info')], entityId: 'ev-1', fallbackFocusId }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Dismiss: Title I1' }));
-		await waitFor(() => expect(editor).toHaveFocus());
+	}
+
+	it('rich-text fallback: focuses the editing surface, not the toolbar', async () => {
+		const { wrapper, surface } = editorFixture('rich');
+		await dismissOnlyInfo('fallback-wrapper');
+		await waitFor(() => expect(surface).toHaveFocus());
 		wrapper.remove();
+	});
+
+	it('source-mode fallback: skips the hidden rich surface and focuses the textarea', async () => {
+		const { wrapper, textarea } = editorFixture('source');
+		await dismissOnlyInfo('fallback-wrapper');
+		await waitFor(() => expect(textarea).toHaveFocus());
+		wrapper.remove();
+	});
+
+	it('a disabled fallback field does not strand focus: the container takes it', async () => {
+		const select = document.createElement('select');
+		select.id = 'disabled-field';
+		select.disabled = true;
+		document.body.appendChild(select);
+		await dismissOnlyInfo('disabled-field');
+		await waitFor(() => expect(screen.getByTestId('admin-warning-list')).toHaveFocus());
+		select.remove();
 	});
 });

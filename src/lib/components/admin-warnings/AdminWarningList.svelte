@@ -134,14 +134,30 @@
 		};
 	}
 
-	const FOCUSABLE =
-		'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [contenteditable="true"], a[href], [tabindex]:not([tabindex="-1"])';
+	// Editing surfaces first (a rich-text editor's toolbar comes before its surface in
+	// the DOM), then any other focusable control. Roving-tabindex buttons (-1) are skipped.
+	const SURFACES = 'textarea, [contenteditable="true"]';
+	const CONTROLS =
+		'input, select, button:not([tabindex="-1"]), a[href], [tabindex]:not([tabindex="-1"])';
 
-	/** The element itself when it can take focus, else its first focusable descendant. */
+	/** Disabled, or inside a hidden subtree (MarkdownEditor keeps its rich surface in a `.hidden` div in source mode). */
+	function unusable(el: Element): boolean {
+		return el.matches(':disabled') || el.closest('.hidden, [hidden], [inert]') !== null;
+	}
+
+	/** The element itself when it can take focus, else its first usable surface or control. */
 	function focusableIn(el: HTMLElement | null): HTMLElement | null {
 		if (!el) return null;
-		if (el.matches(FOCUSABLE) || el.tabIndex >= 0 || el.hasAttribute('tabindex')) return el;
-		return el.querySelector<HTMLElement>(FOCUSABLE) ?? null;
+		const selfFocusable =
+			el.matches(SURFACES) || el.matches(CONTROLS) || el.hasAttribute('tabindex');
+		if (selfFocusable && !unusable(el)) return el;
+		for (const selector of [SURFACES, CONTROLS]) {
+			const found = Array.from(el.querySelectorAll<HTMLElement>(selector)).find(
+				(c) => !unusable(c)
+			);
+			if (found) return found;
+		}
+		return null;
 	}
 
 	async function moveFocusAfterRemoval(index: number): Promise<void> {
@@ -157,7 +173,9 @@
 		for (let i = index; i < items.length && !target; i++) target = controlOf(items[i]);
 		for (let i = index - 1; i >= 0 && !target; i--) target = controlOf(items[i]);
 		target ??= fallbackFocusId ? focusableIn(document.getElementById(fallbackFocusId)) : null;
-		(target ?? container)?.focus();
+		target?.focus();
+		// The target may refuse focus (e.g. hidden by CSS we cannot see): never strand it.
+		if (!target || document.activeElement !== target) container?.focus();
 	}
 </script>
 

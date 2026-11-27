@@ -29,9 +29,9 @@
 
 <!-- Manual Payment Instructions (for offline/at_the_door payments) -->
 {#if showField}
-	<!-- The wrapper id is the dismiss focus fallback: in rich-text mode MarkdownEditor's
-	     own id sits on the hidden source textarea, so the list focuses the first
-	     focusable element inside this wrapper instead. -->
+	<!-- The wrapper id is the dismiss focus fallback. In rich-text mode MarkdownEditor
+	     renders no element with its own id (the source textarea exists only in source
+	     mode), so the list focuses the first usable editing surface inside this wrapper. -->
 	<div id="payment-instructions-field">
 		<MarkdownEditor
 			id="payment-instructions"
