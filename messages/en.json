@@ -11986,5 +11986,9 @@
 	"membershipPlanCta.freeOtherTierHelper": "You are already a member, so you cannot join a free plan of another tier.",
 	"membershipPlanCta.ownerNote": "You own this organization, so you cannot join its plans.",
 	"membershipPlanCta.pausedNote": "Your membership is paused. Contact the organization.",
-	"membershipPlanCta.bannedNote": "Your membership is suspended. Contact the organization."
+	"membershipPlanCta.bannedNote": "Your membership is suspended. Contact the organization.",
+	"adminWarnings": {
+		"dismiss": "Dismiss: {title}",
+		"listLabel": "Setting warnings"
+	}
 }
