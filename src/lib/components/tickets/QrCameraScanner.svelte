@@ -240,7 +240,7 @@
 
 	/**
 	 * An explicit Start or Stop is a fresh try after a failure: forget the failed
-	 * code. A code that succeeded stays deduped, so it is not handled twice.
+	 * code. A code that succeeded keeps its normal DEDUPE_WINDOW_MS window.
 	 */
 	function clearFailedDedupe() {
 		if (lastHandled?.failed) lastHandled = null;
