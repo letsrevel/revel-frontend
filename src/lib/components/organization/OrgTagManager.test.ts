@@ -113,6 +113,25 @@ describe('OrgTagManager', () => {
 		expect(removeTags).toHaveBeenCalledWith(expect.objectContaining({ body: { tags: ['old'] } }));
 	});
 
+	it('keeps a tag that is added while a save runs unsaved, so the next save sends it', async () => {
+		const user = userEvent.setup();
+		const pendingAdd = deferred<Record<string, never>>();
+		addTags.mockReturnValueOnce(pendingAdd.promise);
+		const { save } = renderIt([]);
+		await user.type(input(), 'first{Enter}');
+		const saving = save();
+		await user.type(input(), 'second{Enter}');
+		pendingAdd.resolve({});
+		await saving;
+		expect(screen.getByRole('button', { name: 'Remove second tag' })).toBeInTheDocument();
+
+		await save();
+		expect(addTags).toHaveBeenCalledTimes(2);
+		expect(addTags).toHaveBeenLastCalledWith(
+			expect.objectContaining({ body: { tags: ['second'] } })
+		);
+	});
+
 	describe('search answers', () => {
 		it('drops an older answer that arrives after a newer one, and keeps the spinner for the newer search', async () => {
 			const user = userEvent.setup();

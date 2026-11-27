@@ -94,10 +94,11 @@ export async function saveResourceAssociations(params: {
  * Save tag associations (add/remove tags) for an event.
  *
  * Diffs the current tags against the initial set and calls the add/remove tag
- * endpoints. Returns the new "initial tags" snapshot (`[...currentTags]`) that
- * the caller assigns back to its tracking state for future comparisons — this
- * keeps the reassignment side effect in the component while sharing the diff
- * logic verbatim between EventWizard and EventEditor.
+ * endpoints. Returns the new "initial tags" snapshot: `currentTags`, with the
+ * stored casing kept for a tag whose key did not change. The caller assigns it
+ * back to its tracking state for future comparisons. This keeps the
+ * reassignment side effect in the component while sharing the diff logic
+ * verbatim between EventWizard and EventEditor.
  */
 export async function saveTagAssociations(params: {
 	eventId: string;

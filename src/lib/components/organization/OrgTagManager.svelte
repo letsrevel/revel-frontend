@@ -63,8 +63,8 @@
 				showTagSuggestions = tagSuggestions.length > 0;
 			}
 		} catch (error) {
-			if (seq !== searchSeq) return;
 			console.error('Failed to fetch tag suggestions:', error);
+			if (seq !== searchSeq) return;
 			tagSuggestions = [];
 		} finally {
 			if (seq === searchSeq) isLoadingTagSuggestions = false;
@@ -129,7 +129,9 @@
 	async function saveTagAssociations(): Promise<void> {
 		if (!accessToken) return;
 
-		const { added: addedTags, removed: removedTags } = diffTags(savedTags, tags);
+		// Snapshot before the awaits: a tag added while the save runs stays unsaved.
+		const sent = [...tags];
+		const { added: addedTags, removed: removedTags } = diffTags(savedTags, sent);
 
 		if (addedTags.length > 0) {
 			await organizationadminmembersAddTags({
@@ -147,9 +149,10 @@
 			});
 		}
 
-		// A case-only edit sent no request: show the casing the backend keeps.
-		tags = keepStoredCasing(tags, savedTags);
-		savedTags = [...tags];
+		// A case-only edit sent no request: keep and show the casing the backend keeps.
+		const nextSaved = keepStoredCasing(sent, savedTags);
+		tags = keepStoredCasing(tags, nextSaved);
+		savedTags = nextSaved;
 	}
 
 	// Register the save function with the parent
