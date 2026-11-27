@@ -12032,6 +12032,8 @@
 		"fixCheckIn": "Change check-in time",
 		"fixRsvpDeadline": "Change RSVP deadline",
 		"fixApplyDeadline": "Change application deadline",
-		"clearDeadline": "Clear deadline"
+		"clearDeadline": "Clear deadline",
+		"fixWhoCanBuy": "Change who can buy",
+		"fixEditTier": "Edit tier"
 	}
 }

@@ -170,7 +170,10 @@ describe('TierForm per-tier check-in window (#945)', () => {
 		await fireEvent.input(screen.getByLabelText('Check-in opens'), {
 			target: { value: '2026-10-11T03:00' }
 		});
-		expect(screen.getByRole('status')).toHaveTextContent(/close before it opens/);
+		const live = screen
+			.getAllByRole('status')
+			.find((el) => /close before it opens/.test(el.textContent ?? ''));
+		expect(live).toBeDefined();
 	});
 
 	it('blocks saving an offset beyond 364 days', async () => {

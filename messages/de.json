@@ -11985,5 +11985,8 @@
 	"membershipPlanCta.freeOtherTierHelper": "Du bist bereits Mitglied und kannst daher keinem kostenlosen Tarif einer anderen Stufe beitreten.",
 	"membershipPlanCta.ownerNote": "Diese Organisation gehört dir, daher kannst du keinem ihrer Tarife beitreten.",
 	"membershipPlanCta.pausedNote": "Deine Mitgliedschaft ist pausiert. Wende dich an die Organisation.",
-	"membershipPlanCta.bannedNote": "Deine Mitgliedschaft ist gesperrt. Wende dich an die Organisation."
+	"membershipPlanCta.bannedNote": "Deine Mitgliedschaft ist gesperrt. Wende dich an die Organisation.",
+	"adminWarnings": {
+		"fixWhoCanBuy": "Ändern, wer kaufen kann"
+	}
 }

@@ -519,6 +519,7 @@
 					{tier}
 					{eventCapacity}
 					{onlineBlocked}
+					{organizationStripeConnected}
 					venueCountry={compliance?.venue_country ?? ''}
 					onEdit={() => handleEditTier(tier)}
 					onTogglePause={togglePauseFor(tier)}

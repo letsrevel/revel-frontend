@@ -7,6 +7,9 @@
 	import TierFormExcludedTiersSection from './TierFormExcludedTiersSection.svelte';
 	import { extractFieldErrors } from '$lib/utils/errors';
 	import { allowsMembershipRestrictions, excludedTiersError } from './tier-membership-links';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import { tierPublicButRestricted } from '$lib/utils/admin-warnings/tier';
 	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -35,6 +38,8 @@
 		/** A day-membership grant is set: member-only audiences are illegal, so their options are disabled. */
 		grantsMembership?: boolean;
 		isPending: boolean;
+		/** Saved tier id; unset for a new tier (no dismiss button on its hints). */
+		tierId?: string;
 	}
 
 	let {
@@ -56,7 +61,8 @@
 		salesPaused = $bindable(),
 		eventCapacity = null,
 		grantsMembership = false,
-		isPending
+		isPending,
+		tierId
 	}: Props = $props();
 
 	// Parsed exactly as TierForm saves it (`parseInt`), so the warning describes
@@ -76,6 +82,16 @@
 		]
 			.filter(Boolean)
 			.join(' ')
+	);
+
+	// Admin setting warning (#1314, D3); the fix link points at the audience select.
+	const audienceWarnings = $derived(
+		compactWarnings([
+			(() => {
+				const d3 = tierPublicButRestricted({ visibility, purchasable_by: purchasableBy });
+				return d3 && withFix(d3, 'purchasable-by', () => m['adminWarnings.fixWhoCanBuy']());
+			})()
+		])
 	);
 
 	// Restrictions only exist under members / invited_and_members; drop a stale selection
@@ -257,6 +273,8 @@
 		</label>
 	{/if}
 </div>
+
+<AdminWarningList warnings={audienceWarnings} entityId={tierId} testId="tier-audience-warnings" />
 
 <!-- Excluded membership tiers (non_members only) -->
 {#if purchasableBy === 'non_members'}

@@ -11985,5 +11985,8 @@
 	"membershipPlanCta.freeOtherTierHelper": "Fai già parte dell'organizzazione, quindi non puoi aderire a un piano gratuito di un altro livello.",
 	"membershipPlanCta.ownerNote": "Questa organizzazione è tua, quindi non puoi aderire ai suoi piani.",
 	"membershipPlanCta.pausedNote": "La tua iscrizione è in pausa. Contatta l'organizzazione.",
-	"membershipPlanCta.bannedNote": "La tua iscrizione è sospesa. Contatta l'organizzazione."
+	"membershipPlanCta.bannedNote": "La tua iscrizione è sospesa. Contatta l'organizzazione.",
+	"adminWarnings": {
+		"fixWhoCanBuy": "Cambia chi può acquistare"
+	}
 }

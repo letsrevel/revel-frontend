@@ -21,6 +21,9 @@
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import { countryName } from '$lib/utils/compliance';
 	import { exceedsEventCapacity } from './event-capacity';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withAction } from '$lib/utils/admin-warnings/types';
+	import { tierFreeWithPrice, tierOnlineWithoutStripe } from '$lib/utils/admin-warnings/tier';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -36,6 +39,11 @@
 		venueCountry?: string;
 		/** Effective event capacity (null = uncapped); flags a quantity above it. */
 		eventCapacity?: number | null;
+		/**
+		 * Whether the organization can take online payments. Defaults to `true`, so a caller
+		 * that does not know the state never shows the "no Stripe" warning (#1314, D1).
+		 */
+		organizationStripeConnected?: boolean;
 	}
 
 	const {
@@ -47,10 +55,25 @@
 		pausePending = false,
 		onlineBlocked = false,
 		venueCountry = '',
-		eventCapacity = null
+		eventCapacity = null,
+		organizationStripeConnected = true
 	}: Props = $props();
 
 	const overCapacity = $derived(exceedsEventCapacity(tier.total_quantity, eventCapacity));
+
+	// Admin setting warnings (#1314). The card has no field to jump to, so the fix opens the editor.
+	const settingWarnings = $derived.by(() => {
+		const edit = {
+			label: () => m['adminWarnings.fixEditTier'](),
+			run: onEdit
+		};
+		const d1 = tierOnlineWithoutStripe({
+			payment_method: tier.payment_method,
+			organizationStripeConnected
+		});
+		const d2 = tierFreeWithPrice({ payment_method: tier.payment_method, price: tier.price });
+		return compactWarnings([d1 && withAction(d1, edit), d2 && withAction(d2, edit)]);
+	});
 
 	// A tier created before the country gate (or switched to card while the
 	// venue was elsewhere) can't sell anymore: say so and offer the way out.
@@ -386,6 +409,11 @@
 			</Button>
 		</ComplianceCallout>
 	{/if}
+	<AdminWarningList
+		warnings={settingWarnings}
+		entityId={tier.id ?? undefined}
+		testId="tier-card-warnings"
+	/>
 	{#if tier.description}
 		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 	{/if}

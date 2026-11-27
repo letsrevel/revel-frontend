@@ -11985,5 +11985,8 @@
 	"membershipPlanCta.freeOtherTierHelper": "Tu es déjà membre, donc tu ne peux pas rejoindre une formule gratuite d'un autre niveau.",
 	"membershipPlanCta.ownerNote": "Cette organisation est la tienne, donc tu ne peux pas rejoindre ses formules.",
 	"membershipPlanCta.pausedNote": "Ton adhésion est en pause. Contacte l'organisation.",
-	"membershipPlanCta.bannedNote": "Ton adhésion est suspendue. Contacte l'organisation."
+	"membershipPlanCta.bannedNote": "Ton adhésion est suspendue. Contacte l'organisation.",
+	"adminWarnings": {
+		"fixWhoCanBuy": "Modifier qui peut acheter"
+	}
 }
