@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { navLoginHref } from '$lib/utils/safe-redirect';
+	import { tick } from 'svelte';
 	import { X } from '@lucide/svelte';
 	import UserMenu from './UserMenu.svelte';
 	import { BREAKPOINT_MD_PX, BREAKPOINT_XL_PX } from '$lib/utils/breakpoints';
@@ -39,10 +40,52 @@
 		onClose();
 	}
 
-	// Close on Escape key
+	let drawer = $state<HTMLDivElement>();
+	let closeButton = $state<HTMLButtonElement>();
+
+	const FOCUSABLE =
+		'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	function focusableInDrawer(): HTMLElement[] {
+		if (!drawer) return [];
+		return Array.from(drawer.querySelectorAll<HTMLElement>(FOCUSABLE));
+	}
+
+	// Keep Tab inside the open drawer: aria-modal tells screen readers the page
+	// behind it is inert, so keyboard focus must not reach it either (WCAG 2.4.3).
+	// These moves may scroll: the nav list can overflow, and the target must show.
+	function trapTab(event: KeyboardEvent): void {
+		// A modal opened above the drawer owns Tab while focus is inside it.
+		const active = document.activeElement;
+		const otherModal = active instanceof Element ? active.closest('[aria-modal="true"]') : null;
+		if (otherModal && otherModal !== drawer) return;
+		const items = focusableInDrawer();
+		if (items.length === 0) {
+			event.preventDefault();
+			return;
+		}
+		const first = items[0];
+		const last = items[items.length - 1];
+		const inside = !!drawer && active instanceof Node && drawer.contains(active);
+		if (!inside) {
+			event.preventDefault();
+			(event.shiftKey ? last : first).focus();
+		} else if (event.shiftKey && active === first) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && active === last) {
+			event.preventDefault();
+			first.focus();
+		}
+	}
+
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
-			onClose();
+			// A nested widget that already handled Escape owns it. Tab is never
+			// skipped: the trap must pull focus back in from anywhere.
+			if (!event.defaultPrevented) onClose();
+		} else if (event.key === 'Tab') {
+			trapTab(event);
 		}
 	}
 
@@ -73,17 +116,46 @@
 		return () => query.removeEventListener('change', onChange);
 	});
 
-	// Focus trap management
+	// The element to give focus back to on close: the toggle that names this
+	// drawer via aria-controls, else whatever had focus. Safari does not focus a
+	// button on click or tap, so activeElement alone is not the opener there.
+	function findOpener(): HTMLElement | null {
+		if (id) {
+			const toggles = document.querySelectorAll<HTMLElement>('[aria-controls]');
+			// aria-controls is a space-separated ID list.
+			const toggle = Array.from(toggles).find((el) =>
+				(el.getAttribute('aria-controls') ?? '').split(/\s+/).includes(id)
+			);
+			if (toggle) return toggle;
+		}
+		const active = document.activeElement;
+		return active instanceof HTMLElement && active !== document.body ? active : null;
+	}
+
+	// Focus management: move focus in on open, trap Tab while open, and give
+	// focus back to the opener on close.
 	$effect(() => {
 		if (open) {
-			// Add event listener for Escape key
+			const opener = findOpener();
 			document.addEventListener('keydown', handleKeydown);
 			// Prevent body scroll
 			document.body.style.overflow = 'hidden';
+			// Wait for the DOM update that removes `inert`, else focus() is a no-op.
+			void tick().then(() => {
+				if (open) closeButton?.focus({ preventScroll: true });
+			});
 
 			return () => {
 				document.removeEventListener('keydown', handleKeydown);
 				document.body.style.overflow = '';
+				// The closed drawer is inert, so focus left in it would fall to <body>.
+				// Callers may move focus themselves first; only restore when they did not.
+				const active = document.activeElement;
+				const stranded =
+					active === null ||
+					active === document.body ||
+					(!!drawer && active instanceof Node && drawer.contains(active));
+				if (stranded && opener?.isConnected) opener.focus({ preventScroll: true });
 			};
 		}
 		return undefined;
@@ -107,6 +179,7 @@
 		? 'xl:hidden'
 		: 'md:hidden'} {open ? 'translate-x-0' : 'translate-x-full'}"
 	{id}
+	bind:this={drawer}
 	inert={!open}
 	aria-hidden={open ? undefined : 'true'}
 	role="dialog"
@@ -119,7 +192,8 @@
 			<span role="heading" aria-level="2" class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
-				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				bind:this={closeButton}
 				onclick={onClose}
 				aria-label={m['nav.closeMenu']()}
 			>

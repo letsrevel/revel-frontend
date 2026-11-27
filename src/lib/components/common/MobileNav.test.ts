@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/svelte';
+import { cleanup, render, screen, within } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { readable } from 'svelte/store';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import MobileNav from './MobileNav.svelte';
@@ -102,5 +104,207 @@ describe('MobileNav breakpoint behaviour', () => {
 			props: { ...base, open: true, onClose: vi.fn(), wideNav: true }
 		});
 		expect(container.querySelector('[role="presentation"]')).toHaveClass('xl:hidden');
+	});
+});
+
+describe('MobileNav focus management', () => {
+	const items = { navItems: [{ href: '/events', label: 'Events' }], isAuthenticated: false };
+
+	function addButton(label: string, attrs: Record<string, string> = {}): HTMLButtonElement {
+		const button = document.createElement('button');
+		button.textContent = label;
+		for (const [k, v] of Object.entries(attrs)) button.setAttribute(k, v);
+		document.body.appendChild(button);
+		return button;
+	}
+
+	function opener(): HTMLButtonElement {
+		const button = addButton('Open menu');
+		button.focus();
+		return button;
+	}
+
+	function lastLink(): HTMLElement {
+		const links = within(screen.getByRole('dialog')).getAllByRole('link');
+		return links[links.length - 1];
+	}
+
+	afterEach(() => {
+		// Unmount first, so the drawer's cleanup runs against a connected DOM.
+		cleanup();
+		document.body.style.overflow = '';
+		document.body.innerHTML = '';
+	});
+
+	it('moves focus to the close button when it opens', async () => {
+		mockMatchMedia();
+		opener();
+		const { rerender } = render(MobileNav, {
+			props: { ...items, open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, open: true, onClose: vi.fn() });
+		await tick();
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('wraps Tab from the last item to the close button', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		lastLink().focus();
+		await user.tab();
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('wraps Shift+Tab from the close button to the last item', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		screen.getByRole('button', { name: 'Close menu' }).focus();
+		await user.tab({ shift: true });
+		expect(lastLink()).toHaveFocus();
+	});
+
+	it('pulls focus back into the drawer when Tab starts outside it', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		opener();
+		await user.tab();
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('leaves Tab alone while the drawer is closed', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		const outside = opener();
+		const next = addButton('Next');
+		render(MobileNav, { props: { ...items, open: false, onClose: vi.fn() } });
+		await user.tab();
+		expect(next).toHaveFocus();
+		expect(outside).not.toHaveFocus();
+	});
+
+	it('closes on Escape and returns focus to the opener', async () => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		const button = opener();
+		const onClose = vi.fn();
+		const { rerender } = render(MobileNav, { props: { ...items, open: false, onClose } });
+		await rerender({ ...items, open: true, onClose });
+		await tick();
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+		await user.keyboard('{Escape}');
+		expect(onClose).toHaveBeenCalledTimes(1);
+		await rerender({ ...items, open: false, onClose });
+		expect(button).toHaveFocus();
+	});
+
+	it('returns focus to the aria-controls toggle even when it never took focus (Safari)', async () => {
+		mockMatchMedia();
+		const toggle = addButton('Toggle', { 'aria-controls': 'drawer' });
+		// Safari leaves focus on whatever had it before the tap on the toggle.
+		opener();
+		const { rerender } = render(MobileNav, {
+			props: { ...items, id: 'drawer', open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, id: 'drawer', open: true, onClose: vi.fn() });
+		await tick();
+		await rerender({ ...items, id: 'drawer', open: false, onClose: vi.fn() });
+		expect(toggle).toHaveFocus();
+	});
+
+	it('keeps focus where the caller moved it on close', async () => {
+		mockMatchMedia();
+		opener();
+		const elsewhere = addButton('Elsewhere');
+		const { rerender } = render(MobileNav, {
+			props: { ...items, open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, open: true, onClose: vi.fn() });
+		await tick();
+		elsewhere.focus();
+		await rerender({ ...items, open: false, onClose: vi.fn() });
+		expect(elsewhere).toHaveFocus();
+	});
+
+	it('still traps Tab when a widget outside the drawer already handled it', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const outside = opener();
+		outside.addEventListener('keydown', (e) => e.preventDefault());
+		outside.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+		);
+		expect(screen.getByRole('button', { name: 'Close menu' })).toHaveFocus();
+	});
+
+	it('does not close on an Escape that a nested widget already handled', async () => {
+		mockMatchMedia();
+		const onClose = vi.fn();
+		render(MobileNav, { props: { ...items, open: true, onClose } });
+		await tick();
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		close.addEventListener('keydown', (e) => e.preventDefault());
+		close.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+		);
+		expect(onClose).not.toHaveBeenCalled();
+	});
+
+	it('leaves Tab to a modal that is open above the drawer', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const modal = document.createElement('div');
+		modal.setAttribute('role', 'dialog');
+		modal.setAttribute('aria-modal', 'true');
+		const inModal = document.createElement('button');
+		inModal.textContent = 'In modal';
+		modal.appendChild(inModal);
+		document.body.appendChild(modal);
+		inModal.focus();
+		const notPrevented = inModal.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+		);
+		expect(notPrevented).toBe(true);
+		expect(inModal).toHaveFocus();
+	});
+
+	it('matches a toggle whose aria-controls lists several ids', async () => {
+		mockMatchMedia();
+		const toggle = addButton('Toggle', { 'aria-controls': 'other drawer' });
+		const { rerender } = render(MobileNav, {
+			props: { ...items, id: 'drawer', open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, id: 'drawer', open: true, onClose: vi.fn() });
+		await tick();
+		await rerender({ ...items, id: 'drawer', open: false, onClose: vi.fn() });
+		expect(toggle).toHaveFocus();
+	});
+
+	it.each([
+		{ name: 'Shift+Tab wrap to the last item', from: 'close', shift: true, to: 'last' },
+		{ name: 'Tab wrap to the close button', from: 'last', shift: false, to: 'close' },
+		{ name: 'Tab pulled in from outside', from: 'outside', shift: false, to: 'close' }
+	] as const)('lets the $name scroll its target into view', async ({ from, shift, to }) => {
+		mockMatchMedia();
+		const user = userEvent.setup();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const close = screen.getByRole('button', { name: 'Close menu' });
+		const pick = (k: 'close' | 'last' | 'outside'): HTMLElement =>
+			k === 'close' ? close : k === 'last' ? lastLink() : opener();
+		pick(from).focus();
+		const target = pick(to);
+		const focusSpy = vi.spyOn(target, 'focus');
+		await user.tab({ shift });
+		expect(target).toHaveFocus();
+		expect(focusSpy).toHaveBeenCalledTimes(1);
+		expect(focusSpy.mock.calls[0][0]?.preventScroll).not.toBe(true);
 	});
 });
