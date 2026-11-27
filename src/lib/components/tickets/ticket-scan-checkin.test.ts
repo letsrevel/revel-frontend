@@ -98,7 +98,6 @@ describe('createTicketScanCheckIn ticket lookup failure', () => {
 
 	beforeEach(() => {
 		vi.mocked(eventadminticketsGetTicket).mockReset();
-		vi.spyOn(console, 'error').mockImplementation(() => undefined);
 	});
 
 	it('rejects and keeps the scanner open when the ticket is not found', async () => {

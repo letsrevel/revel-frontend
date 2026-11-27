@@ -252,7 +252,10 @@
 			console.error('Scan processing error:', err);
 			processError = processFailedMessage();
 		} finally {
-			lastHandled = { text: code, at: Date.now() };
+			// A failed code resumes the camera after RESUME_AFTER_FAILURE_MS. Start its
+			// dedupe window at that resume, or a code held in frame is processed again
+			// on the first frame after the camera returns (#1305).
+			lastHandled = { text: code, at: Date.now() + (ok ? 0 : RESUME_AFTER_FAILURE_MS) };
 			handlingScan = false;
 			if (!destroyed && (ok ? continuous : true)) {
 				scheduleResume(ok ? RESUME_AFTER_SUCCESS_MS : RESUME_AFTER_FAILURE_MS);

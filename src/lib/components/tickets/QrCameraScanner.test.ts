@@ -289,6 +289,24 @@ describe('QrCameraScanner', () => {
 				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
 			});
 
+			it('keeps a failed code deduped for a full window after the camera resumes', async () => {
+				// #1305: the resume delay and the dedupe window are both 2000 ms, so a bad
+				// code held in frame was processed again on the first frame after resume.
+				const getCb = captureCb();
+				const failing = vi.fn(() => Promise.reject(new Error('boom')));
+				render(QrCameraScanner, { props: { active: true, onScan: failing } });
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2100);
+				await waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(1);
+				await vi.advanceTimersByTimeAsync(2000);
+				await getCb()('CODE');
+				expect(failing).toHaveBeenCalledTimes(2);
+			});
+
 			it('does not resume after unmount', async () => {
 				const getCb = captureCb();
 				const { unmount } = render(QrCameraScanner, {
