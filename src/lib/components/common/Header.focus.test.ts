@@ -53,4 +53,14 @@ describe('Header mobile menu focus', () => {
 		await user.keyboard('{Escape}');
 		expect(toggle).toHaveFocus();
 	});
+
+	it('names its drawer with aria-controls so focus can return to the toggle', async () => {
+		const user = userEvent.setup();
+		render(Header);
+		const toggle = screen.getByRole('button', { name: m['nav.toggleMenu']() });
+		await user.click(toggle);
+		const drawer = screen.getByRole('dialog');
+		expect(drawer.id).not.toBe('');
+		expect(toggle).toHaveAttribute('aria-controls', drawer.id);
+	});
 });

@@ -255,4 +255,35 @@ describe('MobileNav focus management', () => {
 		);
 		expect(onClose).not.toHaveBeenCalled();
 	});
+
+	it('leaves Tab to a modal that is open above the drawer', async () => {
+		mockMatchMedia();
+		render(MobileNav, { props: { ...items, open: true, onClose: vi.fn() } });
+		await tick();
+		const modal = document.createElement('div');
+		modal.setAttribute('role', 'dialog');
+		modal.setAttribute('aria-modal', 'true');
+		const inModal = document.createElement('button');
+		inModal.textContent = 'In modal';
+		modal.appendChild(inModal);
+		document.body.appendChild(modal);
+		inModal.focus();
+		const notPrevented = inModal.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+		);
+		expect(notPrevented).toBe(true);
+		expect(inModal).toHaveFocus();
+	});
+
+	it('matches a toggle whose aria-controls lists several ids', async () => {
+		mockMatchMedia();
+		const toggle = addButton('Toggle', { 'aria-controls': 'other drawer' });
+		const { rerender } = render(MobileNav, {
+			props: { ...items, id: 'drawer', open: false, onClose: vi.fn() }
+		});
+		await rerender({ ...items, id: 'drawer', open: true, onClose: vi.fn() });
+		await tick();
+		await rerender({ ...items, id: 'drawer', open: false, onClose: vi.fn() });
+		expect(toggle).toHaveFocus();
+	});
 });

@@ -54,6 +54,10 @@
 	// Keep Tab inside the open drawer: aria-modal tells screen readers the page
 	// behind it is inert, so keyboard focus must not reach it either (WCAG 2.4.3).
 	function trapTab(event: KeyboardEvent): void {
+		// A modal opened above the drawer owns Tab while focus is inside it.
+		const active = document.activeElement;
+		const otherModal = active instanceof Element ? active.closest('[aria-modal="true"]') : null;
+		if (otherModal && otherModal !== drawer) return;
 		const items = focusableInDrawer();
 		if (items.length === 0) {
 			event.preventDefault();
@@ -61,7 +65,6 @@
 		}
 		const first = items[0];
 		const last = items[items.length - 1];
-		const active = document.activeElement;
 		const inside = !!drawer && active instanceof Node && drawer.contains(active);
 		if (!inside) {
 			event.preventDefault();
@@ -118,7 +121,10 @@
 	function findOpener(): HTMLElement | null {
 		if (id) {
 			const toggles = document.querySelectorAll<HTMLElement>('[aria-controls]');
-			const toggle = Array.from(toggles).find((el) => el.getAttribute('aria-controls') === id);
+			// aria-controls is a space-separated ID list.
+			const toggle = Array.from(toggles).find((el) =>
+				(el.getAttribute('aria-controls') ?? '').split(/\s+/).includes(id)
+			);
 			if (toggle) return toggle;
 		}
 		const active = document.activeElement;
