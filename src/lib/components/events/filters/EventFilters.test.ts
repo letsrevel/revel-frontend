@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import EventFilters from './EventFilters.svelte';
 import MobileFilterSheet from './MobileFilterSheet.svelte';
+import * as m from '$lib/paraglide/messages.js';
 
 const { cityGetCity, cityListCities, tagListTags, organizationListOrganizations } = vi.hoisted(
 	() => ({
@@ -54,5 +55,23 @@ describe.each([
 	it('hides the search field in calendar view', () => {
 		renderWith(component, { ...baseProps, ...extra, hideListControls: true });
 		expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+	});
+
+	it('counts the search and offers Clear all in list view', () => {
+		renderWith(component, { ...baseProps, ...extra });
+		expect(
+			screen.getAllByRole('button', { name: new RegExp(m['common.filters_clearAll']()) }).length
+		).toBeGreaterThan(0);
+		expect(screen.getByLabelText(`1 ${m['common.filters_activeFilters']()}`)).toBeInTheDocument();
+	});
+
+	it('neither counts the search nor offers Clear all in calendar view', () => {
+		renderWith(component, { ...baseProps, ...extra, hideListControls: true });
+		expect(
+			screen.queryAllByRole('button', { name: new RegExp(m['common.filters_clearAll']()) })
+		).toHaveLength(0);
+		expect(
+			screen.queryByLabelText(`1 ${m['common.filters_activeFilters']()}`)
+		).not.toBeInTheDocument();
 	});
 });

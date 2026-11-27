@@ -19,7 +19,7 @@
 		month: number;
 		week: number;
 		baseUrl: string;
-		preserveParams?: string[];
+		preserveParams?: readonly string[];
 	}
 
 	const { view, year, month, week, baseUrl, preserveParams = [] }: Props = $props();

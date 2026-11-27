@@ -159,9 +159,7 @@
 
 		<!-- Divider -->
 		<div class="border-t" role="separator"></div>
-	{/if}
 
-	{#if !hideListControls}
 		<!-- Date Filter -->
 		<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 

@@ -151,6 +151,27 @@ export function filtersToApiParams(filters: EventFilters) {
 	};
 }
 
+/**
+ * URL params that Browse Events calendar navigation (previous, next, today,
+ * view change) keeps. It includes the list-only params (search, include_past,
+ * order_by): calendar view hides them, but list view must still apply them
+ * when the user switches back (#1297).
+ */
+export const CALENDAR_PRESERVED_PARAMS: readonly string[] = [
+	'viewMode',
+	'search',
+	'city_id',
+	'organization',
+	'organization_name',
+	'organization_slug',
+	'event_type',
+	'visibility',
+	'tags',
+	'include_past',
+	'ticket_type',
+	'order_by'
+];
+
 /** Options for the active-filter helpers. */
 export interface ActiveFilterOptions {
 	/**

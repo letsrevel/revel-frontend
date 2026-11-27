@@ -16,7 +16,8 @@
 		filtersToParams,
 		clearFilters,
 		countActiveFilters,
-		hasActiveFilters
+		hasActiveFilters,
+		CALENDAR_PRESERVED_PARAMS
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
@@ -465,15 +466,7 @@
 								month={calendarParams.month}
 								week={calendarParams.week}
 								baseUrl="/events"
-								preserveParams={[
-									'viewMode',
-									'city_id',
-									'organization',
-									'event_type',
-									'visibility',
-									'tags',
-									'ticket_type'
-								]}
+								preserveParams={CALENDAR_PRESERVED_PARAMS}
 							/>
 
 							<CalendarView

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countActiveFilters, hasActiveFilters } from './filters';
+import { countActiveFilters, hasActiveFilters, CALENDAR_PRESERVED_PARAMS } from './filters';
 import {
 	countActiveOrganizationFilters,
 	hasActiveOrganizationFilters
@@ -50,4 +50,15 @@ describe('ignoreListOnly option', () => {
 		expect(countActiveFilters(f, { ignoreListOnly: true })).toBe(2);
 		expect(hasActiveFilters(f, { ignoreListOnly: true })).toBe(true);
 	});
+});
+
+// Calendar navigation rebuilds the URL from this list. The list-only params are
+// hidden in calendar view but must survive it, so list view still applies them.
+describe('CALENDAR_PRESERVED_PARAMS', () => {
+	it.each(['viewMode', 'search', 'include_past', 'order_by', 'city_id', 'organization'])(
+		'keeps %s',
+		(param) => {
+			expect(CALENDAR_PRESERVED_PARAMS).toContain(param);
+		}
+	);
 });
