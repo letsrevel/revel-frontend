@@ -24,10 +24,11 @@
 			})
 		])
 	);
+	const showField = $derived(paymentMethod === 'offline' || paymentMethod === 'at_the_door');
 </script>
 
 <!-- Manual Payment Instructions (for offline/at_the_door payments) -->
-{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
+{#if showField}
 	<div>
 		<MarkdownEditor
 			id="payment-instructions"
@@ -40,11 +41,14 @@
 		<p class="mt-1 text-xs text-muted-foreground">
 			{m['tierForm.paymentInstructionsHelp']()}
 		</p>
-		<AdminWarningList
-			{warnings}
-			entityId={tierId}
-			class="mt-2"
-			testId="tier-instructions-warnings"
-		/>
 	</div>
 {/if}
+
+<!-- Outside the {#if}: a list that mounts together with its warning is never announced. D4 fires for offline only. -->
+<AdminWarningList
+	warnings={showField ? warnings : []}
+	entityId={tierId}
+	class="mt-2"
+	fallbackFocusId="payment-instructions"
+	testId="tier-instructions-warnings"
+/>

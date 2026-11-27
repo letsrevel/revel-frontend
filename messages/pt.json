@@ -12034,6 +12034,7 @@
 		"fixRsvpDeadline": "Alterar prazo de presença",
 		"fixApplyDeadline": "Alterar prazo de candidatura",
 		"clearDeadline": "Apagar prazo",
-		"fixEditTier": "Editar tipo de bilhete"
+		"fixEditTier": "Editar tipo de bilhete",
+		"listLabelNamed": "Avisos de definições: {name}"
 	}
 }

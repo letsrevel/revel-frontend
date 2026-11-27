@@ -199,9 +199,21 @@
 
 	// Admin setting warnings (#1314): only once the tiers AND the saved event have loaded,
 	// so nothing flashes (or is announced) while loading.
+	// `now` is state, refreshed every minute, so C4 follows the clock without a re-render trigger.
+	let now = $state(new Date());
+	$effect(() => {
+		const timer = setInterval(() => {
+			now = new Date();
+		}, 60_000);
+		return () => clearInterval(timer);
+	});
+
 	const ticketingWarnings = $derived.by(() => {
 		const saved = complianceQuery.data;
 		if (!tiersQuery.isSuccess || !complianceQuery.isSuccess || !saved) return [];
+		// The tiers list is paginated. With a next page, `tiers` is a partial list, so
+		// "no tier on sale" and the capacity sum could be wrong: stay silent.
+		if (tiersQuery.data?.data?.next) return [];
 		return compactWarnings([
 			tiersExceedCapacityWarning({
 				tiers,
@@ -214,7 +226,7 @@
 				start: saved.start,
 				end: saved.end,
 				tiers,
-				now: new Date()
+				now
 			})
 		]);
 	});
@@ -470,7 +482,11 @@
 		/>
 	</div>
 
-	<AdminWarningList warnings={ticketingWarnings} entityId={eventId} />
+	<AdminWarningList
+		warnings={ticketingWarnings}
+		entityId={eventId}
+		baselineReady={tiersQuery.isSuccess && complianceQuery.isSuccess}
+	/>
 
 	{#if pauseError}
 		<div

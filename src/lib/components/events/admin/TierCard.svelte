@@ -65,7 +65,8 @@
 	const settingWarnings = $derived.by(() => {
 		const edit = {
 			label: () => m['adminWarnings.fixEditTier'](),
-			run: onEdit
+			run: onEdit,
+			srContext: () => tier.name
 		};
 		const d1 = tierOnlineWithoutStripe({
 			payment_method: tier.payment_method,
@@ -378,7 +379,13 @@
 				{/if}
 			</Button>
 		{/if}
-		<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
+		<Button
+			id="tier-edit-{tier.id}"
+			variant="ghost"
+			size="icon"
+			onclick={onEdit}
+			aria-label="Edit {tier.name}"
+		>
 			<Edit class="h-4 w-4" />
 		</Button>
 	</div>
@@ -412,6 +419,8 @@
 	<AdminWarningList
 		warnings={settingWarnings}
 		entityId={tier.id ?? undefined}
+		label={m['adminWarnings.listLabelNamed']({ name: tier.name })}
+		fallbackFocusId="tier-edit-{tier.id}"
 		testId="tier-card-warnings"
 	/>
 	{#if tier.description}

@@ -12034,6 +12034,7 @@
 		"fixRsvpDeadline": "Antwortfrist ändern",
 		"fixApplyDeadline": "Bewerbungsfrist ändern",
 		"clearDeadline": "Frist löschen",
-		"fixEditTier": "Ticketstufe bearbeiten"
+		"fixEditTier": "Ticketstufe bearbeiten",
+		"listLabelNamed": "Warnungen zu Einstellungen: {name}"
 	}
 }

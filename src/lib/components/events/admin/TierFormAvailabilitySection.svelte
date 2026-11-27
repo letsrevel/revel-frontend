@@ -274,7 +274,12 @@
 	{/if}
 </div>
 
-<AdminWarningList warnings={audienceWarnings} entityId={tierId} testId="tier-audience-warnings" />
+<AdminWarningList
+	warnings={audienceWarnings}
+	entityId={tierId}
+	fallbackFocusId="purchasable-by"
+	testId="tier-audience-warnings"
+/>
 
 <!-- Excluded membership tiers (non_members only) -->
 {#if purchasableBy === 'non_members'}

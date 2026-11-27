@@ -111,7 +111,11 @@
 		{/if}
 	</div>
 
-	<AdminWarningList warnings={capacityWarnings} entityId={formData.id} />
+	<AdminWarningList
+		warnings={capacityWarnings}
+		entityId={formData.id}
+		fallbackFocusId="max-attendees"
+	/>
 
 	<!-- Waitlist Open -->
 	<div class="space-y-2">

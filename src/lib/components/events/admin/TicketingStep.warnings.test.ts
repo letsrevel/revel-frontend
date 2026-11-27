@@ -77,4 +77,55 @@ describe('TicketingStep admin warnings', () => {
 		await new Promise((r) => setTimeout(r, 30));
 		expect(c4()).toBeNull();
 	});
+	const eventData = (status: string) => ({
+		data: {
+			compliance: null,
+			status,
+			requires_ticket: true,
+			start: FUTURE,
+			end: FUTURE_END
+		},
+		error: undefined
+	});
+
+	// Waits until both queries resolved (the tier name is rendered), then lets the derived settle.
+	async function settled(name: string) {
+		const view = renderStep();
+		await waitFor(() => expect(view.getAllByText(name).length).toBeGreaterThan(0));
+		await new Promise((r) => setTimeout(r, 30));
+	}
+
+	it('C4: no warning when a tier is on sale', async () => {
+		hoisted.tiers.mockResolvedValue({
+			data: { results: [{ id: 't1', name: 'OnSaleTier', sales_paused: false }] },
+			error: undefined
+		});
+		hoisted.event.mockResolvedValue(eventData('open'));
+		await settled('OnSaleTier');
+		expect(c4()).toBeNull();
+	});
+
+	it('C4: no warning for a draft event even if every tier is paused', async () => {
+		hoisted.tiers.mockResolvedValue({
+			data: { results: [{ id: 't1', name: 'PausedDraftTier', sales_paused: true }] },
+			error: undefined
+		});
+		hoisted.event.mockResolvedValue(eventData('draft'));
+		await settled('PausedDraftTier');
+		expect(c4()).toBeNull();
+	});
+
+	it('C4: no warning when the tiers list has a next page', async () => {
+		hoisted.tiers.mockResolvedValue({
+			data: {
+				count: 25,
+				next: 'http://x/?page=2',
+				results: [{ id: 't1', name: 'PagedTier', sales_paused: true }]
+			},
+			error: undefined
+		});
+		hoisted.event.mockResolvedValue(eventData('open'));
+		await settled('PagedTier');
+		expect(c4()).toBeNull();
+	});
 });

@@ -55,6 +55,23 @@ describe('AccessSection', () => {
 	});
 });
 
+describe('RadioTileGroup focus id', () => {
+	it('puts the focus id on the checked radio, not on the first', () => {
+		render(AccessSection, {
+			props: {
+				formData: { visibility: 'private', event_type: 'public', requires_ticket: false },
+				onUpdate: vi.fn(),
+				mode: 'create',
+				ticketingLocked: false
+			}
+		});
+		const target = document.getElementById('access-visibility') as HTMLInputElement;
+		expect(target).not.toBeNull();
+		expect(target.value).toBe('private');
+		expect(target.checked).toBe(true);
+	});
+});
+
 describe('AccessSection admin warnings', () => {
 	const warnIn = (id: string) => document.querySelector(`[data-warning-id="${id}"]`);
 

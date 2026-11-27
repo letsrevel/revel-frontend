@@ -135,7 +135,11 @@
 				{m['dateTimePicker.selectedDate']({ value: applyBeforeReadback })}
 			</p>
 		{/if}
-		<AdminWarningList warnings={applyWarnings} entityId={eventId ?? undefined} />
+		<AdminWarningList
+			warnings={applyWarnings}
+			entityId={eventId ?? undefined}
+			fallbackFocusId="apply-before"
+		/>
 	</div>
 {/snippet}
 

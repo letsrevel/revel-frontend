@@ -18,8 +18,8 @@
 		onSelect: (value: string) => void;
 		/** Tailwind column classes for the tile grid. */
 		columnsClass?: string;
-		/** DOM id of the first radio, so a warning's fix link can focus the group. */
-		firstId?: string;
+		/** DOM id of the checked radio (the first one if none is checked), so a fix link can focus the group. */
+		focusId?: string;
 	}
 
 	const {
@@ -29,8 +29,14 @@
 		ariaLabel,
 		onSelect,
 		columnsClass = 'sm:grid-cols-2',
-		firstId
+		focusId
 	}: Props = $props();
+	const focusIndex = $derived(
+		Math.max(
+			0,
+			options.findIndex((o) => o.value === value)
+		)
+	);
 </script>
 
 <div class={cn('grid gap-2', columnsClass)} role="radiogroup" aria-label={ariaLabel}>
@@ -40,7 +46,7 @@
 		>
 			<input
 				type="radio"
-				id={i === 0 ? firstId : undefined}
+				id={i === focusIndex ? focusId : undefined}
 				{name}
 				value={option.value}
 				checked={value === option.value}

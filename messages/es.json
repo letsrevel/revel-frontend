@@ -12034,6 +12034,7 @@
 		"fixRsvpDeadline": "Cambiar plazo de asistencia",
 		"fixApplyDeadline": "Cambiar plazo de solicitud",
 		"clearDeadline": "Borrar plazo",
-		"fixEditTier": "Editar tipo de entrada"
+		"fixEditTier": "Editar tipo de entrada",
+		"listLabelNamed": "Avisos de configuración: {name}"
 	}
 }

@@ -12034,6 +12034,7 @@
 		"fixRsvpDeadline": "Modifier la date limite de participation",
 		"fixApplyDeadline": "Modifier la date limite de candidature",
 		"clearDeadline": "Supprimer la date limite",
-		"fixEditTier": "Modifier la catégorie"
+		"fixEditTier": "Modifier la catégorie",
+		"listLabelNamed": "Avertissements sur les paramètres : {name}"
 	}
 }

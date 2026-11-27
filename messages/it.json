@@ -12034,6 +12034,7 @@
 		"fixRsvpDeadline": "Cambia scadenza RSVP",
 		"fixApplyDeadline": "Cambia scadenza delle candidature",
 		"clearDeadline": "Cancella scadenza",
-		"fixEditTier": "Modifica livello"
+		"fixEditTier": "Modifica livello",
+		"listLabelNamed": "Avvisi sulle impostazioni: {name}"
 	}
 }

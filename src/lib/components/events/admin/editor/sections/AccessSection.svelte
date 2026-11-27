@@ -147,7 +147,7 @@
 		</p>
 		<RadioTileGroup
 			name="visibility"
-			firstId="access-visibility"
+			focusId="access-visibility"
 			options={visibilityOptions}
 			value={formData.visibility}
 			ariaLabel={m['essentialsStep.eventVisibilityAriaLabel']()}
@@ -170,7 +170,7 @@
 		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.eventTypeExplanation']()}</p>
 		<RadioTileGroup
 			name="event_type"
-			firstId="access-event-type"
+			focusId="access-event-type"
 			options={eventTypeOptions}
 			value={formData.event_type}
 			ariaLabel={m['essentialsStep.eventTypeAriaLabel']()}
@@ -241,7 +241,11 @@
 		</EditorSubGroup>
 	{/if}
 
-	<AdminWarningList warnings={settingWarnings} entityId={eventId ?? undefined} />
+	<AdminWarningList
+		warnings={settingWarnings}
+		entityId={eventId ?? undefined}
+		fallbackFocusId="access-visibility"
+	/>
 </EditorSection>
 
 <!-- Questionnaire Assignment Modal -->

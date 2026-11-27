@@ -56,6 +56,7 @@
 				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
+					id="require-ticket-names"
 					type="checkbox"
 					checked={formData.require_ticket_names ?? true}
 					onchange={(e) => onUpdate({ require_ticket_names: e.currentTarget.checked })}
@@ -71,5 +72,9 @@
 		</EditorSubGroup>
 	{/if}
 
-	<AdminWarningList warnings={rsvpWarnings} entityId={eventId ?? undefined} />
+	<AdminWarningList
+		warnings={rsvpWarnings}
+		entityId={eventId ?? undefined}
+		fallbackFocusId="require-ticket-names"
+	/>
 </EditorSection>

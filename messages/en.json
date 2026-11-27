@@ -12034,6 +12034,7 @@
 		"fixApplyDeadline": "Change application deadline",
 		"clearDeadline": "Clear deadline",
 		"fixWhoCanBuy": "Change who can buy",
-		"fixEditTier": "Edit tier"
+		"fixEditTier": "Edit tier",
+		"listLabelNamed": "Setting warnings: {name}"
 	}
 }

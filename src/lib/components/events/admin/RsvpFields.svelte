@@ -51,7 +51,11 @@
 		</p>
 	</div>
 
-	<AdminWarningList warnings={rsvpWarnings} entityId={eventId ?? undefined} />
+	<AdminWarningList
+		warnings={rsvpWarnings}
+		entityId={eventId ?? undefined}
+		fallbackFocusId="rsvp-before"
+	/>
 
 	<div class="space-y-2">
 		<label

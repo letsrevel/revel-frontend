@@ -143,9 +143,15 @@
 		{#if formData.requires_ticket}
 			<EditorSubGroup title={m['eventEditor.subCheckIn']()}>
 				<CheckInFields {formData} {onUpdate} />
-				<AdminWarningList warnings={checkInWarnings} entityId={eventId ?? undefined} />
 			</EditorSubGroup>
 		{/if}
+
+		<!-- Outside the requires_ticket block, so the list is mounted before its warning appears. -->
+		<AdminWarningList
+			warnings={formData.requires_ticket ? checkInWarnings : []}
+			entityId={eventId ?? undefined}
+			fallbackFocusId="check-in-starts"
+		/>
 
 		{#if eventId}
 			<EditorSubGroup>

@@ -35,8 +35,9 @@ describe('TierFormPaymentInstructions D4 (#1314)', () => {
 		expect(items()).toBe(0);
 	});
 
-	it('renders nothing for online', () => {
+	it('shows no warning and no field for online (the list stays mounted, empty)', () => {
 		renderIt('online');
-		expect(screen.queryByTestId('tier-instructions-warnings')).toBeNull();
+		expect(items()).toBe(0);
+		expect(screen.queryByLabelText(/payment instructions/i)).toBeNull();
 	});
 });
