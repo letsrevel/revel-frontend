@@ -1,11 +1,15 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import DetailsStepTagsInput from './DetailsStepTagsInput.svelte';
 
 const { tagListTags } = vi.hoisted(() => ({ tagListTags: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ tagListTags }));
 
-function renderInput(onUpdate = vi.fn(), tags: string[] = [], tagSuggestions: string[] = []) {
+function renderInput(
+	onUpdate: Mock = vi.fn(),
+	tags: string[] = [],
+	tagSuggestions: string[] = []
+): { input: HTMLInputElement; onUpdate: Mock } {
 	render(DetailsStepTagsInput, {
 		props: {
 			tags,
@@ -100,6 +104,28 @@ describe('DetailsStepTagsInput suggestions', () => {
 		expect(screen.getByRole('option', { name: /museum/ })).toBeInTheDocument();
 	});
 
+	it('keeps the list of a newer search open when an older search fails later', async () => {
+		let rejectOld: ((e: unknown) => void) | undefined;
+		tagListTags
+			.mockImplementationOnce(() => new Promise((_, rej) => (rejectOld = rej)))
+			.mockResolvedValueOnce({ data: { results: [{ name: 'museum' }] } });
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation((): void => undefined);
+		const { input } = renderInput();
+		input.focus();
+		await fireEvent.input(input, { target: { value: 'mu' } });
+		await settle();
+		await fireEvent.input(input, { target: { value: 'mus' } });
+		await settle();
+		expect(screen.getByRole('option', { name: /museum/ })).toBeInTheDocument();
+
+		rejectOld?.(new Error('network'));
+		await settle();
+
+		expect(screen.getByRole('listbox')).toBeInTheDocument();
+		expect(screen.getByRole('option', { name: /museum/ })).toBeInTheDocument();
+		errorSpy.mockRestore();
+	});
+
 	it('does not reopen the list after Escape, even when the search already started', async () => {
 		let resolveSearch: ((v: unknown) => void) | undefined;
 		tagListTags.mockImplementationOnce(() => new Promise((r) => (resolveSearch = r)));
@@ -135,7 +161,7 @@ describe('DetailsStepTagsInput suggestions', () => {
 	});
 
 	describe('spinner', () => {
-		const spinner = () => screen.queryByTestId('tag-search-spinner');
+		const spinner = (): HTMLElement | null => screen.queryByTestId('tag-search-spinner');
 		type Resolver = (v: unknown) => void;
 
 		it('stays while the newest search runs after an older one answered', async () => {

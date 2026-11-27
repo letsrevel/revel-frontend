@@ -3,7 +3,7 @@
  * Handles URL param synchronization and filter state
  */
 
-import { dedupeTags } from '$lib/utils/tags';
+import { parseTagsParam } from '$lib/utils/tags';
 
 /**
  * Filter state interface
@@ -74,8 +74,8 @@ export function parseFilters(searchParams: URLSearchParams): EventFilters {
 	}
 
 	// Tags (comma-separated)
-	const tags = searchParams.get('tags');
-	if (tags) filters.tags = dedupeTags(tags.split(','));
+	const tags = parseTagsParam(searchParams.get('tags'));
+	if (tags) filters.tags = tags;
 
 	// Include past events
 	const includePast = searchParams.get('include_past');

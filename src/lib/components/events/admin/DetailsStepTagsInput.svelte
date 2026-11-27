@@ -97,6 +97,8 @@
 				if (showSuggestions && reveal) void revealSuggestions();
 			}
 		} catch (error) {
+			// A failed older search must not close the list of a newer one.
+			if (seq !== searchSeq) return;
 			console.error('Failed to fetch tag suggestions:', error);
 			tagSuggestions = [];
 			showSuggestions = false;

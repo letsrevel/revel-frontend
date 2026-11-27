@@ -54,4 +54,14 @@ describe('events listing loader', () => {
 		expect(sentQuery().search).toBe('x'); // other filters still apply
 		expect((out as { filters: { organization?: string } }).filters.organization).toBe('tenant-org');
 	});
+
+	it('sends no tags for a tags param that cleans to empty', async () => {
+		await load(loadEvent('?tags=%23', null));
+		expect(sentQuery().tags).toBeUndefined();
+	});
+
+	it('removes case duplicates from the tags param', async () => {
+		await load(loadEvent('?tags=fun,Fun', null));
+		expect(sentQuery().tags).toEqual(['fun']);
+	});
 });

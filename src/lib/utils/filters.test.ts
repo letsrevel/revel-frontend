@@ -6,4 +6,10 @@ describe('parseFilters tags', () => {
 		const filters = parseFilters(new URLSearchParams('tags=fun,Fun,FUN,x'));
 		expect(filters.tags).toEqual(['fun', 'x']);
 	});
+
+	it.each(['%23', '%20'])('gives no tags for ?tags=%s', (raw) => {
+		expect(
+			parseFilters(new URLSearchParams(`tags=${decodeURIComponent(raw)}`)).tags
+		).toBeUndefined();
+	});
 });

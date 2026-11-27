@@ -14,17 +14,17 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 
 import OrgTagManager from './OrgTagManager.svelte';
 
-function deferred<T>() {
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
 	let resolve!: (value: T) => void;
 	const promise = new Promise<T>((r) => (resolve = r));
 	return { promise, resolve };
 }
 
-function answer(names: string[]) {
+function answer(names: string[]): { data: { results: { name: string }[] } } {
 	return { data: { results: names.map((name) => ({ name })) } };
 }
 
-function renderIt(initialTags: string[] = []) {
+function renderIt(initialTags: string[] = []): { save: () => Promise<void> } {
 	let save: (() => Promise<void>) | undefined;
 	render(OrgTagManager, {
 		props: {
@@ -44,7 +44,7 @@ function renderIt(initialTags: string[] = []) {
 	};
 }
 
-const input = () => screen.getByRole('textbox') as HTMLInputElement;
+const input = (): HTMLInputElement => screen.getByRole('textbox') as HTMLInputElement;
 
 describe('OrgTagManager', () => {
 	beforeEach(() => {
@@ -90,6 +90,17 @@ describe('OrgTagManager', () => {
 		await save();
 		expect(removeTags).not.toHaveBeenCalled();
 		expect(addTags).not.toHaveBeenCalled();
+	});
+
+	it('shows the stored casing after a save that only changes the letter case', async () => {
+		const user = userEvent.setup();
+		const { save } = renderIt(['Fun']);
+		await user.click(screen.getByRole('button', { name: 'Remove Fun tag' }));
+		await user.type(input(), 'fun{Enter}');
+		expect(screen.getByRole('button', { name: 'Remove fun tag' })).toBeInTheDocument();
+		await save();
+		expect(await screen.findByRole('button', { name: 'Remove Fun tag' })).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Remove fun tag' })).not.toBeInTheDocument();
 	});
 
 	it('sends the real adds and removes on save', async () => {

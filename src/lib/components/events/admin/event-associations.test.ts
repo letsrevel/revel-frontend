@@ -29,7 +29,17 @@ describe('saveTagAssociations', () => {
 
 		expect(eventadmincoreAddTags).not.toHaveBeenCalled();
 		expect(eventadmincoreRemoveTags).not.toHaveBeenCalled();
-		expect(snapshot).toEqual(['fun']);
+		expect(snapshot).toEqual(['Fun']);
+	});
+
+	it('returns the stored casing in the snapshot after a case-only edit', async () => {
+		const snapshot = await saveTagAssociations({
+			eventId: 'e1',
+			currentTags: ['fun'],
+			initialTags: ['Fun']
+		});
+
+		expect(snapshot).toEqual(['Fun']);
 	});
 
 	it('adds new tags and removes deleted tags', async () => {

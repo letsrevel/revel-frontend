@@ -62,3 +62,23 @@ export function diffTags(
 		removed: initial.filter((tag) => !hasTag(current, tag))
 	};
 }
+
+/**
+ * Parses a comma-separated `?tags=` value. Removes case duplicates and names
+ * that clean to empty, so the server load and the client filter state agree.
+ * Returns `undefined` when no tag remains.
+ */
+export function parseTagsParam(raw: string | null | undefined): string[] | undefined {
+	if (!raw) return undefined;
+	const tags = dedupeTags(raw.split(','));
+	return tags.length > 0 ? tags : undefined;
+}
+
+/**
+ * Replaces each tag in `current` with its spelling in `stored` when the keys
+ * match. After a save, the snapshot then shows the casing the backend keeps
+ * (a case-only edit sends no request, so the stored casing does not change).
+ */
+export function keepStoredCasing(current: readonly string[], stored: readonly string[]): string[] {
+	return current.map((tag) => stored.find((s) => tagKey(s) === tagKey(tag)) ?? tag);
+}

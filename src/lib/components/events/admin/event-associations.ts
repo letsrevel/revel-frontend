@@ -4,7 +4,7 @@ import {
 	eventadmincoreAddTags,
 	eventadmincoreRemoveTags
 } from '$lib/api/generated/sdk.gen';
-import { diffTags } from '$lib/utils/tags';
+import { diffTags, keepStoredCasing } from '$lib/utils/tags';
 
 /**
  * Save resource associations for an event.
@@ -125,6 +125,7 @@ export async function saveTagAssociations(params: {
 		});
 	}
 
-	// Return the new initial-tags snapshot for the caller to persist
-	return [...currentTags];
+	// Return the new initial-tags snapshot for the caller to persist. A case-only
+	// edit sent no request, so the snapshot keeps the stored casing.
+	return keepStoredCasing(currentTags, initialTags);
 }

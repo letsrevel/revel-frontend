@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { cleanTagName, tagKey, hasTag, toggleTag, dedupeTags, diffTags } from './tags';
+import {
+	cleanTagName,
+	tagKey,
+	hasTag,
+	toggleTag,
+	dedupeTags,
+	diffTags,
+	parseTagsParam,
+	keepStoredCasing
+} from './tags';
 
 describe('cleanTagName', () => {
 	it('trims and strips every leading #', () => {
@@ -86,5 +95,30 @@ describe('diffTags', () => {
 
 	it('reports a real remove', () => {
 		expect(diffTags(['a', 'b'], ['a'])).toEqual({ added: [], removed: ['b'] });
+	});
+});
+
+describe('parseTagsParam', () => {
+	it('returns undefined when no tag remains', () => {
+		expect(parseTagsParam(null)).toBeUndefined();
+		expect(parseTagsParam('')).toBeUndefined();
+		expect(parseTagsParam('#')).toBeUndefined();
+		expect(parseTagsParam(' , #')).toBeUndefined();
+	});
+
+	it('removes case duplicates and keeps the first spelling', () => {
+		expect(parseTagsParam('fun,Fun,x')).toEqual(['fun', 'x']);
+	});
+});
+
+describe('keepStoredCasing', () => {
+	it('uses the stored spelling for a tag with the same key', () => {
+		expect(keepStoredCasing(['fun', 'new'], ['Fun'])).toEqual(['Fun', 'new']);
+	});
+
+	it('does not change the input lists', () => {
+		const current = ['fun'];
+		keepStoredCasing(current, ['Fun']);
+		expect(current).toEqual(['fun']);
 	});
 });

@@ -6,7 +6,7 @@
 		organizationadminmembersRemoveTags,
 		tagListTags
 	} from '$lib/api/generated/sdk.gen';
-	import { cleanTagName, diffTags, hasTag, tagKey } from '$lib/utils/tags';
+	import { cleanTagName, diffTags, hasTag, keepStoredCasing, tagKey } from '$lib/utils/tags';
 
 	interface Props {
 		slug: string;
@@ -147,6 +147,8 @@
 			});
 		}
 
+		// A case-only edit sent no request: show the casing the backend keeps.
+		tags = keepStoredCasing(tags, savedTags);
 		savedTags = [...tags];
 	}
 

@@ -6,6 +6,7 @@ import { error as svelteKitError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
+import { parseTagsParam } from '$lib/utils/tags';
 
 const EVENT_TYPES: readonly EventType[] = ['public', 'private', 'members-only'];
 const VISIBILITIES: readonly Visibility[] = [
@@ -38,8 +39,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 	const organization = locals.tenant?.id ?? (url.searchParams.get('organization') || undefined);
 	const eventType = pickAllowed(url.searchParams.get('event_type'), EVENT_TYPES);
 	const visibility = pickAllowed(url.searchParams.get('visibility'), VISIBILITIES);
-	const tagsParam = url.searchParams.get('tags');
-	const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : undefined;
+	const tags = parseTagsParam(url.searchParams.get('tags'));
 	const includePast = url.searchParams.get('include_past') === 'true';
 	const ticketType = url.searchParams.get('ticket_type') || undefined;
 	const requiresTicket =
