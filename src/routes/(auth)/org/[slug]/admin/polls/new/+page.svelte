@@ -20,6 +20,7 @@
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
+	import PollSettingWarnings from '$lib/components/polls/PollSettingWarnings.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
 	import { pollCreatePoll } from '$lib/api/generated/sdk.gen';
 	import type { PageData } from './$types';
@@ -307,6 +308,14 @@
 	{#if formErrors.event}
 		<p class="text-sm text-destructive">{formErrors.event}</p>
 	{/if}
+
+	<PollSettingWarnings
+		{voteVisibility}
+		{resultVisibility}
+		{resultTiming}
+		status="draft"
+		orgVisibility={data.organization.visibility}
+	/>
 
 	<PollAnonymityCard
 		bind:resultTiming
