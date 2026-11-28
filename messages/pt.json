@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Alterar visibilidade dos resultados",
 		"fixVoteVisibility": "Alterar visibilidade do voto",
 		"seriesPassA3Title": "Passe que a maioria não consegue ver",
-		"seriesPassA3Message": "Qualquer pessoa com a ligação pode ver o passe, mas a organização não é pública. Só os membros o podem ver e comprar. As organizações só para staff mostram-no apenas ao staff. Torna a organização pública ou esconde o passe.",
+		"seriesPassA3Message": "O passe é público ou não listado, mas a organização não é pública. Só os membros o podem ver e comprar, mesmo com a ligação. As organizações só para staff mostram-no apenas ao staff. Torna a organização pública ou esconde o passe.",
 		"seriesPassE1OrderTitle": "As vendas terminam antes de começar",
 		"seriesPassE1OrderMessage": "O fim das vendas não é posterior ao início das vendas. Quem compra nunca vê o passe à venda. Altera uma das duas datas.",
 		"seriesPassE1LateTitle": "As vendas começam demasiado tarde",

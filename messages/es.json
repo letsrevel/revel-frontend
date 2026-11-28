@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Cambiar visibilidad de los resultados",
 		"fixVoteVisibility": "Cambiar visibilidad del voto",
 		"seriesPassA3Title": "Abono que la mayoría no puede ver",
-		"seriesPassA3Message": "Cualquiera con el enlace puede ver el abono, pero la organización no es pública. Solo los miembros pueden verlo y comprarlo. Las organizaciones solo para staff lo muestran únicamente al staff. Haz pública la organización u oculta el abono.",
+		"seriesPassA3Message": "El abono es público o no listado, pero la organización no es pública. Solo los miembros pueden verlo y comprarlo, incluso con el enlace. Las organizaciones solo para staff lo muestran únicamente al staff. Haz pública la organización u oculta el abono.",
 		"seriesPassE1OrderTitle": "Las ventas terminan antes de empezar",
 		"seriesPassE1OrderMessage": "El fin de las ventas no es posterior al inicio de las ventas. Quienes compran nunca ven el abono a la venta. Cambia una de las dos fechas.",
 		"seriesPassE1LateTitle": "Las ventas empiezan demasiado tarde",

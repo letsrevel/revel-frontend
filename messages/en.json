@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Change result visibility",
 		"fixVoteVisibility": "Change vote visibility",
 		"seriesPassA3Title": "Pass that most people cannot see",
-		"seriesPassA3Message": "Anyone with the link can see the pass, but the organization is not public. Only members can see and buy it. Staff-only organizations show it to staff only. Make the organization public, or hide the pass.",
+		"seriesPassA3Message": "The pass is set to public or unlisted, but the organization is not public. Only members can see and buy it, even with the link. Staff-only organizations show it to staff only. Make the organization public, or hide the pass.",
 		"seriesPassE1OrderTitle": "Sales end before they start",
 		"seriesPassE1OrderMessage": "The sales end date is not after the sales start date. Buyers never see the pass on sale. Change one of the dates.",
 		"seriesPassE1LateTitle": "Sales open too late",

@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Cambia visibilità dei risultati",
 		"fixVoteVisibility": "Cambia visibilità del voto",
 		"seriesPassA3Title": "Abbonamento che la maggior parte delle persone non vede",
-		"seriesPassA3Message": "Chiunque abbia il link può vedere l'abbonamento, ma l'organizzazione non è pubblica. Solo i membri possono vederlo e acquistarlo. Le organizzazioni riservate allo staff lo mostrano solo allo staff. Rendi pubblica l'organizzazione oppure nascondi l'abbonamento.",
+		"seriesPassA3Message": "L'abbonamento è pubblico o non in elenco, ma l'organizzazione non è pubblica. Solo i membri possono vederlo e acquistarlo, anche con il link. Le organizzazioni riservate allo staff lo mostrano solo allo staff. Rendi pubblica l'organizzazione oppure nascondi l'abbonamento.",
 		"seriesPassE1OrderTitle": "Le vendite finiscono prima di iniziare",
 		"seriesPassE1OrderMessage": "La fine delle vendite non è successiva all'inizio delle vendite. Chi acquista non vede mai l'abbonamento in vendita. Cambia una delle due date.",
 		"seriesPassE1LateTitle": "Le vendite iniziano troppo tardi",

@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Sichtbarkeit der Ergebnisse ändern",
 		"fixVoteVisibility": "Sichtbarkeit der Abstimmung ändern",
 		"seriesPassA3Title": "Pass, den die meisten nicht sehen können",
-		"seriesPassA3Message": "Alle mit dem Link können den Pass sehen, die Organisation ist aber nicht öffentlich. Nur Mitglieder können ihn sehen und kaufen. Bei Organisationen nur für das Team sehen ihn nur Mitarbeiter*innen. Mache die Organisation öffentlich oder blende den Pass aus.",
+		"seriesPassA3Message": "Der Pass ist öffentlich oder nicht gelistet, die Organisation ist aber nicht öffentlich. Nur Mitglieder können ihn sehen und kaufen, auch mit dem Link. Bei Organisationen nur für das Team sehen ihn nur Mitarbeiter*innen. Mache die Organisation öffentlich oder blende den Pass aus.",
 		"seriesPassE1OrderTitle": "Der Verkauf endet vor dem Start",
 		"seriesPassE1OrderMessage": "Das Verkaufsende liegt nicht nach dem Verkaufsbeginn. Käufer*innen sehen den Pass nie im Verkauf. Ändere eines der beiden Daten.",
 		"seriesPassE1LateTitle": "Der Verkauf startet zu spät",

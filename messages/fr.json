@@ -12064,7 +12064,7 @@
 		"fixResultVisibility": "Modifier la visibilité des résultats",
 		"fixVoteVisibility": "Modifier la visibilité du vote",
 		"seriesPassA3Title": "Pass que la plupart des gens ne peuvent pas voir",
-		"seriesPassA3Message": "Toute personne avec le lien peut voir le pass, mais l'organisation n'est pas publique. Seuls les membres peuvent le voir et l'acheter. Les organisations réservées au personnel ne le montrent qu'au personnel. Rends l'organisation publique ou masque le pass.",
+		"seriesPassA3Message": "Le pass est public ou non répertorié, mais l'organisation n'est pas publique. Seuls les membres peuvent le voir et l'acheter, même avec le lien. Les organisations réservées au personnel ne le montrent qu'au personnel. Rends l'organisation publique ou masque le pass.",
 		"seriesPassE1OrderTitle": "La vente se termine avant de commencer",
 		"seriesPassE1OrderMessage": "La date de fin des ventes n'est pas après la date de début des ventes. Les personnes acheteuses ne voient jamais le pass en vente. Modifie l'une des deux dates.",
 		"seriesPassE1LateTitle": "La vente commence trop tard",

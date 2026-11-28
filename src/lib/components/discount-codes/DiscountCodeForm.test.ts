@@ -111,6 +111,38 @@ describe('DiscountCodeForm admin warnings (#1314)', () => {
 		expect(list()?.querySelectorAll('li') ?? []).toHaveLength(0);
 	});
 
+	it('stays silent on a cache hit of an incomplete tier scope (remount, no refetch)', async () => {
+		const client = new QueryClient({
+			defaultOptions: { queries: { retry: false, staleTime: Infinity } }
+		});
+		const mount = () =>
+			render(QueryClientTestWrapper, {
+				props: {
+					client,
+					component: DiscountCodeForm,
+					componentProps: {
+						organizationId: 'org-1',
+						existingCode: existing(),
+						onSubmit: vi.fn()
+					}
+				}
+			});
+		listTiers.mockResolvedValue({
+			data: { results: [freeTier], next: 'http://x/?page=2' },
+			error: undefined
+		});
+		const first = mount();
+		await waitFor(() => expect(listTiers).toHaveBeenCalledTimes(1));
+		await new Promise((r) => setTimeout(r, 50));
+		first.unmount();
+		// The second mount reads the cached (incomplete) entry: no refetch, and the
+		// incomplete flag must come back with it.
+		mount();
+		await new Promise((r) => setTimeout(r, 50));
+		expect(listTiers).toHaveBeenCalledTimes(1);
+		expect(list()?.querySelectorAll('li') ?? []).toHaveLength(0);
+	});
+
 	it('stays silent when a series is selected', async () => {
 		listTiers.mockResolvedValue({ data: { results: [freeTier] }, error: undefined });
 		renderForm(existing({ series_ids: ['se-1'] }));
