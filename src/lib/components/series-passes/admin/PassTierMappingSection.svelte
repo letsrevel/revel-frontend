@@ -31,6 +31,8 @@
 		selections: Record<string, string | null | undefined>;
 		onSelectionsChange: (selections: Record<string, string | null | undefined>) => void;
 		disabled?: boolean;
+		/** Reports the loaded tiers per event id (all tiers, before eligibility filters). */
+		onTiersLoaded?: (tiersByEvent: Record<string, TicketTierDetailSchema[]>) => void;
 	}
 
 	const {
@@ -41,7 +43,8 @@
 		error = '',
 		selections,
 		onSelectionsChange,
-		disabled
+		disabled,
+		onTiersLoaded
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -69,6 +72,10 @@
 	}));
 
 	const tiersByEvent = $derived(tiersQuery.data ?? {});
+
+	$effect(() => {
+		if (tiersQuery.data) onTiersLoaded?.(tiersQuery.data);
+	});
 
 	/** Tiers that can back a pass: right currency, no assigned seating, not PWYC. */
 	const eligibleByEvent = $derived.by(() => {

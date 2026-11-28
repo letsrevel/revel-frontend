@@ -1,10 +1,14 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import SeriesPassForm from './SeriesPassForm.svelte';
-import type { SeriesPassAdminSchema } from '$lib/api/generated/types.gen';
+import type {
+	EventInListSchema,
+	SeriesPassAdminSchema,
+	TicketTierDetailSchema
+} from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/api')>()),
@@ -12,7 +16,7 @@ vi.mock('$lib/api', async (importOriginal) => ({
 	seriespassadminCreateSeriesPass: vi.fn(),
 	eventadminticketsListTicketTiers: vi.fn()
 }));
-import { seriespassadminUpdateSeriesPass } from '$lib/api';
+import { seriespassadminUpdateSeriesPass, eventadminticketsListTicketTiers } from '$lib/api';
 
 vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -133,5 +137,112 @@ describe('SeriesPassForm — non-members rule and stricter-link 400 (#1172)', ()
 		await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
 		expect(await screen.findByText(/Tier is not valid for this pass\./)).toBeInTheDocument();
+	});
+});
+
+describe('SeriesPassForm — setting warnings (#1314)', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	const NOW = Date.parse('2027-01-01T00:00:00Z');
+	const link = (id: string, event_start: string) => ({
+		id,
+		event_id: `e-${id}`,
+		tier_id: `t-${id}`,
+		event_start
+	});
+	const threeLinks = [
+		link('1', '2027-02-01T18:00:00Z'),
+		link('2', '2027-03-01T18:00:00Z'),
+		link('3', '2027-04-01T18:00:00Z')
+	];
+
+	function renderWarnForm(props: Record<string, unknown>) {
+		render(QueryClientTestWrapper, {
+			props: {
+				client: new QueryClient({
+					defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+				}),
+				component: SeriesPassForm,
+				componentProps: {
+					seriesId: 'series-1',
+					accessToken: 'tok',
+					upcomingEvents: [],
+					now: NOW,
+					onClose: vi.fn(),
+					...props
+				}
+			}
+		});
+	}
+
+	it('shows E1-order live while the sales dates are typed (edit)', async () => {
+		renderWarnForm({ pass: { ...pass, tier_links: threeLinks } });
+		const list = screen.getByTestId('series-pass-form-warnings');
+		expect(within(list).queryByRole('list')).toBeNull();
+
+		await fireEvent.input(screen.getByLabelText('Sales start'), {
+			target: { value: '2027-01-10T10:00' }
+		});
+		await fireEvent.input(screen.getByLabelText('Sales end'), {
+			target: { value: '2027-01-05T10:00' }
+		});
+
+		await waitFor(() =>
+			expect(within(list).getByText('Sales end before they start')).toBeInTheDocument()
+		);
+		expect(within(list).getByRole('link', { name: /Change sales end/ })).toHaveAttribute(
+			'href',
+			'#pass-sales-end'
+		);
+	});
+
+	it('shows E3 when the organization has no Stripe account', () => {
+		renderWarnForm({
+			pass: { ...pass, tier_links: threeLinks },
+			organizationStripeConnected: false
+		});
+		const list = screen.getByTestId('series-pass-form-warnings');
+		expect(within(list).getByText('Online payments are not set up')).toBeInTheDocument();
+	});
+
+	it('does not show E3 when the prop is not given', () => {
+		renderWarnForm({ pass: { ...pass, tier_links: threeLinks } });
+		expect(screen.queryByText('Online payments are not set up')).toBeNull();
+	});
+
+	it('shows E4b in create mode once the selected tiers are loaded', async () => {
+		const events = ['a', 'b'].map((id, i) => ({
+			id: `evt-${id}`,
+			name: `Week ${id}`,
+			start: `2027-0${i + 2}-01T18:00:00Z`
+		})) as unknown as EventInListSchema[];
+		vi.mocked(eventadminticketsListTicketTiers).mockResolvedValue({
+			data: {
+				results: [
+					{
+						id: 'tier-x',
+						name: 'GA',
+						price: '10.00',
+						currency: 'EUR',
+						seat_assignment_mode: 'none',
+						price_type: 'fixed',
+						purchasable_by: 'public',
+						restricted_to_membership_tiers: []
+					} as unknown as TicketTierDetailSchema
+				]
+			},
+			error: undefined,
+			response: { ok: true } as Response
+		} as never);
+		renderWarnForm({ pass: null, upcomingEvents: events });
+		const list = screen.getByTestId('series-pass-form-warnings');
+
+		await fireEvent.input(screen.getByLabelText(/^Price/), { target: { value: '50' } });
+
+		await waitFor(() =>
+			expect(within(list).getByText('Pass costs more than the tickets')).toBeInTheDocument()
+		);
+		// Create mode: unsaved, so Info warnings carry no dismiss button.
+		expect(within(list).queryByRole('button', { name: /Dismiss/ })).toBeNull();
 	});
 });

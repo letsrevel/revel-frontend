@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventInListSchema,
+		TicketTierDetailSchema,
 		SeriesPassAdminSchema,
 		SeriesPassCreateSchema,
 		SeriesPassUpdateSchema,
@@ -35,6 +36,16 @@
 	import PassTierMappingSection from './PassTierMappingSection.svelte';
 	import { toPassFieldErrors } from './pass-field-errors';
 	import { toast } from 'svelte-sonner';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import {
+		passVisibleInRestrictedOrg,
+		passSalesEndBeforeStart,
+		passSalesStartTooLate,
+		passOnlineWithoutStripe,
+		passDiscountCoversPrice,
+		passPriceAboveTiersSum
+	} from '$lib/utils/admin-warnings/series-pass';
 
 	interface Props {
 		seriesId: string;
@@ -43,10 +54,25 @@
 		pass?: SeriesPassAdminSchema | null;
 		/** Upcoming (non-template) occurrences — coverage candidates for create mode. */
 		upcomingEvents: EventInListSchema[];
+		/** Organization visibility; unset = unknown (no visibility warning). */
+		organizationVisibility?: string | null;
+		/** Unset = assume connected (no payment warning). */
+		organizationStripeConnected?: boolean;
+		/** Injected clock (epoch ms) for the warning rules. */
+		now?: number;
 		onClose: () => void;
 	}
 
-	const { seriesId, accessToken, pass, upcomingEvents, onClose }: Props = $props();
+	const {
+		seriesId,
+		accessToken,
+		pass,
+		upcomingEvents,
+		organizationVisibility,
+		organizationStripeConnected = true,
+		now,
+		onClose
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 	const isEdit = $derived(!!pass);
@@ -66,6 +92,54 @@
 
 	// Coverage (create mode only): eventId -> tierId | null (explicitly excluded).
 	let tierSelections = $state<Record<string, string | null | undefined>>({});
+
+	// Tiers per event, reported by the mapping section once loaded (create mode).
+	let loadedTiers = $state<Record<string, TicketTierDetailSchema[]> | null>(null);
+
+	// Live setting warnings (#1314). Edit mode covers the saved links; create mode
+	// covers the events with a selected tier.
+	const settingWarnings = $derived.by(() => {
+		const selected = upcomingEvents.filter((e) => typeof tierSelections[e.id] === 'string');
+		const base = {
+			coveredEventStarts: isEdit
+				? (pass?.tier_links ?? []).map((l) => l.event_start)
+				: selected.map((e) => e.start),
+			now: now ?? Date.now()
+		};
+		const schedule = { ...base, sales_start_at: salesStartAt, sales_end_at: salesEndAt };
+		const a3 = passVisibleInRestrictedOrg({ ...base, organizationVisibility, visibility });
+		const e1Order = passSalesEndBeforeStart(schedule);
+		const e1Late = passSalesStartTooLate(schedule);
+		const e3 = passOnlineWithoutStripe({
+			...base,
+			payment_method: paymentMethod,
+			organizationStripeConnected
+		});
+		const e4a = passDiscountCoversPrice({
+			...base,
+			price,
+			pro_rata_discount: proRataDiscount
+		});
+		const e4b = isEdit
+			? null
+			: passPriceAboveTiersSum({
+					...base,
+					price,
+					currency,
+					selectedTiers: selected.map((e) => {
+						const tier = loadedTiers?.[e.id]?.find((t) => t.id === tierSelections[e.id]);
+						return tier ? { price: tier.price, currency: tier.currency } : null;
+					})
+				});
+		return compactWarnings([
+			a3 && withFix(a3, 'pass-visibility', () => m['adminWarnings.fixVisibility']()),
+			e1Order && withFix(e1Order, 'pass-sales-end', () => m['adminWarnings.fixPassSalesEnd']()),
+			e1Late && withFix(e1Late, 'pass-sales-start', () => m['adminWarnings.fixPassSalesStart']()),
+			e3 && withFix(e3, 'pass-payment-method', () => m['adminWarnings.fixPassPaymentMethod']()),
+			e4a && withFix(e4a, 'pass-discount', () => m['adminWarnings.fixPassDiscount']()),
+			e4b && withFix(e4b, 'pass-price', () => m['adminWarnings.fixPassPrice']())
+		]);
+	});
 
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
@@ -460,6 +534,7 @@
 					error={tierLinkError}
 					selections={tierSelections}
 					onSelectionsChange={(next) => (tierSelections = next)}
+					onTiersLoaded={(tiers) => (loadedTiers = tiers)}
 					disabled={isPending}
 				/>
 			{:else}
@@ -467,6 +542,14 @@
 					{m['seriesPassAdmin.coverageEditNote']()}
 				</p>
 			{/if}
+
+			<AdminWarningList
+				warnings={settingWarnings}
+				entityId={pass?.id ?? undefined}
+				fallbackFocusId="pass-name"
+				label={m['adminWarnings.listLabel']()}
+				testId="series-pass-form-warnings"
+			/>
 
 			{#if formError}
 				<p class="text-sm text-destructive" role="alert">{formError}</p>

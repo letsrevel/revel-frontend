@@ -16,6 +16,16 @@
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { Plus, Users, Pencil, Trash2, Loader2, Ticket, CalendarRange } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withAction, type AdminWarning } from '$lib/utils/admin-warnings/types';
+	import {
+		passVisibleInRestrictedOrg,
+		passSalesEndBeforeStart,
+		passSalesStartTooLate,
+		passFewUpcomingEvents,
+		passOnlineWithoutStripe,
+		passDiscountCoversPrice
+	} from '$lib/utils/admin-warnings/series-pass';
 
 	interface Props {
 		seriesId: string;
@@ -23,9 +33,23 @@
 		canEdit: boolean;
 		/** Upcoming, non-template occurrences — coverage candidates for new passes. */
 		upcomingEvents: EventInListSchema[];
+		/** Organization visibility; unset = unknown (no visibility warning). */
+		organizationVisibility?: string | null;
+		/** Unset = assume connected (no payment warning). */
+		organizationStripeConnected?: boolean;
+		/** Injected clock (epoch ms) for the warning rules. */
+		now?: number;
 	}
 
-	const { seriesId, accessToken, canEdit, upcomingEvents }: Props = $props();
+	const {
+		seriesId,
+		accessToken,
+		canEdit,
+		upcomingEvents,
+		organizationVisibility,
+		organizationStripeConnected = true,
+		now
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -51,6 +75,50 @@
 	let passForHolders = $state<SeriesPassAdminSchema | null>(null);
 	let passToDelete = $state<SeriesPassAdminSchema | null>(null);
 	let passForCoverage = $state<SeriesPassAdminSchema | null>(null);
+
+	function passWarnings(pass: SeriesPassAdminSchema): AdminWarning[] {
+		const base = {
+			is_active: pass.is_active,
+			coveredEventStarts: pass.tier_links.map((l) => l.event_start),
+			now: now ?? Date.now()
+		};
+		const e2 = passFewUpcomingEvents(base);
+		return compactWarnings([
+			passVisibleInRestrictedOrg({
+				...base,
+				organizationVisibility,
+				visibility: pass.visibility
+			}),
+			passSalesEndBeforeStart({
+				...base,
+				sales_start_at: pass.sales_start_at,
+				sales_end_at: pass.sales_end_at
+			}),
+			passSalesStartTooLate({
+				...base,
+				sales_start_at: pass.sales_start_at,
+				sales_end_at: pass.sales_end_at
+			}),
+			e2 && canEdit
+				? withAction(e2, {
+						label: () => m['adminWarnings.fixPassCoverage'](),
+						run: () => {
+							passForCoverage = pass;
+						}
+					})
+				: e2,
+			passOnlineWithoutStripe({
+				...base,
+				payment_method: pass.payment_method,
+				organizationStripeConnected
+			}),
+			passDiscountCoversPrice({
+				...base,
+				price: pass.price,
+				pro_rata_discount: pass.pro_rata_discount
+			})
+		]);
+	}
 
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (passId: string) => {
@@ -172,6 +240,14 @@
 							</div>
 						{/if}
 					</div>
+					<AdminWarningList
+						class="mt-3"
+						warnings={passWarnings(pass)}
+						entityId={pass.id ?? undefined}
+						baselineReady={!passesQuery.isLoading}
+						label={m['adminWarnings.listLabelNamed']({ name: pass.name })}
+						testId="series-pass-warnings-{pass.id}"
+					/>
 				</li>
 			{/each}
 		</ul>
@@ -184,6 +260,9 @@
 		{accessToken}
 		pass={formPass}
 		{upcomingEvents}
+		{organizationVisibility}
+		{organizationStripeConnected}
+		{now}
 		onClose={() => (formPass = undefined)}
 	/>
 {/if}
