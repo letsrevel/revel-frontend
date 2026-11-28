@@ -3,7 +3,8 @@ import {
 	isOrgRestricted,
 	orgHiddenWithPublicEvents,
 	orgRequestsWhileRestricted,
-	orgCustomDomainWhileRestricted
+	orgCustomDomainWhileRestricted,
+	orgSettingsWarnings
 } from './org';
 
 describe('isOrgRestricted', () => {
@@ -93,5 +94,57 @@ describe('A5 orgCustomDomainWhileRestricted', () => {
 		expect(
 			orgCustomDomainWhileRestricted({ orgVisibility: 'public', custom_domain: 'a.example.com' })
 		).toBeNull();
+	});
+});
+
+describe('orgSettingsWarnings', () => {
+	const counts = { publicEventCount: 2, inSeriesCount: 0, partial: false };
+	const base = {
+		visibility: 'private',
+		acceptNewMembers: true,
+		defaultQuestionnaireId: '',
+		counts,
+		customDomain: 'club.example.com',
+		membershipQuestionnaires: [
+			{ id: 'q1', questionnaire_type: 'membership', questionnaire: { status: 'draft' } },
+			{ id: 'q2', questionnaire_type: 'membership', questionnaire: { status: 'published' } }
+		],
+		questionnairesHref: '/org/x/admin/questionnaires'
+	};
+
+	it('returns A1 and A5 on the visibility field and A4 on the requests field', () => {
+		const r = orgSettingsWarnings(base);
+		expect(r.visibility.map((w) => w.id)).toEqual(['A1', 'A5']);
+		expect(r.visibility.every((w) => w.fixTarget === 'visibility')).toBe(true);
+		expect(r.requests.map((w) => w.id)).toEqual(['A4']);
+		expect(r.requests[0].fixTarget).toBe('accept_membership_requests');
+		expect(r.questionnaire).toEqual([]);
+	});
+
+	it('returns nothing for a public organization', () => {
+		const r = orgSettingsWarnings({ ...base, visibility: 'public' });
+		expect(r.visibility).toEqual([]);
+		expect(r.requests).toEqual([]);
+	});
+
+	it('skips A1 when the counts did not load', () => {
+		const r = orgSettingsWarnings({ ...base, counts: null });
+		expect(r.visibility.map((w) => w.id)).toEqual(['A5']);
+	});
+
+	it('rewrites the F2 id to follow the chosen questionnaire and links to the questionnaires page', () => {
+		const r = orgSettingsWarnings({ ...base, defaultQuestionnaireId: 'q1' });
+		expect(r.questionnaire).toHaveLength(1);
+		expect(r.questionnaire[0].id).toBe('F2-q1');
+		expect(r.questionnaire[0].fixHref).toBe('/org/x/admin/questionnaires');
+	});
+
+	it('returns no F2 for a published or unknown questionnaire', () => {
+		expect(orgSettingsWarnings({ ...base, defaultQuestionnaireId: 'q2' }).questionnaire).toEqual(
+			[]
+		);
+		expect(orgSettingsWarnings({ ...base, defaultQuestionnaireId: 'zz' }).questionnaire).toEqual(
+			[]
+		);
 	});
 });

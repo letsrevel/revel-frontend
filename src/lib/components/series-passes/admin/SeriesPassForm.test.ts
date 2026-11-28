@@ -205,6 +205,16 @@ describe('SeriesPassForm — setting warnings (#1314)', () => {
 		expect(within(list).getByText('Online payments are not set up')).toBeInTheDocument();
 	});
 
+	it('shows no warning for an inactive pass in edit mode', () => {
+		renderWarnForm({
+			pass: { ...pass, is_active: false, tier_links: threeLinks },
+			organizationStripeConnected: false
+		});
+		const list = screen.getByTestId('series-pass-form-warnings');
+		expect(within(list).queryByRole('list')).toBeNull();
+		expect(screen.queryByText('Online payments are not set up')).toBeNull();
+	});
+
 	it('does not show E3 when the prop is not given', () => {
 		renderWarnForm({ pass: { ...pass, tier_links: threeLinks } });
 		expect(screen.queryByText('Online payments are not set up')).toBeNull();

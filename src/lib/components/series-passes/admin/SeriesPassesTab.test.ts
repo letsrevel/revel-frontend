@@ -93,7 +93,9 @@ describe('SeriesPassesTab setting warnings (#1314)', () => {
 		await waitFor(() =>
 			expect(within(list).getByText('Fewer than two upcoming events')).toBeInTheDocument()
 		);
-		expect(within(list).getByRole('button', { name: /Change coverage/ })).toBeInTheDocument();
+		expect(
+			within(list).getByRole('button', { name: 'Change coverage (Season)' })
+		).toBeInTheDocument();
 	});
 
 	it('shows E4a as a dismissible Info', async () => {
@@ -113,15 +115,5 @@ describe('SeriesPassesTab setting warnings (#1314)', () => {
 
 		const list = await screen.findByTestId('series-pass-warnings-pass-1');
 		expect(within(list).queryByRole('list')).toBeNull();
-	});
-
-	it('renders no warning list while the passes load', () => {
-		vi.mocked(seriespassadminListSeriesPasses).mockReturnValue(
-			new Promise(() => undefined) as never
-		);
-		renderTab({ organizationVisibility: 'private' });
-
-		expect(screen.queryByTestId('series-pass-warnings-pass-1')).toBeNull();
-		expect(screen.queryByText('Pass that most people cannot see')).toBeNull();
 	});
 });

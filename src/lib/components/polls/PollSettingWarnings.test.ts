@@ -21,7 +21,7 @@ describe('PollSettingWarnings', () => {
 			resultVisibility: 'public',
 			resultTiming: 'never'
 		});
-		expect(warnIn('G2a')).toHaveTextContent('Nobody sees the poll results');
+		expect(warnIn('G2a')).toHaveTextContent('Only staff see the poll results');
 		expect(warnIn('G2b-visible')).toBeNull();
 		expect(within(list()).getByRole('link', { name: 'Change result timing' })).toHaveAttribute(
 			'href',

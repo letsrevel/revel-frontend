@@ -4,7 +4,8 @@
  * target and the action.
  */
 import * as m from '$lib/paraglide/messages.js';
-import type { AdminWarning } from './types';
+import { compactWarnings, withFix, withLink, type AdminWarning } from './types';
+import { membershipQuestionnaireNotPublished } from './questionnaire';
 
 /**
  * True when anonymous visitors cannot open the organization page: every
@@ -77,5 +78,75 @@ export function orgCustomDomainWhileRestricted(input: OrgCustomDomainInput): Adm
 		level: 'info',
 		title: () => m['adminWarnings.orgA5Title'](),
 		message: () => m['adminWarnings.orgA5Message']()
+	};
+}
+
+export interface OrgSettingsWarningsInput {
+	/** Live form value. */
+	visibility: string | null | undefined;
+	/** Live form value. */
+	acceptNewMembers: boolean | null | undefined;
+	/** Live form value: id of the chosen default membership questionnaire ('' = none). */
+	defaultQuestionnaireId: string;
+	/** `null` = counts not loaded: no A1. */
+	counts: Omit<OrgPublicEventsInput, 'orgVisibility'> | null;
+	customDomain: string | null | undefined;
+	membershipQuestionnaires: ReadonlyArray<{
+		id: string;
+		questionnaire_type: string | null | undefined;
+		questionnaire: { status: string | null | undefined };
+	}>;
+	/** Link target for the F2 fix (the questionnaires page). */
+	questionnairesHref: string;
+}
+
+export interface OrgSettingsWarnings {
+	visibility: AdminWarning[];
+	requests: AdminWarning[];
+	questionnaire: AdminWarning[];
+}
+
+/**
+ * Warnings of the organization settings page, from the live form state. Adds the
+ * fix targets. The F2 dismissal follows the chosen questionnaire (id `F2-<id>`).
+ */
+export function orgSettingsWarnings(input: OrgSettingsWarningsInput): OrgSettingsWarnings {
+	const a1 = input.counts
+		? orgHiddenWithPublicEvents({ orgVisibility: input.visibility, ...input.counts })
+		: null;
+	const a5 = orgCustomDomainWhileRestricted({
+		orgVisibility: input.visibility,
+		custom_domain: input.customDomain
+	});
+	const a4 = orgRequestsWhileRestricted({
+		orgVisibility: input.visibility,
+		accept_membership_requests: input.acceptNewMembers
+	});
+	const q = input.membershipQuestionnaires.find((x) => x.id === input.defaultQuestionnaireId);
+	const f2 = q
+		? membershipQuestionnaireNotPublished({
+				questionnaire_type: q.questionnaire_type,
+				status: q.questionnaire.status,
+				is_organization_default: true,
+				tierCount: 0
+			})
+		: null;
+	return {
+		visibility: compactWarnings([
+			a1 && withFix(a1, 'visibility', () => m['adminWarnings.fixVisibility']()),
+			a5 && withFix(a5, 'visibility', () => m['adminWarnings.fixVisibility']())
+		]),
+		requests: compactWarnings([
+			a4 &&
+				withFix(a4, 'accept_membership_requests', () => m['adminWarnings.fixMembershipRequests']())
+		]),
+		questionnaire:
+			q && f2
+				? [
+						withLink({ ...f2, id: `F2-${q.id}` }, input.questionnairesHref, () =>
+							m['adminWarnings.fixOpenQuestionnaires']()
+						)
+					]
+				: []
 	};
 }

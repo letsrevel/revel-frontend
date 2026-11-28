@@ -102,6 +102,7 @@
 			e2 && canEdit
 				? withAction(e2, {
 						label: () => m['adminWarnings.fixPassCoverage'](),
+						srContext: () => pass.name,
 						run: () => {
 							passForCoverage = pass;
 						}

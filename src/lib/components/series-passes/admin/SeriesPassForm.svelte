@@ -104,7 +104,8 @@
 			coveredEventStarts: isEdit
 				? (pass?.tier_links ?? []).map((l) => l.event_start)
 				: selected.map((e) => e.start),
-			now: now ?? Date.now()
+			now: now ?? Date.now(),
+			...(isEdit ? { is_active: pass?.is_active } : {})
 		};
 		const schedule = { ...base, sales_start_at: salesStartAt, sales_end_at: salesEndAt };
 		const a3 = passVisibleInRestrictedOrg({ ...base, organizationVisibility, visibility });

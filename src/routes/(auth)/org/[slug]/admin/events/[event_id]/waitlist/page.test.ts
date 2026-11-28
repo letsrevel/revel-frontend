@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -25,7 +26,10 @@ vi.mock('$lib/api', () => ({
 vi.mock('$lib/api/queries/waitlist-offers', () => ({
 	createWaitlistSettingsQueryOptions: () => () => ({
 		queryKey: ['settings'],
-		queryFn: () => settingsPromise
+		queryFn: () => {
+			settingsCalls += 1;
+			return settingsPromise;
+		}
 	}),
 	createWaitlistOffersQueryOptions: () => () => ({
 		queryKey: ['offers'],
@@ -49,6 +53,7 @@ vi.mock('$lib/components/events/waitlist/admin/OfferExpiryDialog.svelte', async 
 }));
 
 let settingsPromise: Promise<unknown>;
+let settingsCalls = 0;
 const openSettings = {
 	waitlist_open: true,
 	waitlist_time_window: null,
@@ -74,7 +79,10 @@ function setup(eventCapacity: unknown) {
 }
 
 describe('waitlist page C1 warning', () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.clearAllMocks();
+		settingsCalls = 0;
+	});
 
 	it('warns, with a link to the edit page, when the waitlist is open and the event has no capacity', async () => {
 		settingsPromise = Promise.resolve(openSettings);
@@ -99,6 +107,11 @@ describe('waitlist page C1 warning', () => {
 		settingsPromise = Promise.resolve(openSettings);
 		setup({ max_attendees: 50, waitlist_open: true, venueCapacity: null });
 		await screen.findByTestId('waitlist-warnings');
+		// Let the settings query resolve and the page re-render before asserting absence.
+		await waitFor(() => expect(settingsCalls).toBeGreaterThan(0));
+		await settingsPromise;
+		await tick();
+		await new Promise((r) => setTimeout(r, 20));
 		expect(document.querySelector('[data-warning-id="C1"]')).toBeNull();
 	});
 });

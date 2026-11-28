@@ -22,18 +22,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
-	import {
-		compactWarnings,
-		withFix,
-		withLink,
-		type AdminWarning
-	} from '$lib/utils/admin-warnings/types';
-	import {
-		orgCustomDomainWhileRestricted,
-		orgHiddenWithPublicEvents,
-		orgRequestsWhileRestricted
-	} from '$lib/utils/admin-warnings/org';
-	import { membershipQuestionnaireNotPublished } from '$lib/utils/admin-warnings/questionnaire';
+	import { orgSettingsWarnings } from '$lib/utils/admin-warnings/org';
 
 	interface Props {
 		data: PageData;
@@ -99,53 +88,19 @@
 
 	// Setting warnings (#1314). The rules read the LIVE form state, so a warning
 	// appears or goes away while the owner edits, before saving.
-	const visibilityWarnings = $derived.by((): AdminWarning[] => {
-		const counts = data.warningCounts;
-		const a1 = counts ? orgHiddenWithPublicEvents({ orgVisibility: visibility, ...counts }) : null;
-		const a5 = orgCustomDomainWhileRestricted({
-			orgVisibility: visibility,
-			custom_domain: data.organization.custom_domain
-		});
-		return compactWarnings([
-			a1 && withFix(a1, 'visibility', () => m['adminWarnings.fixVisibility']()),
-			a5 && withFix(a5, 'visibility', () => m['adminWarnings.fixVisibility']())
-		]);
-	});
-
-	const requestsWarnings = $derived.by((): AdminWarning[] => {
-		const a4 = orgRequestsWhileRestricted({
-			orgVisibility: visibility,
-			accept_membership_requests: acceptNewMembers
-		});
-		return compactWarnings([
-			a4 &&
-				withFix(a4, 'accept_membership_requests', () => m['adminWarnings.fixMembershipRequests']())
-		]);
-	});
-
-	const defaultQuestionnaire = $derived(
-		data.membershipQuestionnaires.find((q) => q.id === defaultQuestionnaireId)
+	const warnings = $derived(
+		orgSettingsWarnings({
+			visibility,
+			acceptNewMembers,
+			defaultQuestionnaireId,
+			counts: data.warningCounts,
+			customDomain: data.organization.custom_domain,
+			membershipQuestionnaires: data.membershipQuestionnaires,
+			questionnairesHref: resolve('/(auth)/org/[slug]/admin/questionnaires', {
+				slug: data.organization.slug
+			})
+		})
 	);
-
-	// The dismissal follows the chosen questionnaire: id `F2-<orgQuestionnaireId>`.
-	const questionnaireWarnings = $derived.by((): AdminWarning[] => {
-		const q = defaultQuestionnaire;
-		if (!q) return [];
-		const f2 = membershipQuestionnaireNotPublished({
-			questionnaire_type: q.questionnaire_type,
-			status: q.questionnaire.status,
-			is_organization_default: true,
-			tierCount: 0
-		});
-		if (!f2) return [];
-		return [
-			withLink(
-				{ ...f2, id: `F2-${q.id}` },
-				resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: data.organization.slug }),
-				() => m['adminWarnings.fixOpenQuestionnaires']()
-			)
-		];
-	});
 
 	// If selected method requires a verified email but it isn't, force back to 'none' on submit.
 	const contactEmailVerified = $derived(data.organization.contact_email_verified === true);
@@ -424,7 +379,7 @@
 					{/if}
 				</p>
 				<AdminWarningList
-					warnings={visibilityWarnings}
+					warnings={warnings.visibility}
 					entityId={data.organization.id}
 					fallbackFocusId="visibility"
 					label={m['adminWarnings.listLabelNamed']({
@@ -476,7 +431,7 @@
 					{m['orgAdmin.settings.membership.acceptRequestsHelp']()}
 				</p>
 				<AdminWarningList
-					warnings={requestsWarnings}
+					warnings={warnings.requests}
 					entityId={data.organization.id}
 					fallbackFocusId="accept_membership_requests"
 					label={m['adminWarnings.listLabelNamed']({
@@ -506,7 +461,7 @@
 					{m['orgAdmin.settings.membership.defaultQuestionnaireHelp']()}
 				</p>
 				<AdminWarningList
-					warnings={questionnaireWarnings}
+					warnings={warnings.questionnaire}
 					entityId={data.organization.id}
 					fallbackFocusId="default_membership_questionnaire_id"
 					label={m['adminWarnings.listLabelNamed']({

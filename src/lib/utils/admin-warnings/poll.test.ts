@@ -10,7 +10,7 @@ describe('G2a pollPublicResultsNeverShown', () => {
 		const w = pollPublicResultsNeverShown({ result_visibility: v, result_timing: 'never' });
 		expect(w?.id).toBe('G2a');
 		expect(w?.level).toBe('info');
-		expect(w?.title()).toBe('Nobody sees the poll results');
+		expect(w?.title()).toBe('Only staff see the poll results');
 	});
 	it('is silent for other timings', () => {
 		expect(
