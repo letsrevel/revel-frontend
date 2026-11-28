@@ -10,6 +10,7 @@
 	import DetailsStepTagsInput from '$lib/components/events/admin/DetailsStepTagsInput.svelte';
 	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import { getImageUrl } from '$lib/utils/url';
+	import { diffTags } from '$lib/utils/tags';
 	import { Loader2, Settings as SettingsIcon } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -286,11 +287,12 @@
 	// The shared tag input reports the full next list; series tags are
 	// persisted one add/remove call at a time, so diff against server state.
 	function handleTagsUpdate({ tags: next }: { tags: string[] }): void {
-		for (const tag of next.filter((t) => !tags.includes(t))) {
+		const { added, removed } = diffTags(tags, next);
+		for (const tag of added) {
 			addTagError = null;
 			addTagMutation.mutate(tag);
 		}
-		for (const tag of tags.filter((t) => !next.includes(t))) {
+		for (const tag of removed) {
 			removeTagMutation.mutate(tag);
 		}
 	}

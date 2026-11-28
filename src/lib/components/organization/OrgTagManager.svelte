@@ -6,6 +6,7 @@
 		organizationadminmembersRemoveTags,
 		tagListTags
 	} from '$lib/api/generated/sdk.gen';
+	import { cleanTagName, diffTags, hasTag, keepStoredCasing, tagKey } from '$lib/utils/tags';
 
 	interface Props {
 		slug: string;
@@ -23,6 +24,8 @@
 	let showTagSuggestions = $state(false);
 	let isLoadingTagSuggestions = $state(false);
 	let tagSearchTimeout: ReturnType<typeof setTimeout> | null = null;
+	// Counts every search start and every search end. An answer is stale when it differs.
+	let searchSeq = 0;
 
 	// Sync when parent data changes (after form submission)
 	$effect(() => {
@@ -35,11 +38,14 @@
 	 */
 	async function fetchTagSuggestions(search: string): Promise<void> {
 		if (!search.trim()) {
+			searchSeq++;
+			isLoadingTagSuggestions = false;
 			tagSuggestions = [];
 			showTagSuggestions = false;
 			return;
 		}
 
+		const seq = ++searchSeq;
 		isLoadingTagSuggestions = true;
 
 		try {
@@ -47,17 +53,21 @@
 				query: { search: search.trim() }
 			});
 
+			// Drop the answer when a newer search started or the input changed meanwhile.
+			if (seq !== searchSeq || search !== tagInput) return;
+
 			if (response.data?.results) {
 				tagSuggestions = response.data.results
 					.map((tag) => tag.name)
-					.filter((tagName) => !tags.includes(tagName));
+					.filter((tagName) => !hasTag(tags, tagName));
 				showTagSuggestions = tagSuggestions.length > 0;
 			}
 		} catch (error) {
 			console.error('Failed to fetch tag suggestions:', error);
+			if (seq !== searchSeq) return;
 			tagSuggestions = [];
 		} finally {
-			isLoadingTagSuggestions = false;
+			if (seq === searchSeq) isLoadingTagSuggestions = false;
 		}
 	}
 
@@ -82,13 +92,27 @@
 	 * Add tag
 	 */
 	function addTag(tag?: string): void {
-		const tagToAdd = tag || tagInput.trim();
-		if (tagToAdd && !tags.includes(tagToAdd)) {
-			tags = [...tags, tagToAdd];
-			tagInput = '';
-			tagSuggestions = [];
-			showTagSuggestions = false;
+		const cleaned = cleanTagName(tag ?? tagInput);
+		if (!cleaned) return;
+
+		// A typed name that matches a suggestion uses the suggestion's casing.
+		const key = tagKey(cleaned);
+		const tagToAdd = tagSuggestions.find((s) => tagKey(s) === key) ?? cleaned;
+
+		// End any search: a late answer must not reopen the list.
+		if (tagSearchTimeout) {
+			clearTimeout(tagSearchTimeout);
+			tagSearchTimeout = null;
 		}
+		searchSeq++;
+		isLoadingTagSuggestions = false;
+
+		if (!hasTag(tags, tagToAdd)) {
+			tags = [...tags, tagToAdd];
+		}
+		tagInput = '';
+		tagSuggestions = [];
+		showTagSuggestions = false;
 	}
 
 	/**
@@ -105,8 +129,9 @@
 	async function saveTagAssociations(): Promise<void> {
 		if (!accessToken) return;
 
-		const addedTags = tags.filter((tag) => !savedTags.includes(tag));
-		const removedTags = savedTags.filter((tag) => !tags.includes(tag));
+		// Snapshot before the awaits: a tag added while the save runs stays unsaved.
+		const sent = [...tags];
+		const { added: addedTags, removed: removedTags } = diffTags(savedTags, sent);
 
 		if (addedTags.length > 0) {
 			await organizationadminmembersAddTags({
@@ -124,7 +149,10 @@
 			});
 		}
 
-		savedTags = [...tags];
+		// A case-only edit sent no request: keep and show the casing the backend keeps.
+		const nextSaved = keepStoredCasing(sent, savedTags);
+		tags = keepStoredCasing(tags, nextSaved);
+		savedTags = nextSaved;
 	}
 
 	// Register the save function with the parent
@@ -186,7 +214,10 @@
 			{/if}
 
 			{#if isLoadingTagSuggestions}
-				<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+				<div
+					data-testid="tag-search-spinner"
+					class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+				>
 					<svg
 						class="h-4 w-4 animate-spin text-muted-foreground"
 						xmlns="http://www.w3.org/2000/svg"
@@ -222,12 +253,14 @@
 	{#if tags.length > 0}
 		<div class="flex flex-wrap gap-2">
 			{#each tags as tag (tag)}
-				<span class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
-					{tag}
+				<span
+					class="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
+				>
+					<span class="min-w-0 [overflow-wrap:anywhere]">{tag}</span>
 					<button
 						type="button"
 						onclick={() => removeTag(tag)}
-						class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						class="ml-1 shrink-0 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						aria-label={m['orgTagManager.removeTag']({ tag })}
 					>
 						<svg

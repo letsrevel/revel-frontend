@@ -4,6 +4,7 @@
 	import { tagListTags } from '$lib/api';
 	import { onMount, tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { hasTag } from '$lib/utils/tags';
 
 	interface Props {
 		selectedTags: string[];
@@ -33,7 +34,7 @@
 		expanded
 			? availableTags
 			: availableTags.filter(
-					(tag, i) => i < COLLAPSED_TAG_COUNT || selectedTags.includes(tag) || pinned.includes(tag)
+					(tag, i) => i < COLLAPSED_TAG_COUNT || hasTag(selectedTags, tag) || hasTag(pinned, tag)
 				)
 	);
 	const hiddenCount = $derived(availableTags.length - visibleTags.length);
@@ -93,7 +94,7 @@
 
 	function handleTagClick(tag: string): void {
 		// Pin before toggling so a later deselect keeps the focused button mounted.
-		if (!pinned.includes(tag)) pinned = [...pinned, tag];
+		if (!hasTag(pinned, tag)) pinned = [...pinned, tag];
 		onToggleTag(tag);
 	}
 </script>
@@ -118,7 +119,7 @@
 	{:else if availableTags.length > 0}
 		<div id={listId} bind:this={listEl} class="flex flex-wrap gap-2">
 			{#each visibleTags as tag (tag)}
-				{@const isSelected = selectedTags?.includes(tag) ?? false}
+				{@const isSelected = hasTag(selectedTags ?? [], tag)}
 				<button
 					type="button"
 					onclick={() => handleTagClick(tag)}

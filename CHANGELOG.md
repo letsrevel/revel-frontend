@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In Browse Events, calendar view no longer shows the search field, and the filter badge does not count a search. The calendar cannot filter by text yet, so a search had no effect there. A search you typed in list view comes back when you switch to list view again. (#1297)
 - When a scanned ticket is not found at check-in, the scanner shows its "Failed to process" error and starts the camera again. Before, it showed "Scan successful" over a stopped camera, and staff had to close and open the scanner again. A failed code that stays in front of the camera is not processed again for 2 seconds after the camera is live again. Stop or Start clears this pause. (#1305)
 - The mobile menu moves keyboard focus to its close button when it opens. Tab and Shift+Tab stay inside the menu while it is open, and focus goes back to the menu button when it closes. (#1303)
+- Tag filters ignore letter case. A link with `?tags=fun` selects the `Fun` chip, and a click on it removes the filter. Tags that differ only by case in the link count once, and a link with only `#` or spaces in `?tags=` shows the unfiltered list. (#1287)
+- The tag inputs for events, event series and organizations ignore letter case and a leading `#`. A tag that is already in the list is not added again. A typed tag that matches a shown suggestion takes the suggestion's spelling. A change in letter case only no longer deletes the saved tag. (#1287)
+- The tag search spinner stays visible until the latest search finishes, and an older search result no longer replaces a newer one in organization settings. (#1280)
+- Long tags wrap inside their chip, and the check-in date fields fit narrow screens. (#1280)
 
 ## [2.41.0] - 2026-11-25
 

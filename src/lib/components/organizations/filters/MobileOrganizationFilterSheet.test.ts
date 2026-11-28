@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import MobileOrganizationFilterSheet from './MobileOrganizationFilterSheet.svelte';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -8,8 +8,10 @@ import type { OrganizationFilters as FilterState } from '$lib/utils/organization
 
 // CityFilter loads the selected city's name with TanStack Query: keep that
 // off the network.
+const { tagListTags } = vi.hoisted(() => ({ tagListTags: vi.fn() }));
 vi.mock('$lib/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/api')>()),
+	tagListTags,
 	cityGetCity: vi.fn().mockResolvedValue({ data: { id: 123, name: 'Vienna', country: 'Austria' } })
 }));
 
@@ -24,6 +26,10 @@ function renderWithQuery(options: { props: Record<string, unknown> }) {
 }
 
 describe('MobileOrganizationFilterSheet', () => {
+	beforeEach(() => {
+		tagListTags.mockReset().mockResolvedValue({ data: { results: [] } });
+	});
+
 	const defaultFilters: FilterState = {
 		orderBy: 'distance',
 		page: 1,
@@ -226,5 +232,23 @@ describe('MobileOrganizationFilterSheet', () => {
 		// Check for the swipe handle
 		const handle = container.querySelector('.h-1\\.5.w-12.rounded-full.bg-muted');
 		expect(handle).toBeInTheDocument();
+	});
+
+	it('removes a selected tag when the chip letter case differs', async () => {
+		tagListTags.mockResolvedValue({ data: { results: [{ name: 'Fun' }] } });
+		const user = userEvent.setup();
+		const onUpdateFilters = vi.fn();
+
+		renderWithQuery({
+			props: {
+				...defaultProps,
+				filters: { ...defaultFilters, tags: ['fun'] },
+				onUpdateFilters
+			}
+		});
+
+		await user.click(await screen.findByRole('button', { name: /Remove Fun filter/ }));
+
+		expect(onUpdateFilters).toHaveBeenCalledWith({ tags: undefined });
 	});
 });

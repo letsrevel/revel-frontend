@@ -4,6 +4,7 @@ import {
 	eventadmincoreAddTags,
 	eventadmincoreRemoveTags
 } from '$lib/api/generated/sdk.gen';
+import { diffTags, keepStoredCasing } from '$lib/utils/tags';
 
 /**
  * Save resource associations for an event.
@@ -93,10 +94,11 @@ export async function saveResourceAssociations(params: {
  * Save tag associations (add/remove tags) for an event.
  *
  * Diffs the current tags against the initial set and calls the add/remove tag
- * endpoints. Returns the new "initial tags" snapshot (`[...currentTags]`) that
- * the caller assigns back to its tracking state for future comparisons — this
- * keeps the reassignment side effect in the component while sharing the diff
- * logic verbatim between EventWizard and EventEditor.
+ * endpoints. Returns the new "initial tags" snapshot: `currentTags`, with the
+ * stored casing kept for a tag whose key did not change. The caller assigns it
+ * back to its tracking state for future comparisons. This keeps the
+ * reassignment side effect in the component while sharing the diff logic
+ * verbatim between EventWizard and EventEditor.
  */
 export async function saveTagAssociations(params: {
 	eventId: string;
@@ -106,8 +108,7 @@ export async function saveTagAssociations(params: {
 	const { eventId, currentTags, initialTags } = params;
 
 	// Determine which tags were added and removed
-	const addedTags = currentTags.filter((tag) => !initialTags.includes(tag));
-	const removedTags = initialTags.filter((tag) => !currentTags.includes(tag));
+	const { added: addedTags, removed: removedTags } = diffTags(initialTags, currentTags);
 
 	// Add new tags
 	if (addedTags.length > 0) {
@@ -125,6 +126,7 @@ export async function saveTagAssociations(params: {
 		});
 	}
 
-	// Return the new initial-tags snapshot for the caller to persist
-	return [...currentTags];
+	// Return the new initial-tags snapshot for the caller to persist. A case-only
+	// edit sent no request, so the snapshot keeps the stored casing.
+	return keepStoredCasing(currentTags, initialTags);
 }

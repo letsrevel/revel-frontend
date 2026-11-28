@@ -6,6 +6,7 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { getBackendUrl } from '$lib/config/api';
 import { log } from '$lib/server/logger';
+import { parseTagsParam } from '$lib/utils/tags';
 
 export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 	// Parse query parameters
@@ -15,8 +16,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 
 	// Parse filter parameters
 	const cityId = url.searchParams.get('city_id');
-	const tagsParam = url.searchParams.get('tags');
-	const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : undefined;
+	const tags = parseTagsParam(url.searchParams.get('tags'));
 	const orderBy = url.searchParams.get('order_by') || 'distance';
 
 	try {

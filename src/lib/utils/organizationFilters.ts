@@ -3,6 +3,8 @@
  * Handles URL param synchronization and filter state
  */
 
+import { parseTagsParam } from '$lib/utils/tags';
+
 /**
  * Organization filter state interface
  */
@@ -32,8 +34,8 @@ export function parseOrganizationFilters(searchParams: URLSearchParams): Organiz
 	if (cityId) filters.cityId = parseInt(cityId, 10);
 
 	// Tags (comma-separated)
-	const tags = searchParams.get('tags');
-	if (tags) filters.tags = tags.split(',').filter(Boolean);
+	const tags = parseTagsParam(searchParams.get('tags'));
+	if (tags) filters.tags = tags;
 
 	// Order by
 	const orderBy = searchParams.get('order_by');
