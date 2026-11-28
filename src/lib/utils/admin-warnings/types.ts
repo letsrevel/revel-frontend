@@ -32,6 +32,8 @@ export interface AdminWarning {
 	/** Element id of the field that fixes it. Set by the caller, never by a rule. */
 	fixTarget?: string;
 	fixLabel?: () => string;
+	/** A fix on ANOTHER page (plain link, no focus handling). Uses `fixLabel`. Set by the caller. */
+	fixHref?: string;
 	/** An in-place fix (e.g. "Clear deadline"). Set by the caller. */
 	action?: AdminWarningAction;
 }
@@ -39,6 +41,11 @@ export interface AdminWarning {
 /** Returns a copy of `warning` with a fix link to the element `target`. */
 export function withFix(warning: AdminWarning, target: string, label: () => string): AdminWarning {
 	return { ...warning, fixTarget: target, fixLabel: label };
+}
+
+/** Returns a copy of `warning` with a fix link to another page. */
+export function withLink(warning: AdminWarning, href: string, label: () => string): AdminWarning {
+	return { ...warning, fixHref: href, fixLabel: label };
 }
 
 /** Returns a copy of `warning` with an in-place fix button. */

@@ -40,7 +40,7 @@
 		<div class="min-w-0 flex-1 space-y-1">
 			<p class="font-semibold">{warning.title()}</p>
 			<p id={messageId}>{warning.message()}</p>
-			{#if (warning.fixTarget && warning.fixLabel) || warning.action}
+			{#if (warning.fixTarget && warning.fixLabel) || (warning.fixHref && warning.fixLabel) || warning.action}
 				<div class="flex flex-wrap gap-x-4 gap-y-1 pt-1">
 					{#if warning.fixTarget && warning.fixLabel}
 						{@const target = warning.fixTarget}
@@ -50,6 +50,13 @@
 							data-admin-warning-control
 							onclick={(e) => focusTarget(e, target)}>{warning.fixLabel()}</a
 						>
+					{/if}
+					{#if warning.fixHref && warning.fixLabel}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- the caller builds fixHref with resolve() -->
+						<a href={warning.fixHref} class={CONTROL_CLASS} data-admin-warning-control
+							>{warning.fixLabel()}</a
+						>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 					{#if warning.action}
 						{@const action = warning.action}

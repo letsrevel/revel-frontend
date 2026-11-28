@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AdminWarningList from './AdminWarningList.svelte';
-import type { AdminWarning } from '$lib/utils/admin-warnings/types';
+import { withLink, type AdminWarning } from '$lib/utils/admin-warnings/types';
 import {
 	DISMISSED_STORAGE_KEY,
 	resetDismissedForTests
@@ -367,5 +367,17 @@ describe('AdminWarningList', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+	it('renders fixHref as a plain cross-page link with the control marker', () => {
+		render(AdminWarningList, {
+			props: {
+				warnings: [
+					withLink(warning('W1', 'warn'), '/org/x/admin/events/1/edit', () => 'Edit event')
+				]
+			}
+		});
+		const link = screen.getByRole('link', { name: 'Edit event' });
+		expect(link).toHaveAttribute('href', '/org/x/admin/events/1/edit');
+		expect(link).toHaveAttribute('data-admin-warning-control');
 	});
 });
