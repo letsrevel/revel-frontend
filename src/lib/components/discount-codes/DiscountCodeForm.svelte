@@ -6,7 +6,13 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { AlertCircle, Loader2 } from '@lucide/svelte';
 	import type { DiscountCodeSchema, DiscountType } from '$lib/api/generated/types.gen';
-	import ScopeAssignment from './ScopeAssignment.svelte';
+	import ScopeAssignment, { type DiscountScopeData } from './ScopeAssignment.svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import {
+		discountCurrencyUnused,
+		discountOnlyFreeTiers
+	} from '$lib/utils/admin-warnings/discount';
 	import { currencyOptions } from '$lib/utils/currencies';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
@@ -104,6 +110,32 @@
 			autoPrefilledValidUntil = null;
 		}
 	}
+
+	// Tiers in scope, reported by ScopeAssignment (#1314). `tiersLoaded` is false until
+	// the tiers of the current event selection have loaded, so no warning shows early.
+	let scopeData = $state<DiscountScopeData>({
+		eventTiers: [],
+		selectedTiers: [],
+		tiersLoaded: false
+	});
+
+	const discountWarnings = $derived.by(() => {
+		const scope = {
+			seriesSelected: seriesIds.length > 0,
+			tiersLoaded: scopeData.tiersLoaded,
+			eventTiers: scopeData.eventTiers,
+			selectedTiers: scopeData.selectedTiers
+		};
+		const g1b = discountCurrencyUnused({
+			...scope,
+			discount_type: discountType,
+			currency
+		});
+		return compactWarnings([
+			discountOnlyFreeTiers(scope),
+			g1b && withFix(g1b, 'currency', () => m['adminWarnings.fixCurrency']())
+		]);
+	});
 
 	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
 
@@ -331,6 +363,15 @@
 		{/if}
 	</div>
 
+	<AdminWarningList
+		warnings={discountWarnings}
+		entityId={existingCode?.id ?? undefined}
+		baselineReady={scopeData.tiersLoaded}
+		fallbackFocusId="discount_value"
+		label={m['adminWarnings.listLabel']()}
+		testId="discount-warning-list"
+	/>
+
 	<!-- Validity Period -->
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<div class="space-y-2">
@@ -459,6 +500,7 @@
 			onEventsChange={(ids) => (eventIds = ids)}
 			onTiersChange={(ids) => (tierIds = ids)}
 			onScopedEventDateChange={handleScopedEventDate}
+			onScopeDataChange={(data) => (scopeData = data)}
 			disabled={isSubmitting}
 		/>
 	</div>

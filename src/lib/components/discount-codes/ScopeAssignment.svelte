@@ -17,6 +17,12 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { SvelteSet } from 'svelte/reactivity';
 
+	export interface DiscountScopeData {
+		eventTiers: TicketTierDetailSchema[];
+		selectedTiers: TicketTierDetailSchema[];
+		tiersLoaded: boolean;
+	}
+
 	interface Props {
 		organizationId: string;
 		selectedSeriesIds?: string[];
@@ -27,6 +33,12 @@
 		onTiersChange?: (ids: string[]) => void;
 		/** Emits the scoped event's start (ISO) when exactly one event is selected, else null. */
 		onScopedEventDateChange?: (startIso: string | null) => void;
+		/**
+		 * Reports the tiers in scope: every tier of the selected events, the selected
+		 * tiers, and whether the tiers query has succeeded for the current selection
+		 * (`false` while it loads or after it fails).
+		 */
+		onScopeDataChange?: (data: DiscountScopeData) => void;
 		disabled?: boolean;
 	}
 
@@ -39,6 +51,7 @@
 		onEventsChange,
 		onTiersChange,
 		onScopedEventDateChange,
+		onScopeDataChange,
 		disabled = false
 	}: Props = $props();
 
@@ -86,6 +99,11 @@
 		}
 	}));
 
+	// True when the last tiers fetch skipped an event (failed request or a second page),
+	// so the scope reported to the parent is incomplete and its warnings must stay silent.
+	// The list itself keeps its existing behaviour (it shows what did load).
+	let tiersIncomplete = $state(false);
+
 	// Fetch tiers for selected events
 	const tiersQuery = createQuery<TicketTierDetailSchema[]>(() => ({
 		queryKey: ['tiers-for-scope', ...Array.from(eventsSet).sort()],
@@ -94,6 +112,7 @@
 			if (eventIds.length === 0) return [];
 
 			const allTiers: TicketTierDetailSchema[] = [];
+			let incomplete = false;
 			for (const eventId of eventIds) {
 				const response = await eventadminticketsListTicketTiers({
 					path: { event_id: eventId },
@@ -103,7 +122,9 @@
 				if (response.data?.results) {
 					allTiers.push(...response.data.results);
 				}
+				if (!response.data?.results || response.data.next) incomplete = true;
 			}
+			tiersIncomplete = incomplete;
 			return allTiers;
 		},
 		enabled: eventsSet.size > 0
@@ -192,6 +213,15 @@
 			for (const id of staleIds) tiersSet.delete(id);
 			onTiersChange?.(Array.from(tiersSet));
 		}
+	});
+
+	// Report the tiers in scope to the parent (read-only: never changes the selection).
+	$effect(() => {
+		// No event selected: there is nothing to load, so the (empty) scope is final.
+		const tiersLoaded = eventsSet.size === 0 ? true : tiersQuery.isSuccess && !tiersIncomplete;
+		const eventTiers = tiersLoaded ? (tiersQuery.data ?? []) : [];
+		const selectedTiers = eventTiers.filter((t) => !!t.id && tiersSet.has(t.id));
+		onScopeDataChange?.({ eventTiers, selectedTiers, tiersLoaded });
 	});
 
 	const hasAnyScope = $derived(seriesSet.size > 0 || eventsSet.size > 0 || tiersSet.size > 0);
