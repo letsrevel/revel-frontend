@@ -4,6 +4,12 @@
 	import { Info, ExternalLink } from '@lucide/svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import WaitlistAdvancedSection from './WaitlistAdvancedSection.svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import {
+		limitAboveVenueWarning,
+		waitlistWithoutCapacityWarning
+	} from '$lib/utils/admin-warnings/event';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & {
@@ -20,6 +26,22 @@
 	}
 
 	const { formData, selectedVenue = null, isEditMode = false, onUpdate }: Props = $props();
+
+	// Admin setting warnings (#1314). Both fix links point at the limit input below.
+	const capacityWarnings = $derived.by(() => {
+		const input = {
+			max_attendees: formData.max_attendees,
+			waitlist_open: formData.waitlist_open,
+			venueCapacity: selectedVenue?.capacity
+		};
+		const fix = (): string => m['adminWarnings.fixAttendeeLimit']();
+		const c1 = waitlistWithoutCapacityWarning(input);
+		const c3b = limitAboveVenueWarning(input);
+		return compactWarnings([
+			c1 && withFix(c1, 'max-attendees', fix),
+			c3b && withFix(c3b, 'max-attendees', fix)
+		]);
+	});
 
 	let waitlistInfoOpen = $state(false);
 	let closeWaitlistConfirmOpen = $state(false);
@@ -78,15 +100,7 @@
 				<div class="font-medium">
 					{m['eventWizard.effectiveCapacity.label']()}: {effectiveCapacity}
 				</div>
-				{#if maxAttendees && maxAttendees > venueCapacity}
-					<p class="mt-1.5 text-highlight-foreground dark:text-highlight">
-						⚠️ {m['eventWizard.effectiveCapacity.warning']({
-							maxAttendees: maxAttendees.toString(),
-							venueCapacity: venueCapacity.toString(),
-							effectiveCapacity: effectiveCapacity.toString()
-						})}
-					</p>
-				{:else if !maxAttendees}
+				{#if !maxAttendees}
 					<p class="mt-1 text-muted-foreground">
 						{m['eventWizard.effectiveCapacity.limitedByVenue']({
 							capacity: venueCapacity.toString()
@@ -96,6 +110,12 @@
 			</div>
 		{/if}
 	</div>
+
+	<AdminWarningList
+		warnings={capacityWarnings}
+		entityId={formData.id}
+		fallbackFocusId="max-attendees"
+	/>
 
 	<!-- Waitlist Open -->
 	<div class="space-y-2">

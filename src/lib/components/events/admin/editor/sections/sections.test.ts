@@ -55,6 +55,114 @@ describe('AccessSection', () => {
 	});
 });
 
+describe('RadioTileGroup focus id', () => {
+	it('puts the focus id on the checked radio, not on the first', () => {
+		render(AccessSection, {
+			props: {
+				formData: { visibility: 'private', event_type: 'public', requires_ticket: false },
+				onUpdate: vi.fn(),
+				mode: 'create',
+				ticketingLocked: false
+			}
+		});
+		const target = document.getElementById('access-visibility') as HTMLInputElement;
+		expect(target).not.toBeNull();
+		expect(target.value).toBe('private');
+		expect(target.checked).toBe(true);
+	});
+});
+
+describe('AccessSection admin warnings', () => {
+	const warnIn = (id: string) => document.querySelector(`[data-warning-id="${id}"]`);
+
+	it('shows the B1 warning with a fix link in edit mode', () => {
+		render(AccessSection, {
+			props: {
+				...baseProps,
+				formData: {
+					visibility: 'public',
+					event_type: 'private',
+					accept_invitation_requests: false
+				},
+				mode: 'edit',
+				ticketingLocked: true,
+				eventId: 'evt-1'
+			}
+		});
+		expect(warnIn('B1')).toHaveTextContent('Private event is visible to everyone');
+		expect(screen.getByRole('link', { name: 'Allow invitation requests' })).toHaveAttribute(
+			'href',
+			'#accept-invitation-requests'
+		);
+		// Warn level is never dismissible.
+		expect(screen.queryByRole('button', { name: /^Dismiss/ })).not.toBeInTheDocument();
+	});
+
+	it('B1 has no fix link in create mode (the field is edit-only)', () => {
+		render(AccessSection, {
+			props: {
+				...baseProps,
+				formData: { visibility: 'public', event_type: 'private' },
+				mode: 'create',
+				ticketingLocked: false
+			}
+		});
+		expect(warnIn('B1')).not.toBeNull();
+		expect(screen.queryByRole('link', { name: 'Allow invitation requests' })).toBeNull();
+	});
+
+	it('shows the dismissible B2 info for a saved event', () => {
+		render(AccessSection, {
+			props: {
+				...baseProps,
+				formData: { visibility: 'public', event_type: 'public', accept_invitation_requests: true },
+				mode: 'edit',
+				ticketingLocked: true,
+				eventId: 'evt-2'
+			}
+		});
+		expect(warnIn('B2')).toHaveTextContent('Invitation requests need a private event');
+		expect(
+			screen.getByRole('button', { name: 'Dismiss: Invitation requests need a private event' })
+		).toBeInTheDocument();
+	});
+
+	it('B4 needs a saved status: hidden without one, shown with status open', () => {
+		const formData = { visibility: 'private' as const, event_type: 'public' as const };
+		const { unmount } = render(AccessSection, {
+			props: { ...baseProps, formData, mode: 'create', ticketingLocked: false }
+		});
+		expect(warnIn('B4')).toBeNull();
+		unmount();
+		render(AccessSection, {
+			props: { ...baseProps, formData, mode: 'edit', ticketingLocked: true, status: 'open' }
+		});
+		expect(warnIn('B4')).not.toBeNull();
+	});
+
+	it('B5a renders after the existing guest alert', () => {
+		render(AccessSection, {
+			props: {
+				...baseProps,
+				formData: {
+					visibility: 'public',
+					event_type: 'public',
+					can_attend_without_login: true,
+					requires_full_profile: true
+				},
+				mode: 'edit',
+				ticketingLocked: true
+			}
+		});
+		const alert = screen.getByRole('alert');
+		const b5a = warnIn('B5a');
+		expect(b5a).not.toBeNull();
+		expect(
+			alert.compareDocumentPosition(b5a as Element) & Node.DOCUMENT_POSITION_FOLLOWING
+		).toBeTruthy();
+	});
+});
+
 describe('buildEditorSections', () => {
 	it('lists the seven sections in page order', () => {
 		expect(buildEditorSections({}).map((s) => s.id)).toEqual([

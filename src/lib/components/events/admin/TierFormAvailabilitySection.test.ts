@@ -65,3 +65,38 @@ describe('TierFormAvailabilitySection event-capacity warning', () => {
 		expect(screen.queryByTestId('tier-capacity-warning')).not.toBeInTheDocument();
 	});
 });
+
+describe('TierFormAvailabilitySection D3 warning (#1314)', () => {
+	function renderAudience(purchasableBy: string): void {
+		render(TierFormAvailabilitySection, {
+			props: {
+				totalQuantity: '',
+				salesStartAt: '',
+				salesEndAt: '',
+				salesStartReadback: '',
+				salesEndReadback: '',
+				visibility: 'public' as const,
+				purchasableBy: purchasableBy as 'members',
+				restrictVisibilityToLinkedInvitations: false,
+				restrictPurchaseToLinkedInvitations: false,
+				restrictedToMembershipTiersIds: [],
+				excludedMembershipTiersIds: [],
+				membershipTiers: [],
+				salesPaused: false,
+				isPending: false
+			}
+		});
+	}
+
+	it('shows for a public tier that only members can buy, with a fix link', () => {
+		renderAudience('members');
+		const list = screen.getByTestId('tier-audience-warnings');
+		expect(list.querySelector('li')).not.toBeNull();
+		expect(screen.getByText('Change who can buy')).toBeInTheDocument();
+	});
+
+	it('is hidden for non_members', () => {
+		renderAudience('non_members');
+		expect(screen.getByTestId('tier-audience-warnings').querySelector('li')).toBeNull();
+	});
+});

@@ -599,6 +599,7 @@
 		onResourcesChange={(ids) => (selectedResourceIds = ids)}
 		bind:scheduleRows
 		disabled={isSaving}
+		status={existingEvent?.status}
 	/>
 {/snippet}
 {#snippet detailsMain()}

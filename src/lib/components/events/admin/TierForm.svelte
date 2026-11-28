@@ -30,6 +30,7 @@
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
 	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
+	import TierFormPaymentInstructions from './TierFormPaymentInstructions.svelte';
 	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
 	import TierFormActions from './TierFormActions.svelte';
 	import TierFormGrantsSection from './TierFormGrantsSection.svelte';
@@ -630,22 +631,12 @@
 				{isPending}
 			/>
 
-			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
-			{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
-				<div>
-					<MarkdownEditor
-						id="payment-instructions"
-						label={m['tierForm.paymentInstructions']()}
-						bind:value={manualPaymentInstructions}
-						rows={3}
-						placeholder={m['tierForm.paymentInstructionsPlaceholder']()}
-						disabled={isPending}
-					/>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.paymentInstructionsHelp']()}
-					</p>
-				</div>
-			{/if}
+			<TierFormPaymentInstructions
+				{paymentMethod}
+				bind:value={manualPaymentInstructions}
+				tierId={tier?.id ?? undefined}
+				{isPending}
+			/>
 
 			<TierFormCancellationSection
 				{paymentMethod}
@@ -674,6 +665,7 @@
 				{membershipTiers}
 				{membershipTiersStatus}
 				knownExcludedTiers={tier?.excluded_membership_tiers ?? []}
+				tierId={tier?.id ?? undefined}
 				bind:salesPaused
 				{eventCapacity}
 				grantsMembership={hasGrant(grantsMembershipTierId)}

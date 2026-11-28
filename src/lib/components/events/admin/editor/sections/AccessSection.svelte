@@ -10,6 +10,15 @@
 	import AccessExplanation from './AccessExplanation.svelte';
 	import TicketingModeField from './TicketingModeField.svelte';
 	import type { EditorFormData, EditorMode, EditorUpdate } from '../types';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import {
+		guestFullProfileWarning,
+		guestNeedsInvitationWarning,
+		hiddenOpenEventWarning,
+		invitationRequestsIgnoredWarning,
+		invitationRequestsOffWarning
+	} from '$lib/utils/admin-warnings/event';
 
 	interface Props {
 		formData: EditorFormData;
@@ -23,6 +32,8 @@
 		organizationId?: string;
 		organizationSlug?: string;
 		accessToken?: string;
+		/** Saved event status. Unset in create mode, which switches the hidden-open-event hint off. */
+		status?: string;
 	}
 
 	const {
@@ -34,10 +45,42 @@
 		eventId = null,
 		organizationId = '',
 		organizationSlug = '',
-		accessToken = ''
+		accessToken = '',
+		status
 	}: Props = $props();
 
 	let isQuestionnaireModalOpen = $state(false);
+
+	const fixAllowRequests = () => m['adminWarnings.fixAllowInvitationRequests']();
+	const fixEventType = () => m['adminWarnings.fixEventType']();
+	const fixVisibility = () => m['adminWarnings.fixVisibility']();
+	const fixFullProfile = () => m['adminWarnings.fixRequireFullProfile']();
+	const fixGuest = () => m['adminWarnings.fixGuestAttendance']();
+
+	// Admin setting warnings (#1314). Fix links only point at fields mounted in this mode:
+	// the admission fields (invitation requests, full profile) exist in edit mode only.
+	const settingWarnings = $derived.by(() => {
+		const edit = mode === 'edit';
+		const linked = edit
+			? questionnaires.map((q) => ({
+					questionnaire_type: q.questionnaire_type,
+					status: q.questionnaire?.status
+				}))
+			: undefined;
+		const guest = { ...formData, questionnaires: linked };
+		const b1 = invitationRequestsOffWarning(formData);
+		const b2 = invitationRequestsIgnoredWarning(formData);
+		const b4 = hiddenOpenEventWarning({ ...formData, status });
+		const b5a = guestFullProfileWarning(guest);
+		const b5b = guestNeedsInvitationWarning(guest);
+		return compactWarnings([
+			b1 && (edit ? withFix(b1, 'accept-invitation-requests', fixAllowRequests) : b1),
+			b2 && withFix(b2, 'access-event-type', fixEventType),
+			b4 && withFix(b4, 'access-visibility', fixVisibility),
+			b5a && (edit ? withFix(b5a, 'requires-full-profile', fixFullProfile) : b5a),
+			b5b && withFix(b5b, 'can-attend-without-login', fixGuest)
+		]);
+	});
 
 	const visibilityOptions: RadioTileOption[] = $derived([
 		{
@@ -104,6 +147,7 @@
 		</p>
 		<RadioTileGroup
 			name="visibility"
+			focusId="access-visibility"
 			options={visibilityOptions}
 			value={formData.visibility}
 			ariaLabel={m['essentialsStep.eventVisibilityAriaLabel']()}
@@ -126,6 +170,7 @@
 		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.eventTypeExplanation']()}</p>
 		<RadioTileGroup
 			name="event_type"
+			focusId="access-event-type"
 			options={eventTypeOptions}
 			value={formData.event_type}
 			ariaLabel={m['essentialsStep.eventTypeAriaLabel']()}
@@ -164,6 +209,7 @@
 				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
+					id="can-attend-without-login"
 					type="checkbox"
 					checked={formData.can_attend_without_login || false}
 					onchange={(e) => onUpdate({ can_attend_without_login: e.currentTarget.checked })}
@@ -194,6 +240,12 @@
 			{/if}
 		</EditorSubGroup>
 	{/if}
+
+	<AdminWarningList
+		warnings={settingWarnings}
+		entityId={eventId ?? undefined}
+		fallbackFocusId="access-visibility"
+	/>
 </EditorSection>
 
 <!-- Questionnaire Assignment Modal -->

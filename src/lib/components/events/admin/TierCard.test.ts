@@ -117,3 +117,45 @@ describe('TierCard purchasable-by label', () => {
 		expect(screen.queryByText('Non-members only')).not.toBeInTheDocument();
 	});
 });
+
+describe('TierCard setting warnings (#1314)', () => {
+	function renderWith(
+		tier: Partial<TicketTierDetailSchema>,
+		organizationStripeConnected?: boolean
+	): void {
+		render(TierCard, {
+			props: {
+				tier: { ...makeTier(null), ...tier } as TicketTierDetailSchema,
+				onEdit: vi.fn(),
+				...(organizationStripeConnected === undefined ? {} : { organizationStripeConnected })
+			}
+		});
+	}
+
+	it('D1 shows for an online tier when Stripe is not connected', () => {
+		renderWith({ payment_method: 'online' }, false);
+		expect(screen.getByTestId('tier-card-warnings')).toHaveTextContent(/online/i);
+		expect(screen.getByRole('button', { name: /^Edit tier/ })).toBeInTheDocument();
+	});
+
+	it('D1 is hidden when Stripe is connected or the state is unknown', () => {
+		renderWith({ payment_method: 'online' }, true);
+		expect(screen.queryByRole('list', { name: /./ })).toBeNull();
+		expect(screen.queryByRole('button', { name: /^Edit tier/ })).toBeNull();
+	});
+
+	it('D1 is hidden by default (unknown Stripe state)', () => {
+		renderWith({ payment_method: 'online' });
+		expect(screen.queryByRole('button', { name: /^Edit tier/ })).toBeNull();
+	});
+
+	it('D2 shows for a free tier with a price above zero', () => {
+		renderWith({ payment_method: 'free', price: '5.00' });
+		expect(screen.getByRole('button', { name: /^Edit tier/ })).toBeInTheDocument();
+	});
+
+	it('D2 is hidden for a free tier with price zero', () => {
+		renderWith({ payment_method: 'free', price: '0.00' });
+		expect(screen.queryByRole('button', { name: /^Edit tier/ })).toBeNull();
+	});
+});

@@ -2,15 +2,27 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import { formatDateTimeReadback } from '$lib/utils/date';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withFix } from '$lib/utils/admin-warnings/types';
+	import { rsvpAfterEndWarning } from '$lib/utils/admin-warnings/event';
 
 	interface Props {
 		formData: Partial<EventCreateSchema>;
 		onUpdate: (data: Partial<EventCreateSchema>) => void;
+		/** Saved event id. Unset while unsaved (wizard): the warning cannot be dismissed. */
+		eventId?: string | null;
 	}
 
-	const { formData, onUpdate }: Props = $props();
+	const { formData, onUpdate, eventId = null }: Props = $props();
 
 	const rsvpReadback = $derived(formatDateTimeReadback(formData.rsvp_before));
+
+	const rsvpWarnings = $derived.by(() => {
+		const warning = rsvpAfterEndWarning(formData);
+		return compactWarnings([
+			warning && withFix(warning, 'rsvp-before', () => m['adminWarnings.fixRsvpDeadline']())
+		]);
+	});
 </script>
 
 <!-- RSVP deadline + RSVP notes (non-ticketed events). Shared by the wizard's
@@ -38,6 +50,12 @@
 			})}
 		</p>
 	</div>
+
+	<AdminWarningList
+		warnings={rsvpWarnings}
+		entityId={eventId ?? undefined}
+		fallbackFocusId="rsvp-before"
+	/>
 
 	<div class="space-y-2">
 		<label
