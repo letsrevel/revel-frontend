@@ -36,6 +36,26 @@ describe('tagKey', () => {
 	it('folds INFO to info', () => {
 		expect(tagKey('INFO')).toBe('info');
 	});
+
+	it('folds a capital sigma to σ, as PostgreSQL LOWER does', () => {
+		expect(tagKey('ΧΟΡΟΣ')).toBe('χοροσ');
+		expect(tagKey('ΧΟΡΟΣ')).toBe(tagKey('χοροσ'));
+		expect(tagKey('ΑΣ')).toBe('ασ');
+	});
+
+	it('keeps a typed final sigma distinct, as PostgreSQL LOWER does', () => {
+		expect(tagKey('ας')).toBe('ας');
+		expect(tagKey('χορος')).not.toBe(tagKey('ΧΟΡΟΣ'));
+	});
+
+	it('folds a capital dotted I to a plain i, as PostgreSQL LOWER does', () => {
+		expect(tagKey('İstanbul')).toBe('istanbul');
+	});
+
+	it('sends no add or remove when a Greek tag changes only its case', () => {
+		expect(diffTags(['ΧΟΡΟΣ'], ['χοροσ'])).toEqual({ added: [], removed: [] });
+		expect(diffTags(['ΧΟΡΟΣ'], ['χορος'])).toEqual({ added: ['χορος'], removed: ['ΧΟΡΟΣ'] });
+	});
 });
 
 describe('hasTag', () => {

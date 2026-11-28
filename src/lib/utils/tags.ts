@@ -7,6 +7,12 @@
  * browser; the database stays the authority. Use `toLowerCase`, never
  * `toLocaleLowerCase`: a locale fold (for example Turkish dotted/dotless I)
  * would disagree with `LOWER` for the same user in some UI languages.
+ *
+ * `LOWER` maps one character at a time; `toLowerCase` does not in two known
+ * cases, so `tagKey` maps them first (checked against PostgreSQL 15,
+ * en_US.utf8): a capital sigma is always `σ` (JavaScript gives a word-final
+ * `ς`), and `İ` (U+0130) is `i` (JavaScript gives `i` plus U+0307). A typed
+ * `ς` stays `ς`, as in the database.
  */
 
 /** Trims, removes every leading `#`, and trims again. Keeps the letter case. */
@@ -16,7 +22,7 @@ export function cleanTagName(name: string): string {
 
 /** The comparison key of a tag name. Use it only to compare, never to store or show. */
 export function tagKey(name: string): string {
-	return cleanTagName(name).toLowerCase();
+	return cleanTagName(name).replace(/Σ/g, 'σ').replace(/İ/g, 'i').toLowerCase();
 }
 
 /** True when `list` holds a tag that matches `name` regardless of letter case. */
