@@ -130,6 +130,9 @@
 				awaitingPaymentCount={data.awaitingPaymentCount}
 				orgSlug={organization.slug}
 				isOwner={data.isOwner}
+				orgVisibility={organization.visibility}
+				acceptMembershipRequests={organization.accept_membership_requests}
+				warningCounts={data.warningCounts}
 			/>
 		</div>
 		<UpcomingEventsList events={model.upcoming} orgSlug={organization.slug} />

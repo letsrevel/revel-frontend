@@ -3,6 +3,17 @@
 	import { resolve } from '$app/paths';
 	import { CircleCheck, TriangleAlert } from '@lucide/svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import {
+		orgHiddenWithPublicEvents,
+		orgRequestsWhileRestricted
+	} from '$lib/utils/admin-warnings/org';
+
+	/** Same shape as `OrgWarningCounts` in `$lib/server/org-warning-counts` (server-only module). */
+	interface WarningCounts {
+		publicEventCount: number;
+		inSeriesCount: number;
+		partial: boolean;
+	}
 
 	interface Props {
 		pendingRequestCount: number | null;
@@ -12,6 +23,12 @@
 		awaitingPaymentCount?: number | null;
 		orgSlug: string;
 		isOwner: boolean;
+		/** Visibility of the organization (A1, A4 rules). */
+		orgVisibility?: string | null;
+		/** Whether the organization accepts membership requests (A4 rule). */
+		acceptMembershipRequests?: boolean | null;
+		/** Upcoming public event counts for A1. `null` = unknown (hide the item). */
+		warningCounts?: WarningCounts | null;
 	}
 
 	const {
@@ -20,7 +37,10 @@
 		draftCount,
 		awaitingPaymentCount = null,
 		orgSlug,
-		isOwner
+		isOwner,
+		orgVisibility = null,
+		acceptMembershipRequests = null,
+		warningCounts = null
 	}: Props = $props();
 
 	interface Item {
@@ -67,6 +87,34 @@
 				text: m['orgAdmin.dashboard.attention.drafts']({ count: draftCount }),
 				linkLabel: m['orgAdmin.dashboard.attention.open'](),
 				href: resolve('/(auth)/org/[slug]/admin/events', { slug: orgSlug })
+			});
+		}
+		const settingsHref = resolve('/(auth)/org/[slug]/admin/settings', { slug: orgSlug });
+		// A1 (with the series sentence when it applies) and A4. Not A5: that one stays
+		// on the settings and custom-domain pages.
+		const hidden = warningCounts
+			? orgHiddenWithPublicEvents({ orgVisibility, ...warningCounts })
+			: null;
+		if (hidden && warningCounts) {
+			list.push({
+				id: 'hidden-events',
+				count: warningCounts.publicEventCount,
+				text: hidden.message(),
+				linkLabel: m['adminWarnings.attentionOpenSettings'](),
+				href: `${settingsHref}#visibility`
+			});
+		}
+		const requests = orgRequestsWhileRestricted({
+			orgVisibility,
+			accept_membership_requests: acceptMembershipRequests
+		});
+		if (requests) {
+			list.push({
+				id: 'requests-unreachable',
+				count: null,
+				text: requests.title(),
+				linkLabel: m['adminWarnings.attentionOpenSettings'](),
+				href: `${settingsHref}#accept_membership_requests`
 			});
 		}
 		return list;

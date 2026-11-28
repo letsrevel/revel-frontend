@@ -6,6 +6,7 @@ import {
 	organizationadminsubscriptionsListSubscriptions
 } from '$lib/api/generated/sdk.gen';
 import { loadHasPublishedEvent, loadSetupCounts } from '$lib/server/org-setup';
+import { loadOrgWarningCounts } from '$lib/server/org-warning-counts';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
@@ -16,6 +17,7 @@ vi.mock('$lib/server/org-setup', () => ({
 	loadSetupCounts: vi.fn(),
 	loadHasPublishedEvent: vi.fn()
 }));
+vi.mock('$lib/server/org-warning-counts', () => ({ loadOrgWarningCounts: vi.fn() }));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);
@@ -29,7 +31,7 @@ const ev = (id: string) => ({ id });
 
 const cookieDelete = vi.fn();
 
-function run(isOwner = true, cookie?: string): Promise<Result> {
+function run(isOwner = true, cookie?: string, visibility?: string): Promise<Result> {
 	const event = {
 		fetch: vi.fn(),
 		cookies: {
@@ -38,7 +40,7 @@ function run(isOwner = true, cookie?: string): Promise<Result> {
 		},
 		params: { slug: 'org' },
 		locals: { user: { accessToken: 'tok' } },
-		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'org' } })
+		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'org', visibility } })
 	} as unknown as LoadArg;
 	return load(event) as Promise<Result>;
 }
@@ -213,5 +215,36 @@ describe('admin dashboard awaitingPaymentCount', () => {
 		noEvents();
 		listSubs.mockRejectedValue(new Error('403'));
 		expect((await run()).awaitingPaymentCount).toBeNull();
+	});
+});
+
+describe('overview load: warningCounts (A1)', () => {
+	const warn = vi.mocked(loadOrgWarningCounts);
+	const WARN = { publicEventCount: 2, inSeriesCount: 1, partial: false };
+
+	beforeEach(() => {
+		warn.mockReset();
+		warn.mockResolvedValue(WARN);
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+	});
+
+	it.each(['private', 'members-only', 'staff-only'])('loads the counts for %s', async (v) => {
+		const res = await run(true, undefined, v);
+		expect(res.warningCounts).toEqual(WARN);
+		expect(warn).toHaveBeenCalledWith(
+			expect.objectContaining({ orgId: 'org-id', accessToken: 'tok' })
+		);
+	});
+
+	it.each(['public', 'unlisted', undefined])('skips the call for %s', async (v) => {
+		const res = await run(true, undefined, v);
+		expect(warn).not.toHaveBeenCalled();
+		expect(res.warningCounts).toBeNull();
+	});
+
+	it('returns null when the helper fails', async () => {
+		warn.mockResolvedValue(null);
+		const res = await run(true, undefined, 'private');
+		expect(res.warningCounts).toBeNull();
 	});
 });

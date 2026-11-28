@@ -12080,6 +12080,15 @@
 		"discountG1aTitle": "Code applies to free tiers only",
 		"discountG1aMessage": "Every tier in the scope is free or pay what you want. The code gives no discount there, and buyers get an error. Add a paid tier to the scope.",
 		"discountG1bTitle": "Currency does not match the tiers",
-		"discountG1bMessage": "No tier in the scope uses the currency of the code. Buyers cannot use the code. Change the currency or the scope."
+		"discountG1bMessage": "No tier in the scope uses the currency of the code. Buyers cannot use the code. Change the currency or the scope.",
+		"fixCurrency": "Change the currency",
+		"fixPassSalesStart": "Change sales start",
+		"fixPassSalesEnd": "Change sales end",
+		"fixPassPaymentMethod": "Change payment method",
+		"fixPassDiscount": "Change discount",
+		"fixPassPrice": "Change price",
+		"fixPassCoverage": "Change coverage",
+		"fixOpenQuestionnaires": "Open questionnaires",
+		"attentionOpenSettings": "Open settings"
 	}
 }

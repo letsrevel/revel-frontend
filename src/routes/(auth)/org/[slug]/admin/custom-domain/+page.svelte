@@ -1,5 +1,9 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { resolve } from '$app/paths';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { orgCustomDomainWhileRestricted } from '$lib/utils/admin-warnings/org';
+	import { compactWarnings, withLink } from '$lib/utils/admin-warnings/types';
 	import { Globe, Mail } from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
@@ -11,6 +15,22 @@
 		data: PageData;
 	}
 	const { data }: Props = $props();
+
+	// A5 (#1314): same rule and dismissal (entity = org id) as the settings page.
+	const warnings = $derived.by(() => {
+		const a5 = orgCustomDomainWhileRestricted({
+			orgVisibility: data.organization.visibility,
+			custom_domain: data.organization.custom_domain
+		});
+		return compactWarnings([
+			a5 &&
+				withLink(
+					a5,
+					`${resolve('/(auth)/org/[slug]/admin/settings', { slug: data.organization.slug })}#visibility`,
+					() => m['adminWarnings.fixVisibility']()
+				)
+		]);
+	});
 
 	const requestHref = $derived(
 		data.supportEmail
@@ -32,6 +52,13 @@
 		kicker={data.organization.name}
 		title={m['customDomain.title']()}
 		subtitle={m['customDomain.subtitle']()}
+	/>
+
+	<AdminWarningList
+		{warnings}
+		entityId={data.organization.id}
+		label={m['adminWarnings.listLabelNamed']({ name: m['customDomain.title']() })}
+		testId="custom-domain-warnings"
 	/>
 
 	{#if data.customDomainEnabled}
