@@ -9,6 +9,8 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { log } from '$lib/server/logger';
 import { loadHasPublishedEvent, loadSetupCounts } from '$lib/server/org-setup';
+import { loadOrgWarningCounts } from '$lib/server/org-warning-counts';
+import { isOrgRestricted } from '$lib/utils/admin-warnings/org';
 import { setupHiddenCookieName } from '$lib/utils/org-setup-hidden-cookie';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -46,7 +48,8 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 		requestsResult,
 		pendingSubsResult,
 		setupCounts,
-		hasPublished
+		hasPublished,
+		warningCounts
 	] = await Promise.all([
 		// In-progress candidates: already started within the lookback window. The client keeps
 		// those whose `end` is still in the future (the model does this filtering).
@@ -90,6 +93,11 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 		// Hidden: the collapsed line is only worth keeping while nothing is published.
 		hiddenCookie
 			? loadHasPublishedEvent({ orgId: organization.id, accessToken, fetch })
+			: Promise.resolve(null),
+		// Only a restricted organization can have the A1 problem, so skip the call otherwise.
+		// Never throws; null = hide the item.
+		isOrgRestricted(organization.visibility)
+			? loadOrgWarningCounts({ orgId: organization.id, accessToken, fetch })
 			: Promise.resolve(null)
 	]);
 
@@ -142,6 +150,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 		pendingRequestCount,
 		awaitingPaymentCount,
 		setupCounts,
-		setupHidden
+		setupHidden,
+		warningCounts
 	};
 };

@@ -9,11 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - The event editor and the ticketing tab show warnings for settings that are allowed but probably unwanted. Examples: a public private event that does not accept invitation requests, an open waitlist without a capacity limit, deadlines after the event end, an open ticketed event with no tier on sale, an online tier without a connected Stripe account, and an offline tier without payment instructions. Each warning says what attendees experience, and most link to the field that fixes it. Warnings never block a save. Amber warnings always show; blue info hints can be dismissed in this browser. (#1314)
+- More setting warnings for organizers (#1314):
+  - Organization settings and the admin overview: a hidden organization with upcoming events that visitors can see, membership requests that visitors cannot reach, and (on settings and the custom-domain page) a custom domain on a hidden organization.
+  - Series passes: a public pass of a hidden organization, a sales window that ends before it starts or opens too late, fewer than two upcoming events, online payment without Stripe, and prices that the discount or the single tickets undercut.
+  - Questionnaires: an admission questionnaire that events use but that is not published (nobody is screened), and an unpublished membership questionnaire that applicants still fill in. Both offer a Publish button.
+  - The event waitlist page: an open waitlist without a capacity limit.
+  - Discount codes: a code whose scope has only free or pay-what-you-want tiers, or no tier in the code currency.
+  - Polls: public results that are never shown, and a public poll in a hidden organization, which everyone can see (and vote in).
 
 ### Changed
 - The "max attendees exceeds venue capacity" hint in the event editor is now one of these warnings. (#1314)
 
 ### Fixed
+- A setting warning that goes away within 50 ms of appearing is no longer announced by screen readers. (#1336)
 - In Browse Events, calendar view no longer shows the search field, and the filter badge does not count a search. The calendar cannot filter by text yet, so a search had no effect there. A search you typed in list view comes back when you switch to list view again. (#1297)
 - When a scanned ticket is not found at check-in, the scanner shows its "Failed to process" error and starts the camera again. Before, it showed "Scan successful" over a stopped camera, and staff had to close and open the scanner again. A failed code that stays in front of the camera is not processed again for 2 seconds after the camera is live again. Stop or Start clears this pause. (#1305)
 - The mobile menu moves keyboard focus to its close button when it opens. Tab and Shift+Tab stay inside the menu while it is open, and focus goes back to the menu button when it closes. (#1303)

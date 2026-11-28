@@ -17,6 +17,12 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { SvelteSet } from 'svelte/reactivity';
 
+	export interface DiscountScopeData {
+		eventTiers: TicketTierDetailSchema[];
+		selectedTiers: TicketTierDetailSchema[];
+		tiersLoaded: boolean;
+	}
+
 	interface Props {
 		organizationId: string;
 		selectedSeriesIds?: string[];
@@ -27,6 +33,12 @@
 		onTiersChange?: (ids: string[]) => void;
 		/** Emits the scoped event's start (ISO) when exactly one event is selected, else null. */
 		onScopedEventDateChange?: (startIso: string | null) => void;
+		/**
+		 * Reports the tiers in scope: every tier of the selected events, the selected
+		 * tiers, and whether the tiers query has succeeded for the current selection
+		 * (`false` while it loads or after it fails).
+		 */
+		onScopeDataChange?: (data: DiscountScopeData) => void;
 		disabled?: boolean;
 	}
 
@@ -39,6 +51,7 @@
 		onEventsChange,
 		onTiersChange,
 		onScopedEventDateChange,
+		onScopeDataChange,
 		disabled = false
 	}: Props = $props();
 
@@ -86,14 +99,21 @@
 		}
 	}));
 
+	// True when the last tiers fetch skipped an event (failed request or a second page),
+	// so the scope reported to the parent is incomplete and its warnings must stay silent.
+	// The list itself keeps its existing behaviour (it shows what did load).
+	// The flag travels with the data, so a cached key cannot report a partial list as complete.
+
 	// Fetch tiers for selected events
-	const tiersQuery = createQuery<TicketTierDetailSchema[]>(() => ({
+	type TiersResult = { tiers: TicketTierDetailSchema[]; incomplete: boolean };
+	const tiersQuery = createQuery<TiersResult>(() => ({
 		queryKey: ['tiers-for-scope', ...Array.from(eventsSet).sort()],
 		queryFn: async () => {
 			const eventIds = Array.from(eventsSet);
-			if (eventIds.length === 0) return [];
+			if (eventIds.length === 0) return { tiers: [], incomplete: false };
 
 			const allTiers: TicketTierDetailSchema[] = [];
+			let incomplete = false;
 			for (const eventId of eventIds) {
 				const response = await eventadminticketsListTicketTiers({
 					path: { event_id: eventId },
@@ -103,8 +123,9 @@
 				if (response.data?.results) {
 					allTiers.push(...response.data.results);
 				}
+				if (!response.data?.results || response.data.next) incomplete = true;
 			}
-			return allTiers;
+			return { tiers: allTiers, incomplete };
 		},
 		enabled: eventsSet.size > 0
 	}));
@@ -125,7 +146,7 @@
 	});
 
 	const filteredTiers = $derived.by(() => {
-		const items = tiersQuery.data || [];
+		const items = tiersQuery.data?.tiers ?? [];
 		if (!tiersSearch.trim()) return items;
 		const q = tiersSearch.toLowerCase();
 		return items.filter((t) => t.name.toLowerCase().includes(q));
@@ -154,7 +175,7 @@
 		if (eventsSet.has(id)) {
 			eventsSet.delete(id);
 			// Remove tiers belonging to this event
-			const eventTiers = tiersQuery.data?.filter((t) => t.event_id === id) || [];
+			const eventTiers = tiersQuery.data?.tiers.filter((t) => t.event_id === id) || [];
 			for (const tier of eventTiers) {
 				if (tier.id) tiersSet.delete(tier.id);
 			}
@@ -186,12 +207,22 @@
 	// Prune orphan tier IDs when available tiers change (e.g. after event deselected and tiers re-fetched)
 	$effect(() => {
 		if (!tiersQuery.data) return;
-		const validTierIds = new Set(tiersQuery.data.map((t) => t.id).filter(Boolean));
+		const validTierIds = new Set(tiersQuery.data.tiers.map((t) => t.id).filter(Boolean));
 		const staleIds = [...tiersSet].filter((id) => !validTierIds.has(id));
 		if (staleIds.length > 0) {
 			for (const id of staleIds) tiersSet.delete(id);
 			onTiersChange?.(Array.from(tiersSet));
 		}
+	});
+
+	// Report the tiers in scope to the parent (read-only: never changes the selection).
+	$effect(() => {
+		// No event selected: there is nothing to load, so the (empty) scope is final.
+		const tiersLoaded =
+			eventsSet.size === 0 ? true : tiersQuery.isSuccess && !tiersQuery.data.incomplete;
+		const eventTiers = tiersLoaded ? (tiersQuery.data?.tiers ?? []) : [];
+		const selectedTiers = eventTiers.filter((t) => !!t.id && tiersSet.has(t.id));
+		onScopeDataChange?.({ eventTiers, selectedTiers, tiersLoaded });
 	});
 
 	const hasAnyScope = $derived(seriesSet.size > 0 || eventsSet.size > 0 || tiersSet.size > 0);

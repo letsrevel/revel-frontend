@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { actions, load } from './+page.server';
 import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
 import { loadSetupCounts } from '$lib/server/org-setup';
+import { loadOrgWarningCounts } from '$lib/server/org-warning-counts';
+import { questionnaireListOrgQuestionnaires } from '$lib/api/generated';
 
 vi.mock('$lib/api/generated', () => ({
 	organizationadmincoreUpdateOrganization: vi.fn(),
@@ -11,6 +13,7 @@ vi.mock('$app/paths', () => ({
 	resolve: (p: string, params: { slug: string }) => p.replace('[slug]', params.slug)
 }));
 vi.mock('$lib/server/org-setup', () => ({ loadSetupCounts: vi.fn() }));
+vi.mock('$lib/server/org-warning-counts', () => ({ loadOrgWarningCounts: vi.fn() }));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const counts = vi.mocked(loadSetupCounts);
@@ -61,6 +64,55 @@ describe('settings load: continueSetupHref', () => {
 		const r = await run({ isOwner: false });
 		expect(counts).not.toHaveBeenCalled();
 		expect(r).toMatchObject({ continueSetupHref: null });
+	});
+});
+
+describe('settings load: warningCounts', () => {
+	const warn = vi.mocked(loadOrgWarningCounts);
+	const list = vi.mocked(questionnaireListOrgQuestionnaires);
+	const COUNTS = { publicEventCount: 2, inSeriesCount: 1, partial: false };
+
+	beforeEach(() => {
+		warn.mockReset();
+		list.mockReset();
+		list.mockResolvedValue({ data: { results: [] } } as never);
+	});
+
+	it('returns the counts, loaded with the org id and the access token', async () => {
+		warn.mockResolvedValue(COUNTS);
+		const r = await run({ query: '' });
+		expect(r).toMatchObject({ warningCounts: COUNTS });
+		expect(warn).toHaveBeenCalledWith(
+			expect.objectContaining({ orgId: 'org-id', accessToken: 'tok' })
+		);
+	});
+
+	it('returns null when the helper fails (fail open)', async () => {
+		warn.mockResolvedValue(null);
+		const r = await run({ query: '' });
+		expect(r).toMatchObject({ warningCounts: null });
+	});
+
+	it('starts both calls before either one resolves (parallel, not serial)', async () => {
+		let release: (v: unknown) => void = vi.fn();
+		list.mockReturnValue(new Promise((res) => (release = res)) as never);
+		warn.mockResolvedValue(COUNTS);
+		const pending = run({ query: '' });
+		await vi.waitFor(() => expect(warn).toHaveBeenCalled());
+		expect(list).toHaveBeenCalled();
+		release({ data: { results: [] } });
+		await pending;
+	});
+
+	it('skips the count call without an access token', async () => {
+		const r = (await load({
+			fetch: vi.fn(),
+			url: new URL('http://localhost/org/acme/admin/settings'),
+			cookies: { get: () => undefined },
+			parent: async () => ({ isOwner: true, organization: READY_ORG })
+		} as unknown as LoadArg)) as Awaited<ReturnType<typeof load>>;
+		expect(warn).not.toHaveBeenCalled();
+		expect(r).toMatchObject({ warningCounts: null, membershipQuestionnaires: [] });
 	});
 });
 

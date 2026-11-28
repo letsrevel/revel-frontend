@@ -11,17 +11,18 @@
 	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
 	import BrandColorsCard from '$lib/components/organization/brand/BrandColorsCard.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
+	import OrgSocialLinksSection from '$lib/components/organization/OrgSocialLinksSection.svelte';
 	import OrgSubscriptionPolicySection from '$lib/components/organization/OrgSubscriptionPolicySection.svelte';
 	import type { CitySchema, RevenueReportCadence } from '$lib/api/generated';
-	import { Building2, AlertCircle, Check, Eye, Mail, Send, AtSign } from '@lucide/svelte';
-	import Instagram from '$lib/components/icons/brand/Instagram.svelte';
-	import Facebook from '$lib/components/icons/brand/Facebook.svelte';
+	import { Building2, AlertCircle, Check, Eye, Mail } from '@lucide/svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { orgSettingsWarnings } from '$lib/utils/admin-warnings/org';
 
 	interface Props {
 		data: PageData;
@@ -84,6 +85,22 @@
 		blueskyUrl = data.organization.bluesky_url || '';
 		telegramUrl = data.organization.telegram_url || '';
 	});
+
+	// Setting warnings (#1314). The rules read the LIVE form state, so a warning
+	// appears or goes away while the owner edits, before saving.
+	const warnings = $derived(
+		orgSettingsWarnings({
+			visibility,
+			acceptNewMembers,
+			defaultQuestionnaireId,
+			counts: data.warningCounts,
+			customDomain: data.organization.custom_domain,
+			membershipQuestionnaires: data.membershipQuestionnaires,
+			questionnairesHref: resolve('/(auth)/org/[slug]/admin/questionnaires', {
+				slug: data.organization.slug
+			})
+		})
+	);
 
 	// If selected method requires a verified email but it isn't, force back to 'none' on submit.
 	const contactEmailVerified = $derived(data.organization.contact_email_verified === true);
@@ -361,6 +378,16 @@
 						{m['orgAdmin.settings.profile.visibilityStaffOnlyHelp']()}
 					{/if}
 				</p>
+				<AdminWarningList
+					warnings={warnings.visibility}
+					entityId={data.organization.id}
+					fallbackFocusId="visibility"
+					label={m['adminWarnings.listLabelNamed']({
+						name: m['orgAdmin.settings.profile.visibilityLabel']()
+					})}
+					testId="org-visibility-warnings"
+					class="mt-2"
+				/>
 			</div>
 
 			<!-- Tags -->
@@ -373,80 +400,13 @@
 		</section>
 
 		<!-- Social Media Links -->
-		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-			<SectionHeader
-				title={m['orgAdmin.settings.social.heading']()}
-				subtitle={m['orgAdmin.settings.social.description']()}
-			/>
-
-			<div class="grid gap-4 md:grid-cols-2">
-				<!-- Instagram -->
-				<div>
-					<label for="instagram_url" class="flex items-center gap-2 text-sm font-medium">
-						<Instagram class="h-4 w-4 text-[hsl(var(--brand-instagram))]" aria-hidden="true" />
-						Instagram
-					</label>
-					<input
-						type="url"
-						id="instagram_url"
-						name="instagram_url"
-						bind:value={instagramUrl}
-						placeholder="https://instagram.com/yourorg"
-						class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-				</div>
-
-				<!-- Facebook -->
-				<div>
-					<label for="facebook_url" class="flex items-center gap-2 text-sm font-medium">
-						<Facebook class="h-4 w-4 text-[hsl(var(--brand-facebook))]" aria-hidden="true" />
-						Facebook
-					</label>
-					<input
-						type="url"
-						id="facebook_url"
-						name="facebook_url"
-						bind:value={facebookUrl}
-						placeholder="https://facebook.com/yourorg"
-						class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-				</div>
-
-				<!-- Bluesky -->
-				<div>
-					<label for="bluesky_url" class="flex items-center gap-2 text-sm font-medium">
-						<AtSign class="h-4 w-4 text-[hsl(var(--brand-bluesky))]" aria-hidden="true" />
-						Bluesky
-					</label>
-					<input
-						type="url"
-						id="bluesky_url"
-						name="bluesky_url"
-						bind:value={blueskyUrl}
-						placeholder="https://bsky.app/profile/yourorg.bsky.social"
-						class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-				</div>
-
-				<!-- Telegram -->
-				{#if features.telegram}
-					<div>
-						<label for="telegram_url" class="flex items-center gap-2 text-sm font-medium">
-							<Send class="h-4 w-4 text-[hsl(var(--brand-telegram-text))]" aria-hidden="true" />
-							Telegram
-						</label>
-						<input
-							type="url"
-							id="telegram_url"
-							name="telegram_url"
-							bind:value={telegramUrl}
-							placeholder="https://t.me/yourorg"
-							class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-					</div>
-				{/if}
-			</div>
-		</section>
+		<OrgSocialLinksSection
+			bind:instagramUrl
+			bind:facebookUrl
+			bind:blueskyUrl
+			bind:telegramUrl
+			telegramEnabled={!!features.telegram}
+		/>
 
 		<!-- Membership Settings -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
@@ -470,6 +430,15 @@
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.settings.membership.acceptRequestsHelp']()}
 				</p>
+				<AdminWarningList
+					warnings={warnings.requests}
+					entityId={data.organization.id}
+					fallbackFocusId="accept_membership_requests"
+					label={m['adminWarnings.listLabelNamed']({
+						name: m['orgAdmin.settings.membership.acceptRequestsLabel']()
+					})}
+					testId="org-requests-warnings"
+				/>
 			</div>
 
 			<!-- Default membership questionnaire -->
@@ -491,6 +460,16 @@
 				<p class="mt-1 text-xs text-muted-foreground">
 					{m['orgAdmin.settings.membership.defaultQuestionnaireHelp']()}
 				</p>
+				<AdminWarningList
+					warnings={warnings.questionnaire}
+					entityId={data.organization.id}
+					fallbackFocusId="default_membership_questionnaire_id"
+					label={m['adminWarnings.listLabelNamed']({
+						name: m['orgAdmin.settings.membership.defaultQuestionnaireLabel']()
+					})}
+					testId="org-questionnaire-warnings"
+					class="mt-2"
+				/>
 				{#if data.membershipQuestionnaires.length === 0}
 					<p class="mt-1 text-xs text-muted-foreground">
 						{m['orgAdmin.settings.membership.noMembershipQuestionnaires']()}

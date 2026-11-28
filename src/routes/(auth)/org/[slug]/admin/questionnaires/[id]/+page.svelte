@@ -1,6 +1,13 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withAction } from '$lib/utils/admin-warnings/types';
+	import {
+		admissionQuestionnaireNotPublished,
+		membershipQuestionnaireNotPublished
+	} from '$lib/utils/admin-warnings/questionnaire';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -129,6 +136,31 @@
 		(q?.status as QuestionnaireStatus) ?? 'draft'
 	);
 
+	// ===== Admin setting warnings (#1314, F1/F2) =====
+	// Read from the current status, which changes after a publish. "Publish" opens the
+	// same confirm dialog as the status bar button.
+	const questionnaireWarnings = $derived.by(() => {
+		if (!questionnaire) return [];
+		const publish = {
+			label: () => m['adminWarnings.questionnairePublish'](),
+			run: () => changeStatus('published')
+		};
+		const f1 = admissionQuestionnaireNotPublished({
+			questionnaire_type: questionnaire.questionnaire_type,
+			status: currentStatus,
+			events: questionnaire.events,
+			eventSeriesCount: questionnaire.event_series?.length ?? 0,
+			now: new Date()
+		});
+		const f2 = membershipQuestionnaireNotPublished({
+			questionnaire_type: questionnaire.questionnaire_type,
+			status: currentStatus,
+			is_organization_default: questionnaire.is_organization_default,
+			tierCount: questionnaire.tiers?.length ?? 0
+		});
+		return compactWarnings([f1 && withAction(f1, publish), f2 && withAction(f2, publish)]);
+	});
+
 	// ===== Validation =====
 
 	function validate(): boolean {
@@ -196,6 +228,13 @@
 			alert(m['questionnaireEditPage.error_statusChangeFailedMessage']());
 		} finally {
 			isChangingStatus = false;
+		}
+		// The confirm dialog and the buttons that held focus may be gone now. Move focus
+		// to the status bar only when it was lost.
+		await tick();
+		const active = document.activeElement;
+		if (!active || active === document.body || !active.isConnected) {
+			document.getElementById('questionnaire-status-bar')?.focus();
 		}
 	}
 
@@ -309,6 +348,14 @@
 
 	<!-- Status Management -->
 	<QuestionnaireStatusBar {currentStatus} {isChangingStatus} onChangeStatus={changeStatus} />
+
+	<AdminWarningList
+		warnings={questionnaireWarnings}
+		entityId={questionnaire?.id}
+		fallbackFocusId="questionnaire-status-bar"
+		testId="questionnaire-warnings"
+		class="mb-6"
+	/>
 
 	<!-- Info Banner -->
 	{#if isEditMode}

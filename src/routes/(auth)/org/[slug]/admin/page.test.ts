@@ -13,7 +13,7 @@ const { organization } = vi.hoisted(() => ({
 		name: 'Acme',
 		visibility: 'private',
 		contact_email: 'a@b.c'
-	}
+	} as Record<string, unknown>
 }));
 
 vi.mock('$app/stores', () => ({
@@ -32,7 +32,7 @@ vi.mock('$lib/utils/org-setup-progress', async (orig) => {
 	return { ...actual, billingNeedsAttention: () => false };
 });
 
-function setup(setupCounts: unknown, setupHidden = false) {
+function setup(setupCounts: unknown, setupHidden = false, extra: Record<string, unknown> = {}) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -46,7 +46,8 @@ function setup(setupCounts: unknown, setupHidden = false) {
 					draftCount: 0,
 					pendingRequestCount: 0,
 					setupCounts,
-					setupHidden
+					setupHidden,
+					...extra
 				}
 			}
 		}
@@ -124,5 +125,26 @@ describe('org admin dashboard: server-hidden setup card', () => {
 		});
 		expect(screen.queryByTestId('org-setup-card')).toBeNull();
 		expect(screen.getByText('Setup hidden.')).toBeTruthy();
+	});
+});
+
+describe('org admin dashboard: hidden-org attention items', () => {
+	it('passes the loaded counts and the live org settings to the attention list', () => {
+		organization.accept_membership_requests = true;
+		try {
+			setup(null, false, {
+				warningCounts: { publicEventCount: 2, inSeriesCount: 0, partial: false }
+			});
+			expect(screen.getByText(/Upcoming events that visitors can see: 2\./)).toBeTruthy();
+			expect(screen.getByText('Membership requests are not reachable')).toBeTruthy();
+		} finally {
+			delete organization.accept_membership_requests;
+		}
+	});
+
+	it('shows neither item when the load returned no counts and requests are off', () => {
+		setup(null, false, { warningCounts: null });
+		expect(screen.queryByText(/This organization is not public/)).toBeNull();
+		expect(screen.queryByText('Membership requests are not reachable')).toBeNull();
 	});
 });

@@ -24,6 +24,7 @@
 	import QuestionTypeBadge from '$lib/components/questionnaires/QuestionTypeBadge.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
+	import PollSettingWarnings from '$lib/components/polls/PollSettingWarnings.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
 	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
@@ -339,6 +340,15 @@
 		bind:resultTierIds
 		events={data.events}
 		tiers={data.tiers}
+	/>
+
+	<PollSettingWarnings
+		{voteVisibility}
+		{resultVisibility}
+		{resultTiming}
+		pollId={poll.id}
+		status={poll.status}
+		orgVisibility={data.organization.visibility}
 	/>
 
 	<PollAnonymityCard

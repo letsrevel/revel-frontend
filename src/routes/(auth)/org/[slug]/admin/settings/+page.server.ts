@@ -15,6 +15,7 @@ import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 import { resolve } from '$app/paths';
 import { loadSetupCounts } from '$lib/server/org-setup';
+import { loadOrgWarningCounts } from '$lib/server/org-warning-counts';
 import { buildSetupProgress } from '$lib/utils/org-setup-progress';
 
 /**
@@ -33,13 +34,15 @@ export const load: PageServerLoad = async ({ parent, cookies, fetch, url }) => {
 	// OrganizationQuestionnaire id (the FK target of
 	// default_membership_questionnaire), label = questionnaire name. The list
 	// endpoint has no type filter — filter to MEMBERSHIP client-side.
-	let membershipQuestionnaires: OrganizationQuestionnaireInListSchema[] = [];
 	const accessToken = cookies.get('access_token');
-	if (accessToken) {
+
+	const loadQuestionnaires = async (
+		token: string
+	): Promise<OrganizationQuestionnaireInListSchema[]> => {
 		const res = await questionnaireListOrgQuestionnaires({
 			fetch,
 			query: { organization_id: organization.id, page_size: 100 },
-			headers: { Authorization: `Bearer ${accessToken}` }
+			headers: { Authorization: `Bearer ${token}` }
 		});
 		if (res.error) {
 			// Non-fatal: the rest of the settings form is still usable, so degrade to an
@@ -49,10 +52,17 @@ export const load: PageServerLoad = async ({ parent, cookies, fetch, url }) => {
 				error: res.error
 			});
 		}
-		membershipQuestionnaires = (res.data?.results ?? []).filter(
-			(q) => q.questionnaire_type === 'membership'
-		);
-	}
+		return (res.data?.results ?? []).filter((q) => q.questionnaire_type === 'membership');
+	};
+
+	// Counts for the visibility warning (A1) load in parallel with the picker options.
+	// `null` = no token or the call failed: the page then shows no A1 warning.
+	const [membershipQuestionnaires, warningCounts] = accessToken
+		? await Promise.all([
+				loadQuestionnaires(accessToken),
+				loadOrgWarningCounts({ orgId: organization.id, accessToken, fetch })
+			])
+		: [[] as OrganizationQuestionnaireInListSchema[], null];
 
 	// Only when an owner is returning from Stripe: offer a way back to the launchpad
 	// while setup is incomplete. Skipped otherwise to avoid four extra API calls.
@@ -67,6 +77,7 @@ export const load: PageServerLoad = async ({ parent, cookies, fetch, url }) => {
 	return {
 		organization,
 		membershipQuestionnaires,
+		warningCounts,
 		continueSetupHref
 	};
 };

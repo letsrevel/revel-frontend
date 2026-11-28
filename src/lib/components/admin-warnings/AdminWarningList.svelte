@@ -94,21 +94,27 @@
 		timer = setTimeout(flush, announceDelay);
 	});
 
-	function flush(): void {
-		// Only the warnings that are still visible after the debounce.
-		const text = visible
-			.filter((w) => pending.includes(w.id))
+	/** Announcement text for the given warning ids that are visible now. */
+	function textFor(ids: string[]): string {
+		return visible
+			.filter((w) => ids.includes(w.id))
 			.map((w) => `${w.title()}. ${w.message()}`)
 			.join(' ');
+	}
+
+	function flush(): void {
+		// Only the warnings that are still visible after the debounce.
+		const ids = pending;
 		pending = [];
-		if (!text) return;
+		if (!textFor(ids)) return;
 		// Clear first, then restore in a LATER task: a clear and a restore in the same
 		// task can reach the accessibility tree as "no change", so the same text twice
-		// would not be announced again.
+		// would not be announced again. Recheck visibility at restore time, so a
+		// warning fixed or dismissed in that gap is not announced.
 		clearTimeout(restoreTimer);
 		announcement = '';
 		restoreTimer = setTimeout(() => {
-			announcement = text;
+			announcement = textFor(ids);
 		}, 50);
 	}
 

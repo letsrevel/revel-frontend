@@ -340,6 +340,8 @@
 			{accessToken}
 			{canEdit}
 			upcomingEvents={upcomingOccurrences}
+			organizationVisibility={organization.visibility}
+			organizationStripeConnected={organization.is_stripe_connected}
 		/>
 	{:else if activeTab === 'upcoming'}
 		<section id="upcoming-occurrences" aria-labelledby="upcoming-heading">
