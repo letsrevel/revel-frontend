@@ -47,7 +47,10 @@
 	(never `text-highlight`), per the dark-mode `--highlight` text-contrast trap.
 -->
 <Card
-	class="mb-6 {currentStatus === 'draft'
+	id="questionnaire-status-bar"
+	tabindex={-1}
+	class="mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {currentStatus ===
+	'draft'
 		? 'border-highlight bg-highlight/10'
 		: currentStatus === 'ready'
 			? 'border-info/50 bg-info/10'

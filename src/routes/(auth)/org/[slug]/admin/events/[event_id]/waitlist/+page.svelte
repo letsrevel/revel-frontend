@@ -3,6 +3,10 @@
 	import { createConfirm } from '$lib/components/common/confirm.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
+	import AdminWarningList from '$lib/components/admin-warnings/AdminWarningList.svelte';
+	import { compactWarnings, withLink } from '$lib/utils/admin-warnings/types';
+	import { waitlistWithoutCapacityWarning } from '$lib/utils/admin-warnings/event';
 	import type { PageData } from './$types';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadminwaitlistListWaitlist, eventadminwaitlistDeleteWaitlistEntry } from '$lib/api';
@@ -345,6 +349,32 @@
 	}
 
 	const settings = $derived(settingsQuery.data ?? null);
+
+	// Admin setting warnings (#1314, C1). The waitlist toggle has no element id in the
+	// event editor, so the fix links to the edit page without a hash. The live waitlist
+	// setting wins over the page-load event once it is loaded. When the event failed to
+	// load (null), no warning shows: there is no capacity data to judge.
+	const eventCapacity = $derived(data.eventCapacity ?? null);
+	const waitlistWarnings = $derived.by(() => {
+		// While the live settings load, the open flag is not known: show nothing yet.
+		if (!eventCapacity || settingsQuery.isLoading) return [];
+		const c1 = waitlistWithoutCapacityWarning({
+			waitlist_open: settings ? settings.waitlist_open : eventCapacity.waitlist_open,
+			max_attendees: eventCapacity.max_attendees,
+			venueCapacity: eventCapacity.venueCapacity
+		});
+		return compactWarnings([
+			c1 &&
+				withLink(
+					c1,
+					resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: organization.slug,
+						event_id: data.eventId
+					}),
+					() => m['adminWarnings.fixAttendeeLimit']()
+				)
+		]);
+	});
 </script>
 
 <svelte:head>
@@ -398,6 +428,13 @@
 			</div>
 		</div>
 	{/if}
+
+	<AdminWarningList
+		warnings={waitlistWarnings}
+		entityId={data.eventId}
+		baselineReady={!settingsQuery.isLoading}
+		testId="waitlist-warnings"
+	/>
 
 	<WaitlistSettingsCard
 		eventId={data.eventId}

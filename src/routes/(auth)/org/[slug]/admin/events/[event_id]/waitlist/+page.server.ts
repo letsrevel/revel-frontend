@@ -1,6 +1,6 @@
 import { error, isHttpError } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { eventadminwaitlistListWaitlist } from '$lib/api';
+import { eventadminwaitlistListWaitlist, eventpublicdetailsGetEvent } from '$lib/api';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 import * as m from '$lib/paraglide/messages.js';
@@ -16,14 +16,35 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		Authorization: `Bearer ${user.accessToken}`
 	};
 
+	// The event only feeds an advisory warning (waitlist open, no capacity), so a
+	// failed load must never break the page: fail open with `null`.
+	const eventPromise = eventpublicdetailsGetEvent({
+		fetch,
+		path: { event_id: params.event_id },
+		headers
+	})
+		.then((res) =>
+			res.data
+				? {
+						max_attendees: res.data.max_attendees ?? null,
+						waitlist_open: res.data.waitlist_open ?? null,
+						venueCapacity: res.data.venue?.capacity ?? null
+					}
+				: null
+		)
+		.catch(() => null);
+
 	// Load initial waitlist data
 	try {
-		const response = await eventadminwaitlistListWaitlist({
-			fetch,
-			path: { event_id: params.event_id },
-			query: { page: 1, page_size: 20 },
-			headers
-		});
+		const [response, eventCapacity] = await Promise.all([
+			eventadminwaitlistListWaitlist({
+				fetch,
+				path: { event_id: params.event_id },
+				query: { page: 1, page_size: 20 },
+				headers
+			}),
+			eventPromise
+		]);
 
 		if (response.error) {
 			const errorMessage = extractErrorMessage(
@@ -35,6 +56,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		return {
 			waitlistData: response.data,
+			eventCapacity,
 			eventId: params.event_id
 		};
 	} catch (err) {
