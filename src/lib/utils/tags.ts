@@ -8,11 +8,14 @@
  * `toLocaleLowerCase`: a locale fold (for example Turkish dotted/dotless I)
  * would disagree with `LOWER` for the same user in some UI languages.
  *
- * `LOWER` maps one character at a time; `toLowerCase` does not in two known
- * cases, so `tagKey` maps them first (checked against PostgreSQL 15,
- * en_US.utf8): a capital sigma is always `σ` (JavaScript gives a word-final
- * `ς`), and `İ` (U+0130) is `i` (JavaScript gives `i` plus U+0307). A typed
- * `ς` stays `ς`, as in the database.
+ * With the libc locale provider, `LOWER` maps one character at a time;
+ * `toLowerCase` does not in two known special cases, so `tagKey` maps them
+ * first (checked against PostgreSQL 15 and 17, libc provider, en_US.utf8, the
+ * defaults of the production image): a capital sigma is always `σ`
+ * (JavaScript gives a word-final `ς`), and `İ` (U+0130) is `i` (JavaScript
+ * gives `i` plus U+0307). A typed `ς` stays `ς`, as in the database. This is
+ * not a full equivalence: the Unicode tables of the browser and of glibc can
+ * still differ for rare scripts.
  */
 
 /** Trims, removes every leading `#`, and trims again. Keeps the letter case. */
