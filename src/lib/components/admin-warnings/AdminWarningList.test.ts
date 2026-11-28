@@ -347,4 +347,25 @@ describe('AdminWarningList', () => {
 			vi.useRealTimers();
 		}
 	});
+	it('does not announce a warning that goes away during the restore delay', async () => {
+		vi.useFakeTimers();
+		try {
+			const { rerender } = render(AdminWarningList, {
+				props: { warnings: [warning('W1', 'warn')], announceDelay: 100 }
+			});
+			await tick();
+			await rerender({
+				warnings: [warning('W1', 'warn'), warning('W2', 'warn')],
+				announceDelay: 100
+			});
+			await vi.advanceTimersByTimeAsync(100);
+			expect(announcer()).toHaveTextContent('');
+			// Fixed within the 50 ms gap: nothing is announced.
+			await rerender({ warnings: [warning('W1', 'warn')], announceDelay: 100 });
+			await vi.advanceTimersByTimeAsync(50);
+			expect(announcer()).toHaveTextContent('');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });
